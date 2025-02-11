@@ -1,0 +1,24 @@
+{
+  "name": "@defituna/idl",
+  "description": "Codama generated code for Defituna Solana program",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "main": "./index.ts",
+  "module": "./index.ts",
+  "types": "./index.ts",
+  "exports": "./index.ts",
+  "scripts": {
+    "generate": "node ./scripts/generate-idl.js"
+  },
+  "devDependencies": {
+    "@solana/web3.js": "^2.0.0"
+  },
+  "dependencies": {
+    "@codama/nodes": "^1.2.2",
+    "@codama/nodes-from-anchor": "^1.1.2",
+    "@codama/renderers": "^1.0.10",
+    "@codama/visitors-core": "^1.2.2",
+    "codama": "^1.2.2"
+  }
+}
