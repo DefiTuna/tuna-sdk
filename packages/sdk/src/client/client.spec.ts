@@ -2,7 +2,7 @@ import { Decimal } from "decimal.js";
 import { describe, expect, it } from "vitest";
 
 import { TunaApiClient } from "./client";
-import * as testUtils from "./test_utils";
+import * as testUtils from "./testUtils";
 
 const client = new TunaApiClient(process.env.API_BASE_URL!);
 
@@ -18,6 +18,33 @@ describe("Mints", async () => {
   });
   it("Have valid decimals", () => {
     expect(mints.every(mint => mint.decimals > 0)).toBe(true);
+  });
+});
+
+describe("Single Mint", async () => {
+  const rpcVaults = await testUtils.getVaults();
+  const sampleMintAddress = rpcVaults[0].data.mint;
+  const unsavedMintAddress = "FeR8VBqNRSUD5NtXAj2n3j1dAHkZHfyDktKuLXD4pump";
+  const mint = await client.getMint(sampleMintAddress);
+
+  it("Returns mint data", () => {
+    expect(mint.mint).toBe(sampleMintAddress);
+    expect(mint.decimals).toBeGreaterThan(0);
+  });
+
+  it("Returns 404 for unsaved mint", async () => {
+    await expect(() => client.getMint(unsavedMintAddress)).rejects.toThrowError(
+      expect.objectContaining({
+        code: 40401,
+      }),
+    );
+  });
+  it("Returns 400 for invalid mint", async () => {
+    await expect(() => client.getMint("123")).rejects.toThrowError(
+      expect.objectContaining({
+        code: 40001,
+      }),
+    );
   });
 });
 
@@ -38,6 +65,33 @@ describe("Markets", async () => {
   });
   it("Have valid fee rate", () => {
     expect(markets.every(market => market.feeRate > 0)).toBe(true);
+  });
+});
+
+describe("Single Market", async () => {
+  const rpcMarkets = await testUtils.getMarkets();
+  const sampleMarketAddress = rpcMarkets[0].address;
+  const unsavedMarketAddress = "FeR8VBqNRSUD5NtXAj2n3j1dAHkZHfyDktKuLXD4pump";
+  const market = await client.getMarket(sampleMarketAddress);
+
+  it("Returns market data", () => {
+    expect(market.address).toBe(sampleMarketAddress);
+    expect(market.feeRate).toBeGreaterThan(0);
+  });
+
+  it("Returns 404 for unsaved market", async () => {
+    await expect(() => client.getMarket(unsavedMarketAddress)).rejects.toThrowError(
+      expect.objectContaining({
+        code: 40401,
+      }),
+    );
+  });
+  it("Returns 400 for invalid market", async () => {
+    await expect(() => client.getMarket("123")).rejects.toThrowError(
+      expect.objectContaining({
+        code: 40001,
+      }),
+    );
   });
 });
 
@@ -82,6 +136,39 @@ describe("Oracle Prices", async () => {
   });
 });
 
+describe("Single Oracle Price", async () => {
+  const rpcVaults = await testUtils.getVaults();
+  const sampleMintAddress = rpcVaults[0].data.mint;
+  const unsavedMintAddress = "FeR8VBqNRSUD5NtXAj2n3j1dAHkZHfyDktKuLXD4pump";
+  const oraclePrice = await client.getOraclePrice(sampleMintAddress);
+
+  it("Returns oracle price", () => {
+    expect(oraclePrice.mint).toBe(sampleMintAddress);
+    expect(oraclePrice.price).toBeGreaterThan(0);
+  });
+  it("Returns recent price", () => {
+    const priceTimestampSeconds = oraclePrice.time.getTime() / 1000;
+    const nowTimestampSeconds = Date.now() / 1000;
+
+    // Not older that 10 seconds
+    expect(priceTimestampSeconds).closeTo(nowTimestampSeconds, 10);
+  });
+  it("Returns 404 for unsaved mint", async () => {
+    await expect(() => client.getOraclePrice(unsavedMintAddress)).rejects.toThrowError(
+      expect.objectContaining({
+        code: 40401,
+      }),
+    );
+  });
+  it("Returns 400 for invalid mint", async () => {
+    await expect(() => client.getOraclePrice("123")).rejects.toThrowError(
+      expect.objectContaining({
+        code: 40001,
+      }),
+    );
+  });
+});
+
 describe("Vaults", async () => {
   const rpcVaults = await testUtils.getVaults();
   const vaults = await client.getVaults();
@@ -105,6 +192,33 @@ describe("Vaults", async () => {
   });
 });
 
+describe("Single Vault", async () => {
+  const rpcVaults = await testUtils.getVaults();
+  const sampleVault = rpcVaults[0];
+  const unsavedVaultAddress = "FeR8VBqNRSUD5NtXAj2n3j1dAHkZHfyDktKuLXD4pump";
+  const vault = await client.getVault(sampleVault.address);
+
+  it("Returns vault data", () => {
+    expect(vault.address).toBe(sampleVault.address);
+    expect(vault.mint).toBe(sampleVault.data.mint);
+  });
+
+  it("Returns 404 for unsaved vault", async () => {
+    await expect(() => client.getMarket(unsavedVaultAddress)).rejects.toThrowError(
+      expect.objectContaining({
+        code: 40401,
+      }),
+    );
+  });
+  it("Returns 400 for invalid vault", async () => {
+    await expect(() => client.getMarket("123")).rejects.toThrowError(
+      expect.objectContaining({
+        code: 40001,
+      }),
+    );
+  });
+});
+
 describe("Pools", async () => {
   const rpcMarkets = await testUtils.getMarkets();
   const pools = await client.getPools();
@@ -120,6 +234,33 @@ describe("Pools", async () => {
   });
   it("Have monthly stats", () => {
     expect(pools.every(pool => !!pool.stats["30D"])).toBe(true);
+  });
+});
+
+describe("Single Pool", async () => {
+  const rpcMarkets = await testUtils.getMarkets();
+  const samplePoolAddress = rpcMarkets[0].data.pool;
+  const unsavedPoolAddress = "FeR8VBqNRSUD5NtXAj2n3j1dAHkZHfyDktKuLXD4pump";
+  const pool = await client.getPool(samplePoolAddress);
+
+  it("Returns pool data", () => {
+    expect(pool.address).toBe(samplePoolAddress);
+    expect(pool.feeRate).toBeGreaterThan(0);
+  });
+
+  it("Returns 404 for unsaved pool", async () => {
+    await expect(() => client.getMarket(unsavedPoolAddress)).rejects.toThrowError(
+      expect.objectContaining({
+        code: 40401,
+      }),
+    );
+  });
+  it("Returns 400 for invalid pool", async () => {
+    await expect(() => client.getMarket("123")).rejects.toThrowError(
+      expect.objectContaining({
+        code: 40001,
+      }),
+    );
   });
 });
 

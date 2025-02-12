@@ -62,8 +62,8 @@ export class TunaApiClient {
         headers: { ...this.headers, ...options?.headers },
       });
       if (!response.ok) {
-        const errorBody = await response.text();
-        throw new Error(`HTTP error! status: ${response.status}${errorBody ? `, body: ${errorBody}` : ""}`);
+        const errorBody = await response.json();
+        throw errorBody;
       }
       const data = await response.json();
       const transformed = camelcaseKeys(data, { deep: true });
@@ -84,9 +84,19 @@ export class TunaApiClient {
     return await this.httpRequest(url.toString(), schemas.Mint.array());
   }
 
+  async getMint(mintAddress: String): Promise<Mint> {
+    const url = this.buildURL(`mints/${mintAddress}`);
+    return await this.httpRequest(url.toString(), schemas.Mint);
+  }
+
   async getMarkets(): Promise<Market[]> {
     const url = this.buildURL("markets");
     return await this.httpRequest(url.toString(), schemas.Market.array());
+  }
+
+  async getMarket(marketAddress: String): Promise<Market> {
+    const url = this.buildURL(`markets/${marketAddress}`);
+    return await this.httpRequest(url.toString(), schemas.Market);
   }
 
   async getOraclePrices(): Promise<TokenOraclePrice[]> {
@@ -94,9 +104,19 @@ export class TunaApiClient {
     return await this.httpRequest(url.toString(), schemas.TokenOraclePrice.array());
   }
 
+  async getOraclePrice(mintAddress: String): Promise<TokenOraclePrice> {
+    const url = this.buildURL(`oracle-prices/${mintAddress}`);
+    return await this.httpRequest(url.toString(), schemas.TokenOraclePrice);
+  }
+
   async getVaults(): Promise<Vault[]> {
     const url = this.buildURL("vaults");
     return await this.httpRequest(url.toString(), schemas.Vault.array());
+  }
+
+  async getVault(vaultAddress): Promise<Vault> {
+    const url = this.buildURL(`vaults/${vaultAddress}`);
+    return await this.httpRequest(url.toString(), schemas.Vault);
   }
 
   async getPools(): Promise<Pool[]> {
@@ -109,8 +129,8 @@ export class TunaApiClient {
     return await this.httpRequest(url.toString(), schemas.Pool);
   }
 
-  async getPoolTicks(address: String): Promise<PoolTicks> {
-    const url = this.buildURL(`pools/${address}/ticks`);
+  async getPoolTicks(poolAddress: String): Promise<PoolTicks> {
+    const url = this.buildURL(`pools/${poolAddress}/ticks`);
     return await this.httpRequest(url.toString(), schemas.PoolTicks);
   }
 
