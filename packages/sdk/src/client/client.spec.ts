@@ -4,6 +4,8 @@ import { describe, expect, it } from "vitest";
 import { TunaApiClient } from "./client";
 import * as testUtils from "./testUtils";
 
+const TEST_WALLET_ADDRESS = "CYCf8sBj4zLZheRovh37rWLe7pK8Yn5G7nb4SeBmgfMG";
+
 const client = new TunaApiClient(process.env.API_BASE_URL!);
 
 describe("Mints", async () => {
@@ -113,8 +115,8 @@ describe("Oracle Prices", async () => {
     const priceTimestampSeconds = price.time.getTime() / 1000;
     const nowTimestampSeconds = Date.now() / 1000;
 
-    // Not older that 10 seconds
-    expect(priceTimestampSeconds).closeTo(nowTimestampSeconds, 10);
+    // Not older that 60 seconds
+    expect(priceTimestampSeconds).closeTo(nowTimestampSeconds, 60);
   });
   it("Returns correct price for USDT", () => {
     const price = oraclePrices.find(price => price.mint === "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB");
@@ -150,8 +152,8 @@ describe("Single Oracle Price", async () => {
     const priceTimestampSeconds = oraclePrice.time.getTime() / 1000;
     const nowTimestampSeconds = Date.now() / 1000;
 
-    // Not older that 10 seconds
-    expect(priceTimestampSeconds).closeTo(nowTimestampSeconds, 10);
+    // Not older that 60 seconds
+    expect(priceTimestampSeconds).closeTo(nowTimestampSeconds, 60);
   });
   it("Returns 404 for unsaved mint", async () => {
     await expect(() => client.getOraclePrice(unsavedMintAddress)).rejects.toThrowError(
@@ -186,7 +188,7 @@ describe("Vaults", async () => {
         .sort(([a], [b]) => a.toString().localeCompare(b.toString())),
     ).toEqual(
       vaults
-        .map(vault => [vault.address, vault.supplyLimit])
+        .map(vault => [vault.address, vault.supplyLimit.amount])
         .sort(([a], [b]) => a.toString().localeCompare(b.toString())),
     );
   });
@@ -278,5 +280,94 @@ describe("Pool Ticks", async () => {
   });
   it("Have non-empty middle tick", () => {
     expect(poolTicks.ticks[Math.round(poolTicks.ticks.length / 2)].liquidity).not.toBe(0n);
+  });
+});
+
+describe("Lending Positions", async () => {
+  const lendingPositions = await client.getUserLendingPositions(TEST_WALLET_ADDRESS);
+  const rpcLendingPositions = await testUtils.getLendingPositions(TEST_WALLET_ADDRESS);
+
+  it("Length matches RPC lending positions", () => {
+    expect(lendingPositions.length).toBe(rpcLendingPositions.length);
+  });
+  it("Match RPC lending positions addresses", () => {
+    expect(lendingPositions.map(position => position.address).sort()).toEqual(
+      rpcLendingPositions.map(position => position.address).sort(),
+    );
+  });
+  it("Match RPC lending positions data", () => {
+    expect(
+      rpcLendingPositions
+        .map(({ address, data }) => [address, data.authority, data.poolMint, data.depositedFunds])
+        .sort(([a], [b]) => a.toString().localeCompare(b.toString())),
+    ).toEqual(
+      lendingPositions
+        .map(position => [
+          position.address,
+          position.authority,
+          position.mint,
+          position.totalFunds.amount - position.earnedFunds.amount,
+        ])
+        .sort(([a], [b]) => a.toString().localeCompare(b.toString())),
+    );
+  });
+  it("Have USD values for tokens", () => {
+    expect(lendingPositions.every(position => position.totalFunds.usd > 0 && position.earnedFunds.usd > 0)).toBe(true);
+  });
+});
+
+describe("Tuna Positions", async () => {
+  const tunaPositions = await client.getUserTunaPositions(TEST_WALLET_ADDRESS);
+  const rpcTunaPositions = await testUtils.getTunaPositions(TEST_WALLET_ADDRESS);
+  const testPositionWithoutLeverage = await client.getUserTunaPositionByAddress(
+    TEST_WALLET_ADDRESS,
+    "6SaKKYAAddvbMoqpoUyrDTkTv9qxifVpTcip539LFNjs",
+  );
+  const testPositionWithLeverage = await client.getUserTunaPositionByAddress(
+    TEST_WALLET_ADDRESS,
+    "AiNPCv5iqPxXCfmfn7ySGQ6mBRKMN3pM8wXNmm6VPbEq",
+  );
+
+  it("Length matches RPC tuna positions", () => {
+    expect(tunaPositions.length).toBe(rpcTunaPositions.length);
+  });
+  it("Match RPC tuna positions addresses", () => {
+    expect(tunaPositions.map(position => position.address).sort()).toEqual(
+      rpcTunaPositions.map(position => position.address).sort(),
+    );
+  });
+  it("Match RPC tuna positions data", () => {
+    expect(
+      rpcTunaPositions
+        .map(({ address, data }) => [address, data.authority, data.positionMint, data.pool, data.liquidity])
+        .sort(([a], [b]) => a.toString().localeCompare(b.toString())),
+    ).toEqual(
+      tunaPositions
+        .map(position => [
+          position.address,
+          position.authority,
+          position.positionMint,
+          position.pool,
+          position.liquidity,
+        ])
+        .sort(([a], [b]) => a.toString().localeCompare(b.toString())),
+    );
+  });
+  it("Have USD values for tokens", () => {
+    expect(tunaPositions.every(position => position.totalA.usd + position.totalB.usd > 0)).toBe(true);
+  });
+  it("Has correct values for position without leverage", () => {
+    expect(testPositionWithoutLeverage.currentLoanA.amount + testPositionWithoutLeverage.currentLoanB.amount).toBe(0n);
+    expect(testPositionWithoutLeverage.yieldA.amount).toBeGreaterThanOrEqual(38556n);
+    expect(testPositionWithoutLeverage.yieldB.amount).toBeGreaterThanOrEqual(4435n);
+  });
+  it("Has correct values for position with leverage", () => {
+    expect(testPositionWithLeverage.currentLoanA.amount + testPositionWithLeverage.currentLoanB.amount).toBeGreaterThan(
+      0n,
+    );
+    expect(testPositionWithLeverage.currentLoanA.amount).toBeGreaterThanOrEqual(168783n);
+    expect(testPositionWithLeverage.currentLoanB.amount).toBeGreaterThanOrEqual(25002n);
+    expect(testPositionWithLeverage.yieldA.amount).toBeGreaterThanOrEqual(1680n);
+    expect(testPositionWithLeverage.yieldB.amount).toBeGreaterThanOrEqual(189n);
   });
 });

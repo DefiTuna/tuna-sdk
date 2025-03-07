@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+const amountWithUsd = z.object({
+  amount: z.coerce.bigint(),
+  usd: z.number(),
+});
+
 export const PoolProvider = z.enum(["orca"]);
 
 export const Mint = z.object({
@@ -31,10 +36,11 @@ export const TokenOraclePrice = z.object({
 export const Vault = z.object({
   address: z.string(),
   mint: z.string(),
-  depositedFunds: z.coerce.bigint(),
-  borrowedFunds: z.coerce.bigint(),
-  interestRate: z.coerce.bigint(),
-  supplyLimit: z.coerce.bigint(),
+  depositedFunds: amountWithUsd,
+  borrowedFunds: amountWithUsd,
+  supplyLimit: amountWithUsd,
+  supplyApy: z.number(),
+  borrowApy: z.number(),
 });
 
 export const Pool = z.object({
@@ -65,4 +71,44 @@ export const Tick = z.object({
 export const PoolTicks = z.object({
   tickSpacing: z.number(),
   ticks: Tick.array(),
+});
+
+export const LendingPosition = z.object({
+  address: z.string(),
+  authority: z.string(),
+  mint: z.string(),
+  vault: z.string(),
+  totalFunds: amountWithUsd,
+  earnedFunds: amountWithUsd,
+});
+
+export const TunaPosition = z.object({
+  address: z.string(),
+  authority: z.string(),
+  pool: z.string(),
+  version: z.number(),
+  state: z.string(),
+  positionMint: z.string(),
+  liquidity: z.coerce.bigint(),
+  tickLowerIndex: z.number(),
+  tickUpperIndex: z.number(),
+  tickEntryIndex: z.number(),
+  tickStopLossIndex: z.number(),
+  tickTakeProfitIndex: z.number(),
+  autoCompound: z.boolean(),
+  swapToTokenOnLimitOrder: z.number(),
+  poolSqrtPrice: z.coerce.bigint(),
+  loanFundsA: amountWithUsd,
+  loanFundsB: amountWithUsd,
+  currentLoanA: amountWithUsd,
+  currentLoanB: amountWithUsd,
+  leftoversA: amountWithUsd,
+  leftoversB: amountWithUsd,
+  yieldA: amountWithUsd,
+  yieldB: amountWithUsd,
+  compoundedYieldA: amountWithUsd,
+  compoundedYieldB: amountWithUsd,
+  totalA: amountWithUsd,
+  totalB: amountWithUsd,
+  pnlUsd: z.number(),
 });
