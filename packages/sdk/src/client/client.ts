@@ -11,6 +11,8 @@ export type Vault = z.infer<typeof schemas.Vault>;
 export type Pool = z.infer<typeof schemas.Pool>;
 export type Tick = z.infer<typeof schemas.Tick>;
 export type PoolTicks = z.infer<typeof schemas.PoolTicks>;
+export type LendingPosition = z.infer<typeof schemas.LendingPosition>;
+export type TunaPosition = z.infer<typeof schemas.TunaPosition>;
 
 /* Client configuration */
 export type DurationInMs = number;
@@ -132,6 +134,21 @@ export class TunaApiClient {
   async getPoolTicks(poolAddress: String): Promise<PoolTicks> {
     const url = this.buildURL(`pools/${poolAddress}/ticks`);
     return await this.httpRequest(url.toString(), schemas.PoolTicks);
+  }
+
+  async getUserLendingPositions(userAddress: String): Promise<LendingPosition[]> {
+    const url = this.buildURL(`users/${userAddress}/lending-positions`);
+    return await this.httpRequest(url.toString(), schemas.LendingPosition.array());
+  }
+
+  async getUserTunaPositions(userAddress: String): Promise<TunaPosition[]> {
+    const url = this.buildURL(`users/${userAddress}/tuna-positions`);
+    return await this.httpRequest(url.toString(), schemas.TunaPosition.array());
+  }
+
+  async getUserTunaPositionByAddress(userAddress: String, tunaPositionAddress: String): Promise<TunaPosition> {
+    const url = this.buildURL(`users/${userAddress}/tuna-positions/${tunaPositionAddress}`);
+    return await this.httpRequest(url.toString(), schemas.TunaPosition);
   }
 
   /* Utility functions */
