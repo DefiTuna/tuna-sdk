@@ -1,5 +1,11 @@
 # @defituna/sdk
 
+## 1.1.3
+
+### Patch Changes
+
+- f2c6f1f: Add PnL bps
+
 ## 1.1.2
 
 ### Patch Changes
