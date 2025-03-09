@@ -18,7 +18,6 @@ jobs:
     strategy:
       matrix:
         node-version: ["22.x"]
-    environment: "Development"
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -30,7 +29,15 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: "pnpm"
       - run: pnpm i
-      - run: pnpm lint
-      - run: pnpm test
+      - name: Lint
+        run: pnpm lint
+      - name: Test
+        run: |
+          run: |
+            touch packages/sdk/.env
+            echo RPC_URL=$RPC_URL >> packages/sdk/.env
+            echo API_BASE_URL=$API_BASE_URL >> packages/sdk/.env
+            pnpm test
         env:
           RPC_URL: ${{ secrets.RPC_URL }}
+          API_BASE_URL: "https://api-dev.defituna.com/api"
