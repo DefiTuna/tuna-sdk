@@ -1,5 +1,11 @@
 # @defituna/sdk
 
+## 1.1.5
+
+### Patch Changes
+
+- 981f1dc: Remove poolTickSpacing
+
 ## 1.1.4
 
 ### Patch Changes
