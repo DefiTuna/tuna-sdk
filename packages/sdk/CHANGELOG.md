@@ -1,5 +1,11 @@
 # @defituna/sdk
 
+## 1.1.2
+
+### Patch Changes
+
+- 5aa5594: Publish
+
 ## 1.1.1
 
 ### Patch Changes
