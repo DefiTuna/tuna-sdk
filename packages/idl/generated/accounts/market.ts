@@ -39,7 +39,7 @@ import {
   type MaybeAccount,
   type MaybeEncodedAccount,
   type ReadonlyUint8Array,
-} from '@solana/web3.js';
+} from '@solana/kit';
 
 export const MARKET_DISCRIMINATOR = new Uint8Array([
   219, 190, 213, 55, 0, 227, 198, 154,

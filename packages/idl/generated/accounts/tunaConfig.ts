@@ -41,7 +41,7 @@ import {
   type MaybeAccount,
   type MaybeEncodedAccount,
   type ReadonlyUint8Array,
-} from '@solana/web3.js';
+} from '@solana/kit';
 
 export const TUNA_CONFIG_DISCRIMINATOR = new Uint8Array([
   124, 149, 24, 7, 195, 168, 153, 58,

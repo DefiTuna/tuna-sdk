@@ -37,7 +37,7 @@ import {
   type MaybeAccount,
   type MaybeEncodedAccount,
   type ReadonlyUint8Array,
-} from '@solana/web3.js';
+} from '@solana/kit';
 
 export const LENDING_POSITION_DISCRIMINATOR = new Uint8Array([
   47, 255, 252, 35, 20, 245, 157, 243,

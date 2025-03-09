@@ -1,6 +1,6 @@
 {
     "extends": "@defituna/typescript-config/base.json",
-    "include": ["src"],
+    "include": ["generated"],
     "exclude": ["node_modules"],
     "compilerOptions": {
       "baseUrl": ".",
