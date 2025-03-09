@@ -108,7 +108,6 @@ export const TunaPosition = z.object({
   autoCompound: z.boolean(),
   swapToTokenOnLimitOrder: z.number(),
   pool: z.string(),
-  poolTickSpacing: z.number(),
   poolSqrtPrice: z.coerce.bigint(),
   loanFundsA: amountWithUsd,
   loanFundsB: amountWithUsd,
