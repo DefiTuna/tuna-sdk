@@ -1,5 +1,11 @@
 # @defituna/sdk
 
+## 1.1.1
+
+### Patch Changes
+
+- 4436ea0: Tuna Position state enum
+
 ## 1.1.0
 
 ### Minor Changes
