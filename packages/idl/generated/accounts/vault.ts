@@ -37,7 +37,7 @@ import {
   type MaybeAccount,
   type MaybeEncodedAccount,
   type ReadonlyUint8Array,
-} from '@solana/web3.js';
+} from '@solana/kit';
 
 export const VAULT_DISCRIMINATOR = new Uint8Array([
   211, 8, 232, 43, 2, 152, 117, 119,
