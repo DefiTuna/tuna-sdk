@@ -96,7 +96,6 @@ export const LendingPosition = z.object({
 export const TunaPosition = z.object({
   address: z.string(),
   authority: z.string(),
-  pool: z.string(),
   version: z.number(),
   state: TunaPositionStateSchema,
   positionMint: z.string(),
@@ -108,6 +107,8 @@ export const TunaPosition = z.object({
   tickTakeProfitIndex: z.number(),
   autoCompound: z.boolean(),
   swapToTokenOnLimitOrder: z.number(),
+  pool: z.string(),
+  poolTickSpacing: z.number(),
   poolSqrtPrice: z.coerce.bigint(),
   loanFundsA: amountWithUsd,
   loanFundsB: amountWithUsd,

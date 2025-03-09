@@ -10,11 +10,16 @@ on:
       - "!main"
 
 jobs:
-  build:
+  test:
+    # IMPORTANT: prevent this action from running on forks
+    if: github.repository == 'Cryptic-Dot/tuna-backend-sdk'
+    name: Test
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: ["22.x"]
+    with:
+      environment: "Development"
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -28,3 +33,5 @@ jobs:
       - run: pnpm i
       - run: pnpm lint
       - run: pnpm test
+        env:
+          RPC_URL: ${{ secrets.RPC_URL }}
