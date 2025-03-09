@@ -7,6 +7,8 @@ const amountWithUsd = z.object({
 
 export const PoolProvider = z.enum(["orca"]);
 
+export const TunaPositionState = z.enum(["open", "liquidated", "closed_by_limit_order", "closed"]);
+
 export const Mint = z.object({
   symbol: z.string(),
   mint: z.string(),
@@ -87,7 +89,7 @@ export const TunaPosition = z.object({
   authority: z.string(),
   pool: z.string(),
   version: z.number(),
-  state: z.string(),
+  state: TunaPositionState,
   positionMint: z.string(),
   liquidity: z.coerce.bigint(),
   tickLowerIndex: z.number(),
