@@ -121,5 +121,8 @@ export const TunaPosition = z.object({
   compoundedYieldB: amountWithUsd,
   totalA: amountWithUsd,
   totalB: amountWithUsd,
-  pnlUsd: z.number(),
+  pnl: z.object({
+    usd: z.number(),
+    bps: z.number(),
+  }),
 });
