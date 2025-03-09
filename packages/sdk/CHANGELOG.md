@@ -1,5 +1,11 @@
 # @defituna/sdk
 
+## 1.1.4
+
+### Patch Changes
+
+- 77aca97: Add tickSpacing to Tuna Positions
+
 ## 1.1.3
 
 ### Patch Changes
