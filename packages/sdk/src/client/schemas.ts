@@ -5,9 +5,18 @@ const amountWithUsd = z.object({
   usd: z.number(),
 });
 
-export const PoolProvider = z.enum(["orca"]);
+export enum PoolProvider {
+  ORCA = "orca",
+}
+export enum TunaPositionState {
+  OPEN = "open",
+  LIQUIDATED = "liquidated",
+  CLOSED_BY_LIMIT_ORDER = "closed_by_limit_order",
+  CLOSED = "closed",
+}
 
-export const TunaPositionState = z.enum(["open", "liquidated", "closed_by_limit_order", "closed"]);
+const PoolProviderSchema = z.enum([PoolProvider.ORCA, ...Object.values(PoolProvider)]);
+const TunaPositionStateSchema = z.enum([TunaPositionState.OPEN, ...Object.values(TunaPositionState)]);
 
 export const Mint = z.object({
   symbol: z.string(),
@@ -20,7 +29,7 @@ export const Market = z.object({
   address: z.string(),
   poolAddress: z.string(),
   feeRate: z.number(),
-  provider: PoolProvider,
+  provider: PoolProviderSchema,
   maxLeverage: z.coerce.bigint(),
   protocolFee: z.coerce.bigint(),
   liquidationFee: z.coerce.bigint(),
@@ -47,7 +56,7 @@ export const Vault = z.object({
 
 export const Pool = z.object({
   address: z.string(),
-  provider: PoolProvider,
+  provider: PoolProviderSchema,
   tokenAMint: z.string(),
   tokenBMint: z.string(),
   tvlUsdc: z.coerce.number(),
@@ -89,7 +98,7 @@ export const TunaPosition = z.object({
   authority: z.string(),
   pool: z.string(),
   version: z.number(),
-  state: TunaPositionState,
+  state: TunaPositionStateSchema,
   positionMint: z.string(),
   liquidity: z.coerce.bigint(),
   tickLowerIndex: z.number(),

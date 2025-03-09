@@ -3,6 +3,9 @@ import { z } from "zod";
 
 import * as schemas from "./schemas";
 
+/* Enums */
+export const PoolProvider = schemas.PoolProvider;
+export const TunaPositionState = schemas.TunaPositionState;
 /* Entity types */
 export type Mint = z.infer<typeof schemas.Mint>;
 export type Market = z.infer<typeof schemas.Market>;
