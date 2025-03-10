@@ -286,6 +286,10 @@ describe("Pool Ticks", async () => {
 describe("Lending Positions", async () => {
   const lendingPositions = await client.getUserLendingPositions(TEST_WALLET_ADDRESS);
   const rpcLendingPositions = await testUtils.getLendingPositions(TEST_WALLET_ADDRESS);
+  const testPosition = await client.getUserLendingPositionByAddress(
+    TEST_WALLET_ADDRESS,
+    "HDKqLtVBMBSb9Rv1zod4nEHn2c5aHkJq7QVv3hkphus3",
+  );
 
   it("Length matches RPC lending positions", () => {
     expect(lendingPositions.length).toBe(rpcLendingPositions.length);
@@ -313,6 +317,12 @@ describe("Lending Positions", async () => {
   });
   it("Have USD values for tokens", () => {
     expect(lendingPositions.every(position => position.totalFunds.usd > 0 && position.earnedFunds.usd > 0)).toBe(true);
+  });
+  it("Has correct values for sample position", () => {
+    expect(testPosition.totalFunds.amount).toBeGreaterThanOrEqual(20017787n);
+    expect(testPosition.earnedFunds.amount).toBeGreaterThanOrEqual(17787n);
+    expect(testPosition.mint).toEqual("So11111111111111111111111111111111111111112");
+    expect(testPosition.vault).toEqual("Ev5X54o83Z3MDV6PzTT9jyGkCPj7zQUXe9apWmGcwLHF");
   });
 });
 
