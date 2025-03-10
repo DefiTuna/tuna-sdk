@@ -1,5 +1,12 @@
 # @defituna/sdk
 
+## 1.1.6
+
+### Patch Changes
+
+- f238209: Single lending position endpoint
+- f238209: Add single lending position endpoint
+
 ## 1.1.5
 
 ### Patch Changes
