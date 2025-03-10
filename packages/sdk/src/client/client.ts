@@ -144,6 +144,11 @@ export class TunaApiClient {
     return await this.httpRequest(url.toString(), schemas.LendingPosition.array());
   }
 
+  async getUserLendingPositionByAddress(userAddress: String, lendingPositionAddress: String): Promise<LendingPosition> {
+    const url = this.buildURL(`users/${userAddress}/lending-positions/${lendingPositionAddress}`);
+    return await this.httpRequest(url.toString(), schemas.LendingPosition);
+  }
+
   async getUserTunaPositions(userAddress: String): Promise<TunaPosition[]> {
     const url = this.buildURL(`users/${userAddress}/tuna-positions`);
     return await this.httpRequest(url.toString(), schemas.TunaPosition.array());
