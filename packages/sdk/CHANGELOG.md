@@ -1,5 +1,11 @@
 # @defituna/sdk
 
+## 1.1.8
+
+### Patch Changes
+
+- cd10597: Public version
+
 ## 1.1.7
 
 ### Patch Changes
