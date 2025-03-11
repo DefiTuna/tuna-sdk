@@ -17,6 +17,8 @@ import {
   fixEncoderSize,
   getAddressDecoder,
   getAddressEncoder,
+  getBooleanDecoder,
+  getBooleanEncoder,
   getBytesDecoder,
   getBytesEncoder,
   getStructDecoder,
@@ -39,7 +41,7 @@ import {
   type MaybeAccount,
   type MaybeEncodedAccount,
   type ReadonlyUint8Array,
-} from '@solana/kit';
+} from "@solana/kit";
 
 export const MARKET_DISCRIMINATOR = new Uint8Array([
   219, 190, 213, 55, 0, 227, 198, 154,
@@ -65,6 +67,8 @@ export type Market = {
   maxLeverage: number;
   /** Protocol fee denominated in hundredths of a bip. (Value of 100 is equal to 0.01%) */
   protocolFee: number;
+  /** Protocol fee on collateral (funds provided by a user) denominated in hundredths of a bip. (Value of 100 is equal to 0.01%) */
+  protocolFeeOnCollateral: number;
   /** Liquidation fee denominated in hundredths of a bip. (Value of 100 is equal to 0.01%) */
   liquidationFee: number;
   /** Liquidation threshold. The position is treated as unhealthy if debt > balance * (liquidation_threshold / HUNDRED_PERCENT). */
@@ -73,6 +77,8 @@ export type Market = {
   limitOrderExecutionFee: number;
   /** Oracle price deviation threshold in percent. */
   oraclePriceDeviationThreshold: number;
+  /** True if the market is disabled (no more position can be opened). */
+  disabled: boolean;
   /** Reserved */
   reserved: ReadonlyUint8Array;
 };
@@ -92,6 +98,8 @@ export type MarketArgs = {
   maxLeverage: number;
   /** Protocol fee denominated in hundredths of a bip. (Value of 100 is equal to 0.01%) */
   protocolFee: number;
+  /** Protocol fee on collateral (funds provided by a user) denominated in hundredths of a bip. (Value of 100 is equal to 0.01%) */
+  protocolFeeOnCollateral: number;
   /** Liquidation fee denominated in hundredths of a bip. (Value of 100 is equal to 0.01%) */
   liquidationFee: number;
   /** Liquidation threshold. The position is treated as unhealthy if debt > balance * (liquidation_threshold / HUNDRED_PERCENT). */
@@ -100,6 +108,8 @@ export type MarketArgs = {
   limitOrderExecutionFee: number;
   /** Oracle price deviation threshold in percent. */
   oraclePriceDeviationThreshold: number;
+  /** True if the market is disabled (no more position can be opened). */
+  disabled: boolean;
   /** Reserved */
   reserved: ReadonlyUint8Array;
 };
@@ -107,39 +117,43 @@ export type MarketArgs = {
 export function getMarketEncoder(): Encoder<MarketArgs> {
   return transformEncoder(
     getStructEncoder([
-      ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['version', getU16Encoder()],
-      ['bump', fixEncoderSize(getBytesEncoder(), 1)],
-      ['liquidityProvider', getU8Encoder()],
-      ['pool', getAddressEncoder()],
-      ['addressLookupTable', getAddressEncoder()],
-      ['maxLeverage', getU32Encoder()],
-      ['protocolFee', getU32Encoder()],
-      ['liquidationFee', getU32Encoder()],
-      ['liquidationThreshold', getU32Encoder()],
-      ['limitOrderExecutionFee', getU32Encoder()],
-      ['oraclePriceDeviationThreshold', getU32Encoder()],
-      ['reserved', fixEncoderSize(getBytesEncoder(), 248)],
+      ["discriminator", fixEncoderSize(getBytesEncoder(), 8)],
+      ["version", getU16Encoder()],
+      ["bump", fixEncoderSize(getBytesEncoder(), 1)],
+      ["liquidityProvider", getU8Encoder()],
+      ["pool", getAddressEncoder()],
+      ["addressLookupTable", getAddressEncoder()],
+      ["maxLeverage", getU32Encoder()],
+      ["protocolFee", getU16Encoder()],
+      ["protocolFeeOnCollateral", getU16Encoder()],
+      ["liquidationFee", getU32Encoder()],
+      ["liquidationThreshold", getU32Encoder()],
+      ["limitOrderExecutionFee", getU32Encoder()],
+      ["oraclePriceDeviationThreshold", getU32Encoder()],
+      ["disabled", getBooleanEncoder()],
+      ["reserved", fixEncoderSize(getBytesEncoder(), 247)],
     ]),
-    (value) => ({ ...value, discriminator: MARKET_DISCRIMINATOR })
+    (value) => ({ ...value, discriminator: MARKET_DISCRIMINATOR }),
   );
 }
 
 export function getMarketDecoder(): Decoder<Market> {
   return getStructDecoder([
-    ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['version', getU16Decoder()],
-    ['bump', fixDecoderSize(getBytesDecoder(), 1)],
-    ['liquidityProvider', getU8Decoder()],
-    ['pool', getAddressDecoder()],
-    ['addressLookupTable', getAddressDecoder()],
-    ['maxLeverage', getU32Decoder()],
-    ['protocolFee', getU32Decoder()],
-    ['liquidationFee', getU32Decoder()],
-    ['liquidationThreshold', getU32Decoder()],
-    ['limitOrderExecutionFee', getU32Decoder()],
-    ['oraclePriceDeviationThreshold', getU32Decoder()],
-    ['reserved', fixDecoderSize(getBytesDecoder(), 248)],
+    ["discriminator", fixDecoderSize(getBytesDecoder(), 8)],
+    ["version", getU16Decoder()],
+    ["bump", fixDecoderSize(getBytesDecoder(), 1)],
+    ["liquidityProvider", getU8Decoder()],
+    ["pool", getAddressDecoder()],
+    ["addressLookupTable", getAddressDecoder()],
+    ["maxLeverage", getU32Decoder()],
+    ["protocolFee", getU16Decoder()],
+    ["protocolFeeOnCollateral", getU16Decoder()],
+    ["liquidationFee", getU32Decoder()],
+    ["liquidationThreshold", getU32Decoder()],
+    ["limitOrderExecutionFee", getU32Decoder()],
+    ["oraclePriceDeviationThreshold", getU32Decoder()],
+    ["disabled", getBooleanDecoder()],
+    ["reserved", fixDecoderSize(getBytesDecoder(), 247)],
   ]);
 }
 
@@ -148,24 +162,24 @@ export function getMarketCodec(): Codec<MarketArgs, Market> {
 }
 
 export function decodeMarket<TAddress extends string = string>(
-  encodedAccount: EncodedAccount<TAddress>
+  encodedAccount: EncodedAccount<TAddress>,
 ): Account<Market, TAddress>;
 export function decodeMarket<TAddress extends string = string>(
-  encodedAccount: MaybeEncodedAccount<TAddress>
+  encodedAccount: MaybeEncodedAccount<TAddress>,
 ): MaybeAccount<Market, TAddress>;
 export function decodeMarket<TAddress extends string = string>(
-  encodedAccount: EncodedAccount<TAddress> | MaybeEncodedAccount<TAddress>
+  encodedAccount: EncodedAccount<TAddress> | MaybeEncodedAccount<TAddress>,
 ): Account<Market, TAddress> | MaybeAccount<Market, TAddress> {
   return decodeAccount(
     encodedAccount as MaybeEncodedAccount<TAddress>,
-    getMarketDecoder()
+    getMarketDecoder(),
   );
 }
 
 export async function fetchMarket<TAddress extends string = string>(
   rpc: Parameters<typeof fetchEncodedAccount>[0],
   address: Address<TAddress>,
-  config?: FetchAccountConfig
+  config?: FetchAccountConfig,
 ): Promise<Account<Market, TAddress>> {
   const maybeAccount = await fetchMaybeMarket(rpc, address, config);
   assertAccountExists(maybeAccount);
@@ -175,7 +189,7 @@ export async function fetchMarket<TAddress extends string = string>(
 export async function fetchMaybeMarket<TAddress extends string = string>(
   rpc: Parameters<typeof fetchEncodedAccount>[0],
   address: Address<TAddress>,
-  config?: FetchAccountConfig
+  config?: FetchAccountConfig,
 ): Promise<MaybeAccount<Market, TAddress>> {
   const maybeAccount = await fetchEncodedAccount(rpc, address, config);
   return decodeMarket(maybeAccount);
@@ -184,7 +198,7 @@ export async function fetchMaybeMarket<TAddress extends string = string>(
 export async function fetchAllMarket(
   rpc: Parameters<typeof fetchEncodedAccounts>[0],
   addresses: Array<Address>,
-  config?: FetchAccountsConfig
+  config?: FetchAccountsConfig,
 ): Promise<Account<Market>[]> {
   const maybeAccounts = await fetchAllMaybeMarket(rpc, addresses, config);
   assertAccountsExist(maybeAccounts);
@@ -194,7 +208,7 @@ export async function fetchAllMarket(
 export async function fetchAllMaybeMarket(
   rpc: Parameters<typeof fetchEncodedAccounts>[0],
   addresses: Array<Address>,
-  config?: FetchAccountsConfig
+  config?: FetchAccountsConfig,
 ): Promise<MaybeAccount<Market>[]> {
   const maybeAccounts = await fetchEncodedAccounts(rpc, addresses, config);
   return maybeAccounts.map((maybeAccount) => decodeMarket(maybeAccount));

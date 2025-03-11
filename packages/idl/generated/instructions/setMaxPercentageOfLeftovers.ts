@@ -30,9 +30,9 @@ import {
   type TransactionSigner,
   type WritableAccount,
   type WritableSignerAccount,
-} from '@solana/kit';
-import { TUNA_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+} from "@solana/kit";
+import { TUNA_PROGRAM_ADDRESS } from "../programs";
+import { getAccountMetaFactory, type ResolvedAccount } from "../shared";
 
 export const SET_MAX_PERCENTAGE_OF_LEFTOVERS_DISCRIMINATOR = new Uint8Array([
   85, 205, 61, 112, 36, 79, 60, 1,
@@ -40,7 +40,7 @@ export const SET_MAX_PERCENTAGE_OF_LEFTOVERS_DISCRIMINATOR = new Uint8Array([
 
 export function getSetMaxPercentageOfLeftoversDiscriminatorBytes() {
   return fixEncoderSize(getBytesEncoder(), 8).encode(
-    SET_MAX_PERCENTAGE_OF_LEFTOVERS_DISCRIMINATOR
+    SET_MAX_PERCENTAGE_OF_LEFTOVERS_DISCRIMINATOR,
   );
 }
 
@@ -76,20 +76,20 @@ export type SetMaxPercentageOfLeftoversInstructionDataArgs = {
 export function getSetMaxPercentageOfLeftoversInstructionDataEncoder(): Encoder<SetMaxPercentageOfLeftoversInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
-      ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['maxPercentageOfLeftovers', getU32Encoder()],
+      ["discriminator", fixEncoderSize(getBytesEncoder(), 8)],
+      ["maxPercentageOfLeftovers", getU32Encoder()],
     ]),
     (value) => ({
       ...value,
       discriminator: SET_MAX_PERCENTAGE_OF_LEFTOVERS_DISCRIMINATOR,
-    })
+    }),
   );
 }
 
 export function getSetMaxPercentageOfLeftoversInstructionDataDecoder(): Decoder<SetMaxPercentageOfLeftoversInstructionData> {
   return getStructDecoder([
-    ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['maxPercentageOfLeftovers', getU32Decoder()],
+    ["discriminator", fixDecoderSize(getBytesDecoder(), 8)],
+    ["maxPercentageOfLeftovers", getU32Decoder()],
   ]);
 }
 
@@ -99,7 +99,7 @@ export function getSetMaxPercentageOfLeftoversInstructionDataCodec(): Codec<
 > {
   return combineCodec(
     getSetMaxPercentageOfLeftoversInstructionDataEncoder(),
-    getSetMaxPercentageOfLeftoversInstructionDataDecoder()
+    getSetMaxPercentageOfLeftoversInstructionDataDecoder(),
   );
 }
 
@@ -109,7 +109,7 @@ export type SetMaxPercentageOfLeftoversInput<
 > = {
   authority: TransactionSigner<TAccountAuthority>;
   tunaConfig: Address<TAccountTunaConfig>;
-  maxPercentageOfLeftovers: SetMaxPercentageOfLeftoversInstructionDataArgs['maxPercentageOfLeftovers'];
+  maxPercentageOfLeftovers: SetMaxPercentageOfLeftoversInstructionDataArgs["maxPercentageOfLeftovers"];
 };
 
 export function getSetMaxPercentageOfLeftoversInstruction<
@@ -121,7 +121,7 @@ export function getSetMaxPercentageOfLeftoversInstruction<
     TAccountAuthority,
     TAccountTunaConfig
   >,
-  config?: { programAddress?: TProgramAddress }
+  config?: { programAddress?: TProgramAddress },
 ): SetMaxPercentageOfLeftoversInstruction<
   TProgramAddress,
   TAccountAuthority,
@@ -143,7 +143,7 @@ export function getSetMaxPercentageOfLeftoversInstruction<
   // Original args.
   const args = { ...input };
 
-  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+  const getAccountMeta = getAccountMetaFactory(programAddress, "programId");
   const instruction = {
     accounts: [
       getAccountMeta(accounts.authority),
@@ -151,7 +151,7 @@ export function getSetMaxPercentageOfLeftoversInstruction<
     ],
     programAddress,
     data: getSetMaxPercentageOfLeftoversInstructionDataEncoder().encode(
-      args as SetMaxPercentageOfLeftoversInstructionDataArgs
+      args as SetMaxPercentageOfLeftoversInstructionDataArgs,
     ),
   } as SetMaxPercentageOfLeftoversInstruction<
     TProgramAddress,
@@ -180,11 +180,11 @@ export function parseSetMaxPercentageOfLeftoversInstruction<
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+    IInstructionWithData<Uint8Array>,
 ): ParsedSetMaxPercentageOfLeftoversInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 2) {
     // TODO: Coded error.
-    throw new Error('Not enough accounts');
+    throw new Error("Not enough accounts");
   }
   let accountIndex = 0;
   const getNextAccount = () => {
@@ -199,7 +199,7 @@ export function parseSetMaxPercentageOfLeftoversInstruction<
       tunaConfig: getNextAccount(),
     },
     data: getSetMaxPercentageOfLeftoversInstructionDataDecoder().decode(
-      instruction.data
+      instruction.data,
     ),
   };
 }

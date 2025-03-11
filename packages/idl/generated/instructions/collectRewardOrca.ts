@@ -31,9 +31,9 @@ import {
   type TransactionSigner,
   type WritableAccount,
   type WritableSignerAccount,
-} from '@solana/kit';
-import { TUNA_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+} from "@solana/kit";
+import { TUNA_PROGRAM_ADDRESS } from "../programs";
+import { getAccountMetaFactory, type ResolvedAccount } from "../shared";
 
 export const COLLECT_REWARD_ORCA_DISCRIMINATOR = new Uint8Array([
   99, 253, 84, 63, 250, 243, 165, 191,
@@ -41,7 +41,7 @@ export const COLLECT_REWARD_ORCA_DISCRIMINATOR = new Uint8Array([
 
 export function getCollectRewardOrcaDiscriminatorBytes() {
   return fixEncoderSize(getBytesEncoder(), 8).encode(
-    COLLECT_REWARD_ORCA_DISCRIMINATOR
+    COLLECT_REWARD_ORCA_DISCRIMINATOR,
   );
 }
 
@@ -60,7 +60,7 @@ export type CollectRewardOrcaInstruction<
   TAccountRewardOwnerAta extends string | IAccountMeta<string> = string,
   TAccountTokenProgram extends
     | string
-    | IAccountMeta<string> = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+    | IAccountMeta<string> = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
   IInstructionWithData<Uint8Array> &
@@ -117,17 +117,17 @@ export type CollectRewardOrcaInstructionDataArgs = { rewardIndex: number };
 export function getCollectRewardOrcaInstructionDataEncoder(): Encoder<CollectRewardOrcaInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
-      ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['rewardIndex', getU8Encoder()],
+      ["discriminator", fixEncoderSize(getBytesEncoder(), 8)],
+      ["rewardIndex", getU8Encoder()],
     ]),
-    (value) => ({ ...value, discriminator: COLLECT_REWARD_ORCA_DISCRIMINATOR })
+    (value) => ({ ...value, discriminator: COLLECT_REWARD_ORCA_DISCRIMINATOR }),
   );
 }
 
 export function getCollectRewardOrcaInstructionDataDecoder(): Decoder<CollectRewardOrcaInstructionData> {
   return getStructDecoder([
-    ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['rewardIndex', getU8Decoder()],
+    ["discriminator", fixDecoderSize(getBytesDecoder(), 8)],
+    ["rewardIndex", getU8Decoder()],
   ]);
 }
 
@@ -137,7 +137,7 @@ export function getCollectRewardOrcaInstructionDataCodec(): Codec<
 > {
   return combineCodec(
     getCollectRewardOrcaInstructionDataEncoder(),
-    getCollectRewardOrcaInstructionDataDecoder()
+    getCollectRewardOrcaInstructionDataDecoder(),
   );
 }
 
@@ -182,7 +182,7 @@ export type CollectRewardOrcaInput<
    *
    */
   tokenProgram?: Address<TAccountTokenProgram>;
-  rewardIndex: CollectRewardOrcaInstructionDataArgs['rewardIndex'];
+  rewardIndex: CollectRewardOrcaInstructionDataArgs["rewardIndex"];
 };
 
 export function getCollectRewardOrcaInstruction<
@@ -214,7 +214,7 @@ export function getCollectRewardOrcaInstruction<
     TAccountRewardOwnerAta,
     TAccountTokenProgram
   >,
-  config?: { programAddress?: TProgramAddress }
+  config?: { programAddress?: TProgramAddress },
 ): CollectRewardOrcaInstruction<
   TProgramAddress,
   TAccountAuthority,
@@ -265,10 +265,10 @@ export function getCollectRewardOrcaInstruction<
   // Resolve default values.
   if (!accounts.tokenProgram.value) {
     accounts.tokenProgram.value =
-      'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' as Address<'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'>;
+      "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA" as Address<"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA">;
   }
 
-  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+  const getAccountMeta = getAccountMetaFactory(programAddress, "programId");
   const instruction = {
     accounts: [
       getAccountMeta(accounts.authority),
@@ -286,7 +286,7 @@ export function getCollectRewardOrcaInstruction<
     ],
     programAddress,
     data: getCollectRewardOrcaInstructionDataEncoder().encode(
-      args as CollectRewardOrcaInstructionDataArgs
+      args as CollectRewardOrcaInstructionDataArgs,
     ),
   } as CollectRewardOrcaInstruction<
     TProgramAddress,
@@ -353,11 +353,11 @@ export function parseCollectRewardOrcaInstruction<
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+    IInstructionWithData<Uint8Array>,
 ): ParsedCollectRewardOrcaInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 12) {
     // TODO: Coded error.
-    throw new Error('Not enough accounts');
+    throw new Error("Not enough accounts");
   }
   let accountIndex = 0;
   const getNextAccount = () => {

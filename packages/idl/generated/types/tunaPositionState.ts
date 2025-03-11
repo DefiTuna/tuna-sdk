@@ -13,7 +13,7 @@ import {
   type Codec,
   type Decoder,
   type Encoder,
-} from '@solana/kit';
+} from "@solana/kit";
 
 export enum TunaPositionState {
   Normal,
@@ -37,6 +37,6 @@ export function getTunaPositionStateCodec(): Codec<
 > {
   return combineCodec(
     getTunaPositionStateEncoder(),
-    getTunaPositionStateDecoder()
+    getTunaPositionStateDecoder(),
   );
 }

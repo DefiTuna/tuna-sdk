@@ -12,10 +12,11 @@ import {
   getBytesEncoder,
   type Address,
   type ReadonlyUint8Array,
-} from '@solana/kit';
+} from "@solana/kit";
 import {
   type ParsedAddLiquidityOrcaInstruction,
   type ParsedClosePositionOrcaInstruction,
+  type ParsedCollectAndCompoundFeesOrcaInstruction,
   type ParsedCollectFeesOrcaInstruction,
   type ParsedCollectRewardOrcaInstruction,
   type ParsedCreateLendingPositionInstruction,
@@ -39,10 +40,10 @@ import {
   type ParsedUpdateMarketInstruction,
   type ParsedUpdateVaultInstruction,
   type ParsedWithdrawInstruction,
-} from '../instructions';
+} from "../instructions";
 
 export const TUNA_PROGRAM_ADDRESS =
-  'tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD' as Address<'tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD'>;
+  "tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD" as Address<"tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD">;
 
 export enum TunaAccount {
   LendingPosition,
@@ -56,16 +57,16 @@ export enum TunaAccount {
 }
 
 export function identifyTunaAccount(
-  account: { data: ReadonlyUint8Array } | ReadonlyUint8Array
+  account: { data: ReadonlyUint8Array } | ReadonlyUint8Array,
 ): TunaAccount {
-  const data = 'data' in account ? account.data : account;
+  const data = "data" in account ? account.data : account;
   if (
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([47, 255, 252, 35, 20, 245, 157, 243])
+        new Uint8Array([47, 255, 252, 35, 20, 245, 157, 243]),
       ),
-      0
+      0,
     )
   ) {
     return TunaAccount.LendingPosition;
@@ -74,9 +75,9 @@ export function identifyTunaAccount(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([219, 190, 213, 55, 0, 227, 198, 154])
+        new Uint8Array([219, 190, 213, 55, 0, 227, 198, 154]),
       ),
-      0
+      0,
     )
   ) {
     return TunaAccount.Market;
@@ -85,9 +86,9 @@ export function identifyTunaAccount(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([170, 188, 143, 228, 122, 64, 247, 208])
+        new Uint8Array([170, 188, 143, 228, 122, 64, 247, 208]),
       ),
-      0
+      0,
     )
   ) {
     return TunaAccount.Position;
@@ -96,9 +97,9 @@ export function identifyTunaAccount(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([69, 97, 189, 190, 110, 7, 66, 187])
+        new Uint8Array([69, 97, 189, 190, 110, 7, 66, 187]),
       ),
-      0
+      0,
     )
   ) {
     return TunaAccount.TickArray;
@@ -107,9 +108,9 @@ export function identifyTunaAccount(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([124, 149, 24, 7, 195, 168, 153, 58])
+        new Uint8Array([124, 149, 24, 7, 195, 168, 153, 58]),
       ),
-      0
+      0,
     )
   ) {
     return TunaAccount.TunaConfig;
@@ -118,9 +119,9 @@ export function identifyTunaAccount(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([76, 197, 161, 51, 232, 15, 137, 220])
+        new Uint8Array([76, 197, 161, 51, 232, 15, 137, 220]),
       ),
-      0
+      0,
     )
   ) {
     return TunaAccount.TunaPosition;
@@ -129,9 +130,9 @@ export function identifyTunaAccount(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([211, 8, 232, 43, 2, 152, 117, 119])
+        new Uint8Array([211, 8, 232, 43, 2, 152, 117, 119]),
       ),
-      0
+      0,
     )
   ) {
     return TunaAccount.Vault;
@@ -140,21 +141,22 @@ export function identifyTunaAccount(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([63, 149, 209, 12, 225, 128, 99, 9])
+        new Uint8Array([63, 149, 209, 12, 225, 128, 99, 9]),
       ),
-      0
+      0,
     )
   ) {
     return TunaAccount.Whirlpool;
   }
   throw new Error(
-    'The provided account could not be identified as a tuna account.'
+    "The provided account could not be identified as a tuna account.",
   );
 }
 
 export enum TunaInstruction {
   AddLiquidityOrca,
   ClosePositionOrca,
+  CollectAndCompoundFeesOrca,
   CollectFeesOrca,
   CollectRewardOrca,
   CreateLendingPosition,
@@ -181,16 +183,16 @@ export enum TunaInstruction {
 }
 
 export function identifyTunaInstruction(
-  instruction: { data: ReadonlyUint8Array } | ReadonlyUint8Array
+  instruction: { data: ReadonlyUint8Array } | ReadonlyUint8Array,
 ): TunaInstruction {
-  const data = 'data' in instruction ? instruction.data : instruction;
+  const data = "data" in instruction ? instruction.data : instruction;
   if (
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([185, 68, 41, 204, 33, 179, 12, 78])
+        new Uint8Array([185, 68, 41, 204, 33, 179, 12, 78]),
       ),
-      0
+      0,
     )
   ) {
     return TunaInstruction.AddLiquidityOrca;
@@ -199,9 +201,9 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([253, 98, 90, 239, 191, 36, 161, 26])
+        new Uint8Array([253, 98, 90, 239, 191, 36, 161, 26]),
       ),
-      0
+      0,
     )
   ) {
     return TunaInstruction.ClosePositionOrca;
@@ -210,9 +212,20 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([147, 188, 191, 37, 255, 10, 239, 76])
+        new Uint8Array([213, 44, 171, 74, 209, 13, 137, 0]),
       ),
-      0
+      0,
+    )
+  ) {
+    return TunaInstruction.CollectAndCompoundFeesOrca;
+  }
+  if (
+    containsBytes(
+      data,
+      fixEncoderSize(getBytesEncoder(), 8).encode(
+        new Uint8Array([147, 188, 191, 37, 255, 10, 239, 76]),
+      ),
+      0,
     )
   ) {
     return TunaInstruction.CollectFeesOrca;
@@ -221,9 +234,9 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([99, 253, 84, 63, 250, 243, 165, 191])
+        new Uint8Array([99, 253, 84, 63, 250, 243, 165, 191]),
       ),
-      0
+      0,
     )
   ) {
     return TunaInstruction.CollectRewardOrca;
@@ -232,9 +245,9 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([129, 187, 56, 84, 108, 205, 25, 80])
+        new Uint8Array([129, 187, 56, 84, 108, 205, 25, 80]),
       ),
-      0
+      0,
     )
   ) {
     return TunaInstruction.CreateLendingPosition;
@@ -243,9 +256,9 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([103, 226, 97, 235, 200, 188, 251, 254])
+        new Uint8Array([103, 226, 97, 235, 200, 188, 251, 254]),
       ),
-      0
+      0,
     )
   ) {
     return TunaInstruction.CreateMarket;
@@ -254,9 +267,9 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([79, 78, 175, 62, 234, 68, 202, 241])
+        new Uint8Array([79, 78, 175, 62, 234, 68, 202, 241]),
       ),
-      0
+      0,
     )
   ) {
     return TunaInstruction.CreateTunaConfig;
@@ -265,9 +278,9 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([29, 237, 247, 208, 193, 82, 54, 135])
+        new Uint8Array([29, 237, 247, 208, 193, 82, 54, 135]),
       ),
-      0
+      0,
     )
   ) {
     return TunaInstruction.CreateVault;
@@ -276,9 +289,9 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([242, 35, 198, 137, 82, 225, 242, 182])
+        new Uint8Array([242, 35, 198, 137, 82, 225, 242, 182]),
       ),
-      0
+      0,
     )
   ) {
     return TunaInstruction.Deposit;
@@ -287,9 +300,9 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([62, 92, 176, 35, 164, 100, 46, 141])
+        new Uint8Array([62, 92, 176, 35, 164, 100, 46, 141]),
       ),
-      0
+      0,
     )
   ) {
     return TunaInstruction.LiquidatePositionOrca;
@@ -298,9 +311,9 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([201, 85, 45, 226, 182, 208, 246, 115])
+        new Uint8Array([201, 85, 45, 226, 182, 208, 246, 115]),
       ),
-      0
+      0,
     )
   ) {
     return TunaInstruction.OpenPositionOrca;
@@ -309,9 +322,9 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([30, 69, 45, 170, 183, 195, 12, 119])
+        new Uint8Array([30, 69, 45, 170, 183, 195, 12, 119]),
       ),
-      0
+      0,
     )
   ) {
     return TunaInstruction.RemoveLiquidityOrca;
@@ -320,9 +333,9 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([112, 144, 188, 157, 43, 106, 141, 34])
+        new Uint8Array([112, 144, 188, 157, 43, 106, 141, 34]),
       ),
-      0
+      0,
     )
   ) {
     return TunaInstruction.RepayBadDebt;
@@ -331,9 +344,9 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([79, 200, 30, 15, 252, 22, 162, 8])
+        new Uint8Array([79, 200, 30, 15, 252, 22, 162, 8]),
       ),
-      0
+      0,
     )
   ) {
     return TunaInstruction.RepayDebt;
@@ -342,9 +355,9 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([72, 49, 37, 167, 149, 98, 49, 174])
+        new Uint8Array([72, 49, 37, 167, 149, 98, 49, 174]),
       ),
-      0
+      0,
     )
   ) {
     return TunaInstruction.SetAdminAuthority;
@@ -353,9 +366,9 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([227, 18, 215, 42, 237, 246, 151, 66])
+        new Uint8Array([227, 18, 215, 42, 237, 246, 151, 66]),
       ),
-      0
+      0,
     )
   ) {
     return TunaInstruction.SetFeeRecipient;
@@ -364,9 +377,9 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([65, 128, 90, 161, 171, 133, 122, 255])
+        new Uint8Array([65, 128, 90, 161, 171, 133, 122, 255]),
       ),
-      0
+      0,
     )
   ) {
     return TunaInstruction.SetLimitOrders;
@@ -375,9 +388,9 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([246, 146, 22, 66, 159, 216, 172, 143])
+        new Uint8Array([246, 146, 22, 66, 159, 216, 172, 143]),
       ),
-      0
+      0,
     )
   ) {
     return TunaInstruction.SetLiquidatorAuthority;
@@ -386,9 +399,9 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([85, 205, 61, 112, 36, 79, 60, 1])
+        new Uint8Array([85, 205, 61, 112, 36, 79, 60, 1]),
       ),
-      0
+      0,
     )
   ) {
     return TunaInstruction.SetMaxPercentageOfLeftovers;
@@ -397,9 +410,9 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([122, 42, 61, 99, 35, 230, 50, 154])
+        new Uint8Array([122, 42, 61, 99, 35, 230, 50, 154]),
       ),
-      0
+      0,
     )
   ) {
     return TunaInstruction.SetMaxSwapSlippage;
@@ -408,9 +421,9 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([128, 171, 210, 21, 103, 179, 80, 117])
+        new Uint8Array([128, 171, 210, 21, 103, 179, 80, 117]),
       ),
-      0
+      0,
     )
   ) {
     return TunaInstruction.SetOwnerAuthority;
@@ -419,9 +432,9 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([145, 13, 20, 161, 30, 62, 226, 32])
+        new Uint8Array([145, 13, 20, 161, 30, 62, 226, 32]),
       ),
-      0
+      0,
     )
   ) {
     return TunaInstruction.SetSuspendedState;
@@ -430,9 +443,9 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([153, 39, 2, 197, 179, 50, 199, 217])
+        new Uint8Array([153, 39, 2, 197, 179, 50, 199, 217]),
       ),
-      0
+      0,
     )
   ) {
     return TunaInstruction.UpdateMarket;
@@ -441,9 +454,9 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([67, 229, 185, 188, 226, 11, 210, 60])
+        new Uint8Array([67, 229, 185, 188, 226, 11, 210, 60]),
       ),
-      0
+      0,
     )
   ) {
     return TunaInstruction.UpdateVault;
@@ -452,20 +465,20 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([183, 18, 70, 156, 148, 109, 161, 34])
+        new Uint8Array([183, 18, 70, 156, 148, 109, 161, 34]),
       ),
-      0
+      0,
     )
   ) {
     return TunaInstruction.Withdraw;
   }
   throw new Error(
-    'The provided instruction could not be identified as a tuna instruction.'
+    "The provided instruction could not be identified as a tuna instruction.",
   );
 }
 
 export type ParsedTunaInstruction<
-  TProgram extends string = 'tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD',
+  TProgram extends string = "tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD",
 > =
   | ({
       instructionType: TunaInstruction.AddLiquidityOrca;
@@ -473,6 +486,9 @@ export type ParsedTunaInstruction<
   | ({
       instructionType: TunaInstruction.ClosePositionOrca;
     } & ParsedClosePositionOrcaInstruction<TProgram>)
+  | ({
+      instructionType: TunaInstruction.CollectAndCompoundFeesOrca;
+    } & ParsedCollectAndCompoundFeesOrcaInstruction<TProgram>)
   | ({
       instructionType: TunaInstruction.CollectFeesOrca;
     } & ParsedCollectFeesOrcaInstruction<TProgram>)

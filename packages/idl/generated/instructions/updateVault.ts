@@ -33,9 +33,9 @@ import {
   type TransactionSigner,
   type WritableAccount,
   type WritableSignerAccount,
-} from '@solana/kit';
-import { TUNA_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+} from "@solana/kit";
+import { TUNA_PROGRAM_ADDRESS } from "../programs";
+import { getAccountMetaFactory, type ResolvedAccount } from "../shared";
 
 export const UPDATE_VAULT_DISCRIMINATOR = new Uint8Array([
   67, 229, 185, 188, 226, 11, 210, 60,
@@ -43,7 +43,7 @@ export const UPDATE_VAULT_DISCRIMINATOR = new Uint8Array([
 
 export function getUpdateVaultDiscriminatorBytes() {
   return fixEncoderSize(getBytesEncoder(), 8).encode(
-    UPDATE_VAULT_DISCRIMINATOR
+    UPDATE_VAULT_DISCRIMINATOR,
   );
 }
 
@@ -73,35 +73,39 @@ export type UpdateVaultInstruction<
 
 export type UpdateVaultInstructionData = {
   discriminator: ReadonlyUint8Array;
-  pythOraclePriceFeed: Address;
   interestRate: bigint;
   supplyLimit: bigint;
+  pythOraclePriceUpdate: Address;
+  pythOracleFeedId: Address;
 };
 
 export type UpdateVaultInstructionDataArgs = {
-  pythOraclePriceFeed: Address;
   interestRate: number | bigint;
   supplyLimit: number | bigint;
+  pythOraclePriceUpdate: Address;
+  pythOracleFeedId: Address;
 };
 
 export function getUpdateVaultInstructionDataEncoder(): Encoder<UpdateVaultInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
-      ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['pythOraclePriceFeed', getAddressEncoder()],
-      ['interestRate', getU64Encoder()],
-      ['supplyLimit', getU64Encoder()],
+      ["discriminator", fixEncoderSize(getBytesEncoder(), 8)],
+      ["interestRate", getU64Encoder()],
+      ["supplyLimit", getU64Encoder()],
+      ["pythOraclePriceUpdate", getAddressEncoder()],
+      ["pythOracleFeedId", getAddressEncoder()],
     ]),
-    (value) => ({ ...value, discriminator: UPDATE_VAULT_DISCRIMINATOR })
+    (value) => ({ ...value, discriminator: UPDATE_VAULT_DISCRIMINATOR }),
   );
 }
 
 export function getUpdateVaultInstructionDataDecoder(): Decoder<UpdateVaultInstructionData> {
   return getStructDecoder([
-    ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['pythOraclePriceFeed', getAddressDecoder()],
-    ['interestRate', getU64Decoder()],
-    ['supplyLimit', getU64Decoder()],
+    ["discriminator", fixDecoderSize(getBytesDecoder(), 8)],
+    ["interestRate", getU64Decoder()],
+    ["supplyLimit", getU64Decoder()],
+    ["pythOraclePriceUpdate", getAddressDecoder()],
+    ["pythOracleFeedId", getAddressDecoder()],
   ]);
 }
 
@@ -111,7 +115,7 @@ export function getUpdateVaultInstructionDataCodec(): Codec<
 > {
   return combineCodec(
     getUpdateVaultInstructionDataEncoder(),
-    getUpdateVaultInstructionDataDecoder()
+    getUpdateVaultInstructionDataDecoder(),
   );
 }
 
@@ -123,9 +127,10 @@ export type UpdateVaultInput<
   authority: TransactionSigner<TAccountAuthority>;
   tunaConfig: Address<TAccountTunaConfig>;
   vault: Address<TAccountVault>;
-  pythOraclePriceFeed: UpdateVaultInstructionDataArgs['pythOraclePriceFeed'];
-  interestRate: UpdateVaultInstructionDataArgs['interestRate'];
-  supplyLimit: UpdateVaultInstructionDataArgs['supplyLimit'];
+  interestRate: UpdateVaultInstructionDataArgs["interestRate"];
+  supplyLimit: UpdateVaultInstructionDataArgs["supplyLimit"];
+  pythOraclePriceUpdate: UpdateVaultInstructionDataArgs["pythOraclePriceUpdate"];
+  pythOracleFeedId: UpdateVaultInstructionDataArgs["pythOracleFeedId"];
 };
 
 export function getUpdateVaultInstruction<
@@ -135,7 +140,7 @@ export function getUpdateVaultInstruction<
   TProgramAddress extends Address = typeof TUNA_PROGRAM_ADDRESS,
 >(
   input: UpdateVaultInput<TAccountAuthority, TAccountTunaConfig, TAccountVault>,
-  config?: { programAddress?: TProgramAddress }
+  config?: { programAddress?: TProgramAddress },
 ): UpdateVaultInstruction<
   TProgramAddress,
   TAccountAuthority,
@@ -159,7 +164,7 @@ export function getUpdateVaultInstruction<
   // Original args.
   const args = { ...input };
 
-  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+  const getAccountMeta = getAccountMetaFactory(programAddress, "programId");
   const instruction = {
     accounts: [
       getAccountMeta(accounts.authority),
@@ -168,7 +173,7 @@ export function getUpdateVaultInstruction<
     ],
     programAddress,
     data: getUpdateVaultInstructionDataEncoder().encode(
-      args as UpdateVaultInstructionDataArgs
+      args as UpdateVaultInstructionDataArgs,
     ),
   } as UpdateVaultInstruction<
     TProgramAddress,
@@ -199,11 +204,11 @@ export function parseUpdateVaultInstruction<
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+    IInstructionWithData<Uint8Array>,
 ): ParsedUpdateVaultInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 3) {
     // TODO: Coded error.
-    throw new Error('Not enough accounts');
+    throw new Error("Not enough accounts");
   }
   let accountIndex = 0;
   const getNextAccount = () => {

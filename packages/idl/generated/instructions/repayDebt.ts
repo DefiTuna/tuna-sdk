@@ -31,9 +31,9 @@ import {
   type TransactionSigner,
   type WritableAccount,
   type WritableSignerAccount,
-} from '@solana/kit';
-import { TUNA_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+} from "@solana/kit";
+import { TUNA_PROGRAM_ADDRESS } from "../programs";
+import { getAccountMetaFactory, type ResolvedAccount } from "../shared";
 
 export const REPAY_DEBT_DISCRIMINATOR = new Uint8Array([
   79, 200, 30, 15, 252, 22, 162, 8,
@@ -57,7 +57,7 @@ export type RepayDebtInstruction<
   TAccountTunaPositionOwnerAtaB extends string | IAccountMeta<string> = string,
   TAccountTokenProgram extends
     | string
-    | IAccountMeta<string> = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+    | IAccountMeta<string> = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
   IInstructionWithData<Uint8Array> &
@@ -115,19 +115,19 @@ export type RepayDebtInstructionDataArgs = {
 export function getRepayDebtInstructionDataEncoder(): Encoder<RepayDebtInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
-      ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['collateralFundsA', getU64Encoder()],
-      ['collateralFundsB', getU64Encoder()],
+      ["discriminator", fixEncoderSize(getBytesEncoder(), 8)],
+      ["collateralFundsA", getU64Encoder()],
+      ["collateralFundsB", getU64Encoder()],
     ]),
-    (value) => ({ ...value, discriminator: REPAY_DEBT_DISCRIMINATOR })
+    (value) => ({ ...value, discriminator: REPAY_DEBT_DISCRIMINATOR }),
   );
 }
 
 export function getRepayDebtInstructionDataDecoder(): Decoder<RepayDebtInstructionData> {
   return getStructDecoder([
-    ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['collateralFundsA', getU64Decoder()],
-    ['collateralFundsB', getU64Decoder()],
+    ["discriminator", fixDecoderSize(getBytesDecoder(), 8)],
+    ["collateralFundsA", getU64Decoder()],
+    ["collateralFundsB", getU64Decoder()],
   ]);
 }
 
@@ -137,7 +137,7 @@ export function getRepayDebtInstructionDataCodec(): Codec<
 > {
   return combineCodec(
     getRepayDebtInstructionDataEncoder(),
-    getRepayDebtInstructionDataDecoder()
+    getRepayDebtInstructionDataDecoder(),
   );
 }
 
@@ -175,8 +175,8 @@ export type RepayDebtInput<
    *
    */
   tokenProgram?: Address<TAccountTokenProgram>;
-  collateralFundsA: RepayDebtInstructionDataArgs['collateralFundsA'];
-  collateralFundsB: RepayDebtInstructionDataArgs['collateralFundsB'];
+  collateralFundsA: RepayDebtInstructionDataArgs["collateralFundsA"];
+  collateralFundsB: RepayDebtInstructionDataArgs["collateralFundsB"];
 };
 
 export function getRepayDebtInstruction<
@@ -206,7 +206,7 @@ export function getRepayDebtInstruction<
     TAccountTunaPositionOwnerAtaB,
     TAccountTokenProgram
   >,
-  config?: { programAddress?: TProgramAddress }
+  config?: { programAddress?: TProgramAddress },
 ): RepayDebtInstruction<
   TProgramAddress,
   TAccountAuthority,
@@ -261,10 +261,10 @@ export function getRepayDebtInstruction<
   // Resolve default values.
   if (!accounts.tokenProgram.value) {
     accounts.tokenProgram.value =
-      'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' as Address<'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'>;
+      "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA" as Address<"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA">;
   }
 
-  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+  const getAccountMeta = getAccountMetaFactory(programAddress, "programId");
   const instruction = {
     accounts: [
       getAccountMeta(accounts.authority),
@@ -281,7 +281,7 @@ export function getRepayDebtInstruction<
     ],
     programAddress,
     data: getRepayDebtInstructionDataEncoder().encode(
-      args as RepayDebtInstructionDataArgs
+      args as RepayDebtInstructionDataArgs,
     ),
   } as RepayDebtInstruction<
     TProgramAddress,
@@ -340,11 +340,11 @@ export function parseRepayDebtInstruction<
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+    IInstructionWithData<Uint8Array>,
 ): ParsedRepayDebtInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 11) {
     // TODO: Coded error.
-    throw new Error('Not enough accounts');
+    throw new Error("Not enough accounts");
   }
   let accountIndex = 0;
   const getNextAccount = () => {

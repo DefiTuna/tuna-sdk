@@ -37,7 +37,7 @@ import {
   type MaybeAccount,
   type MaybeEncodedAccount,
   type ReadonlyUint8Array,
-} from '@solana/kit';
+} from "@solana/kit";
 
 export const LENDING_POSITION_DISCRIMINATOR = new Uint8Array([
   47, 255, 252, 35, 20, 245, 157, 243,
@@ -45,7 +45,7 @@ export const LENDING_POSITION_DISCRIMINATOR = new Uint8Array([
 
 export function getLendingPositionDiscriminatorBytes() {
   return fixEncoderSize(getBytesEncoder(), 8).encode(
-    LENDING_POSITION_DISCRIMINATOR
+    LENDING_POSITION_DISCRIMINATOR,
   );
 }
 
@@ -87,29 +87,29 @@ export type LendingPositionArgs = {
 export function getLendingPositionEncoder(): Encoder<LendingPositionArgs> {
   return transformEncoder(
     getStructEncoder([
-      ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['version', getU16Encoder()],
-      ['bump', fixEncoderSize(getBytesEncoder(), 1)],
-      ['authority', getAddressEncoder()],
-      ['poolMint', getAddressEncoder()],
-      ['depositedFunds', getU64Encoder()],
-      ['depositedShares', getU64Encoder()],
-      ['reserved', fixEncoderSize(getBytesEncoder(), 64)],
+      ["discriminator", fixEncoderSize(getBytesEncoder(), 8)],
+      ["version", getU16Encoder()],
+      ["bump", fixEncoderSize(getBytesEncoder(), 1)],
+      ["authority", getAddressEncoder()],
+      ["poolMint", getAddressEncoder()],
+      ["depositedFunds", getU64Encoder()],
+      ["depositedShares", getU64Encoder()],
+      ["reserved", fixEncoderSize(getBytesEncoder(), 64)],
     ]),
-    (value) => ({ ...value, discriminator: LENDING_POSITION_DISCRIMINATOR })
+    (value) => ({ ...value, discriminator: LENDING_POSITION_DISCRIMINATOR }),
   );
 }
 
 export function getLendingPositionDecoder(): Decoder<LendingPosition> {
   return getStructDecoder([
-    ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['version', getU16Decoder()],
-    ['bump', fixDecoderSize(getBytesDecoder(), 1)],
-    ['authority', getAddressDecoder()],
-    ['poolMint', getAddressDecoder()],
-    ['depositedFunds', getU64Decoder()],
-    ['depositedShares', getU64Decoder()],
-    ['reserved', fixDecoderSize(getBytesDecoder(), 64)],
+    ["discriminator", fixDecoderSize(getBytesDecoder(), 8)],
+    ["version", getU16Decoder()],
+    ["bump", fixDecoderSize(getBytesDecoder(), 1)],
+    ["authority", getAddressDecoder()],
+    ["poolMint", getAddressDecoder()],
+    ["depositedFunds", getU64Decoder()],
+    ["depositedShares", getU64Decoder()],
+    ["reserved", fixDecoderSize(getBytesDecoder(), 64)],
   ]);
 }
 
@@ -121,26 +121,26 @@ export function getLendingPositionCodec(): Codec<
 }
 
 export function decodeLendingPosition<TAddress extends string = string>(
-  encodedAccount: EncodedAccount<TAddress>
+  encodedAccount: EncodedAccount<TAddress>,
 ): Account<LendingPosition, TAddress>;
 export function decodeLendingPosition<TAddress extends string = string>(
-  encodedAccount: MaybeEncodedAccount<TAddress>
+  encodedAccount: MaybeEncodedAccount<TAddress>,
 ): MaybeAccount<LendingPosition, TAddress>;
 export function decodeLendingPosition<TAddress extends string = string>(
-  encodedAccount: EncodedAccount<TAddress> | MaybeEncodedAccount<TAddress>
+  encodedAccount: EncodedAccount<TAddress> | MaybeEncodedAccount<TAddress>,
 ):
   | Account<LendingPosition, TAddress>
   | MaybeAccount<LendingPosition, TAddress> {
   return decodeAccount(
     encodedAccount as MaybeEncodedAccount<TAddress>,
-    getLendingPositionDecoder()
+    getLendingPositionDecoder(),
   );
 }
 
 export async function fetchLendingPosition<TAddress extends string = string>(
   rpc: Parameters<typeof fetchEncodedAccount>[0],
   address: Address<TAddress>,
-  config?: FetchAccountConfig
+  config?: FetchAccountConfig,
 ): Promise<Account<LendingPosition, TAddress>> {
   const maybeAccount = await fetchMaybeLendingPosition(rpc, address, config);
   assertAccountExists(maybeAccount);
@@ -152,7 +152,7 @@ export async function fetchMaybeLendingPosition<
 >(
   rpc: Parameters<typeof fetchEncodedAccount>[0],
   address: Address<TAddress>,
-  config?: FetchAccountConfig
+  config?: FetchAccountConfig,
 ): Promise<MaybeAccount<LendingPosition, TAddress>> {
   const maybeAccount = await fetchEncodedAccount(rpc, address, config);
   return decodeLendingPosition(maybeAccount);
@@ -161,12 +161,12 @@ export async function fetchMaybeLendingPosition<
 export async function fetchAllLendingPosition(
   rpc: Parameters<typeof fetchEncodedAccounts>[0],
   addresses: Array<Address>,
-  config?: FetchAccountsConfig
+  config?: FetchAccountsConfig,
 ): Promise<Account<LendingPosition>[]> {
   const maybeAccounts = await fetchAllMaybeLendingPosition(
     rpc,
     addresses,
-    config
+    config,
   );
   assertAccountsExist(maybeAccounts);
   return maybeAccounts;
@@ -175,11 +175,11 @@ export async function fetchAllLendingPosition(
 export async function fetchAllMaybeLendingPosition(
   rpc: Parameters<typeof fetchEncodedAccounts>[0],
   addresses: Array<Address>,
-  config?: FetchAccountsConfig
+  config?: FetchAccountsConfig,
 ): Promise<MaybeAccount<LendingPosition>[]> {
   const maybeAccounts = await fetchEncodedAccounts(rpc, addresses, config);
   return maybeAccounts.map((maybeAccount) =>
-    decodeLendingPosition(maybeAccount)
+    decodeLendingPosition(maybeAccount),
   );
 }
 

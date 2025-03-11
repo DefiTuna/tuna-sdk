@@ -11,8 +11,8 @@ import {
   type Address,
   type SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM,
   type SolanaError,
-} from '@solana/kit';
-import { TUNA_PROGRAM_ADDRESS } from '../programs';
+} from "@solana/kit";
+import { TUNA_PROGRAM_ADDRESS } from "../programs";
 
 /** AmountSlippageExceeded: AmountSlippageExceeded */
 export const TUNA_ERROR__AMOUNT_SLIPPAGE_EXCEEDED = 0x1770; // 6000
@@ -44,64 +44,72 @@ export const TUNA_ERROR__LIQUIDATION_FEE_IS_OUT_OF_RANGE = 0x177c; // 6012
 export const TUNA_ERROR__LIQUIDATION_THRESHOLD_IS_OUT_OF_RANGE = 0x177d; // 6013
 /** LiquidityZero: Liquidity amount must be greater than zero. */
 export const TUNA_ERROR__LIQUIDITY_ZERO = 0x177e; // 6014
+/** MarketDisabled: MarketDisabled */
+export const TUNA_ERROR__MARKET_DISABLED = 0x177f; // 6015
 /** MathOverflow: MathOverflow */
-export const TUNA_ERROR__MATH_OVERFLOW = 0x177f; // 6015
+export const TUNA_ERROR__MATH_OVERFLOW = 0x1780; // 6016
 /** MathUnderflow: MathUnderflow */
-export const TUNA_ERROR__MATH_UNDERFLOW = 0x1780; // 6016
+export const TUNA_ERROR__MATH_UNDERFLOW = 0x1781; // 6017
 /** OracleStalePrice: OracleStalePrice */
-export const TUNA_ERROR__ORACLE_STALE_PRICE = 0x1781; // 6017
+export const TUNA_ERROR__ORACLE_STALE_PRICE = 0x1782; // 6018
 /** OraclePriceDeviationThresholdExceeded: OraclePriceDeviationThresholdExceeded */
-export const TUNA_ERROR__ORACLE_PRICE_DEVIATION_THRESHOLD_EXCEEDED = 0x1782; // 6018
+export const TUNA_ERROR__ORACLE_PRICE_DEVIATION_THRESHOLD_EXCEEDED = 0x1783; // 6019
 /** OraclePriceDeviationThresholdOutOfRange: OraclePriceDeviationThresholdOutOfRange */
-export const TUNA_ERROR__ORACLE_PRICE_DEVIATION_THRESHOLD_OUT_OF_RANGE = 0x1783; // 6019
+export const TUNA_ERROR__ORACLE_PRICE_DEVIATION_THRESHOLD_OUT_OF_RANGE = 0x1784; // 6020
 /** PartialFillError: Trade resulted in partial fill */
-export const TUNA_ERROR__PARTIAL_FILL_ERROR = 0x1784; // 6020
+export const TUNA_ERROR__PARTIAL_FILL_ERROR = 0x1785; // 6021
 /** PositionIsHealthy: PositionIsHealthy */
-export const TUNA_ERROR__POSITION_IS_HEALTHY = 0x1785; // 6021
+export const TUNA_ERROR__POSITION_IS_HEALTHY = 0x1786; // 6022
 /** PositionIsLiquidated: PositionIsLiquidated */
-export const TUNA_ERROR__POSITION_IS_LIQUIDATED = 0x1786; // 6022
+export const TUNA_ERROR__POSITION_IS_LIQUIDATED = 0x1787; // 6023
 /** PositionIsUnhealthy: PositionIsUnhealthy */
-export const TUNA_ERROR__POSITION_IS_UNHEALTHY = 0x1787; // 6023
+export const TUNA_ERROR__POSITION_IS_UNHEALTHY = 0x1788; // 6024
 /** ProtocolFeeIsOutOfRange: ProtocolFeeIsOutOfRange */
-export const TUNA_ERROR__PROTOCOL_FEE_IS_OUT_OF_RANGE = 0x1788; // 6024
+export const TUNA_ERROR__PROTOCOL_FEE_IS_OUT_OF_RANGE = 0x1789; // 6025
 /** SolverFailedToFindRoot: SolverFailedToFindRoot */
-export const TUNA_ERROR__SOLVER_FAILED_TO_FIND_ROOT = 0x1789; // 6025
+export const TUNA_ERROR__SOLVER_FAILED_TO_FIND_ROOT = 0x178a; // 6026
 /** SqrtPriceOutOfBounds: SqrtPriceOutOfBounds */
-export const TUNA_ERROR__SQRT_PRICE_OUT_OF_BOUNDS = 0x178a; // 6026
+export const TUNA_ERROR__SQRT_PRICE_OUT_OF_BOUNDS = 0x178b; // 6027
 /** SupplyLimitExceeded: SupplyLimitExceeded */
-export const TUNA_ERROR__SUPPLY_LIMIT_EXCEEDED = 0x178b; // 6027
+export const TUNA_ERROR__SUPPLY_LIMIT_EXCEEDED = 0x178c; // 6028
 /** Suspended: Suspended */
-export const TUNA_ERROR__SUSPENDED = 0x178c; // 6028
+export const TUNA_ERROR__SUSPENDED = 0x178d; // 6029
 /** SwapSlippageExceeded: SwapSlippageExceeded */
-export const TUNA_ERROR__SWAP_SLIPPAGE_EXCEEDED = 0x178d; // 6029
+export const TUNA_ERROR__SWAP_SLIPPAGE_EXCEEDED = 0x178e; // 6030
 /** TickIndexOfBounds: TickIndexOfBounds */
-export const TUNA_ERROR__TICK_INDEX_OF_BOUNDS = 0x178e; // 6030
+export const TUNA_ERROR__TICK_INDEX_OF_BOUNDS = 0x178f; // 6031
 /** TypeCastOverflow: TypeCastOverflow */
-export const TUNA_ERROR__TYPE_CAST_OVERFLOW = 0x178f; // 6031
+export const TUNA_ERROR__TYPE_CAST_OVERFLOW = 0x1790; // 6032
 /** UnexpectedValue: UnexpectedValue */
-export const TUNA_ERROR__UNEXPECTED_VALUE = 0x1790; // 6032
+export const TUNA_ERROR__UNEXPECTED_VALUE = 0x1791; // 6033
 /** VaultNotInitialized: VaultNotInitialized */
-export const TUNA_ERROR__VAULT_NOT_INITIALIZED = 0x1791; // 6033
+export const TUNA_ERROR__VAULT_NOT_INITIALIZED = 0x1792; // 6034
 /** WithdrawRequestExceedsUserBalance: WithdrawRequestExceedsUserBalance */
-export const TUNA_ERROR__WITHDRAW_REQUEST_EXCEEDS_USER_BALANCE = 0x1792; // 6034
+export const TUNA_ERROR__WITHDRAW_REQUEST_EXCEEDS_USER_BALANCE = 0x1793; // 6035
 /** ZeroPriceRange: ZeroPriceRange */
-export const TUNA_ERROR__ZERO_PRICE_RANGE = 0x1793; // 6035
+export const TUNA_ERROR__ZERO_PRICE_RANGE = 0x1794; // 6036
 /** ZeroTradableAmount: There are no tradable amount to swap. */
-export const TUNA_ERROR__ZERO_TRADABLE_AMOUNT = 0x1794; // 6036
+export const TUNA_ERROR__ZERO_TRADABLE_AMOUNT = 0x1795; // 6037
+/** ZeroYield: ZeroYield */
+export const TUNA_ERROR__ZERO_YIELD = 0x1796; // 6038
 /** RaydiumInvalidFirstTickArrayAccount: RaydiumInvalidFirstTickArrayAccount */
-export const TUNA_ERROR__RAYDIUM_INVALID_FIRST_TICK_ARRAY_ACCOUNT = 0x1795; // 6037
+export const TUNA_ERROR__RAYDIUM_INVALID_FIRST_TICK_ARRAY_ACCOUNT = 0x1797; // 6039
 /** RaydiumInvalidTickArray: RaydiumInvalidTickArray */
-export const TUNA_ERROR__RAYDIUM_INVALID_TICK_ARRAY = 0x1796; // 6038
+export const TUNA_ERROR__RAYDIUM_INVALID_TICK_ARRAY = 0x1798; // 6040
 /** RaydiumInvaildTickIndex: RaydiumInvaildTickIndex */
-export const TUNA_ERROR__RAYDIUM_INVAILD_TICK_INDEX = 0x1797; // 6039
+export const TUNA_ERROR__RAYDIUM_INVAILD_TICK_INDEX = 0x1799; // 6041
 /** RaydiumMaxTokenOverflow: RaydiumMaxTokenOverflow */
-export const TUNA_ERROR__RAYDIUM_MAX_TOKEN_OVERFLOW = 0x1798; // 6040
+export const TUNA_ERROR__RAYDIUM_MAX_TOKEN_OVERFLOW = 0x179a; // 6042
 /** RaydiumNotEnoughTickArrayAccount: RaydiumNotEnoughTickArrayAccount */
-export const TUNA_ERROR__RAYDIUM_NOT_ENOUGH_TICK_ARRAY_ACCOUNT = 0x1799; // 6041
+export const TUNA_ERROR__RAYDIUM_NOT_ENOUGH_TICK_ARRAY_ACCOUNT = 0x179b; // 6043
 /** RaydiumSqrtPriceLimitOverflow: RaydiumSqrtPriceLimitOverflow */
-export const TUNA_ERROR__RAYDIUM_SQRT_PRICE_LIMIT_OVERFLOW = 0x179a; // 6042
+export const TUNA_ERROR__RAYDIUM_SQRT_PRICE_LIMIT_OVERFLOW = 0x179c; // 6044
 /** RaydiumZeroAmountSpecified: RaydiumZeroAmountSpecified */
-export const TUNA_ERROR__RAYDIUM_ZERO_AMOUNT_SPECIFIED = 0x179b; // 6043
+export const TUNA_ERROR__RAYDIUM_ZERO_AMOUNT_SPECIFIED = 0x179d; // 6045
+/** UnableToLoadAccountData: UnableToLoadAccountData */
+export const TUNA_ERROR__UNABLE_TO_LOAD_ACCOUNT_DATA = 0x179e; // 6046
+/** UnableToDeserializeAccountData: UnableToDeserializeAccountData */
+export const TUNA_ERROR__UNABLE_TO_DESERIALIZE_ACCOUNT_DATA = 0x179f; // 6047
 
 export type TunaError =
   | typeof TUNA_ERROR__AMOUNT_SLIPPAGE_EXCEEDED
@@ -119,6 +127,7 @@ export type TunaError =
   | typeof TUNA_ERROR__LIQUIDATION_FEE_IS_OUT_OF_RANGE
   | typeof TUNA_ERROR__LIQUIDATION_THRESHOLD_IS_OUT_OF_RANGE
   | typeof TUNA_ERROR__LIQUIDITY_ZERO
+  | typeof TUNA_ERROR__MARKET_DISABLED
   | typeof TUNA_ERROR__MATH_OVERFLOW
   | typeof TUNA_ERROR__MATH_UNDERFLOW
   | typeof TUNA_ERROR__ORACLE_PRICE_DEVIATION_THRESHOLD_EXCEEDED
@@ -143,14 +152,17 @@ export type TunaError =
   | typeof TUNA_ERROR__SWAP_SLIPPAGE_EXCEEDED
   | typeof TUNA_ERROR__TICK_INDEX_OF_BOUNDS
   | typeof TUNA_ERROR__TYPE_CAST_OVERFLOW
+  | typeof TUNA_ERROR__UNABLE_TO_DESERIALIZE_ACCOUNT_DATA
+  | typeof TUNA_ERROR__UNABLE_TO_LOAD_ACCOUNT_DATA
   | typeof TUNA_ERROR__UNEXPECTED_VALUE
   | typeof TUNA_ERROR__VAULT_NOT_INITIALIZED
   | typeof TUNA_ERROR__WITHDRAW_REQUEST_EXCEEDS_USER_BALANCE
   | typeof TUNA_ERROR__ZERO_PRICE_RANGE
-  | typeof TUNA_ERROR__ZERO_TRADABLE_AMOUNT;
+  | typeof TUNA_ERROR__ZERO_TRADABLE_AMOUNT
+  | typeof TUNA_ERROR__ZERO_YIELD;
 
 let tunaErrorMessages: Record<TunaError, string> | undefined;
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== "production") {
   tunaErrorMessages = {
     [TUNA_ERROR__AMOUNT_SLIPPAGE_EXCEEDED]: `AmountSlippageExceeded`,
     [TUNA_ERROR__INSUFFICIENT_LIQUIDITY]: `InsufficientLiquidity`,
@@ -167,6 +179,7 @@ if (process.env.NODE_ENV !== 'production') {
     [TUNA_ERROR__LIQUIDATION_FEE_IS_OUT_OF_RANGE]: `LiquidationFeeIsOutOfRange`,
     [TUNA_ERROR__LIQUIDATION_THRESHOLD_IS_OUT_OF_RANGE]: `LiquidationThresholdIsOutOfRange`,
     [TUNA_ERROR__LIQUIDITY_ZERO]: `Liquidity amount must be greater than zero.`,
+    [TUNA_ERROR__MARKET_DISABLED]: `MarketDisabled`,
     [TUNA_ERROR__MATH_OVERFLOW]: `MathOverflow`,
     [TUNA_ERROR__MATH_UNDERFLOW]: `MathUnderflow`,
     [TUNA_ERROR__ORACLE_PRICE_DEVIATION_THRESHOLD_EXCEEDED]: `OraclePriceDeviationThresholdExceeded`,
@@ -191,20 +204,23 @@ if (process.env.NODE_ENV !== 'production') {
     [TUNA_ERROR__SWAP_SLIPPAGE_EXCEEDED]: `SwapSlippageExceeded`,
     [TUNA_ERROR__TICK_INDEX_OF_BOUNDS]: `TickIndexOfBounds`,
     [TUNA_ERROR__TYPE_CAST_OVERFLOW]: `TypeCastOverflow`,
+    [TUNA_ERROR__UNABLE_TO_DESERIALIZE_ACCOUNT_DATA]: `UnableToDeserializeAccountData`,
+    [TUNA_ERROR__UNABLE_TO_LOAD_ACCOUNT_DATA]: `UnableToLoadAccountData`,
     [TUNA_ERROR__UNEXPECTED_VALUE]: `UnexpectedValue`,
     [TUNA_ERROR__VAULT_NOT_INITIALIZED]: `VaultNotInitialized`,
     [TUNA_ERROR__WITHDRAW_REQUEST_EXCEEDS_USER_BALANCE]: `WithdrawRequestExceedsUserBalance`,
     [TUNA_ERROR__ZERO_PRICE_RANGE]: `ZeroPriceRange`,
     [TUNA_ERROR__ZERO_TRADABLE_AMOUNT]: `There are no tradable amount to swap.`,
+    [TUNA_ERROR__ZERO_YIELD]: `ZeroYield`,
   };
 }
 
 export function getTunaErrorMessage(code: TunaError): string {
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV !== "production") {
     return (tunaErrorMessages as Record<TunaError, string>)[code];
   }
 
-  return 'Error message not available in production bundles.';
+  return "Error message not available in production bundles.";
 }
 
 export function isTunaError<TProgramErrorCode extends TunaError>(
@@ -212,13 +228,13 @@ export function isTunaError<TProgramErrorCode extends TunaError>(
   transactionMessage: {
     instructions: Record<number, { programAddress: Address }>;
   },
-  code?: TProgramErrorCode
+  code?: TProgramErrorCode,
 ): error is SolanaError<typeof SOLANA_ERROR__INSTRUCTION_ERROR__CUSTOM> &
   Readonly<{ context: Readonly<{ code: TProgramErrorCode }> }> {
   return isProgramError<TProgramErrorCode>(
     error,
     transactionMessage,
     TUNA_PROGRAM_ADDRESS,
-    code
+    code,
   );
 }

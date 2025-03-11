@@ -12,10 +12,14 @@ import {
   fixEncoderSize,
   getAddressDecoder,
   getAddressEncoder,
+  getBooleanDecoder,
+  getBooleanEncoder,
   getBytesDecoder,
   getBytesEncoder,
   getStructDecoder,
   getStructEncoder,
+  getU16Decoder,
+  getU16Encoder,
   getU32Decoder,
   getU32Encoder,
   getU8Decoder,
@@ -35,9 +39,9 @@ import {
   type TransactionSigner,
   type WritableAccount,
   type WritableSignerAccount,
-} from '@solana/kit';
-import { TUNA_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+} from "@solana/kit";
+import { TUNA_PROGRAM_ADDRESS } from "../programs";
+import { getAccountMetaFactory, type ResolvedAccount } from "../shared";
 
 export const CREATE_MARKET_DISCRIMINATOR = new Uint8Array([
   103, 226, 97, 235, 200, 188, 251, 254,
@@ -45,7 +49,7 @@ export const CREATE_MARKET_DISCRIMINATOR = new Uint8Array([
 
 export function getCreateMarketDiscriminatorBytes() {
   return fixEncoderSize(getBytesEncoder(), 8).encode(
-    CREATE_MARKET_DISCRIMINATOR
+    CREATE_MARKET_DISCRIMINATOR,
   );
 }
 
@@ -57,7 +61,7 @@ export type CreateMarketInstruction<
   TAccountPool extends string | IAccountMeta<string> = string,
   TAccountSystemProgram extends
     | string
-    | IAccountMeta<string> = '11111111111111111111111111111111',
+    | IAccountMeta<string> = "11111111111111111111111111111111",
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
   IInstructionWithData<Uint8Array> &
@@ -89,10 +93,12 @@ export type CreateMarketInstructionData = {
   addressLookupTable: Address;
   maxLeverage: number;
   protocolFee: number;
+  protocolFeeOnCollateral: number;
   liquidationFee: number;
   liquidationRatio: number;
   limitOrderExecutionFee: number;
   oraclePriceDeviationThreshold: number;
+  disabled: boolean;
 };
 
 export type CreateMarketInstructionDataArgs = {
@@ -100,40 +106,46 @@ export type CreateMarketInstructionDataArgs = {
   addressLookupTable: Address;
   maxLeverage: number;
   protocolFee: number;
+  protocolFeeOnCollateral: number;
   liquidationFee: number;
   liquidationRatio: number;
   limitOrderExecutionFee: number;
   oraclePriceDeviationThreshold: number;
+  disabled: boolean;
 };
 
 export function getCreateMarketInstructionDataEncoder(): Encoder<CreateMarketInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
-      ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['liquidityProvider', getU8Encoder()],
-      ['addressLookupTable', getAddressEncoder()],
-      ['maxLeverage', getU32Encoder()],
-      ['protocolFee', getU32Encoder()],
-      ['liquidationFee', getU32Encoder()],
-      ['liquidationRatio', getU32Encoder()],
-      ['limitOrderExecutionFee', getU32Encoder()],
-      ['oraclePriceDeviationThreshold', getU32Encoder()],
+      ["discriminator", fixEncoderSize(getBytesEncoder(), 8)],
+      ["liquidityProvider", getU8Encoder()],
+      ["addressLookupTable", getAddressEncoder()],
+      ["maxLeverage", getU32Encoder()],
+      ["protocolFee", getU16Encoder()],
+      ["protocolFeeOnCollateral", getU16Encoder()],
+      ["liquidationFee", getU32Encoder()],
+      ["liquidationRatio", getU32Encoder()],
+      ["limitOrderExecutionFee", getU32Encoder()],
+      ["oraclePriceDeviationThreshold", getU32Encoder()],
+      ["disabled", getBooleanEncoder()],
     ]),
-    (value) => ({ ...value, discriminator: CREATE_MARKET_DISCRIMINATOR })
+    (value) => ({ ...value, discriminator: CREATE_MARKET_DISCRIMINATOR }),
   );
 }
 
 export function getCreateMarketInstructionDataDecoder(): Decoder<CreateMarketInstructionData> {
   return getStructDecoder([
-    ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['liquidityProvider', getU8Decoder()],
-    ['addressLookupTable', getAddressDecoder()],
-    ['maxLeverage', getU32Decoder()],
-    ['protocolFee', getU32Decoder()],
-    ['liquidationFee', getU32Decoder()],
-    ['liquidationRatio', getU32Decoder()],
-    ['limitOrderExecutionFee', getU32Decoder()],
-    ['oraclePriceDeviationThreshold', getU32Decoder()],
+    ["discriminator", fixDecoderSize(getBytesDecoder(), 8)],
+    ["liquidityProvider", getU8Decoder()],
+    ["addressLookupTable", getAddressDecoder()],
+    ["maxLeverage", getU32Decoder()],
+    ["protocolFee", getU16Decoder()],
+    ["protocolFeeOnCollateral", getU16Decoder()],
+    ["liquidationFee", getU32Decoder()],
+    ["liquidationRatio", getU32Decoder()],
+    ["limitOrderExecutionFee", getU32Decoder()],
+    ["oraclePriceDeviationThreshold", getU32Decoder()],
+    ["disabled", getBooleanDecoder()],
   ]);
 }
 
@@ -143,7 +155,7 @@ export function getCreateMarketInstructionDataCodec(): Codec<
 > {
   return combineCodec(
     getCreateMarketInstructionDataEncoder(),
-    getCreateMarketInstructionDataDecoder()
+    getCreateMarketInstructionDataDecoder(),
   );
 }
 
@@ -159,14 +171,16 @@ export type CreateMarketInput<
   market: Address<TAccountMarket>;
   pool: Address<TAccountPool>;
   systemProgram?: Address<TAccountSystemProgram>;
-  liquidityProvider: CreateMarketInstructionDataArgs['liquidityProvider'];
-  addressLookupTable: CreateMarketInstructionDataArgs['addressLookupTable'];
-  maxLeverage: CreateMarketInstructionDataArgs['maxLeverage'];
-  protocolFee: CreateMarketInstructionDataArgs['protocolFee'];
-  liquidationFee: CreateMarketInstructionDataArgs['liquidationFee'];
-  liquidationRatio: CreateMarketInstructionDataArgs['liquidationRatio'];
-  limitOrderExecutionFee: CreateMarketInstructionDataArgs['limitOrderExecutionFee'];
-  oraclePriceDeviationThreshold: CreateMarketInstructionDataArgs['oraclePriceDeviationThreshold'];
+  liquidityProvider: CreateMarketInstructionDataArgs["liquidityProvider"];
+  addressLookupTable: CreateMarketInstructionDataArgs["addressLookupTable"];
+  maxLeverage: CreateMarketInstructionDataArgs["maxLeverage"];
+  protocolFee: CreateMarketInstructionDataArgs["protocolFee"];
+  protocolFeeOnCollateral: CreateMarketInstructionDataArgs["protocolFeeOnCollateral"];
+  liquidationFee: CreateMarketInstructionDataArgs["liquidationFee"];
+  liquidationRatio: CreateMarketInstructionDataArgs["liquidationRatio"];
+  limitOrderExecutionFee: CreateMarketInstructionDataArgs["limitOrderExecutionFee"];
+  oraclePriceDeviationThreshold: CreateMarketInstructionDataArgs["oraclePriceDeviationThreshold"];
+  disabled: CreateMarketInstructionDataArgs["disabled"];
 };
 
 export function getCreateMarketInstruction<
@@ -184,7 +198,7 @@ export function getCreateMarketInstruction<
     TAccountPool,
     TAccountSystemProgram
   >,
-  config?: { programAddress?: TProgramAddress }
+  config?: { programAddress?: TProgramAddress },
 ): CreateMarketInstruction<
   TProgramAddress,
   TAccountAuthority,
@@ -215,10 +229,10 @@ export function getCreateMarketInstruction<
   // Resolve default values.
   if (!accounts.systemProgram.value) {
     accounts.systemProgram.value =
-      '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
+      "11111111111111111111111111111111" as Address<"11111111111111111111111111111111">;
   }
 
-  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+  const getAccountMeta = getAccountMetaFactory(programAddress, "programId");
   const instruction = {
     accounts: [
       getAccountMeta(accounts.authority),
@@ -229,7 +243,7 @@ export function getCreateMarketInstruction<
     ],
     programAddress,
     data: getCreateMarketInstructionDataEncoder().encode(
-      args as CreateMarketInstructionDataArgs
+      args as CreateMarketInstructionDataArgs,
     ),
   } as CreateMarketInstruction<
     TProgramAddress,
@@ -264,11 +278,11 @@ export function parseCreateMarketInstruction<
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+    IInstructionWithData<Uint8Array>,
 ): ParsedCreateMarketInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 5) {
     // TODO: Coded error.
-    throw new Error('Not enough accounts');
+    throw new Error("Not enough accounts");
   }
   let accountIndex = 0;
   const getNextAccount = () => {

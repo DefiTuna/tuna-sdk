@@ -29,9 +29,9 @@ import {
   type TransactionSigner,
   type WritableAccount,
   type WritableSignerAccount,
-} from '@solana/kit';
-import { TUNA_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+} from "@solana/kit";
+import { TUNA_PROGRAM_ADDRESS } from "../programs";
+import { getAccountMetaFactory, type ResolvedAccount } from "../shared";
 
 export const COLLECT_FEES_ORCA_DISCRIMINATOR = new Uint8Array([
   147, 188, 191, 37, 255, 10, 239, 76,
@@ -39,7 +39,7 @@ export const COLLECT_FEES_ORCA_DISCRIMINATOR = new Uint8Array([
 
 export function getCollectFeesOrcaDiscriminatorBytes() {
   return fixEncoderSize(getBytesEncoder(), 8).encode(
-    COLLECT_FEES_ORCA_DISCRIMINATOR
+    COLLECT_FEES_ORCA_DISCRIMINATOR,
   );
 }
 
@@ -55,14 +55,10 @@ export type CollectFeesOrcaInstruction<
   TAccountTunaPositionOwnerAtaB extends string | IAccountMeta<string> = string,
   TAccountWhirlpoolProgram extends string | IAccountMeta<string> = string,
   TAccountWhirlpool extends string | IAccountMeta<string> = string,
-  TAccountPoolVaultAtaA extends string | IAccountMeta<string> = string,
-  TAccountPoolVaultAtaB extends string | IAccountMeta<string> = string,
   TAccountOrcaPosition extends string | IAccountMeta<string> = string,
-  TAccountTickArrayLower extends string | IAccountMeta<string> = string,
-  TAccountTickArrayUpper extends string | IAccountMeta<string> = string,
   TAccountTokenProgram extends
     | string
-    | IAccountMeta<string> = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+    | IAccountMeta<string> = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
   IInstructionWithData<Uint8Array> &
@@ -99,21 +95,9 @@ export type CollectFeesOrcaInstruction<
       TAccountWhirlpool extends string
         ? WritableAccount<TAccountWhirlpool>
         : TAccountWhirlpool,
-      TAccountPoolVaultAtaA extends string
-        ? WritableAccount<TAccountPoolVaultAtaA>
-        : TAccountPoolVaultAtaA,
-      TAccountPoolVaultAtaB extends string
-        ? WritableAccount<TAccountPoolVaultAtaB>
-        : TAccountPoolVaultAtaB,
       TAccountOrcaPosition extends string
         ? WritableAccount<TAccountOrcaPosition>
         : TAccountOrcaPosition,
-      TAccountTickArrayLower extends string
-        ? WritableAccount<TAccountTickArrayLower>
-        : TAccountTickArrayLower,
-      TAccountTickArrayUpper extends string
-        ? WritableAccount<TAccountTickArrayUpper>
-        : TAccountTickArrayUpper,
       TAccountTokenProgram extends string
         ? ReadonlyAccount<TAccountTokenProgram>
         : TAccountTokenProgram,
@@ -129,14 +113,14 @@ export type CollectFeesOrcaInstructionDataArgs = {};
 
 export function getCollectFeesOrcaInstructionDataEncoder(): Encoder<CollectFeesOrcaInstructionDataArgs> {
   return transformEncoder(
-    getStructEncoder([['discriminator', fixEncoderSize(getBytesEncoder(), 8)]]),
-    (value) => ({ ...value, discriminator: COLLECT_FEES_ORCA_DISCRIMINATOR })
+    getStructEncoder([["discriminator", fixEncoderSize(getBytesEncoder(), 8)]]),
+    (value) => ({ ...value, discriminator: COLLECT_FEES_ORCA_DISCRIMINATOR }),
   );
 }
 
 export function getCollectFeesOrcaInstructionDataDecoder(): Decoder<CollectFeesOrcaInstructionData> {
   return getStructDecoder([
-    ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
+    ["discriminator", fixDecoderSize(getBytesDecoder(), 8)],
   ]);
 }
 
@@ -146,7 +130,7 @@ export function getCollectFeesOrcaInstructionDataCodec(): Codec<
 > {
   return combineCodec(
     getCollectFeesOrcaInstructionDataEncoder(),
-    getCollectFeesOrcaInstructionDataDecoder()
+    getCollectFeesOrcaInstructionDataDecoder(),
   );
 }
 
@@ -161,11 +145,7 @@ export type CollectFeesOrcaInput<
   TAccountTunaPositionOwnerAtaB extends string = string,
   TAccountWhirlpoolProgram extends string = string,
   TAccountWhirlpool extends string = string,
-  TAccountPoolVaultAtaA extends string = string,
-  TAccountPoolVaultAtaB extends string = string,
   TAccountOrcaPosition extends string = string,
-  TAccountTickArrayLower extends string = string,
-  TAccountTickArrayUpper extends string = string,
   TAccountTokenProgram extends string = string,
 > = {
   /**
@@ -188,11 +168,7 @@ export type CollectFeesOrcaInput<
    */
   whirlpoolProgram: Address<TAccountWhirlpoolProgram>;
   whirlpool: Address<TAccountWhirlpool>;
-  poolVaultAtaA: Address<TAccountPoolVaultAtaA>;
-  poolVaultAtaB: Address<TAccountPoolVaultAtaB>;
   orcaPosition: Address<TAccountOrcaPosition>;
-  tickArrayLower: Address<TAccountTickArrayLower>;
-  tickArrayUpper: Address<TAccountTickArrayUpper>;
   /**
    *
    * Other accounts
@@ -212,11 +188,7 @@ export function getCollectFeesOrcaInstruction<
   TAccountTunaPositionOwnerAtaB extends string,
   TAccountWhirlpoolProgram extends string,
   TAccountWhirlpool extends string,
-  TAccountPoolVaultAtaA extends string,
-  TAccountPoolVaultAtaB extends string,
   TAccountOrcaPosition extends string,
-  TAccountTickArrayLower extends string,
-  TAccountTickArrayUpper extends string,
   TAccountTokenProgram extends string,
   TProgramAddress extends Address = typeof TUNA_PROGRAM_ADDRESS,
 >(
@@ -231,14 +203,10 @@ export function getCollectFeesOrcaInstruction<
     TAccountTunaPositionOwnerAtaB,
     TAccountWhirlpoolProgram,
     TAccountWhirlpool,
-    TAccountPoolVaultAtaA,
-    TAccountPoolVaultAtaB,
     TAccountOrcaPosition,
-    TAccountTickArrayLower,
-    TAccountTickArrayUpper,
     TAccountTokenProgram
   >,
-  config?: { programAddress?: TProgramAddress }
+  config?: { programAddress?: TProgramAddress },
 ): CollectFeesOrcaInstruction<
   TProgramAddress,
   TAccountAuthority,
@@ -251,11 +219,7 @@ export function getCollectFeesOrcaInstruction<
   TAccountTunaPositionOwnerAtaB,
   TAccountWhirlpoolProgram,
   TAccountWhirlpool,
-  TAccountPoolVaultAtaA,
-  TAccountPoolVaultAtaB,
   TAccountOrcaPosition,
-  TAccountTickArrayLower,
-  TAccountTickArrayUpper,
   TAccountTokenProgram
 > {
   // Program address.
@@ -291,11 +255,7 @@ export function getCollectFeesOrcaInstruction<
       isWritable: false,
     },
     whirlpool: { value: input.whirlpool ?? null, isWritable: true },
-    poolVaultAtaA: { value: input.poolVaultAtaA ?? null, isWritable: true },
-    poolVaultAtaB: { value: input.poolVaultAtaB ?? null, isWritable: true },
     orcaPosition: { value: input.orcaPosition ?? null, isWritable: true },
-    tickArrayLower: { value: input.tickArrayLower ?? null, isWritable: true },
-    tickArrayUpper: { value: input.tickArrayUpper ?? null, isWritable: true },
     tokenProgram: { value: input.tokenProgram ?? null, isWritable: false },
   };
   const accounts = originalAccounts as Record<
@@ -306,10 +266,10 @@ export function getCollectFeesOrcaInstruction<
   // Resolve default values.
   if (!accounts.tokenProgram.value) {
     accounts.tokenProgram.value =
-      'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' as Address<'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'>;
+      "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA" as Address<"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA">;
   }
 
-  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+  const getAccountMeta = getAccountMetaFactory(programAddress, "programId");
   const instruction = {
     accounts: [
       getAccountMeta(accounts.authority),
@@ -322,11 +282,7 @@ export function getCollectFeesOrcaInstruction<
       getAccountMeta(accounts.tunaPositionOwnerAtaB),
       getAccountMeta(accounts.whirlpoolProgram),
       getAccountMeta(accounts.whirlpool),
-      getAccountMeta(accounts.poolVaultAtaA),
-      getAccountMeta(accounts.poolVaultAtaB),
       getAccountMeta(accounts.orcaPosition),
-      getAccountMeta(accounts.tickArrayLower),
-      getAccountMeta(accounts.tickArrayUpper),
       getAccountMeta(accounts.tokenProgram),
     ],
     programAddress,
@@ -343,11 +299,7 @@ export function getCollectFeesOrcaInstruction<
     TAccountTunaPositionOwnerAtaB,
     TAccountWhirlpoolProgram,
     TAccountWhirlpool,
-    TAccountPoolVaultAtaA,
-    TAccountPoolVaultAtaB,
     TAccountOrcaPosition,
-    TAccountTickArrayLower,
-    TAccountTickArrayUpper,
     TAccountTokenProgram
   >;
 
@@ -382,18 +334,14 @@ export type ParsedCollectFeesOrcaInstruction<
 
     whirlpoolProgram: TAccountMetas[8];
     whirlpool: TAccountMetas[9];
-    poolVaultAtaA: TAccountMetas[10];
-    poolVaultAtaB: TAccountMetas[11];
-    orcaPosition: TAccountMetas[12];
-    tickArrayLower: TAccountMetas[13];
-    tickArrayUpper: TAccountMetas[14];
+    orcaPosition: TAccountMetas[10];
     /**
      *
      * Other accounts
      *
      */
 
-    tokenProgram: TAccountMetas[15];
+    tokenProgram: TAccountMetas[11];
   };
   data: CollectFeesOrcaInstructionData;
 };
@@ -404,11 +352,11 @@ export function parseCollectFeesOrcaInstruction<
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+    IInstructionWithData<Uint8Array>,
 ): ParsedCollectFeesOrcaInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 16) {
+  if (instruction.accounts.length < 12) {
     // TODO: Coded error.
-    throw new Error('Not enough accounts');
+    throw new Error("Not enough accounts");
   }
   let accountIndex = 0;
   const getNextAccount = () => {
@@ -429,11 +377,7 @@ export function parseCollectFeesOrcaInstruction<
       tunaPositionOwnerAtaB: getNextAccount(),
       whirlpoolProgram: getNextAccount(),
       whirlpool: getNextAccount(),
-      poolVaultAtaA: getNextAccount(),
-      poolVaultAtaB: getNextAccount(),
       orcaPosition: getNextAccount(),
-      tickArrayLower: getNextAccount(),
-      tickArrayUpper: getNextAccount(),
       tokenProgram: getNextAccount(),
     },
     data: getCollectFeesOrcaInstructionDataDecoder().decode(instruction.data),

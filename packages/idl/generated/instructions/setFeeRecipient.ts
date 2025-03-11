@@ -30,9 +30,9 @@ import {
   type TransactionSigner,
   type WritableAccount,
   type WritableSignerAccount,
-} from '@solana/kit';
-import { TUNA_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+} from "@solana/kit";
+import { TUNA_PROGRAM_ADDRESS } from "../programs";
+import { getAccountMetaFactory, type ResolvedAccount } from "../shared";
 
 export const SET_FEE_RECIPIENT_DISCRIMINATOR = new Uint8Array([
   227, 18, 215, 42, 237, 246, 151, 66,
@@ -40,7 +40,7 @@ export const SET_FEE_RECIPIENT_DISCRIMINATOR = new Uint8Array([
 
 export function getSetFeeRecipientDiscriminatorBytes() {
   return fixEncoderSize(getBytesEncoder(), 8).encode(
-    SET_FEE_RECIPIENT_DISCRIMINATOR
+    SET_FEE_RECIPIENT_DISCRIMINATOR,
   );
 }
 
@@ -74,17 +74,17 @@ export type SetFeeRecipientInstructionDataArgs = { feeRecipient: Address };
 export function getSetFeeRecipientInstructionDataEncoder(): Encoder<SetFeeRecipientInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
-      ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['feeRecipient', getAddressEncoder()],
+      ["discriminator", fixEncoderSize(getBytesEncoder(), 8)],
+      ["feeRecipient", getAddressEncoder()],
     ]),
-    (value) => ({ ...value, discriminator: SET_FEE_RECIPIENT_DISCRIMINATOR })
+    (value) => ({ ...value, discriminator: SET_FEE_RECIPIENT_DISCRIMINATOR }),
   );
 }
 
 export function getSetFeeRecipientInstructionDataDecoder(): Decoder<SetFeeRecipientInstructionData> {
   return getStructDecoder([
-    ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['feeRecipient', getAddressDecoder()],
+    ["discriminator", fixDecoderSize(getBytesDecoder(), 8)],
+    ["feeRecipient", getAddressDecoder()],
   ]);
 }
 
@@ -94,7 +94,7 @@ export function getSetFeeRecipientInstructionDataCodec(): Codec<
 > {
   return combineCodec(
     getSetFeeRecipientInstructionDataEncoder(),
-    getSetFeeRecipientInstructionDataDecoder()
+    getSetFeeRecipientInstructionDataDecoder(),
   );
 }
 
@@ -104,7 +104,7 @@ export type SetFeeRecipientInput<
 > = {
   authority: TransactionSigner<TAccountAuthority>;
   tunaConfig: Address<TAccountTunaConfig>;
-  feeRecipient: SetFeeRecipientInstructionDataArgs['feeRecipient'];
+  feeRecipient: SetFeeRecipientInstructionDataArgs["feeRecipient"];
 };
 
 export function getSetFeeRecipientInstruction<
@@ -113,7 +113,7 @@ export function getSetFeeRecipientInstruction<
   TProgramAddress extends Address = typeof TUNA_PROGRAM_ADDRESS,
 >(
   input: SetFeeRecipientInput<TAccountAuthority, TAccountTunaConfig>,
-  config?: { programAddress?: TProgramAddress }
+  config?: { programAddress?: TProgramAddress },
 ): SetFeeRecipientInstruction<
   TProgramAddress,
   TAccountAuthority,
@@ -135,7 +135,7 @@ export function getSetFeeRecipientInstruction<
   // Original args.
   const args = { ...input };
 
-  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+  const getAccountMeta = getAccountMetaFactory(programAddress, "programId");
   const instruction = {
     accounts: [
       getAccountMeta(accounts.authority),
@@ -143,7 +143,7 @@ export function getSetFeeRecipientInstruction<
     ],
     programAddress,
     data: getSetFeeRecipientInstructionDataEncoder().encode(
-      args as SetFeeRecipientInstructionDataArgs
+      args as SetFeeRecipientInstructionDataArgs,
     ),
   } as SetFeeRecipientInstruction<
     TProgramAddress,
@@ -172,11 +172,11 @@ export function parseSetFeeRecipientInstruction<
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+    IInstructionWithData<Uint8Array>,
 ): ParsedSetFeeRecipientInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 2) {
     // TODO: Coded error.
-    throw new Error('Not enough accounts');
+    throw new Error("Not enough accounts");
   }
   let accountIndex = 0;
   const getNextAccount = () => {

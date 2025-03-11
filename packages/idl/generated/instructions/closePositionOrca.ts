@@ -29,9 +29,9 @@ import {
   type TransactionSigner,
   type WritableAccount,
   type WritableSignerAccount,
-} from '@solana/kit';
-import { TUNA_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+} from "@solana/kit";
+import { TUNA_PROGRAM_ADDRESS } from "../programs";
+import { getAccountMetaFactory, type ResolvedAccount } from "../shared";
 
 export const CLOSE_POSITION_ORCA_DISCRIMINATOR = new Uint8Array([
   253, 98, 90, 239, 191, 36, 161, 26,
@@ -39,7 +39,7 @@ export const CLOSE_POSITION_ORCA_DISCRIMINATOR = new Uint8Array([
 
 export function getClosePositionOrcaDiscriminatorBytes() {
   return fixEncoderSize(getBytesEncoder(), 8).encode(
-    CLOSE_POSITION_ORCA_DISCRIMINATOR
+    CLOSE_POSITION_ORCA_DISCRIMINATOR,
   );
 }
 
@@ -59,7 +59,7 @@ export type ClosePositionOrcaInstruction<
   TAccountOrcaPosition extends string | IAccountMeta<string> = string,
   TAccountTokenProgram extends
     | string
-    | IAccountMeta<string> = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+    | IAccountMeta<string> = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
   TAccountToken2022Program extends string | IAccountMeta<string> = string,
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
@@ -121,14 +121,14 @@ export type ClosePositionOrcaInstructionDataArgs = {};
 
 export function getClosePositionOrcaInstructionDataEncoder(): Encoder<ClosePositionOrcaInstructionDataArgs> {
   return transformEncoder(
-    getStructEncoder([['discriminator', fixEncoderSize(getBytesEncoder(), 8)]]),
-    (value) => ({ ...value, discriminator: CLOSE_POSITION_ORCA_DISCRIMINATOR })
+    getStructEncoder([["discriminator", fixEncoderSize(getBytesEncoder(), 8)]]),
+    (value) => ({ ...value, discriminator: CLOSE_POSITION_ORCA_DISCRIMINATOR }),
   );
 }
 
 export function getClosePositionOrcaInstructionDataDecoder(): Decoder<ClosePositionOrcaInstructionData> {
   return getStructDecoder([
-    ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
+    ["discriminator", fixDecoderSize(getBytesDecoder(), 8)],
   ]);
 }
 
@@ -138,7 +138,7 @@ export function getClosePositionOrcaInstructionDataCodec(): Codec<
 > {
   return combineCodec(
     getClosePositionOrcaInstructionDataEncoder(),
-    getClosePositionOrcaInstructionDataDecoder()
+    getClosePositionOrcaInstructionDataDecoder(),
   );
 }
 
@@ -222,7 +222,7 @@ export function getClosePositionOrcaInstruction<
     TAccountTokenProgram,
     TAccountToken2022Program
   >,
-  config?: { programAddress?: TProgramAddress }
+  config?: { programAddress?: TProgramAddress },
 ): ClosePositionOrcaInstruction<
   TProgramAddress,
   TAccountAuthority,
@@ -289,10 +289,10 @@ export function getClosePositionOrcaInstruction<
   // Resolve default values.
   if (!accounts.tokenProgram.value) {
     accounts.tokenProgram.value =
-      'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' as Address<'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'>;
+      "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA" as Address<"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA">;
   }
 
-  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+  const getAccountMeta = getAccountMetaFactory(programAddress, "programId");
   const instruction = {
     accounts: [
       getAccountMeta(accounts.authority),
@@ -381,11 +381,11 @@ export function parseClosePositionOrcaInstruction<
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+    IInstructionWithData<Uint8Array>,
 ): ParsedClosePositionOrcaInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 14) {
     // TODO: Coded error.
-    throw new Error('Not enough accounts');
+    throw new Error("Not enough accounts");
   }
   let accountIndex = 0;
   const getNextAccount = () => {

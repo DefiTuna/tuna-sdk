@@ -30,9 +30,9 @@ import {
   type TransactionSigner,
   type WritableAccount,
   type WritableSignerAccount,
-} from '@solana/kit';
-import { TUNA_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+} from "@solana/kit";
+import { TUNA_PROGRAM_ADDRESS } from "../programs";
+import { getAccountMetaFactory, type ResolvedAccount } from "../shared";
 
 export const SET_LIQUIDATOR_AUTHORITY_DISCRIMINATOR = new Uint8Array([
   246, 146, 22, 66, 159, 216, 172, 143,
@@ -40,7 +40,7 @@ export const SET_LIQUIDATOR_AUTHORITY_DISCRIMINATOR = new Uint8Array([
 
 export function getSetLiquidatorAuthorityDiscriminatorBytes() {
   return fixEncoderSize(getBytesEncoder(), 8).encode(
-    SET_LIQUIDATOR_AUTHORITY_DISCRIMINATOR
+    SET_LIQUIDATOR_AUTHORITY_DISCRIMINATOR,
   );
 }
 
@@ -76,20 +76,20 @@ export type SetLiquidatorAuthorityInstructionDataArgs = {
 export function getSetLiquidatorAuthorityInstructionDataEncoder(): Encoder<SetLiquidatorAuthorityInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
-      ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['liquidatorAuthority', getAddressEncoder()],
+      ["discriminator", fixEncoderSize(getBytesEncoder(), 8)],
+      ["liquidatorAuthority", getAddressEncoder()],
     ]),
     (value) => ({
       ...value,
       discriminator: SET_LIQUIDATOR_AUTHORITY_DISCRIMINATOR,
-    })
+    }),
   );
 }
 
 export function getSetLiquidatorAuthorityInstructionDataDecoder(): Decoder<SetLiquidatorAuthorityInstructionData> {
   return getStructDecoder([
-    ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['liquidatorAuthority', getAddressDecoder()],
+    ["discriminator", fixDecoderSize(getBytesDecoder(), 8)],
+    ["liquidatorAuthority", getAddressDecoder()],
   ]);
 }
 
@@ -99,7 +99,7 @@ export function getSetLiquidatorAuthorityInstructionDataCodec(): Codec<
 > {
   return combineCodec(
     getSetLiquidatorAuthorityInstructionDataEncoder(),
-    getSetLiquidatorAuthorityInstructionDataDecoder()
+    getSetLiquidatorAuthorityInstructionDataDecoder(),
   );
 }
 
@@ -109,7 +109,7 @@ export type SetLiquidatorAuthorityInput<
 > = {
   authority: TransactionSigner<TAccountAuthority>;
   tunaConfig: Address<TAccountTunaConfig>;
-  liquidatorAuthority: SetLiquidatorAuthorityInstructionDataArgs['liquidatorAuthority'];
+  liquidatorAuthority: SetLiquidatorAuthorityInstructionDataArgs["liquidatorAuthority"];
 };
 
 export function getSetLiquidatorAuthorityInstruction<
@@ -118,7 +118,7 @@ export function getSetLiquidatorAuthorityInstruction<
   TProgramAddress extends Address = typeof TUNA_PROGRAM_ADDRESS,
 >(
   input: SetLiquidatorAuthorityInput<TAccountAuthority, TAccountTunaConfig>,
-  config?: { programAddress?: TProgramAddress }
+  config?: { programAddress?: TProgramAddress },
 ): SetLiquidatorAuthorityInstruction<
   TProgramAddress,
   TAccountAuthority,
@@ -140,7 +140,7 @@ export function getSetLiquidatorAuthorityInstruction<
   // Original args.
   const args = { ...input };
 
-  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+  const getAccountMeta = getAccountMetaFactory(programAddress, "programId");
   const instruction = {
     accounts: [
       getAccountMeta(accounts.authority),
@@ -148,7 +148,7 @@ export function getSetLiquidatorAuthorityInstruction<
     ],
     programAddress,
     data: getSetLiquidatorAuthorityInstructionDataEncoder().encode(
-      args as SetLiquidatorAuthorityInstructionDataArgs
+      args as SetLiquidatorAuthorityInstructionDataArgs,
     ),
   } as SetLiquidatorAuthorityInstruction<
     TProgramAddress,
@@ -177,11 +177,11 @@ export function parseSetLiquidatorAuthorityInstruction<
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+    IInstructionWithData<Uint8Array>,
 ): ParsedSetLiquidatorAuthorityInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 2) {
     // TODO: Coded error.
-    throw new Error('Not enough accounts');
+    throw new Error("Not enough accounts");
   }
   let accountIndex = 0;
   const getNextAccount = () => {
@@ -196,7 +196,7 @@ export function parseSetLiquidatorAuthorityInstruction<
       tunaConfig: getNextAccount(),
     },
     data: getSetLiquidatorAuthorityInstructionDataDecoder().decode(
-      instruction.data
+      instruction.data,
     ),
   };
 }

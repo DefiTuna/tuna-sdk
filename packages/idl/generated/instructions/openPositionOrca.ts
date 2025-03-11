@@ -16,8 +16,8 @@ import {
   getI32Encoder,
   getStructDecoder,
   getStructEncoder,
-  getU8Decoder,
-  getU8Encoder,
+  getU32Decoder,
+  getU32Encoder,
   transformEncoder,
   type Address,
   type Codec,
@@ -33,9 +33,9 @@ import {
   type TransactionSigner,
   type WritableAccount,
   type WritableSignerAccount,
-} from '@solana/kit';
-import { TUNA_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+} from "@solana/kit";
+import { TUNA_PROGRAM_ADDRESS } from "../programs";
+import { getAccountMetaFactory, type ResolvedAccount } from "../shared";
 
 export const OPEN_POSITION_ORCA_DISCRIMINATOR = new Uint8Array([
   201, 85, 45, 226, 182, 208, 246, 115,
@@ -43,7 +43,7 @@ export const OPEN_POSITION_ORCA_DISCRIMINATOR = new Uint8Array([
 
 export function getOpenPositionOrcaDiscriminatorBytes() {
   return fixEncoderSize(getBytesEncoder(), 8).encode(
-    OPEN_POSITION_ORCA_DISCRIMINATOR
+    OPEN_POSITION_ORCA_DISCRIMINATOR,
   );
 }
 
@@ -61,7 +61,7 @@ export type OpenPositionOrcaInstruction<
   TAccountToken2022Program extends string | IAccountMeta<string> = string,
   TAccountSystemProgram extends
     | string
-    | IAccountMeta<string> = '11111111111111111111111111111111',
+    | IAccountMeta<string> = "11111111111111111111111111111111",
   TAccountAssociatedTokenProgram extends string | IAccountMeta<string> = string,
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
@@ -116,7 +116,7 @@ export type OpenPositionOrcaInstructionData = {
   tickUpperIndex: number;
   tickStopLossIndex: number;
   tickTakeProfitIndex: number;
-  swapToTokenOnLimitOrder: number;
+  flags: number;
 };
 
 export type OpenPositionOrcaInstructionDataArgs = {
@@ -124,31 +124,31 @@ export type OpenPositionOrcaInstructionDataArgs = {
   tickUpperIndex: number;
   tickStopLossIndex: number;
   tickTakeProfitIndex: number;
-  swapToTokenOnLimitOrder: number;
+  flags: number;
 };
 
 export function getOpenPositionOrcaInstructionDataEncoder(): Encoder<OpenPositionOrcaInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
-      ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['tickLowerIndex', getI32Encoder()],
-      ['tickUpperIndex', getI32Encoder()],
-      ['tickStopLossIndex', getI32Encoder()],
-      ['tickTakeProfitIndex', getI32Encoder()],
-      ['swapToTokenOnLimitOrder', getU8Encoder()],
+      ["discriminator", fixEncoderSize(getBytesEncoder(), 8)],
+      ["tickLowerIndex", getI32Encoder()],
+      ["tickUpperIndex", getI32Encoder()],
+      ["tickStopLossIndex", getI32Encoder()],
+      ["tickTakeProfitIndex", getI32Encoder()],
+      ["flags", getU32Encoder()],
     ]),
-    (value) => ({ ...value, discriminator: OPEN_POSITION_ORCA_DISCRIMINATOR })
+    (value) => ({ ...value, discriminator: OPEN_POSITION_ORCA_DISCRIMINATOR }),
   );
 }
 
 export function getOpenPositionOrcaInstructionDataDecoder(): Decoder<OpenPositionOrcaInstructionData> {
   return getStructDecoder([
-    ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['tickLowerIndex', getI32Decoder()],
-    ['tickUpperIndex', getI32Decoder()],
-    ['tickStopLossIndex', getI32Decoder()],
-    ['tickTakeProfitIndex', getI32Decoder()],
-    ['swapToTokenOnLimitOrder', getU8Decoder()],
+    ["discriminator", fixDecoderSize(getBytesDecoder(), 8)],
+    ["tickLowerIndex", getI32Decoder()],
+    ["tickUpperIndex", getI32Decoder()],
+    ["tickStopLossIndex", getI32Decoder()],
+    ["tickTakeProfitIndex", getI32Decoder()],
+    ["flags", getU32Decoder()],
   ]);
 }
 
@@ -158,7 +158,7 @@ export function getOpenPositionOrcaInstructionDataCodec(): Codec<
 > {
   return combineCodec(
     getOpenPositionOrcaInstructionDataEncoder(),
-    getOpenPositionOrcaInstructionDataDecoder()
+    getOpenPositionOrcaInstructionDataDecoder(),
   );
 }
 
@@ -203,11 +203,11 @@ export type OpenPositionOrcaInput<
   token2022Program: Address<TAccountToken2022Program>;
   systemProgram?: Address<TAccountSystemProgram>;
   associatedTokenProgram: Address<TAccountAssociatedTokenProgram>;
-  tickLowerIndex: OpenPositionOrcaInstructionDataArgs['tickLowerIndex'];
-  tickUpperIndex: OpenPositionOrcaInstructionDataArgs['tickUpperIndex'];
-  tickStopLossIndex: OpenPositionOrcaInstructionDataArgs['tickStopLossIndex'];
-  tickTakeProfitIndex: OpenPositionOrcaInstructionDataArgs['tickTakeProfitIndex'];
-  swapToTokenOnLimitOrder: OpenPositionOrcaInstructionDataArgs['swapToTokenOnLimitOrder'];
+  tickLowerIndex: OpenPositionOrcaInstructionDataArgs["tickLowerIndex"];
+  tickUpperIndex: OpenPositionOrcaInstructionDataArgs["tickUpperIndex"];
+  tickStopLossIndex: OpenPositionOrcaInstructionDataArgs["tickStopLossIndex"];
+  tickTakeProfitIndex: OpenPositionOrcaInstructionDataArgs["tickTakeProfitIndex"];
+  flags: OpenPositionOrcaInstructionDataArgs["flags"];
 };
 
 export function getOpenPositionOrcaInstruction<
@@ -239,7 +239,7 @@ export function getOpenPositionOrcaInstruction<
     TAccountSystemProgram,
     TAccountAssociatedTokenProgram
   >,
-  config?: { programAddress?: TProgramAddress }
+  config?: { programAddress?: TProgramAddress },
 ): OpenPositionOrcaInstruction<
   TProgramAddress,
   TAccountAuthority,
@@ -299,10 +299,10 @@ export function getOpenPositionOrcaInstruction<
   // Resolve default values.
   if (!accounts.systemProgram.value) {
     accounts.systemProgram.value =
-      '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
+      "11111111111111111111111111111111" as Address<"11111111111111111111111111111111">;
   }
 
-  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+  const getAccountMeta = getAccountMetaFactory(programAddress, "programId");
   const instruction = {
     accounts: [
       getAccountMeta(accounts.authority),
@@ -320,7 +320,7 @@ export function getOpenPositionOrcaInstruction<
     ],
     programAddress,
     data: getOpenPositionOrcaInstructionDataEncoder().encode(
-      args as OpenPositionOrcaInstructionDataArgs
+      args as OpenPositionOrcaInstructionDataArgs,
     ),
   } as OpenPositionOrcaInstruction<
     TProgramAddress,
@@ -387,11 +387,11 @@ export function parseOpenPositionOrcaInstruction<
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+    IInstructionWithData<Uint8Array>,
 ): ParsedOpenPositionOrcaInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 12) {
     // TODO: Coded error.
-    throw new Error('Not enough accounts');
+    throw new Error("Not enough accounts");
   }
   let accountIndex = 0;
   const getNextAccount = () => {

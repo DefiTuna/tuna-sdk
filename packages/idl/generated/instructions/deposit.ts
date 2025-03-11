@@ -31,9 +31,9 @@ import {
   type TransactionSigner,
   type WritableAccount,
   type WritableSignerAccount,
-} from '@solana/kit';
-import { TUNA_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+} from "@solana/kit";
+import { TUNA_PROGRAM_ADDRESS } from "../programs";
+import { getAccountMetaFactory, type ResolvedAccount } from "../shared";
 
 export const DEPOSIT_DISCRIMINATOR = new Uint8Array([
   242, 35, 198, 137, 82, 225, 242, 182,
@@ -54,7 +54,7 @@ export type DepositInstruction<
   TAccountAuthorityAta extends string | IAccountMeta<string> = string,
   TAccountTokenProgram extends
     | string
-    | IAccountMeta<string> = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+    | IAccountMeta<string> = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
   TAccountAssociatedTokenProgram extends string | IAccountMeta<string> = string,
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
@@ -103,17 +103,17 @@ export type DepositInstructionDataArgs = { amount: number | bigint };
 export function getDepositInstructionDataEncoder(): Encoder<DepositInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
-      ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['amount', getU64Encoder()],
+      ["discriminator", fixEncoderSize(getBytesEncoder(), 8)],
+      ["amount", getU64Encoder()],
     ]),
-    (value) => ({ ...value, discriminator: DEPOSIT_DISCRIMINATOR })
+    (value) => ({ ...value, discriminator: DEPOSIT_DISCRIMINATOR }),
   );
 }
 
 export function getDepositInstructionDataDecoder(): Decoder<DepositInstructionData> {
   return getStructDecoder([
-    ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['amount', getU64Decoder()],
+    ["discriminator", fixDecoderSize(getBytesDecoder(), 8)],
+    ["amount", getU64Decoder()],
   ]);
 }
 
@@ -123,7 +123,7 @@ export function getDepositInstructionDataCodec(): Codec<
 > {
   return combineCodec(
     getDepositInstructionDataEncoder(),
-    getDepositInstructionDataDecoder()
+    getDepositInstructionDataDecoder(),
   );
 }
 
@@ -147,7 +147,7 @@ export type DepositInput<
   authorityAta: Address<TAccountAuthorityAta>;
   tokenProgram?: Address<TAccountTokenProgram>;
   associatedTokenProgram: Address<TAccountAssociatedTokenProgram>;
-  amount: DepositInstructionDataArgs['amount'];
+  amount: DepositInstructionDataArgs["amount"];
 };
 
 export function getDepositInstruction<
@@ -173,7 +173,7 @@ export function getDepositInstruction<
     TAccountTokenProgram,
     TAccountAssociatedTokenProgram
   >,
-  config?: { programAddress?: TProgramAddress }
+  config?: { programAddress?: TProgramAddress },
 ): DepositInstruction<
   TProgramAddress,
   TAccountAuthority,
@@ -215,10 +215,10 @@ export function getDepositInstruction<
   // Resolve default values.
   if (!accounts.tokenProgram.value) {
     accounts.tokenProgram.value =
-      'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' as Address<'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'>;
+      "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA" as Address<"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA">;
   }
 
-  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+  const getAccountMeta = getAccountMetaFactory(programAddress, "programId");
   const instruction = {
     accounts: [
       getAccountMeta(accounts.authority),
@@ -233,7 +233,7 @@ export function getDepositInstruction<
     ],
     programAddress,
     data: getDepositInstructionDataEncoder().encode(
-      args as DepositInstructionDataArgs
+      args as DepositInstructionDataArgs,
     ),
   } as DepositInstruction<
     TProgramAddress,
@@ -276,11 +276,11 @@ export function parseDepositInstruction<
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+    IInstructionWithData<Uint8Array>,
 ): ParsedDepositInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 9) {
     // TODO: Coded error.
-    throw new Error('Not enough accounts');
+    throw new Error("Not enough accounts");
   }
   let accountIndex = 0;
   const getNextAccount = () => {

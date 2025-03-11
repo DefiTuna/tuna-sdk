@@ -2,9 +2,9 @@
   "address": "tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD",
   "metadata": {
     "name": "tuna",
-    "version": "1.0.43",
+    "version": "1.0.51",
     "spec": "0.1.0",
-    "description": "Created with Anchor"
+    "description": "DefiTuna"
   },
   "instructions": [
     {
@@ -109,27 +109,7 @@
           "writable": true
         },
         {
-          "name": "pool_vault_ata_a",
-          "writable": true
-        },
-        {
-          "name": "pool_vault_ata_b",
-          "writable": true
-        },
-        {
           "name": "orca_position",
-          "writable": true
-        },
-        {
-          "name": "tick_array_lower",
-          "writable": true
-        },
-        {
-          "name": "tick_array_upper",
-          "writable": true
-        },
-        {
-          "name": "orca_oracle",
           "writable": true
         },
         {
@@ -252,6 +232,118 @@
       "args": []
     },
     {
+      "name": "collect_and_compound_fees_orca",
+      "discriminator": [
+        213,
+        44,
+        171,
+        74,
+        209,
+        13,
+        137,
+        0
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "docs": [
+            "",
+            "TUNA accounts",
+            ""
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tuna_config"
+        },
+        {
+          "name": "mint_a"
+        },
+        {
+          "name": "mint_b"
+        },
+        {
+          "name": "market"
+        },
+        {
+          "name": "vault_a",
+          "writable": true
+        },
+        {
+          "name": "vault_b",
+          "writable": true
+        },
+        {
+          "name": "vault_a_ata",
+          "writable": true
+        },
+        {
+          "name": "vault_b_ata",
+          "writable": true
+        },
+        {
+          "name": "tuna_position",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata"
+        },
+        {
+          "name": "tuna_position_ata_a",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_b",
+          "writable": true
+        },
+        {
+          "name": "fee_recipient_ata_a",
+          "writable": true
+        },
+        {
+          "name": "fee_recipient_ata_b",
+          "writable": true
+        },
+        {
+          "name": "pyth_oracle_price_feed_a"
+        },
+        {
+          "name": "pyth_oracle_price_feed_b"
+        },
+        {
+          "name": "whirlpool_program",
+          "docs": [
+            "",
+            "ORCA accounts",
+            ""
+          ]
+        },
+        {
+          "name": "whirlpool",
+          "writable": true
+        },
+        {
+          "name": "orca_position",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "docs": [
+            "",
+            "Other accounts",
+            ""
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "use_leverage",
+          "type": "bool"
+        }
+      ]
+    },
+    {
       "name": "collect_fees_orca",
       "discriminator": [
         147,
@@ -313,23 +405,7 @@
           "writable": true
         },
         {
-          "name": "pool_vault_ata_a",
-          "writable": true
-        },
-        {
-          "name": "pool_vault_ata_b",
-          "writable": true
-        },
-        {
           "name": "orca_position",
-          "writable": true
-        },
-        {
-          "name": "tick_array_lower",
-          "writable": true
-        },
-        {
-          "name": "tick_array_upper",
           "writable": true
         },
         {
@@ -516,7 +592,11 @@
         },
         {
           "name": "protocol_fee",
-          "type": "u32"
+          "type": "u16"
+        },
+        {
+          "name": "protocol_fee_on_collateral",
+          "type": "u16"
         },
         {
           "name": "liquidation_fee",
@@ -533,6 +613,10 @@
         {
           "name": "oracle_price_deviation_threshold",
           "type": "u32"
+        },
+        {
+          "name": "disabled",
+          "type": "bool"
         }
       ]
     },
@@ -631,16 +715,20 @@
       ],
       "args": [
         {
-          "name": "pyth_oracle_price_feed",
-          "type": "pubkey"
-        },
-        {
           "name": "interest_rate",
           "type": "u64"
         },
         {
           "name": "supply_limit",
           "type": "u64"
+        },
+        {
+          "name": "pyth_oracle_price_update",
+          "type": "pubkey"
+        },
+        {
+          "name": "pyth_oracle_feed_id",
+          "type": "pubkey"
         }
       ]
     },
@@ -725,6 +813,12 @@
           "name": "tuna_config"
         },
         {
+          "name": "mint_a"
+        },
+        {
+          "name": "mint_b"
+        },
+        {
           "name": "market"
         },
         {
@@ -768,6 +862,12 @@
           "writable": true
         },
         {
+          "name": "pyth_oracle_price_feed_a"
+        },
+        {
+          "name": "pyth_oracle_price_feed_b"
+        },
+        {
           "name": "whirlpool_program",
           "docs": [
             "",
@@ -780,27 +880,7 @@
           "writable": true
         },
         {
-          "name": "pool_vault_ata_a",
-          "writable": true
-        },
-        {
-          "name": "pool_vault_ata_b",
-          "writable": true
-        },
-        {
           "name": "orca_position",
-          "writable": true
-        },
-        {
-          "name": "tick_array_lower",
-          "writable": true
-        },
-        {
-          "name": "tick_array_upper",
-          "writable": true
-        },
-        {
-          "name": "orca_oracle",
           "writable": true
         },
         {
@@ -812,7 +892,12 @@
           ]
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "withdraw_percent",
+          "type": "u32"
+        }
+      ]
     },
     {
       "name": "open_position_orca",
@@ -904,8 +989,8 @@
           "type": "i32"
         },
         {
-          "name": "swap_to_token_on_limit_order",
-          "type": "u8"
+          "name": "flags",
+          "type": "u32"
         }
       ]
     },
@@ -1003,27 +1088,7 @@
           "writable": true
         },
         {
-          "name": "pool_vault_ata_a",
-          "writable": true
-        },
-        {
-          "name": "pool_vault_ata_b",
-          "writable": true
-        },
-        {
           "name": "orca_position",
-          "writable": true
-        },
-        {
-          "name": "tick_array_lower",
-          "writable": true
-        },
-        {
-          "name": "tick_array_upper",
-          "writable": true
-        },
-        {
-          "name": "orca_oracle",
           "writable": true
         },
         {
@@ -1476,7 +1541,11 @@
         },
         {
           "name": "protocol_fee",
-          "type": "u32"
+          "type": "u16"
+        },
+        {
+          "name": "protocol_fee_on_collateral",
+          "type": "u16"
         },
         {
           "name": "liquidation_fee",
@@ -1493,6 +1562,10 @@
         {
           "name": "oracle_price_deviation_threshold",
           "type": "u32"
+        },
+        {
+          "name": "disabled",
+          "type": "bool"
         }
       ]
     },
@@ -1524,16 +1597,20 @@
       ],
       "args": [
         {
-          "name": "pyth_oracle_price_feed",
-          "type": "pubkey"
-        },
-        {
           "name": "interest_rate",
           "type": "u64"
         },
         {
           "name": "supply_limit",
           "type": "u64"
+        },
+        {
+          "name": "pyth_oracle_price_update",
+          "type": "pubkey"
+        },
+        {
+          "name": "pyth_oracle_feed_id",
+          "type": "pubkey"
         }
       ]
     },
@@ -1781,148 +1858,168 @@
     },
     {
       "code": 6015,
+      "name": "MarketDisabled",
+      "msg": "MarketDisabled"
+    },
+    {
+      "code": 6016,
       "name": "MathOverflow",
       "msg": "MathOverflow"
     },
     {
-      "code": 6016,
+      "code": 6017,
       "name": "MathUnderflow",
       "msg": "MathUnderflow"
     },
     {
-      "code": 6017,
+      "code": 6018,
       "name": "OracleStalePrice",
       "msg": "OracleStalePrice"
     },
     {
-      "code": 6018,
+      "code": 6019,
       "name": "OraclePriceDeviationThresholdExceeded",
       "msg": "OraclePriceDeviationThresholdExceeded"
     },
     {
-      "code": 6019,
+      "code": 6020,
       "name": "OraclePriceDeviationThresholdOutOfRange",
       "msg": "OraclePriceDeviationThresholdOutOfRange"
     },
     {
-      "code": 6020,
+      "code": 6021,
       "name": "PartialFillError",
       "msg": "Trade resulted in partial fill"
     },
     {
-      "code": 6021,
+      "code": 6022,
       "name": "PositionIsHealthy",
       "msg": "PositionIsHealthy"
     },
     {
-      "code": 6022,
+      "code": 6023,
       "name": "PositionIsLiquidated",
       "msg": "PositionIsLiquidated"
     },
     {
-      "code": 6023,
+      "code": 6024,
       "name": "PositionIsUnhealthy",
       "msg": "PositionIsUnhealthy"
     },
     {
-      "code": 6024,
+      "code": 6025,
       "name": "ProtocolFeeIsOutOfRange",
       "msg": "ProtocolFeeIsOutOfRange"
     },
     {
-      "code": 6025,
+      "code": 6026,
       "name": "SolverFailedToFindRoot",
       "msg": "SolverFailedToFindRoot"
     },
     {
-      "code": 6026,
+      "code": 6027,
       "name": "SqrtPriceOutOfBounds",
       "msg": "SqrtPriceOutOfBounds"
     },
     {
-      "code": 6027,
+      "code": 6028,
       "name": "SupplyLimitExceeded",
       "msg": "SupplyLimitExceeded"
     },
     {
-      "code": 6028,
+      "code": 6029,
       "name": "Suspended",
       "msg": "Suspended"
     },
     {
-      "code": 6029,
+      "code": 6030,
       "name": "SwapSlippageExceeded",
       "msg": "SwapSlippageExceeded"
     },
     {
-      "code": 6030,
+      "code": 6031,
       "name": "TickIndexOfBounds",
       "msg": "TickIndexOfBounds"
     },
     {
-      "code": 6031,
+      "code": 6032,
       "name": "TypeCastOverflow",
       "msg": "TypeCastOverflow"
     },
     {
-      "code": 6032,
+      "code": 6033,
       "name": "UnexpectedValue",
       "msg": "UnexpectedValue"
     },
     {
-      "code": 6033,
+      "code": 6034,
       "name": "VaultNotInitialized",
       "msg": "VaultNotInitialized"
     },
     {
-      "code": 6034,
+      "code": 6035,
       "name": "WithdrawRequestExceedsUserBalance",
       "msg": "WithdrawRequestExceedsUserBalance"
     },
     {
-      "code": 6035,
+      "code": 6036,
       "name": "ZeroPriceRange",
       "msg": "ZeroPriceRange"
     },
     {
-      "code": 6036,
+      "code": 6037,
       "name": "ZeroTradableAmount",
       "msg": "There are no tradable amount to swap."
     },
     {
-      "code": 6037,
+      "code": 6038,
+      "name": "ZeroYield",
+      "msg": "ZeroYield"
+    },
+    {
+      "code": 6039,
       "name": "RaydiumInvalidFirstTickArrayAccount",
       "msg": "RaydiumInvalidFirstTickArrayAccount"
     },
     {
-      "code": 6038,
+      "code": 6040,
       "name": "RaydiumInvalidTickArray",
       "msg": "RaydiumInvalidTickArray"
     },
     {
-      "code": 6039,
+      "code": 6041,
       "name": "RaydiumInvaildTickIndex",
       "msg": "RaydiumInvaildTickIndex"
     },
     {
-      "code": 6040,
+      "code": 6042,
       "name": "RaydiumMaxTokenOverflow",
       "msg": "RaydiumMaxTokenOverflow"
     },
     {
-      "code": 6041,
+      "code": 6043,
       "name": "RaydiumNotEnoughTickArrayAccount",
       "msg": "RaydiumNotEnoughTickArrayAccount"
     },
     {
-      "code": 6042,
+      "code": 6044,
       "name": "RaydiumSqrtPriceLimitOverflow",
       "msg": "RaydiumSqrtPriceLimitOverflow"
     },
     {
-      "code": 6043,
+      "code": 6045,
       "name": "RaydiumZeroAmountSpecified",
       "msg": "RaydiumZeroAmountSpecified"
+    },
+    {
+      "code": 6046,
+      "name": "UnableToLoadAccountData",
+      "msg": "UnableToLoadAccountData"
+    },
+    {
+      "code": 6047,
+      "name": "UnableToDeserializeAccountData",
+      "msg": "UnableToDeserializeAccountData"
     }
   ],
   "types": [
@@ -2050,7 +2147,14 @@
             "docs": [
               "Protocol fee denominated in hundredths of a bip. (Value of 100 is equal to 0.01%)"
             ],
-            "type": "u32"
+            "type": "u16"
+          },
+          {
+            "name": "protocol_fee_on_collateral",
+            "docs": [
+              "Protocol fee on collateral (funds provided by a user) denominated in hundredths of a bip. (Value of 100 is equal to 0.01%)"
+            ],
+            "type": "u16"
           },
           {
             "name": "liquidation_fee",
@@ -2081,6 +2185,13 @@
             "type": "u32"
           },
           {
+            "name": "disabled",
+            "docs": [
+              "True if the market is disabled (no more position can be opened)."
+            ],
+            "type": "bool"
+          },
+          {
             "name": "reserved",
             "docs": [
               "Reserved"
@@ -2088,7 +2199,7 @@
             "type": {
               "array": [
                 "u8",
-                248
+                247
               ]
             }
           }
@@ -2505,11 +2616,35 @@
           {
             "name": "swap_to_token_on_limit_order",
             "docs": [
-              "Which token to swap collateral to when a limit order is executed.",
+              "OBSOLETE: Which token to swap collateral to when a limit order is executed. Used for position ver 4 or older.",
               "bits 0..1: Stop loss swap. 0 - no swap, 1 - swap to token A, 2 - swap to token B",
               "bits 2..3: Take profit swap. 0 - no swap, 1 - swap to token A, 2 - swap to token B"
             ],
             "type": "u8"
+          },
+          {
+            "name": "compounded_yield_a",
+            "docs": [
+              "Yield amount in token A that has already been collected and compounded into the position."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "compounded_yield_b",
+            "docs": [
+              "Yield amount in token B that has already been collected and compounded into the position."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "flags",
+            "docs": [
+              "Position options.",
+              "Bits 0..1: Stop loss swap. 0 - no swap, 1 - swap to token A, 2 - swap to token B",
+              "Bits 2..3: Take profit swap. 0 - no swap, 1 - swap to token A, 2 - swap to token B",
+              "Bits 4..5: Yield auto compounding. 0 - don't compound, 1 - compound yield, 2 - compound yield with leverage"
+            ],
+            "type": "u32"
           },
           {
             "name": "reserved",
@@ -2519,7 +2654,7 @@
             "type": {
               "array": [
                 "u8",
-                82
+                62
               ]
             }
           }
@@ -2634,9 +2769,16 @@
             "type": "u64"
           },
           {
-            "name": "pyth_oracle_price_feed",
+            "name": "pyth_oracle_price_update",
             "docs": [
-              "Pyth oracle price feed."
+              "Pyth oracle price update account."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "pyth_oracle_feed_id",
+            "docs": [
+              "Pyth oracle price feed id."
             ],
             "type": "pubkey"
           },
@@ -2648,7 +2790,7 @@
             "type": {
               "array": [
                 "u8",
-                216
+                184
               ]
             }
           }
