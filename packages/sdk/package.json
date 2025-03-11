@@ -25,7 +25,7 @@
     },
     "devDependencies": {
         "@defituna/eslint-config": "^0.4.0",
-        "@defituna/idl": "workspace:*",
+        "@defituna/client": "workspace:*",
         "@defituna/prettier-config": "^0.0.0",
         "@defituna/typescript-config": "^0.2.0",
         "@solana/web3.js": "^2.0.0",
