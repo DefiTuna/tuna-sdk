@@ -1,5 +1,11 @@
 # @defituna/sdk
 
+## 1.1.7
+
+### Patch Changes
+
+- 54b1211: Add Tuna Position flags
+
 ## 1.1.6
 
 ### Patch Changes
