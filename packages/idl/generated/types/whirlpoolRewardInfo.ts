@@ -18,7 +18,7 @@ import {
   type Codec,
   type Decoder,
   type Encoder,
-} from '@solana/kit';
+} from "@solana/kit";
 
 export type WhirlpoolRewardInfo = {
   mint: Address;
@@ -38,21 +38,21 @@ export type WhirlpoolRewardInfoArgs = {
 
 export function getWhirlpoolRewardInfoEncoder(): Encoder<WhirlpoolRewardInfoArgs> {
   return getStructEncoder([
-    ['mint', getAddressEncoder()],
-    ['vault', getAddressEncoder()],
-    ['authority', getAddressEncoder()],
-    ['emissionsPerSecondX64', getU128Encoder()],
-    ['growthGlobalX64', getU128Encoder()],
+    ["mint", getAddressEncoder()],
+    ["vault", getAddressEncoder()],
+    ["authority", getAddressEncoder()],
+    ["emissionsPerSecondX64", getU128Encoder()],
+    ["growthGlobalX64", getU128Encoder()],
   ]);
 }
 
 export function getWhirlpoolRewardInfoDecoder(): Decoder<WhirlpoolRewardInfo> {
   return getStructDecoder([
-    ['mint', getAddressDecoder()],
-    ['vault', getAddressDecoder()],
-    ['authority', getAddressDecoder()],
-    ['emissionsPerSecondX64', getU128Decoder()],
-    ['growthGlobalX64', getU128Decoder()],
+    ["mint", getAddressDecoder()],
+    ["vault", getAddressDecoder()],
+    ["authority", getAddressDecoder()],
+    ["emissionsPerSecondX64", getU128Decoder()],
+    ["growthGlobalX64", getU128Decoder()],
   ]);
 }
 
@@ -62,6 +62,6 @@ export function getWhirlpoolRewardInfoCodec(): Codec<
 > {
   return combineCodec(
     getWhirlpoolRewardInfoEncoder(),
-    getWhirlpoolRewardInfoDecoder()
+    getWhirlpoolRewardInfoDecoder(),
   );
 }

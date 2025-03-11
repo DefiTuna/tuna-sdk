@@ -10,16 +10,12 @@ import {
   combineCodec,
   fixDecoderSize,
   fixEncoderSize,
+  getBooleanDecoder,
+  getBooleanEncoder,
   getBytesDecoder,
   getBytesEncoder,
   getStructDecoder,
   getStructEncoder,
-  getU32Decoder,
-  getU32Encoder,
-  getU64Decoder,
-  getU64Encoder,
-  getU8Decoder,
-  getU8Encoder,
   transformEncoder,
   type Address,
   type Codec,
@@ -39,23 +35,23 @@ import {
 import { TUNA_PROGRAM_ADDRESS } from "../programs";
 import { getAccountMetaFactory, type ResolvedAccount } from "../shared";
 
-export const REMOVE_LIQUIDITY_ORCA_DISCRIMINATOR = new Uint8Array([
-  30, 69, 45, 170, 183, 195, 12, 119,
+export const COLLECT_AND_COMPOUND_FEES_ORCA_DISCRIMINATOR = new Uint8Array([
+  213, 44, 171, 74, 209, 13, 137, 0,
 ]);
 
-export function getRemoveLiquidityOrcaDiscriminatorBytes() {
+export function getCollectAndCompoundFeesOrcaDiscriminatorBytes() {
   return fixEncoderSize(getBytesEncoder(), 8).encode(
-    REMOVE_LIQUIDITY_ORCA_DISCRIMINATOR,
+    COLLECT_AND_COMPOUND_FEES_ORCA_DISCRIMINATOR,
   );
 }
 
-export type RemoveLiquidityOrcaInstruction<
+export type CollectAndCompoundFeesOrcaInstruction<
   TProgram extends string = typeof TUNA_PROGRAM_ADDRESS,
   TAccountAuthority extends string | IAccountMeta<string> = string,
   TAccountTunaConfig extends string | IAccountMeta<string> = string,
-  TAccountMarket extends string | IAccountMeta<string> = string,
   TAccountMintA extends string | IAccountMeta<string> = string,
   TAccountMintB extends string | IAccountMeta<string> = string,
+  TAccountMarket extends string | IAccountMeta<string> = string,
   TAccountVaultA extends string | IAccountMeta<string> = string,
   TAccountVaultB extends string | IAccountMeta<string> = string,
   TAccountVaultAAta extends string | IAccountMeta<string> = string,
@@ -64,8 +60,8 @@ export type RemoveLiquidityOrcaInstruction<
   TAccountTunaPositionAta extends string | IAccountMeta<string> = string,
   TAccountTunaPositionAtaA extends string | IAccountMeta<string> = string,
   TAccountTunaPositionAtaB extends string | IAccountMeta<string> = string,
-  TAccountTunaPositionOwnerAtaA extends string | IAccountMeta<string> = string,
-  TAccountTunaPositionOwnerAtaB extends string | IAccountMeta<string> = string,
+  TAccountFeeRecipientAtaA extends string | IAccountMeta<string> = string,
+  TAccountFeeRecipientAtaB extends string | IAccountMeta<string> = string,
   TAccountPythOraclePriceFeedA extends string | IAccountMeta<string> = string,
   TAccountPythOraclePriceFeedB extends string | IAccountMeta<string> = string,
   TAccountWhirlpoolProgram extends string | IAccountMeta<string> = string,
@@ -86,15 +82,15 @@ export type RemoveLiquidityOrcaInstruction<
       TAccountTunaConfig extends string
         ? ReadonlyAccount<TAccountTunaConfig>
         : TAccountTunaConfig,
-      TAccountMarket extends string
-        ? ReadonlyAccount<TAccountMarket>
-        : TAccountMarket,
       TAccountMintA extends string
         ? ReadonlyAccount<TAccountMintA>
         : TAccountMintA,
       TAccountMintB extends string
         ? ReadonlyAccount<TAccountMintB>
         : TAccountMintB,
+      TAccountMarket extends string
+        ? ReadonlyAccount<TAccountMarket>
+        : TAccountMarket,
       TAccountVaultA extends string
         ? WritableAccount<TAccountVaultA>
         : TAccountVaultA,
@@ -111,7 +107,7 @@ export type RemoveLiquidityOrcaInstruction<
         ? WritableAccount<TAccountTunaPosition>
         : TAccountTunaPosition,
       TAccountTunaPositionAta extends string
-        ? WritableAccount<TAccountTunaPositionAta>
+        ? ReadonlyAccount<TAccountTunaPositionAta>
         : TAccountTunaPositionAta,
       TAccountTunaPositionAtaA extends string
         ? WritableAccount<TAccountTunaPositionAtaA>
@@ -119,12 +115,12 @@ export type RemoveLiquidityOrcaInstruction<
       TAccountTunaPositionAtaB extends string
         ? WritableAccount<TAccountTunaPositionAtaB>
         : TAccountTunaPositionAtaB,
-      TAccountTunaPositionOwnerAtaA extends string
-        ? WritableAccount<TAccountTunaPositionOwnerAtaA>
-        : TAccountTunaPositionOwnerAtaA,
-      TAccountTunaPositionOwnerAtaB extends string
-        ? WritableAccount<TAccountTunaPositionOwnerAtaB>
-        : TAccountTunaPositionOwnerAtaB,
+      TAccountFeeRecipientAtaA extends string
+        ? WritableAccount<TAccountFeeRecipientAtaA>
+        : TAccountFeeRecipientAtaA,
+      TAccountFeeRecipientAtaB extends string
+        ? WritableAccount<TAccountFeeRecipientAtaB>
+        : TAccountFeeRecipientAtaB,
       TAccountPythOraclePriceFeedA extends string
         ? ReadonlyAccount<TAccountPythOraclePriceFeedA>
         : TAccountPythOraclePriceFeedA,
@@ -147,63 +143,51 @@ export type RemoveLiquidityOrcaInstruction<
     ]
   >;
 
-export type RemoveLiquidityOrcaInstructionData = {
+export type CollectAndCompoundFeesOrcaInstructionData = {
   discriminator: ReadonlyUint8Array;
-  withdrawPercent: number;
-  minRemovedAmountA: bigint;
-  minRemovedAmountB: bigint;
-  swapToToken: number;
+  useLeverage: boolean;
 };
 
-export type RemoveLiquidityOrcaInstructionDataArgs = {
-  withdrawPercent: number;
-  minRemovedAmountA: number | bigint;
-  minRemovedAmountB: number | bigint;
-  swapToToken: number;
+export type CollectAndCompoundFeesOrcaInstructionDataArgs = {
+  useLeverage: boolean;
 };
 
-export function getRemoveLiquidityOrcaInstructionDataEncoder(): Encoder<RemoveLiquidityOrcaInstructionDataArgs> {
+export function getCollectAndCompoundFeesOrcaInstructionDataEncoder(): Encoder<CollectAndCompoundFeesOrcaInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ["discriminator", fixEncoderSize(getBytesEncoder(), 8)],
-      ["withdrawPercent", getU32Encoder()],
-      ["minRemovedAmountA", getU64Encoder()],
-      ["minRemovedAmountB", getU64Encoder()],
-      ["swapToToken", getU8Encoder()],
+      ["useLeverage", getBooleanEncoder()],
     ]),
     (value) => ({
       ...value,
-      discriminator: REMOVE_LIQUIDITY_ORCA_DISCRIMINATOR,
+      discriminator: COLLECT_AND_COMPOUND_FEES_ORCA_DISCRIMINATOR,
     }),
   );
 }
 
-export function getRemoveLiquidityOrcaInstructionDataDecoder(): Decoder<RemoveLiquidityOrcaInstructionData> {
+export function getCollectAndCompoundFeesOrcaInstructionDataDecoder(): Decoder<CollectAndCompoundFeesOrcaInstructionData> {
   return getStructDecoder([
     ["discriminator", fixDecoderSize(getBytesDecoder(), 8)],
-    ["withdrawPercent", getU32Decoder()],
-    ["minRemovedAmountA", getU64Decoder()],
-    ["minRemovedAmountB", getU64Decoder()],
-    ["swapToToken", getU8Decoder()],
+    ["useLeverage", getBooleanDecoder()],
   ]);
 }
 
-export function getRemoveLiquidityOrcaInstructionDataCodec(): Codec<
-  RemoveLiquidityOrcaInstructionDataArgs,
-  RemoveLiquidityOrcaInstructionData
+export function getCollectAndCompoundFeesOrcaInstructionDataCodec(): Codec<
+  CollectAndCompoundFeesOrcaInstructionDataArgs,
+  CollectAndCompoundFeesOrcaInstructionData
 > {
   return combineCodec(
-    getRemoveLiquidityOrcaInstructionDataEncoder(),
-    getRemoveLiquidityOrcaInstructionDataDecoder(),
+    getCollectAndCompoundFeesOrcaInstructionDataEncoder(),
+    getCollectAndCompoundFeesOrcaInstructionDataDecoder(),
   );
 }
 
-export type RemoveLiquidityOrcaInput<
+export type CollectAndCompoundFeesOrcaInput<
   TAccountAuthority extends string = string,
   TAccountTunaConfig extends string = string,
-  TAccountMarket extends string = string,
   TAccountMintA extends string = string,
   TAccountMintB extends string = string,
+  TAccountMarket extends string = string,
   TAccountVaultA extends string = string,
   TAccountVaultB extends string = string,
   TAccountVaultAAta extends string = string,
@@ -212,8 +196,8 @@ export type RemoveLiquidityOrcaInput<
   TAccountTunaPositionAta extends string = string,
   TAccountTunaPositionAtaA extends string = string,
   TAccountTunaPositionAtaB extends string = string,
-  TAccountTunaPositionOwnerAtaA extends string = string,
-  TAccountTunaPositionOwnerAtaB extends string = string,
+  TAccountFeeRecipientAtaA extends string = string,
+  TAccountFeeRecipientAtaB extends string = string,
   TAccountPythOraclePriceFeedA extends string = string,
   TAccountPythOraclePriceFeedB extends string = string,
   TAccountWhirlpoolProgram extends string = string,
@@ -228,9 +212,9 @@ export type RemoveLiquidityOrcaInput<
    */
   authority: TransactionSigner<TAccountAuthority>;
   tunaConfig: Address<TAccountTunaConfig>;
-  market: Address<TAccountMarket>;
   mintA: Address<TAccountMintA>;
   mintB: Address<TAccountMintB>;
+  market: Address<TAccountMarket>;
   vaultA: Address<TAccountVaultA>;
   vaultB: Address<TAccountVaultB>;
   vaultAAta: Address<TAccountVaultAAta>;
@@ -239,8 +223,8 @@ export type RemoveLiquidityOrcaInput<
   tunaPositionAta: Address<TAccountTunaPositionAta>;
   tunaPositionAtaA: Address<TAccountTunaPositionAtaA>;
   tunaPositionAtaB: Address<TAccountTunaPositionAtaB>;
-  tunaPositionOwnerAtaA: Address<TAccountTunaPositionOwnerAtaA>;
-  tunaPositionOwnerAtaB: Address<TAccountTunaPositionOwnerAtaB>;
+  feeRecipientAtaA: Address<TAccountFeeRecipientAtaA>;
+  feeRecipientAtaB: Address<TAccountFeeRecipientAtaB>;
   pythOraclePriceFeedA: Address<TAccountPythOraclePriceFeedA>;
   pythOraclePriceFeedB: Address<TAccountPythOraclePriceFeedB>;
   /**
@@ -257,18 +241,15 @@ export type RemoveLiquidityOrcaInput<
    *
    */
   tokenProgram?: Address<TAccountTokenProgram>;
-  withdrawPercent: RemoveLiquidityOrcaInstructionDataArgs["withdrawPercent"];
-  minRemovedAmountA: RemoveLiquidityOrcaInstructionDataArgs["minRemovedAmountA"];
-  minRemovedAmountB: RemoveLiquidityOrcaInstructionDataArgs["minRemovedAmountB"];
-  swapToToken: RemoveLiquidityOrcaInstructionDataArgs["swapToToken"];
+  useLeverage: CollectAndCompoundFeesOrcaInstructionDataArgs["useLeverage"];
 };
 
-export function getRemoveLiquidityOrcaInstruction<
+export function getCollectAndCompoundFeesOrcaInstruction<
   TAccountAuthority extends string,
   TAccountTunaConfig extends string,
-  TAccountMarket extends string,
   TAccountMintA extends string,
   TAccountMintB extends string,
+  TAccountMarket extends string,
   TAccountVaultA extends string,
   TAccountVaultB extends string,
   TAccountVaultAAta extends string,
@@ -277,8 +258,8 @@ export function getRemoveLiquidityOrcaInstruction<
   TAccountTunaPositionAta extends string,
   TAccountTunaPositionAtaA extends string,
   TAccountTunaPositionAtaB extends string,
-  TAccountTunaPositionOwnerAtaA extends string,
-  TAccountTunaPositionOwnerAtaB extends string,
+  TAccountFeeRecipientAtaA extends string,
+  TAccountFeeRecipientAtaB extends string,
   TAccountPythOraclePriceFeedA extends string,
   TAccountPythOraclePriceFeedB extends string,
   TAccountWhirlpoolProgram extends string,
@@ -287,12 +268,12 @@ export function getRemoveLiquidityOrcaInstruction<
   TAccountTokenProgram extends string,
   TProgramAddress extends Address = typeof TUNA_PROGRAM_ADDRESS,
 >(
-  input: RemoveLiquidityOrcaInput<
+  input: CollectAndCompoundFeesOrcaInput<
     TAccountAuthority,
     TAccountTunaConfig,
-    TAccountMarket,
     TAccountMintA,
     TAccountMintB,
+    TAccountMarket,
     TAccountVaultA,
     TAccountVaultB,
     TAccountVaultAAta,
@@ -301,8 +282,8 @@ export function getRemoveLiquidityOrcaInstruction<
     TAccountTunaPositionAta,
     TAccountTunaPositionAtaA,
     TAccountTunaPositionAtaB,
-    TAccountTunaPositionOwnerAtaA,
-    TAccountTunaPositionOwnerAtaB,
+    TAccountFeeRecipientAtaA,
+    TAccountFeeRecipientAtaB,
     TAccountPythOraclePriceFeedA,
     TAccountPythOraclePriceFeedB,
     TAccountWhirlpoolProgram,
@@ -311,13 +292,13 @@ export function getRemoveLiquidityOrcaInstruction<
     TAccountTokenProgram
   >,
   config?: { programAddress?: TProgramAddress },
-): RemoveLiquidityOrcaInstruction<
+): CollectAndCompoundFeesOrcaInstruction<
   TProgramAddress,
   TAccountAuthority,
   TAccountTunaConfig,
-  TAccountMarket,
   TAccountMintA,
   TAccountMintB,
+  TAccountMarket,
   TAccountVaultA,
   TAccountVaultB,
   TAccountVaultAAta,
@@ -326,8 +307,8 @@ export function getRemoveLiquidityOrcaInstruction<
   TAccountTunaPositionAta,
   TAccountTunaPositionAtaA,
   TAccountTunaPositionAtaB,
-  TAccountTunaPositionOwnerAtaA,
-  TAccountTunaPositionOwnerAtaB,
+  TAccountFeeRecipientAtaA,
+  TAccountFeeRecipientAtaB,
   TAccountPythOraclePriceFeedA,
   TAccountPythOraclePriceFeedB,
   TAccountWhirlpoolProgram,
@@ -342,15 +323,18 @@ export function getRemoveLiquidityOrcaInstruction<
   const originalAccounts = {
     authority: { value: input.authority ?? null, isWritable: true },
     tunaConfig: { value: input.tunaConfig ?? null, isWritable: false },
-    market: { value: input.market ?? null, isWritable: false },
     mintA: { value: input.mintA ?? null, isWritable: false },
     mintB: { value: input.mintB ?? null, isWritable: false },
+    market: { value: input.market ?? null, isWritable: false },
     vaultA: { value: input.vaultA ?? null, isWritable: true },
     vaultB: { value: input.vaultB ?? null, isWritable: true },
     vaultAAta: { value: input.vaultAAta ?? null, isWritable: true },
     vaultBAta: { value: input.vaultBAta ?? null, isWritable: true },
     tunaPosition: { value: input.tunaPosition ?? null, isWritable: true },
-    tunaPositionAta: { value: input.tunaPositionAta ?? null, isWritable: true },
+    tunaPositionAta: {
+      value: input.tunaPositionAta ?? null,
+      isWritable: false,
+    },
     tunaPositionAtaA: {
       value: input.tunaPositionAtaA ?? null,
       isWritable: true,
@@ -359,12 +343,12 @@ export function getRemoveLiquidityOrcaInstruction<
       value: input.tunaPositionAtaB ?? null,
       isWritable: true,
     },
-    tunaPositionOwnerAtaA: {
-      value: input.tunaPositionOwnerAtaA ?? null,
+    feeRecipientAtaA: {
+      value: input.feeRecipientAtaA ?? null,
       isWritable: true,
     },
-    tunaPositionOwnerAtaB: {
-      value: input.tunaPositionOwnerAtaB ?? null,
+    feeRecipientAtaB: {
+      value: input.feeRecipientAtaB ?? null,
       isWritable: true,
     },
     pythOraclePriceFeedA: {
@@ -402,9 +386,9 @@ export function getRemoveLiquidityOrcaInstruction<
     accounts: [
       getAccountMeta(accounts.authority),
       getAccountMeta(accounts.tunaConfig),
-      getAccountMeta(accounts.market),
       getAccountMeta(accounts.mintA),
       getAccountMeta(accounts.mintB),
+      getAccountMeta(accounts.market),
       getAccountMeta(accounts.vaultA),
       getAccountMeta(accounts.vaultB),
       getAccountMeta(accounts.vaultAAta),
@@ -413,8 +397,8 @@ export function getRemoveLiquidityOrcaInstruction<
       getAccountMeta(accounts.tunaPositionAta),
       getAccountMeta(accounts.tunaPositionAtaA),
       getAccountMeta(accounts.tunaPositionAtaB),
-      getAccountMeta(accounts.tunaPositionOwnerAtaA),
-      getAccountMeta(accounts.tunaPositionOwnerAtaB),
+      getAccountMeta(accounts.feeRecipientAtaA),
+      getAccountMeta(accounts.feeRecipientAtaB),
       getAccountMeta(accounts.pythOraclePriceFeedA),
       getAccountMeta(accounts.pythOraclePriceFeedB),
       getAccountMeta(accounts.whirlpoolProgram),
@@ -423,16 +407,16 @@ export function getRemoveLiquidityOrcaInstruction<
       getAccountMeta(accounts.tokenProgram),
     ],
     programAddress,
-    data: getRemoveLiquidityOrcaInstructionDataEncoder().encode(
-      args as RemoveLiquidityOrcaInstructionDataArgs,
+    data: getCollectAndCompoundFeesOrcaInstructionDataEncoder().encode(
+      args as CollectAndCompoundFeesOrcaInstructionDataArgs,
     ),
-  } as RemoveLiquidityOrcaInstruction<
+  } as CollectAndCompoundFeesOrcaInstruction<
     TProgramAddress,
     TAccountAuthority,
     TAccountTunaConfig,
-    TAccountMarket,
     TAccountMintA,
     TAccountMintB,
+    TAccountMarket,
     TAccountVaultA,
     TAccountVaultB,
     TAccountVaultAAta,
@@ -441,8 +425,8 @@ export function getRemoveLiquidityOrcaInstruction<
     TAccountTunaPositionAta,
     TAccountTunaPositionAtaA,
     TAccountTunaPositionAtaB,
-    TAccountTunaPositionOwnerAtaA,
-    TAccountTunaPositionOwnerAtaB,
+    TAccountFeeRecipientAtaA,
+    TAccountFeeRecipientAtaB,
     TAccountPythOraclePriceFeedA,
     TAccountPythOraclePriceFeedB,
     TAccountWhirlpoolProgram,
@@ -454,7 +438,7 @@ export function getRemoveLiquidityOrcaInstruction<
   return instruction;
 }
 
-export type ParsedRemoveLiquidityOrcaInstruction<
+export type ParsedCollectAndCompoundFeesOrcaInstruction<
   TProgram extends string = typeof TUNA_PROGRAM_ADDRESS,
   TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
 > = {
@@ -468,9 +452,9 @@ export type ParsedRemoveLiquidityOrcaInstruction<
 
     authority: TAccountMetas[0];
     tunaConfig: TAccountMetas[1];
-    market: TAccountMetas[2];
-    mintA: TAccountMetas[3];
-    mintB: TAccountMetas[4];
+    mintA: TAccountMetas[2];
+    mintB: TAccountMetas[3];
+    market: TAccountMetas[4];
     vaultA: TAccountMetas[5];
     vaultB: TAccountMetas[6];
     vaultAAta: TAccountMetas[7];
@@ -479,8 +463,8 @@ export type ParsedRemoveLiquidityOrcaInstruction<
     tunaPositionAta: TAccountMetas[10];
     tunaPositionAtaA: TAccountMetas[11];
     tunaPositionAtaB: TAccountMetas[12];
-    tunaPositionOwnerAtaA: TAccountMetas[13];
-    tunaPositionOwnerAtaB: TAccountMetas[14];
+    feeRecipientAtaA: TAccountMetas[13];
+    feeRecipientAtaB: TAccountMetas[14];
     pythOraclePriceFeedA: TAccountMetas[15];
     pythOraclePriceFeedB: TAccountMetas[16];
     /**
@@ -500,17 +484,17 @@ export type ParsedRemoveLiquidityOrcaInstruction<
 
     tokenProgram: TAccountMetas[20];
   };
-  data: RemoveLiquidityOrcaInstructionData;
+  data: CollectAndCompoundFeesOrcaInstructionData;
 };
 
-export function parseRemoveLiquidityOrcaInstruction<
+export function parseCollectAndCompoundFeesOrcaInstruction<
   TProgram extends string,
   TAccountMetas extends readonly IAccountMeta[],
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
     IInstructionWithData<Uint8Array>,
-): ParsedRemoveLiquidityOrcaInstruction<TProgram, TAccountMetas> {
+): ParsedCollectAndCompoundFeesOrcaInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 21) {
     // TODO: Coded error.
     throw new Error("Not enough accounts");
@@ -526,9 +510,9 @@ export function parseRemoveLiquidityOrcaInstruction<
     accounts: {
       authority: getNextAccount(),
       tunaConfig: getNextAccount(),
-      market: getNextAccount(),
       mintA: getNextAccount(),
       mintB: getNextAccount(),
+      market: getNextAccount(),
       vaultA: getNextAccount(),
       vaultB: getNextAccount(),
       vaultAAta: getNextAccount(),
@@ -537,8 +521,8 @@ export function parseRemoveLiquidityOrcaInstruction<
       tunaPositionAta: getNextAccount(),
       tunaPositionAtaA: getNextAccount(),
       tunaPositionAtaB: getNextAccount(),
-      tunaPositionOwnerAtaA: getNextAccount(),
-      tunaPositionOwnerAtaB: getNextAccount(),
+      feeRecipientAtaA: getNextAccount(),
+      feeRecipientAtaB: getNextAccount(),
       pythOraclePriceFeedA: getNextAccount(),
       pythOraclePriceFeedB: getNextAccount(),
       whirlpoolProgram: getNextAccount(),
@@ -546,7 +530,7 @@ export function parseRemoveLiquidityOrcaInstruction<
       orcaPosition: getNextAccount(),
       tokenProgram: getNextAccount(),
     },
-    data: getRemoveLiquidityOrcaInstructionDataDecoder().decode(
+    data: getCollectAndCompoundFeesOrcaInstructionDataDecoder().decode(
       instruction.data,
     ),
   };

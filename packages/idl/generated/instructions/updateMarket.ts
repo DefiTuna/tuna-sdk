@@ -12,10 +12,14 @@ import {
   fixEncoderSize,
   getAddressDecoder,
   getAddressEncoder,
+  getBooleanDecoder,
+  getBooleanEncoder,
   getBytesDecoder,
   getBytesEncoder,
   getStructDecoder,
   getStructEncoder,
+  getU16Decoder,
+  getU16Encoder,
   getU32Decoder,
   getU32Encoder,
   transformEncoder,
@@ -33,9 +37,9 @@ import {
   type TransactionSigner,
   type WritableAccount,
   type WritableSignerAccount,
-} from '@solana/kit';
-import { TUNA_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+} from "@solana/kit";
+import { TUNA_PROGRAM_ADDRESS } from "../programs";
+import { getAccountMetaFactory, type ResolvedAccount } from "../shared";
 
 export const UPDATE_MARKET_DISCRIMINATOR = new Uint8Array([
   153, 39, 2, 197, 179, 50, 199, 217,
@@ -43,7 +47,7 @@ export const UPDATE_MARKET_DISCRIMINATOR = new Uint8Array([
 
 export function getUpdateMarketDiscriminatorBytes() {
   return fixEncoderSize(getBytesEncoder(), 8).encode(
-    UPDATE_MARKET_DISCRIMINATOR
+    UPDATE_MARKET_DISCRIMINATOR,
   );
 }
 
@@ -76,48 +80,56 @@ export type UpdateMarketInstructionData = {
   addressLookupTable: Address;
   maxLeverage: number;
   protocolFee: number;
+  protocolFeeOnCollateral: number;
   liquidationFee: number;
   liquidationRatio: number;
   limitOrderExecutionFee: number;
   oraclePriceDeviationThreshold: number;
+  disabled: boolean;
 };
 
 export type UpdateMarketInstructionDataArgs = {
   addressLookupTable: Address;
   maxLeverage: number;
   protocolFee: number;
+  protocolFeeOnCollateral: number;
   liquidationFee: number;
   liquidationRatio: number;
   limitOrderExecutionFee: number;
   oraclePriceDeviationThreshold: number;
+  disabled: boolean;
 };
 
 export function getUpdateMarketInstructionDataEncoder(): Encoder<UpdateMarketInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
-      ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['addressLookupTable', getAddressEncoder()],
-      ['maxLeverage', getU32Encoder()],
-      ['protocolFee', getU32Encoder()],
-      ['liquidationFee', getU32Encoder()],
-      ['liquidationRatio', getU32Encoder()],
-      ['limitOrderExecutionFee', getU32Encoder()],
-      ['oraclePriceDeviationThreshold', getU32Encoder()],
+      ["discriminator", fixEncoderSize(getBytesEncoder(), 8)],
+      ["addressLookupTable", getAddressEncoder()],
+      ["maxLeverage", getU32Encoder()],
+      ["protocolFee", getU16Encoder()],
+      ["protocolFeeOnCollateral", getU16Encoder()],
+      ["liquidationFee", getU32Encoder()],
+      ["liquidationRatio", getU32Encoder()],
+      ["limitOrderExecutionFee", getU32Encoder()],
+      ["oraclePriceDeviationThreshold", getU32Encoder()],
+      ["disabled", getBooleanEncoder()],
     ]),
-    (value) => ({ ...value, discriminator: UPDATE_MARKET_DISCRIMINATOR })
+    (value) => ({ ...value, discriminator: UPDATE_MARKET_DISCRIMINATOR }),
   );
 }
 
 export function getUpdateMarketInstructionDataDecoder(): Decoder<UpdateMarketInstructionData> {
   return getStructDecoder([
-    ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['addressLookupTable', getAddressDecoder()],
-    ['maxLeverage', getU32Decoder()],
-    ['protocolFee', getU32Decoder()],
-    ['liquidationFee', getU32Decoder()],
-    ['liquidationRatio', getU32Decoder()],
-    ['limitOrderExecutionFee', getU32Decoder()],
-    ['oraclePriceDeviationThreshold', getU32Decoder()],
+    ["discriminator", fixDecoderSize(getBytesDecoder(), 8)],
+    ["addressLookupTable", getAddressDecoder()],
+    ["maxLeverage", getU32Decoder()],
+    ["protocolFee", getU16Decoder()],
+    ["protocolFeeOnCollateral", getU16Decoder()],
+    ["liquidationFee", getU32Decoder()],
+    ["liquidationRatio", getU32Decoder()],
+    ["limitOrderExecutionFee", getU32Decoder()],
+    ["oraclePriceDeviationThreshold", getU32Decoder()],
+    ["disabled", getBooleanDecoder()],
   ]);
 }
 
@@ -127,7 +139,7 @@ export function getUpdateMarketInstructionDataCodec(): Codec<
 > {
   return combineCodec(
     getUpdateMarketInstructionDataEncoder(),
-    getUpdateMarketInstructionDataDecoder()
+    getUpdateMarketInstructionDataDecoder(),
   );
 }
 
@@ -139,13 +151,15 @@ export type UpdateMarketInput<
   authority: TransactionSigner<TAccountAuthority>;
   tunaConfig: Address<TAccountTunaConfig>;
   market: Address<TAccountMarket>;
-  addressLookupTable: UpdateMarketInstructionDataArgs['addressLookupTable'];
-  maxLeverage: UpdateMarketInstructionDataArgs['maxLeverage'];
-  protocolFee: UpdateMarketInstructionDataArgs['protocolFee'];
-  liquidationFee: UpdateMarketInstructionDataArgs['liquidationFee'];
-  liquidationRatio: UpdateMarketInstructionDataArgs['liquidationRatio'];
-  limitOrderExecutionFee: UpdateMarketInstructionDataArgs['limitOrderExecutionFee'];
-  oraclePriceDeviationThreshold: UpdateMarketInstructionDataArgs['oraclePriceDeviationThreshold'];
+  addressLookupTable: UpdateMarketInstructionDataArgs["addressLookupTable"];
+  maxLeverage: UpdateMarketInstructionDataArgs["maxLeverage"];
+  protocolFee: UpdateMarketInstructionDataArgs["protocolFee"];
+  protocolFeeOnCollateral: UpdateMarketInstructionDataArgs["protocolFeeOnCollateral"];
+  liquidationFee: UpdateMarketInstructionDataArgs["liquidationFee"];
+  liquidationRatio: UpdateMarketInstructionDataArgs["liquidationRatio"];
+  limitOrderExecutionFee: UpdateMarketInstructionDataArgs["limitOrderExecutionFee"];
+  oraclePriceDeviationThreshold: UpdateMarketInstructionDataArgs["oraclePriceDeviationThreshold"];
+  disabled: UpdateMarketInstructionDataArgs["disabled"];
 };
 
 export function getUpdateMarketInstruction<
@@ -159,7 +173,7 @@ export function getUpdateMarketInstruction<
     TAccountTunaConfig,
     TAccountMarket
   >,
-  config?: { programAddress?: TProgramAddress }
+  config?: { programAddress?: TProgramAddress },
 ): UpdateMarketInstruction<
   TProgramAddress,
   TAccountAuthority,
@@ -183,7 +197,7 @@ export function getUpdateMarketInstruction<
   // Original args.
   const args = { ...input };
 
-  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+  const getAccountMeta = getAccountMetaFactory(programAddress, "programId");
   const instruction = {
     accounts: [
       getAccountMeta(accounts.authority),
@@ -192,7 +206,7 @@ export function getUpdateMarketInstruction<
     ],
     programAddress,
     data: getUpdateMarketInstructionDataEncoder().encode(
-      args as UpdateMarketInstructionDataArgs
+      args as UpdateMarketInstructionDataArgs,
     ),
   } as UpdateMarketInstruction<
     TProgramAddress,
@@ -223,11 +237,11 @@ export function parseUpdateMarketInstruction<
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+    IInstructionWithData<Uint8Array>,
 ): ParsedUpdateMarketInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 3) {
     // TODO: Coded error.
-    throw new Error('Not enough accounts');
+    throw new Error("Not enough accounts");
   }
   let accountIndex = 0;
   const getNextAccount = () => {

@@ -31,9 +31,9 @@ import {
   type TransactionSigner,
   type WritableAccount,
   type WritableSignerAccount,
-} from '@solana/kit';
-import { TUNA_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+} from "@solana/kit";
+import { TUNA_PROGRAM_ADDRESS } from "../programs";
+import { getAccountMetaFactory, type ResolvedAccount } from "../shared";
 
 export const WITHDRAW_DISCRIMINATOR = new Uint8Array([
   183, 18, 70, 156, 148, 109, 161, 34,
@@ -54,7 +54,7 @@ export type WithdrawInstruction<
   TAccountAuthorityAta extends string | IAccountMeta<string> = string,
   TAccountTokenProgram extends
     | string
-    | IAccountMeta<string> = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+    | IAccountMeta<string> = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
   TAccountAssociatedTokenProgram extends string | IAccountMeta<string> = string,
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
@@ -107,19 +107,19 @@ export type WithdrawInstructionDataArgs = {
 export function getWithdrawInstructionDataEncoder(): Encoder<WithdrawInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
-      ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['funds', getU64Encoder()],
-      ['shares', getU64Encoder()],
+      ["discriminator", fixEncoderSize(getBytesEncoder(), 8)],
+      ["funds", getU64Encoder()],
+      ["shares", getU64Encoder()],
     ]),
-    (value) => ({ ...value, discriminator: WITHDRAW_DISCRIMINATOR })
+    (value) => ({ ...value, discriminator: WITHDRAW_DISCRIMINATOR }),
   );
 }
 
 export function getWithdrawInstructionDataDecoder(): Decoder<WithdrawInstructionData> {
   return getStructDecoder([
-    ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['funds', getU64Decoder()],
-    ['shares', getU64Decoder()],
+    ["discriminator", fixDecoderSize(getBytesDecoder(), 8)],
+    ["funds", getU64Decoder()],
+    ["shares", getU64Decoder()],
   ]);
 }
 
@@ -129,7 +129,7 @@ export function getWithdrawInstructionDataCodec(): Codec<
 > {
   return combineCodec(
     getWithdrawInstructionDataEncoder(),
-    getWithdrawInstructionDataDecoder()
+    getWithdrawInstructionDataDecoder(),
   );
 }
 
@@ -153,8 +153,8 @@ export type WithdrawInput<
   authorityAta: Address<TAccountAuthorityAta>;
   tokenProgram?: Address<TAccountTokenProgram>;
   associatedTokenProgram: Address<TAccountAssociatedTokenProgram>;
-  funds: WithdrawInstructionDataArgs['funds'];
-  shares: WithdrawInstructionDataArgs['shares'];
+  funds: WithdrawInstructionDataArgs["funds"];
+  shares: WithdrawInstructionDataArgs["shares"];
 };
 
 export function getWithdrawInstruction<
@@ -180,7 +180,7 @@ export function getWithdrawInstruction<
     TAccountTokenProgram,
     TAccountAssociatedTokenProgram
   >,
-  config?: { programAddress?: TProgramAddress }
+  config?: { programAddress?: TProgramAddress },
 ): WithdrawInstruction<
   TProgramAddress,
   TAccountAuthority,
@@ -222,10 +222,10 @@ export function getWithdrawInstruction<
   // Resolve default values.
   if (!accounts.tokenProgram.value) {
     accounts.tokenProgram.value =
-      'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' as Address<'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'>;
+      "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA" as Address<"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA">;
   }
 
-  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+  const getAccountMeta = getAccountMetaFactory(programAddress, "programId");
   const instruction = {
     accounts: [
       getAccountMeta(accounts.authority),
@@ -240,7 +240,7 @@ export function getWithdrawInstruction<
     ],
     programAddress,
     data: getWithdrawInstructionDataEncoder().encode(
-      args as WithdrawInstructionDataArgs
+      args as WithdrawInstructionDataArgs,
     ),
   } as WithdrawInstruction<
     TProgramAddress,
@@ -283,11 +283,11 @@ export function parseWithdrawInstruction<
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+    IInstructionWithData<Uint8Array>,
 ): ParsedWithdrawInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 9) {
     // TODO: Coded error.
-    throw new Error('Not enough accounts');
+    throw new Error("Not enough accounts");
   }
   let accountIndex = 0;
   const getNextAccount = () => {

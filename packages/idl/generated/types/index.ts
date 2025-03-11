@@ -6,7 +6,7 @@
  * @see https://github.com/codama-idl/codama
  */
 
-export * from './positionRewardInfo';
-export * from './tick';
-export * from './tunaPositionState';
-export * from './whirlpoolRewardInfo';
+export * from "./positionRewardInfo";
+export * from "./tick";
+export * from "./tunaPositionState";
+export * from "./whirlpoolRewardInfo";

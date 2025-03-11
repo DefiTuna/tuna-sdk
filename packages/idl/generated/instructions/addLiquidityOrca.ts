@@ -31,9 +31,9 @@ import {
   type TransactionSigner,
   type WritableAccount,
   type WritableSignerAccount,
-} from '@solana/kit';
-import { TUNA_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+} from "@solana/kit";
+import { TUNA_PROGRAM_ADDRESS } from "../programs";
+import { getAccountMetaFactory, type ResolvedAccount } from "../shared";
 
 export const ADD_LIQUIDITY_ORCA_DISCRIMINATOR = new Uint8Array([
   185, 68, 41, 204, 33, 179, 12, 78,
@@ -41,7 +41,7 @@ export const ADD_LIQUIDITY_ORCA_DISCRIMINATOR = new Uint8Array([
 
 export function getAddLiquidityOrcaDiscriminatorBytes() {
   return fixEncoderSize(getBytesEncoder(), 8).encode(
-    ADD_LIQUIDITY_ORCA_DISCRIMINATOR
+    ADD_LIQUIDITY_ORCA_DISCRIMINATOR,
   );
 }
 
@@ -68,15 +68,10 @@ export type AddLiquidityOrcaInstruction<
   TAccountPythOraclePriceFeedB extends string | IAccountMeta<string> = string,
   TAccountWhirlpoolProgram extends string | IAccountMeta<string> = string,
   TAccountWhirlpool extends string | IAccountMeta<string> = string,
-  TAccountPoolVaultAtaA extends string | IAccountMeta<string> = string,
-  TAccountPoolVaultAtaB extends string | IAccountMeta<string> = string,
   TAccountOrcaPosition extends string | IAccountMeta<string> = string,
-  TAccountTickArrayLower extends string | IAccountMeta<string> = string,
-  TAccountTickArrayUpper extends string | IAccountMeta<string> = string,
-  TAccountOrcaOracle extends string | IAccountMeta<string> = string,
   TAccountTokenProgram extends
     | string
-    | IAccountMeta<string> = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+    | IAccountMeta<string> = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
   IInstructionWithData<Uint8Array> &
@@ -146,24 +141,9 @@ export type AddLiquidityOrcaInstruction<
       TAccountWhirlpool extends string
         ? WritableAccount<TAccountWhirlpool>
         : TAccountWhirlpool,
-      TAccountPoolVaultAtaA extends string
-        ? WritableAccount<TAccountPoolVaultAtaA>
-        : TAccountPoolVaultAtaA,
-      TAccountPoolVaultAtaB extends string
-        ? WritableAccount<TAccountPoolVaultAtaB>
-        : TAccountPoolVaultAtaB,
       TAccountOrcaPosition extends string
         ? WritableAccount<TAccountOrcaPosition>
         : TAccountOrcaPosition,
-      TAccountTickArrayLower extends string
-        ? WritableAccount<TAccountTickArrayLower>
-        : TAccountTickArrayLower,
-      TAccountTickArrayUpper extends string
-        ? WritableAccount<TAccountTickArrayUpper>
-        : TAccountTickArrayUpper,
-      TAccountOrcaOracle extends string
-        ? WritableAccount<TAccountOrcaOracle>
-        : TAccountOrcaOracle,
       TAccountTokenProgram extends string
         ? ReadonlyAccount<TAccountTokenProgram>
         : TAccountTokenProgram,
@@ -193,27 +173,27 @@ export type AddLiquidityOrcaInstructionDataArgs = {
 export function getAddLiquidityOrcaInstructionDataEncoder(): Encoder<AddLiquidityOrcaInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
-      ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['collateralA', getU64Encoder()],
-      ['collateralB', getU64Encoder()],
-      ['borrowA', getU64Encoder()],
-      ['borrowB', getU64Encoder()],
-      ['minAddedAmountA', getU64Encoder()],
-      ['minAddedAmountB', getU64Encoder()],
+      ["discriminator", fixEncoderSize(getBytesEncoder(), 8)],
+      ["collateralA", getU64Encoder()],
+      ["collateralB", getU64Encoder()],
+      ["borrowA", getU64Encoder()],
+      ["borrowB", getU64Encoder()],
+      ["minAddedAmountA", getU64Encoder()],
+      ["minAddedAmountB", getU64Encoder()],
     ]),
-    (value) => ({ ...value, discriminator: ADD_LIQUIDITY_ORCA_DISCRIMINATOR })
+    (value) => ({ ...value, discriminator: ADD_LIQUIDITY_ORCA_DISCRIMINATOR }),
   );
 }
 
 export function getAddLiquidityOrcaInstructionDataDecoder(): Decoder<AddLiquidityOrcaInstructionData> {
   return getStructDecoder([
-    ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['collateralA', getU64Decoder()],
-    ['collateralB', getU64Decoder()],
-    ['borrowA', getU64Decoder()],
-    ['borrowB', getU64Decoder()],
-    ['minAddedAmountA', getU64Decoder()],
-    ['minAddedAmountB', getU64Decoder()],
+    ["discriminator", fixDecoderSize(getBytesDecoder(), 8)],
+    ["collateralA", getU64Decoder()],
+    ["collateralB", getU64Decoder()],
+    ["borrowA", getU64Decoder()],
+    ["borrowB", getU64Decoder()],
+    ["minAddedAmountA", getU64Decoder()],
+    ["minAddedAmountB", getU64Decoder()],
   ]);
 }
 
@@ -223,7 +203,7 @@ export function getAddLiquidityOrcaInstructionDataCodec(): Codec<
 > {
   return combineCodec(
     getAddLiquidityOrcaInstructionDataEncoder(),
-    getAddLiquidityOrcaInstructionDataDecoder()
+    getAddLiquidityOrcaInstructionDataDecoder(),
   );
 }
 
@@ -249,12 +229,7 @@ export type AddLiquidityOrcaInput<
   TAccountPythOraclePriceFeedB extends string = string,
   TAccountWhirlpoolProgram extends string = string,
   TAccountWhirlpool extends string = string,
-  TAccountPoolVaultAtaA extends string = string,
-  TAccountPoolVaultAtaB extends string = string,
   TAccountOrcaPosition extends string = string,
-  TAccountTickArrayLower extends string = string,
-  TAccountTickArrayUpper extends string = string,
-  TAccountOrcaOracle extends string = string,
   TAccountTokenProgram extends string = string,
 > = {
   /**
@@ -288,24 +263,19 @@ export type AddLiquidityOrcaInput<
    */
   whirlpoolProgram: Address<TAccountWhirlpoolProgram>;
   whirlpool: Address<TAccountWhirlpool>;
-  poolVaultAtaA: Address<TAccountPoolVaultAtaA>;
-  poolVaultAtaB: Address<TAccountPoolVaultAtaB>;
   orcaPosition: Address<TAccountOrcaPosition>;
-  tickArrayLower: Address<TAccountTickArrayLower>;
-  tickArrayUpper: Address<TAccountTickArrayUpper>;
-  orcaOracle: Address<TAccountOrcaOracle>;
   /**
    *
    * Other accounts
    *
    */
   tokenProgram?: Address<TAccountTokenProgram>;
-  collateralA: AddLiquidityOrcaInstructionDataArgs['collateralA'];
-  collateralB: AddLiquidityOrcaInstructionDataArgs['collateralB'];
-  borrowA: AddLiquidityOrcaInstructionDataArgs['borrowA'];
-  borrowB: AddLiquidityOrcaInstructionDataArgs['borrowB'];
-  minAddedAmountA: AddLiquidityOrcaInstructionDataArgs['minAddedAmountA'];
-  minAddedAmountB: AddLiquidityOrcaInstructionDataArgs['minAddedAmountB'];
+  collateralA: AddLiquidityOrcaInstructionDataArgs["collateralA"];
+  collateralB: AddLiquidityOrcaInstructionDataArgs["collateralB"];
+  borrowA: AddLiquidityOrcaInstructionDataArgs["borrowA"];
+  borrowB: AddLiquidityOrcaInstructionDataArgs["borrowB"];
+  minAddedAmountA: AddLiquidityOrcaInstructionDataArgs["minAddedAmountA"];
+  minAddedAmountB: AddLiquidityOrcaInstructionDataArgs["minAddedAmountB"];
 };
 
 export function getAddLiquidityOrcaInstruction<
@@ -330,12 +300,7 @@ export function getAddLiquidityOrcaInstruction<
   TAccountPythOraclePriceFeedB extends string,
   TAccountWhirlpoolProgram extends string,
   TAccountWhirlpool extends string,
-  TAccountPoolVaultAtaA extends string,
-  TAccountPoolVaultAtaB extends string,
   TAccountOrcaPosition extends string,
-  TAccountTickArrayLower extends string,
-  TAccountTickArrayUpper extends string,
-  TAccountOrcaOracle extends string,
   TAccountTokenProgram extends string,
   TProgramAddress extends Address = typeof TUNA_PROGRAM_ADDRESS,
 >(
@@ -361,15 +326,10 @@ export function getAddLiquidityOrcaInstruction<
     TAccountPythOraclePriceFeedB,
     TAccountWhirlpoolProgram,
     TAccountWhirlpool,
-    TAccountPoolVaultAtaA,
-    TAccountPoolVaultAtaB,
     TAccountOrcaPosition,
-    TAccountTickArrayLower,
-    TAccountTickArrayUpper,
-    TAccountOrcaOracle,
     TAccountTokenProgram
   >,
-  config?: { programAddress?: TProgramAddress }
+  config?: { programAddress?: TProgramAddress },
 ): AddLiquidityOrcaInstruction<
   TProgramAddress,
   TAccountAuthority,
@@ -393,12 +353,7 @@ export function getAddLiquidityOrcaInstruction<
   TAccountPythOraclePriceFeedB,
   TAccountWhirlpoolProgram,
   TAccountWhirlpool,
-  TAccountPoolVaultAtaA,
-  TAccountPoolVaultAtaB,
   TAccountOrcaPosition,
-  TAccountTickArrayLower,
-  TAccountTickArrayUpper,
-  TAccountOrcaOracle,
   TAccountTokenProgram
 > {
   // Program address.
@@ -454,12 +409,7 @@ export function getAddLiquidityOrcaInstruction<
       isWritable: false,
     },
     whirlpool: { value: input.whirlpool ?? null, isWritable: true },
-    poolVaultAtaA: { value: input.poolVaultAtaA ?? null, isWritable: true },
-    poolVaultAtaB: { value: input.poolVaultAtaB ?? null, isWritable: true },
     orcaPosition: { value: input.orcaPosition ?? null, isWritable: true },
-    tickArrayLower: { value: input.tickArrayLower ?? null, isWritable: true },
-    tickArrayUpper: { value: input.tickArrayUpper ?? null, isWritable: true },
-    orcaOracle: { value: input.orcaOracle ?? null, isWritable: true },
     tokenProgram: { value: input.tokenProgram ?? null, isWritable: false },
   };
   const accounts = originalAccounts as Record<
@@ -473,10 +423,10 @@ export function getAddLiquidityOrcaInstruction<
   // Resolve default values.
   if (!accounts.tokenProgram.value) {
     accounts.tokenProgram.value =
-      'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' as Address<'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'>;
+      "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA" as Address<"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA">;
   }
 
-  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+  const getAccountMeta = getAccountMetaFactory(programAddress, "programId");
   const instruction = {
     accounts: [
       getAccountMeta(accounts.authority),
@@ -500,17 +450,12 @@ export function getAddLiquidityOrcaInstruction<
       getAccountMeta(accounts.pythOraclePriceFeedB),
       getAccountMeta(accounts.whirlpoolProgram),
       getAccountMeta(accounts.whirlpool),
-      getAccountMeta(accounts.poolVaultAtaA),
-      getAccountMeta(accounts.poolVaultAtaB),
       getAccountMeta(accounts.orcaPosition),
-      getAccountMeta(accounts.tickArrayLower),
-      getAccountMeta(accounts.tickArrayUpper),
-      getAccountMeta(accounts.orcaOracle),
       getAccountMeta(accounts.tokenProgram),
     ],
     programAddress,
     data: getAddLiquidityOrcaInstructionDataEncoder().encode(
-      args as AddLiquidityOrcaInstructionDataArgs
+      args as AddLiquidityOrcaInstructionDataArgs,
     ),
   } as AddLiquidityOrcaInstruction<
     TProgramAddress,
@@ -535,12 +480,7 @@ export function getAddLiquidityOrcaInstruction<
     TAccountPythOraclePriceFeedB,
     TAccountWhirlpoolProgram,
     TAccountWhirlpool,
-    TAccountPoolVaultAtaA,
-    TAccountPoolVaultAtaB,
     TAccountOrcaPosition,
-    TAccountTickArrayLower,
-    TAccountTickArrayUpper,
-    TAccountOrcaOracle,
     TAccountTokenProgram
   >;
 
@@ -586,19 +526,14 @@ export type ParsedAddLiquidityOrcaInstruction<
 
     whirlpoolProgram: TAccountMetas[19];
     whirlpool: TAccountMetas[20];
-    poolVaultAtaA: TAccountMetas[21];
-    poolVaultAtaB: TAccountMetas[22];
-    orcaPosition: TAccountMetas[23];
-    tickArrayLower: TAccountMetas[24];
-    tickArrayUpper: TAccountMetas[25];
-    orcaOracle: TAccountMetas[26];
+    orcaPosition: TAccountMetas[21];
     /**
      *
      * Other accounts
      *
      */
 
-    tokenProgram: TAccountMetas[27];
+    tokenProgram: TAccountMetas[22];
   };
   data: AddLiquidityOrcaInstructionData;
 };
@@ -609,11 +544,11 @@ export function parseAddLiquidityOrcaInstruction<
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+    IInstructionWithData<Uint8Array>,
 ): ParsedAddLiquidityOrcaInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 28) {
+  if (instruction.accounts.length < 23) {
     // TODO: Coded error.
-    throw new Error('Not enough accounts');
+    throw new Error("Not enough accounts");
   }
   let accountIndex = 0;
   const getNextAccount = () => {
@@ -645,12 +580,7 @@ export function parseAddLiquidityOrcaInstruction<
       pythOraclePriceFeedB: getNextAccount(),
       whirlpoolProgram: getNextAccount(),
       whirlpool: getNextAccount(),
-      poolVaultAtaA: getNextAccount(),
-      poolVaultAtaB: getNextAccount(),
       orcaPosition: getNextAccount(),
-      tickArrayLower: getNextAccount(),
-      tickArrayUpper: getNextAccount(),
-      orcaOracle: getNextAccount(),
       tokenProgram: getNextAccount(),
     },
     data: getAddLiquidityOrcaInstructionDataDecoder().decode(instruction.data),

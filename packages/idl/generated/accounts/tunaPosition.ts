@@ -27,6 +27,8 @@ import {
   getU128Encoder,
   getU16Decoder,
   getU16Encoder,
+  getU32Decoder,
+  getU32Encoder,
   getU64Decoder,
   getU64Encoder,
   getU8Decoder,
@@ -43,13 +45,13 @@ import {
   type MaybeAccount,
   type MaybeEncodedAccount,
   type ReadonlyUint8Array,
-} from '@solana/kit';
+} from "@solana/kit";
 import {
   getTunaPositionStateDecoder,
   getTunaPositionStateEncoder,
   type TunaPositionState,
   type TunaPositionStateArgs,
-} from '../types';
+} from "../types";
 
 export const TUNA_POSITION_DISCRIMINATOR = new Uint8Array([
   76, 197, 161, 51, 232, 15, 137, 220,
@@ -57,7 +59,7 @@ export const TUNA_POSITION_DISCRIMINATOR = new Uint8Array([
 
 export function getTunaPositionDiscriminatorBytes() {
   return fixEncoderSize(getBytesEncoder(), 8).encode(
-    TUNA_POSITION_DISCRIMINATOR
+    TUNA_POSITION_DISCRIMINATOR,
   );
 }
 
@@ -104,11 +106,22 @@ export type TunaPosition = {
   /** Position state: normal, liquidated, closed by limit order */
   state: TunaPositionState;
   /**
-   * Which token to swap collateral to when a limit order is executed.
+   * OBSOLETE: Which token to swap collateral to when a limit order is executed. Used for position ver 4 or older.
    * bits 0..1: Stop loss swap. 0 - no swap, 1 - swap to token A, 2 - swap to token B
    * bits 2..3: Take profit swap. 0 - no swap, 1 - swap to token A, 2 - swap to token B
    */
   swapToTokenOnLimitOrder: number;
+  /** Yield amount in token A that has already been collected and compounded into the position. */
+  compoundedYieldA: bigint;
+  /** Yield amount in token B that has already been collected and compounded into the position. */
+  compoundedYieldB: bigint;
+  /**
+   * Position options.
+   * Bits 0..1: Stop loss swap. 0 - no swap, 1 - swap to token A, 2 - swap to token B
+   * Bits 2..3: Take profit swap. 0 - no swap, 1 - swap to token A, 2 - swap to token B
+   * Bits 4..5: Yield auto compounding. 0 - don't compound, 1 - compound yield, 2 - compound yield with leverage
+   */
+  flags: number;
   /** Reserved */
   reserved: ReadonlyUint8Array;
 };
@@ -155,11 +168,22 @@ export type TunaPositionArgs = {
   /** Position state: normal, liquidated, closed by limit order */
   state: TunaPositionStateArgs;
   /**
-   * Which token to swap collateral to when a limit order is executed.
+   * OBSOLETE: Which token to swap collateral to when a limit order is executed. Used for position ver 4 or older.
    * bits 0..1: Stop loss swap. 0 - no swap, 1 - swap to token A, 2 - swap to token B
    * bits 2..3: Take profit swap. 0 - no swap, 1 - swap to token A, 2 - swap to token B
    */
   swapToTokenOnLimitOrder: number;
+  /** Yield amount in token A that has already been collected and compounded into the position. */
+  compoundedYieldA: number | bigint;
+  /** Yield amount in token B that has already been collected and compounded into the position. */
+  compoundedYieldB: number | bigint;
+  /**
+   * Position options.
+   * Bits 0..1: Stop loss swap. 0 - no swap, 1 - swap to token A, 2 - swap to token B
+   * Bits 2..3: Take profit swap. 0 - no swap, 1 - swap to token A, 2 - swap to token B
+   * Bits 4..5: Yield auto compounding. 0 - don't compound, 1 - compound yield, 2 - compound yield with leverage
+   */
+  flags: number;
   /** Reserved */
   reserved: ReadonlyUint8Array;
 };
@@ -167,59 +191,65 @@ export type TunaPositionArgs = {
 export function getTunaPositionEncoder(): Encoder<TunaPositionArgs> {
   return transformEncoder(
     getStructEncoder([
-      ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['version', getU16Encoder()],
-      ['bump', fixEncoderSize(getBytesEncoder(), 1)],
-      ['authority', getAddressEncoder()],
-      ['pool', getAddressEncoder()],
-      ['mintA', getAddressEncoder()],
-      ['mintB', getAddressEncoder()],
-      ['positionMint', getAddressEncoder()],
-      ['liquidity', getU128Encoder()],
-      ['tickLowerIndex', getI32Encoder()],
-      ['tickUpperIndex', getI32Encoder()],
-      ['loanSharesA', getU64Encoder()],
-      ['loanSharesB', getU64Encoder()],
-      ['loanFundsA', getU64Encoder()],
-      ['loanFundsB', getU64Encoder()],
-      ['leftoversA', getU64Encoder()],
-      ['leftoversB', getU64Encoder()],
-      ['tickEntryIndex', getI32Encoder()],
-      ['tickStopLossIndex', getI32Encoder()],
-      ['tickTakeProfitIndex', getI32Encoder()],
-      ['state', getTunaPositionStateEncoder()],
-      ['swapToTokenOnLimitOrder', getU8Encoder()],
-      ['reserved', fixEncoderSize(getBytesEncoder(), 82)],
+      ["discriminator", fixEncoderSize(getBytesEncoder(), 8)],
+      ["version", getU16Encoder()],
+      ["bump", fixEncoderSize(getBytesEncoder(), 1)],
+      ["authority", getAddressEncoder()],
+      ["pool", getAddressEncoder()],
+      ["mintA", getAddressEncoder()],
+      ["mintB", getAddressEncoder()],
+      ["positionMint", getAddressEncoder()],
+      ["liquidity", getU128Encoder()],
+      ["tickLowerIndex", getI32Encoder()],
+      ["tickUpperIndex", getI32Encoder()],
+      ["loanSharesA", getU64Encoder()],
+      ["loanSharesB", getU64Encoder()],
+      ["loanFundsA", getU64Encoder()],
+      ["loanFundsB", getU64Encoder()],
+      ["leftoversA", getU64Encoder()],
+      ["leftoversB", getU64Encoder()],
+      ["tickEntryIndex", getI32Encoder()],
+      ["tickStopLossIndex", getI32Encoder()],
+      ["tickTakeProfitIndex", getI32Encoder()],
+      ["state", getTunaPositionStateEncoder()],
+      ["swapToTokenOnLimitOrder", getU8Encoder()],
+      ["compoundedYieldA", getU64Encoder()],
+      ["compoundedYieldB", getU64Encoder()],
+      ["flags", getU32Encoder()],
+      ["reserved", fixEncoderSize(getBytesEncoder(), 62)],
     ]),
-    (value) => ({ ...value, discriminator: TUNA_POSITION_DISCRIMINATOR })
+    (value) => ({ ...value, discriminator: TUNA_POSITION_DISCRIMINATOR }),
   );
 }
 
 export function getTunaPositionDecoder(): Decoder<TunaPosition> {
   return getStructDecoder([
-    ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['version', getU16Decoder()],
-    ['bump', fixDecoderSize(getBytesDecoder(), 1)],
-    ['authority', getAddressDecoder()],
-    ['pool', getAddressDecoder()],
-    ['mintA', getAddressDecoder()],
-    ['mintB', getAddressDecoder()],
-    ['positionMint', getAddressDecoder()],
-    ['liquidity', getU128Decoder()],
-    ['tickLowerIndex', getI32Decoder()],
-    ['tickUpperIndex', getI32Decoder()],
-    ['loanSharesA', getU64Decoder()],
-    ['loanSharesB', getU64Decoder()],
-    ['loanFundsA', getU64Decoder()],
-    ['loanFundsB', getU64Decoder()],
-    ['leftoversA', getU64Decoder()],
-    ['leftoversB', getU64Decoder()],
-    ['tickEntryIndex', getI32Decoder()],
-    ['tickStopLossIndex', getI32Decoder()],
-    ['tickTakeProfitIndex', getI32Decoder()],
-    ['state', getTunaPositionStateDecoder()],
-    ['swapToTokenOnLimitOrder', getU8Decoder()],
-    ['reserved', fixDecoderSize(getBytesDecoder(), 82)],
+    ["discriminator", fixDecoderSize(getBytesDecoder(), 8)],
+    ["version", getU16Decoder()],
+    ["bump", fixDecoderSize(getBytesDecoder(), 1)],
+    ["authority", getAddressDecoder()],
+    ["pool", getAddressDecoder()],
+    ["mintA", getAddressDecoder()],
+    ["mintB", getAddressDecoder()],
+    ["positionMint", getAddressDecoder()],
+    ["liquidity", getU128Decoder()],
+    ["tickLowerIndex", getI32Decoder()],
+    ["tickUpperIndex", getI32Decoder()],
+    ["loanSharesA", getU64Decoder()],
+    ["loanSharesB", getU64Decoder()],
+    ["loanFundsA", getU64Decoder()],
+    ["loanFundsB", getU64Decoder()],
+    ["leftoversA", getU64Decoder()],
+    ["leftoversB", getU64Decoder()],
+    ["tickEntryIndex", getI32Decoder()],
+    ["tickStopLossIndex", getI32Decoder()],
+    ["tickTakeProfitIndex", getI32Decoder()],
+    ["state", getTunaPositionStateDecoder()],
+    ["swapToTokenOnLimitOrder", getU8Decoder()],
+    ["compoundedYieldA", getU64Decoder()],
+    ["compoundedYieldB", getU64Decoder()],
+    ["flags", getU32Decoder()],
+    ["reserved", fixDecoderSize(getBytesDecoder(), 62)],
   ]);
 }
 
@@ -228,24 +258,24 @@ export function getTunaPositionCodec(): Codec<TunaPositionArgs, TunaPosition> {
 }
 
 export function decodeTunaPosition<TAddress extends string = string>(
-  encodedAccount: EncodedAccount<TAddress>
+  encodedAccount: EncodedAccount<TAddress>,
 ): Account<TunaPosition, TAddress>;
 export function decodeTunaPosition<TAddress extends string = string>(
-  encodedAccount: MaybeEncodedAccount<TAddress>
+  encodedAccount: MaybeEncodedAccount<TAddress>,
 ): MaybeAccount<TunaPosition, TAddress>;
 export function decodeTunaPosition<TAddress extends string = string>(
-  encodedAccount: EncodedAccount<TAddress> | MaybeEncodedAccount<TAddress>
+  encodedAccount: EncodedAccount<TAddress> | MaybeEncodedAccount<TAddress>,
 ): Account<TunaPosition, TAddress> | MaybeAccount<TunaPosition, TAddress> {
   return decodeAccount(
     encodedAccount as MaybeEncodedAccount<TAddress>,
-    getTunaPositionDecoder()
+    getTunaPositionDecoder(),
   );
 }
 
 export async function fetchTunaPosition<TAddress extends string = string>(
   rpc: Parameters<typeof fetchEncodedAccount>[0],
   address: Address<TAddress>,
-  config?: FetchAccountConfig
+  config?: FetchAccountConfig,
 ): Promise<Account<TunaPosition, TAddress>> {
   const maybeAccount = await fetchMaybeTunaPosition(rpc, address, config);
   assertAccountExists(maybeAccount);
@@ -255,7 +285,7 @@ export async function fetchTunaPosition<TAddress extends string = string>(
 export async function fetchMaybeTunaPosition<TAddress extends string = string>(
   rpc: Parameters<typeof fetchEncodedAccount>[0],
   address: Address<TAddress>,
-  config?: FetchAccountConfig
+  config?: FetchAccountConfig,
 ): Promise<MaybeAccount<TunaPosition, TAddress>> {
   const maybeAccount = await fetchEncodedAccount(rpc, address, config);
   return decodeTunaPosition(maybeAccount);
@@ -264,7 +294,7 @@ export async function fetchMaybeTunaPosition<TAddress extends string = string>(
 export async function fetchAllTunaPosition(
   rpc: Parameters<typeof fetchEncodedAccounts>[0],
   addresses: Array<Address>,
-  config?: FetchAccountsConfig
+  config?: FetchAccountsConfig,
 ): Promise<Account<TunaPosition>[]> {
   const maybeAccounts = await fetchAllMaybeTunaPosition(rpc, addresses, config);
   assertAccountsExist(maybeAccounts);
@@ -274,7 +304,7 @@ export async function fetchAllTunaPosition(
 export async function fetchAllMaybeTunaPosition(
   rpc: Parameters<typeof fetchEncodedAccounts>[0],
   addresses: Array<Address>,
-  config?: FetchAccountsConfig
+  config?: FetchAccountsConfig,
 ): Promise<MaybeAccount<TunaPosition>[]> {
   const maybeAccounts = await fetchEncodedAccounts(rpc, addresses, config);
   return maybeAccounts.map((maybeAccount) => decodeTunaPosition(maybeAccount));

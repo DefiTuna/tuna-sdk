@@ -30,9 +30,9 @@ import {
   type TransactionSigner,
   type WritableAccount,
   type WritableSignerAccount,
-} from '@solana/kit';
-import { TUNA_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+} from "@solana/kit";
+import { TUNA_PROGRAM_ADDRESS } from "../programs";
+import { getAccountMetaFactory, type ResolvedAccount } from "../shared";
 
 export const SET_OWNER_AUTHORITY_DISCRIMINATOR = new Uint8Array([
   128, 171, 210, 21, 103, 179, 80, 117,
@@ -40,7 +40,7 @@ export const SET_OWNER_AUTHORITY_DISCRIMINATOR = new Uint8Array([
 
 export function getSetOwnerAuthorityDiscriminatorBytes() {
   return fixEncoderSize(getBytesEncoder(), 8).encode(
-    SET_OWNER_AUTHORITY_DISCRIMINATOR
+    SET_OWNER_AUTHORITY_DISCRIMINATOR,
   );
 }
 
@@ -74,17 +74,17 @@ export type SetOwnerAuthorityInstructionDataArgs = { ownerAuthority: Address };
 export function getSetOwnerAuthorityInstructionDataEncoder(): Encoder<SetOwnerAuthorityInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
-      ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['ownerAuthority', getAddressEncoder()],
+      ["discriminator", fixEncoderSize(getBytesEncoder(), 8)],
+      ["ownerAuthority", getAddressEncoder()],
     ]),
-    (value) => ({ ...value, discriminator: SET_OWNER_AUTHORITY_DISCRIMINATOR })
+    (value) => ({ ...value, discriminator: SET_OWNER_AUTHORITY_DISCRIMINATOR }),
   );
 }
 
 export function getSetOwnerAuthorityInstructionDataDecoder(): Decoder<SetOwnerAuthorityInstructionData> {
   return getStructDecoder([
-    ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['ownerAuthority', getAddressDecoder()],
+    ["discriminator", fixDecoderSize(getBytesDecoder(), 8)],
+    ["ownerAuthority", getAddressDecoder()],
   ]);
 }
 
@@ -94,7 +94,7 @@ export function getSetOwnerAuthorityInstructionDataCodec(): Codec<
 > {
   return combineCodec(
     getSetOwnerAuthorityInstructionDataEncoder(),
-    getSetOwnerAuthorityInstructionDataDecoder()
+    getSetOwnerAuthorityInstructionDataDecoder(),
   );
 }
 
@@ -104,7 +104,7 @@ export type SetOwnerAuthorityInput<
 > = {
   authority: TransactionSigner<TAccountAuthority>;
   tunaConfig: Address<TAccountTunaConfig>;
-  ownerAuthority: SetOwnerAuthorityInstructionDataArgs['ownerAuthority'];
+  ownerAuthority: SetOwnerAuthorityInstructionDataArgs["ownerAuthority"];
 };
 
 export function getSetOwnerAuthorityInstruction<
@@ -113,7 +113,7 @@ export function getSetOwnerAuthorityInstruction<
   TProgramAddress extends Address = typeof TUNA_PROGRAM_ADDRESS,
 >(
   input: SetOwnerAuthorityInput<TAccountAuthority, TAccountTunaConfig>,
-  config?: { programAddress?: TProgramAddress }
+  config?: { programAddress?: TProgramAddress },
 ): SetOwnerAuthorityInstruction<
   TProgramAddress,
   TAccountAuthority,
@@ -135,7 +135,7 @@ export function getSetOwnerAuthorityInstruction<
   // Original args.
   const args = { ...input };
 
-  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+  const getAccountMeta = getAccountMetaFactory(programAddress, "programId");
   const instruction = {
     accounts: [
       getAccountMeta(accounts.authority),
@@ -143,7 +143,7 @@ export function getSetOwnerAuthorityInstruction<
     ],
     programAddress,
     data: getSetOwnerAuthorityInstructionDataEncoder().encode(
-      args as SetOwnerAuthorityInstructionDataArgs
+      args as SetOwnerAuthorityInstructionDataArgs,
     ),
   } as SetOwnerAuthorityInstruction<
     TProgramAddress,
@@ -172,11 +172,11 @@ export function parseSetOwnerAuthorityInstruction<
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+    IInstructionWithData<Uint8Array>,
 ): ParsedSetOwnerAuthorityInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 2) {
     // TODO: Coded error.
-    throw new Error('Not enough accounts');
+    throw new Error("Not enough accounts");
   }
   let accountIndex = 0;
   const getNextAccount = () => {

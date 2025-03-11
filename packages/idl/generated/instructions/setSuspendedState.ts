@@ -30,9 +30,9 @@ import {
   type TransactionSigner,
   type WritableAccount,
   type WritableSignerAccount,
-} from '@solana/kit';
-import { TUNA_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+} from "@solana/kit";
+import { TUNA_PROGRAM_ADDRESS } from "../programs";
+import { getAccountMetaFactory, type ResolvedAccount } from "../shared";
 
 export const SET_SUSPENDED_STATE_DISCRIMINATOR = new Uint8Array([
   145, 13, 20, 161, 30, 62, 226, 32,
@@ -40,7 +40,7 @@ export const SET_SUSPENDED_STATE_DISCRIMINATOR = new Uint8Array([
 
 export function getSetSuspendedStateDiscriminatorBytes() {
   return fixEncoderSize(getBytesEncoder(), 8).encode(
-    SET_SUSPENDED_STATE_DISCRIMINATOR
+    SET_SUSPENDED_STATE_DISCRIMINATOR,
   );
 }
 
@@ -82,23 +82,23 @@ export type SetSuspendedStateInstructionDataArgs = {
 export function getSetSuspendedStateInstructionDataEncoder(): Encoder<SetSuspendedStateInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
-      ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['suspendLendingDeposits', getBooleanEncoder()],
-      ['suspendLendingWithdrawals', getBooleanEncoder()],
-      ['suspendAddLiquidity', getBooleanEncoder()],
-      ['suspendRemoveLiquidity', getBooleanEncoder()],
+      ["discriminator", fixEncoderSize(getBytesEncoder(), 8)],
+      ["suspendLendingDeposits", getBooleanEncoder()],
+      ["suspendLendingWithdrawals", getBooleanEncoder()],
+      ["suspendAddLiquidity", getBooleanEncoder()],
+      ["suspendRemoveLiquidity", getBooleanEncoder()],
     ]),
-    (value) => ({ ...value, discriminator: SET_SUSPENDED_STATE_DISCRIMINATOR })
+    (value) => ({ ...value, discriminator: SET_SUSPENDED_STATE_DISCRIMINATOR }),
   );
 }
 
 export function getSetSuspendedStateInstructionDataDecoder(): Decoder<SetSuspendedStateInstructionData> {
   return getStructDecoder([
-    ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['suspendLendingDeposits', getBooleanDecoder()],
-    ['suspendLendingWithdrawals', getBooleanDecoder()],
-    ['suspendAddLiquidity', getBooleanDecoder()],
-    ['suspendRemoveLiquidity', getBooleanDecoder()],
+    ["discriminator", fixDecoderSize(getBytesDecoder(), 8)],
+    ["suspendLendingDeposits", getBooleanDecoder()],
+    ["suspendLendingWithdrawals", getBooleanDecoder()],
+    ["suspendAddLiquidity", getBooleanDecoder()],
+    ["suspendRemoveLiquidity", getBooleanDecoder()],
   ]);
 }
 
@@ -108,7 +108,7 @@ export function getSetSuspendedStateInstructionDataCodec(): Codec<
 > {
   return combineCodec(
     getSetSuspendedStateInstructionDataEncoder(),
-    getSetSuspendedStateInstructionDataDecoder()
+    getSetSuspendedStateInstructionDataDecoder(),
   );
 }
 
@@ -118,10 +118,10 @@ export type SetSuspendedStateInput<
 > = {
   authority: TransactionSigner<TAccountAuthority>;
   tunaConfig: Address<TAccountTunaConfig>;
-  suspendLendingDeposits: SetSuspendedStateInstructionDataArgs['suspendLendingDeposits'];
-  suspendLendingWithdrawals: SetSuspendedStateInstructionDataArgs['suspendLendingWithdrawals'];
-  suspendAddLiquidity: SetSuspendedStateInstructionDataArgs['suspendAddLiquidity'];
-  suspendRemoveLiquidity: SetSuspendedStateInstructionDataArgs['suspendRemoveLiquidity'];
+  suspendLendingDeposits: SetSuspendedStateInstructionDataArgs["suspendLendingDeposits"];
+  suspendLendingWithdrawals: SetSuspendedStateInstructionDataArgs["suspendLendingWithdrawals"];
+  suspendAddLiquidity: SetSuspendedStateInstructionDataArgs["suspendAddLiquidity"];
+  suspendRemoveLiquidity: SetSuspendedStateInstructionDataArgs["suspendRemoveLiquidity"];
 };
 
 export function getSetSuspendedStateInstruction<
@@ -130,7 +130,7 @@ export function getSetSuspendedStateInstruction<
   TProgramAddress extends Address = typeof TUNA_PROGRAM_ADDRESS,
 >(
   input: SetSuspendedStateInput<TAccountAuthority, TAccountTunaConfig>,
-  config?: { programAddress?: TProgramAddress }
+  config?: { programAddress?: TProgramAddress },
 ): SetSuspendedStateInstruction<
   TProgramAddress,
   TAccountAuthority,
@@ -152,7 +152,7 @@ export function getSetSuspendedStateInstruction<
   // Original args.
   const args = { ...input };
 
-  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+  const getAccountMeta = getAccountMetaFactory(programAddress, "programId");
   const instruction = {
     accounts: [
       getAccountMeta(accounts.authority),
@@ -160,7 +160,7 @@ export function getSetSuspendedStateInstruction<
     ],
     programAddress,
     data: getSetSuspendedStateInstructionDataEncoder().encode(
-      args as SetSuspendedStateInstructionDataArgs
+      args as SetSuspendedStateInstructionDataArgs,
     ),
   } as SetSuspendedStateInstruction<
     TProgramAddress,
@@ -189,11 +189,11 @@ export function parseSetSuspendedStateInstruction<
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+    IInstructionWithData<Uint8Array>,
 ): ParsedSetSuspendedStateInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 2) {
     // TODO: Coded error.
-    throw new Error('Not enough accounts');
+    throw new Error("Not enough accounts");
   }
   let accountIndex = 0;
   const getNextAccount = () => {

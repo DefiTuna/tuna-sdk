@@ -29,9 +29,9 @@ import {
   type TransactionSigner,
   type WritableAccount,
   type WritableSignerAccount,
-} from '@solana/kit';
-import { TUNA_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+} from "@solana/kit";
+import { TUNA_PROGRAM_ADDRESS } from "../programs";
+import { getAccountMetaFactory, type ResolvedAccount } from "../shared";
 
 export const CREATE_LENDING_POSITION_DISCRIMINATOR = new Uint8Array([
   129, 187, 56, 84, 108, 205, 25, 80,
@@ -39,7 +39,7 @@ export const CREATE_LENDING_POSITION_DISCRIMINATOR = new Uint8Array([
 
 export function getCreateLendingPositionDiscriminatorBytes() {
   return fixEncoderSize(getBytesEncoder(), 8).encode(
-    CREATE_LENDING_POSITION_DISCRIMINATOR
+    CREATE_LENDING_POSITION_DISCRIMINATOR,
   );
 }
 
@@ -52,13 +52,13 @@ export type CreateLendingPositionInstruction<
   TAccountPoolMint extends string | IAccountMeta<string> = string,
   TAccountTokenProgram extends
     | string
-    | IAccountMeta<string> = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+    | IAccountMeta<string> = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
   TAccountSystemProgram extends
     | string
-    | IAccountMeta<string> = '11111111111111111111111111111111',
+    | IAccountMeta<string> = "11111111111111111111111111111111",
   TAccountRent extends
     | string
-    | IAccountMeta<string> = 'SysvarRent111111111111111111111111111111111',
+    | IAccountMeta<string> = "SysvarRent111111111111111111111111111111111",
   TAccountAssociatedTokenProgram extends string | IAccountMeta<string> = string,
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
@@ -105,17 +105,17 @@ export type CreateLendingPositionInstructionDataArgs = {};
 
 export function getCreateLendingPositionInstructionDataEncoder(): Encoder<CreateLendingPositionInstructionDataArgs> {
   return transformEncoder(
-    getStructEncoder([['discriminator', fixEncoderSize(getBytesEncoder(), 8)]]),
+    getStructEncoder([["discriminator", fixEncoderSize(getBytesEncoder(), 8)]]),
     (value) => ({
       ...value,
       discriminator: CREATE_LENDING_POSITION_DISCRIMINATOR,
-    })
+    }),
   );
 }
 
 export function getCreateLendingPositionInstructionDataDecoder(): Decoder<CreateLendingPositionInstructionData> {
   return getStructDecoder([
-    ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
+    ["discriminator", fixDecoderSize(getBytesDecoder(), 8)],
   ]);
 }
 
@@ -125,7 +125,7 @@ export function getCreateLendingPositionInstructionDataCodec(): Codec<
 > {
   return combineCodec(
     getCreateLendingPositionInstructionDataEncoder(),
-    getCreateLendingPositionInstructionDataDecoder()
+    getCreateLendingPositionInstructionDataDecoder(),
   );
 }
 
@@ -174,7 +174,7 @@ export function getCreateLendingPositionInstruction<
     TAccountRent,
     TAccountAssociatedTokenProgram
   >,
-  config?: { programAddress?: TProgramAddress }
+  config?: { programAddress?: TProgramAddress },
 ): CreateLendingPositionInstruction<
   TProgramAddress,
   TAccountAuthority,
@@ -213,18 +213,18 @@ export function getCreateLendingPositionInstruction<
   // Resolve default values.
   if (!accounts.tokenProgram.value) {
     accounts.tokenProgram.value =
-      'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' as Address<'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'>;
+      "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA" as Address<"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA">;
   }
   if (!accounts.systemProgram.value) {
     accounts.systemProgram.value =
-      '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
+      "11111111111111111111111111111111" as Address<"11111111111111111111111111111111">;
   }
   if (!accounts.rent.value) {
     accounts.rent.value =
-      'SysvarRent111111111111111111111111111111111' as Address<'SysvarRent111111111111111111111111111111111'>;
+      "SysvarRent111111111111111111111111111111111" as Address<"SysvarRent111111111111111111111111111111111">;
   }
 
-  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+  const getAccountMeta = getAccountMetaFactory(programAddress, "programId");
   const instruction = {
     accounts: [
       getAccountMeta(accounts.authority),
@@ -280,11 +280,11 @@ export function parseCreateLendingPositionInstruction<
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+    IInstructionWithData<Uint8Array>,
 ): ParsedCreateLendingPositionInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 9) {
     // TODO: Coded error.
-    throw new Error('Not enough accounts');
+    throw new Error("Not enough accounts");
   }
   let accountIndex = 0;
   const getNextAccount = () => {
@@ -306,7 +306,7 @@ export function parseCreateLendingPositionInstruction<
       associatedTokenProgram: getNextAccount(),
     },
     data: getCreateLendingPositionInstructionDataDecoder().decode(
-      instruction.data
+      instruction.data,
     ),
   };
 }

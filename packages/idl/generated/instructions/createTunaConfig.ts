@@ -31,9 +31,9 @@ import {
   type TransactionSigner,
   type WritableAccount,
   type WritableSignerAccount,
-} from '@solana/kit';
-import { TUNA_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+} from "@solana/kit";
+import { TUNA_PROGRAM_ADDRESS } from "../programs";
+import { getAccountMetaFactory, type ResolvedAccount } from "../shared";
 
 export const CREATE_TUNA_CONFIG_DISCRIMINATOR = new Uint8Array([
   79, 78, 175, 62, 234, 68, 202, 241,
@@ -41,7 +41,7 @@ export const CREATE_TUNA_CONFIG_DISCRIMINATOR = new Uint8Array([
 
 export function getCreateTunaConfigDiscriminatorBytes() {
   return fixEncoderSize(getBytesEncoder(), 8).encode(
-    CREATE_TUNA_CONFIG_DISCRIMINATOR
+    CREATE_TUNA_CONFIG_DISCRIMINATOR,
   );
 }
 
@@ -51,10 +51,10 @@ export type CreateTunaConfigInstruction<
   TAccountTunaConfig extends string | IAccountMeta<string> = string,
   TAccountSystemProgram extends
     | string
-    | IAccountMeta<string> = '11111111111111111111111111111111',
+    | IAccountMeta<string> = "11111111111111111111111111111111",
   TAccountRent extends
     | string
-    | IAccountMeta<string> = 'SysvarRent111111111111111111111111111111111',
+    | IAccountMeta<string> = "SysvarRent111111111111111111111111111111111",
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
   IInstructionWithData<Uint8Array> &
@@ -95,23 +95,23 @@ export type CreateTunaConfigInstructionDataArgs = {
 export function getCreateTunaConfigInstructionDataEncoder(): Encoder<CreateTunaConfigInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
-      ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['ownerAuthority', getAddressEncoder()],
-      ['adminAuthority', getAddressEncoder()],
-      ['liquidatorAuthority', getAddressEncoder()],
-      ['feeRecipient', getAddressEncoder()],
+      ["discriminator", fixEncoderSize(getBytesEncoder(), 8)],
+      ["ownerAuthority", getAddressEncoder()],
+      ["adminAuthority", getAddressEncoder()],
+      ["liquidatorAuthority", getAddressEncoder()],
+      ["feeRecipient", getAddressEncoder()],
     ]),
-    (value) => ({ ...value, discriminator: CREATE_TUNA_CONFIG_DISCRIMINATOR })
+    (value) => ({ ...value, discriminator: CREATE_TUNA_CONFIG_DISCRIMINATOR }),
   );
 }
 
 export function getCreateTunaConfigInstructionDataDecoder(): Decoder<CreateTunaConfigInstructionData> {
   return getStructDecoder([
-    ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['ownerAuthority', getAddressDecoder()],
-    ['adminAuthority', getAddressDecoder()],
-    ['liquidatorAuthority', getAddressDecoder()],
-    ['feeRecipient', getAddressDecoder()],
+    ["discriminator", fixDecoderSize(getBytesDecoder(), 8)],
+    ["ownerAuthority", getAddressDecoder()],
+    ["adminAuthority", getAddressDecoder()],
+    ["liquidatorAuthority", getAddressDecoder()],
+    ["feeRecipient", getAddressDecoder()],
   ]);
 }
 
@@ -121,7 +121,7 @@ export function getCreateTunaConfigInstructionDataCodec(): Codec<
 > {
   return combineCodec(
     getCreateTunaConfigInstructionDataEncoder(),
-    getCreateTunaConfigInstructionDataDecoder()
+    getCreateTunaConfigInstructionDataDecoder(),
   );
 }
 
@@ -135,10 +135,10 @@ export type CreateTunaConfigInput<
   tunaConfig: Address<TAccountTunaConfig>;
   systemProgram?: Address<TAccountSystemProgram>;
   rent?: Address<TAccountRent>;
-  ownerAuthority: CreateTunaConfigInstructionDataArgs['ownerAuthority'];
-  adminAuthority: CreateTunaConfigInstructionDataArgs['adminAuthority'];
-  liquidatorAuthority: CreateTunaConfigInstructionDataArgs['liquidatorAuthority'];
-  feeRecipient: CreateTunaConfigInstructionDataArgs['feeRecipient'];
+  ownerAuthority: CreateTunaConfigInstructionDataArgs["ownerAuthority"];
+  adminAuthority: CreateTunaConfigInstructionDataArgs["adminAuthority"];
+  liquidatorAuthority: CreateTunaConfigInstructionDataArgs["liquidatorAuthority"];
+  feeRecipient: CreateTunaConfigInstructionDataArgs["feeRecipient"];
 };
 
 export function getCreateTunaConfigInstruction<
@@ -154,7 +154,7 @@ export function getCreateTunaConfigInstruction<
     TAccountSystemProgram,
     TAccountRent
   >,
-  config?: { programAddress?: TProgramAddress }
+  config?: { programAddress?: TProgramAddress },
 ): CreateTunaConfigInstruction<
   TProgramAddress,
   TAccountAuthority,
@@ -183,14 +183,14 @@ export function getCreateTunaConfigInstruction<
   // Resolve default values.
   if (!accounts.systemProgram.value) {
     accounts.systemProgram.value =
-      '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
+      "11111111111111111111111111111111" as Address<"11111111111111111111111111111111">;
   }
   if (!accounts.rent.value) {
     accounts.rent.value =
-      'SysvarRent111111111111111111111111111111111' as Address<'SysvarRent111111111111111111111111111111111'>;
+      "SysvarRent111111111111111111111111111111111" as Address<"SysvarRent111111111111111111111111111111111">;
   }
 
-  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+  const getAccountMeta = getAccountMetaFactory(programAddress, "programId");
   const instruction = {
     accounts: [
       getAccountMeta(accounts.authority),
@@ -200,7 +200,7 @@ export function getCreateTunaConfigInstruction<
     ],
     programAddress,
     data: getCreateTunaConfigInstructionDataEncoder().encode(
-      args as CreateTunaConfigInstructionDataArgs
+      args as CreateTunaConfigInstructionDataArgs,
     ),
   } as CreateTunaConfigInstruction<
     TProgramAddress,
@@ -233,11 +233,11 @@ export function parseCreateTunaConfigInstruction<
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+    IInstructionWithData<Uint8Array>,
 ): ParsedCreateTunaConfigInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 4) {
     // TODO: Coded error.
-    throw new Error('Not enough accounts');
+    throw new Error("Not enough accounts");
   }
   let accountIndex = 0;
   const getNextAccount = () => {

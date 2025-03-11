@@ -30,9 +30,9 @@ import {
   type TransactionSigner,
   type WritableAccount,
   type WritableSignerAccount,
-} from '@solana/kit';
-import { TUNA_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+} from "@solana/kit";
+import { TUNA_PROGRAM_ADDRESS } from "../programs";
+import { getAccountMetaFactory, type ResolvedAccount } from "../shared";
 
 export const SET_ADMIN_AUTHORITY_DISCRIMINATOR = new Uint8Array([
   72, 49, 37, 167, 149, 98, 49, 174,
@@ -40,7 +40,7 @@ export const SET_ADMIN_AUTHORITY_DISCRIMINATOR = new Uint8Array([
 
 export function getSetAdminAuthorityDiscriminatorBytes() {
   return fixEncoderSize(getBytesEncoder(), 8).encode(
-    SET_ADMIN_AUTHORITY_DISCRIMINATOR
+    SET_ADMIN_AUTHORITY_DISCRIMINATOR,
   );
 }
 
@@ -74,17 +74,17 @@ export type SetAdminAuthorityInstructionDataArgs = { adminAuthority: Address };
 export function getSetAdminAuthorityInstructionDataEncoder(): Encoder<SetAdminAuthorityInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
-      ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['adminAuthority', getAddressEncoder()],
+      ["discriminator", fixEncoderSize(getBytesEncoder(), 8)],
+      ["adminAuthority", getAddressEncoder()],
     ]),
-    (value) => ({ ...value, discriminator: SET_ADMIN_AUTHORITY_DISCRIMINATOR })
+    (value) => ({ ...value, discriminator: SET_ADMIN_AUTHORITY_DISCRIMINATOR }),
   );
 }
 
 export function getSetAdminAuthorityInstructionDataDecoder(): Decoder<SetAdminAuthorityInstructionData> {
   return getStructDecoder([
-    ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['adminAuthority', getAddressDecoder()],
+    ["discriminator", fixDecoderSize(getBytesDecoder(), 8)],
+    ["adminAuthority", getAddressDecoder()],
   ]);
 }
 
@@ -94,7 +94,7 @@ export function getSetAdminAuthorityInstructionDataCodec(): Codec<
 > {
   return combineCodec(
     getSetAdminAuthorityInstructionDataEncoder(),
-    getSetAdminAuthorityInstructionDataDecoder()
+    getSetAdminAuthorityInstructionDataDecoder(),
   );
 }
 
@@ -104,7 +104,7 @@ export type SetAdminAuthorityInput<
 > = {
   authority: TransactionSigner<TAccountAuthority>;
   tunaConfig: Address<TAccountTunaConfig>;
-  adminAuthority: SetAdminAuthorityInstructionDataArgs['adminAuthority'];
+  adminAuthority: SetAdminAuthorityInstructionDataArgs["adminAuthority"];
 };
 
 export function getSetAdminAuthorityInstruction<
@@ -113,7 +113,7 @@ export function getSetAdminAuthorityInstruction<
   TProgramAddress extends Address = typeof TUNA_PROGRAM_ADDRESS,
 >(
   input: SetAdminAuthorityInput<TAccountAuthority, TAccountTunaConfig>,
-  config?: { programAddress?: TProgramAddress }
+  config?: { programAddress?: TProgramAddress },
 ): SetAdminAuthorityInstruction<
   TProgramAddress,
   TAccountAuthority,
@@ -135,7 +135,7 @@ export function getSetAdminAuthorityInstruction<
   // Original args.
   const args = { ...input };
 
-  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+  const getAccountMeta = getAccountMetaFactory(programAddress, "programId");
   const instruction = {
     accounts: [
       getAccountMeta(accounts.authority),
@@ -143,7 +143,7 @@ export function getSetAdminAuthorityInstruction<
     ],
     programAddress,
     data: getSetAdminAuthorityInstructionDataEncoder().encode(
-      args as SetAdminAuthorityInstructionDataArgs
+      args as SetAdminAuthorityInstructionDataArgs,
     ),
   } as SetAdminAuthorityInstruction<
     TProgramAddress,
@@ -172,11 +172,11 @@ export function parseSetAdminAuthorityInstruction<
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+    IInstructionWithData<Uint8Array>,
 ): ParsedSetAdminAuthorityInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 2) {
     // TODO: Coded error.
-    throw new Error('Not enough accounts');
+    throw new Error("Not enough accounts");
   }
   let accountIndex = 0;
   const getNextAccount = () => {

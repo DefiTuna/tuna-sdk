@@ -1,1 +1,1 @@
-export * as DefitunaIDL from './generated'
+export * as DefitunaIDL from "./generated";

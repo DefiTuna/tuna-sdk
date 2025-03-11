@@ -32,9 +32,9 @@ import {
   type ReadonlyUint8Array,
   type TransactionSigner,
   type WritableAccount,
-} from '@solana/kit';
-import { TUNA_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+} from "@solana/kit";
+import { TUNA_PROGRAM_ADDRESS } from "../programs";
+import { getAccountMetaFactory, type ResolvedAccount } from "../shared";
 
 export const SET_LIMIT_ORDERS_DISCRIMINATOR = new Uint8Array([
   65, 128, 90, 161, 171, 133, 122, 255,
@@ -42,7 +42,7 @@ export const SET_LIMIT_ORDERS_DISCRIMINATOR = new Uint8Array([
 
 export function getSetLimitOrdersDiscriminatorBytes() {
   return fixEncoderSize(getBytesEncoder(), 8).encode(
-    SET_LIMIT_ORDERS_DISCRIMINATOR
+    SET_LIMIT_ORDERS_DISCRIMINATOR,
   );
 }
 
@@ -82,21 +82,21 @@ export type SetLimitOrdersInstructionDataArgs = {
 export function getSetLimitOrdersInstructionDataEncoder(): Encoder<SetLimitOrdersInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
-      ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['tickStopLossIndex', getI32Encoder()],
-      ['tickTakeProfitIndex', getI32Encoder()],
-      ['swapToTokenOnLimitOrder', getU8Encoder()],
+      ["discriminator", fixEncoderSize(getBytesEncoder(), 8)],
+      ["tickStopLossIndex", getI32Encoder()],
+      ["tickTakeProfitIndex", getI32Encoder()],
+      ["swapToTokenOnLimitOrder", getU8Encoder()],
     ]),
-    (value) => ({ ...value, discriminator: SET_LIMIT_ORDERS_DISCRIMINATOR })
+    (value) => ({ ...value, discriminator: SET_LIMIT_ORDERS_DISCRIMINATOR }),
   );
 }
 
 export function getSetLimitOrdersInstructionDataDecoder(): Decoder<SetLimitOrdersInstructionData> {
   return getStructDecoder([
-    ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['tickStopLossIndex', getI32Decoder()],
-    ['tickTakeProfitIndex', getI32Decoder()],
-    ['swapToTokenOnLimitOrder', getU8Decoder()],
+    ["discriminator", fixDecoderSize(getBytesDecoder(), 8)],
+    ["tickStopLossIndex", getI32Decoder()],
+    ["tickTakeProfitIndex", getI32Decoder()],
+    ["swapToTokenOnLimitOrder", getU8Decoder()],
   ]);
 }
 
@@ -106,7 +106,7 @@ export function getSetLimitOrdersInstructionDataCodec(): Codec<
 > {
   return combineCodec(
     getSetLimitOrdersInstructionDataEncoder(),
-    getSetLimitOrdersInstructionDataDecoder()
+    getSetLimitOrdersInstructionDataDecoder(),
   );
 }
 
@@ -116,9 +116,9 @@ export type SetLimitOrdersInput<
 > = {
   authority: TransactionSigner<TAccountAuthority>;
   tunaPosition: Address<TAccountTunaPosition>;
-  tickStopLossIndex: SetLimitOrdersInstructionDataArgs['tickStopLossIndex'];
-  tickTakeProfitIndex: SetLimitOrdersInstructionDataArgs['tickTakeProfitIndex'];
-  swapToTokenOnLimitOrder: SetLimitOrdersInstructionDataArgs['swapToTokenOnLimitOrder'];
+  tickStopLossIndex: SetLimitOrdersInstructionDataArgs["tickStopLossIndex"];
+  tickTakeProfitIndex: SetLimitOrdersInstructionDataArgs["tickTakeProfitIndex"];
+  swapToTokenOnLimitOrder: SetLimitOrdersInstructionDataArgs["swapToTokenOnLimitOrder"];
 };
 
 export function getSetLimitOrdersInstruction<
@@ -127,7 +127,7 @@ export function getSetLimitOrdersInstruction<
   TProgramAddress extends Address = typeof TUNA_PROGRAM_ADDRESS,
 >(
   input: SetLimitOrdersInput<TAccountAuthority, TAccountTunaPosition>,
-  config?: { programAddress?: TProgramAddress }
+  config?: { programAddress?: TProgramAddress },
 ): SetLimitOrdersInstruction<
   TProgramAddress,
   TAccountAuthority,
@@ -149,7 +149,7 @@ export function getSetLimitOrdersInstruction<
   // Original args.
   const args = { ...input };
 
-  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+  const getAccountMeta = getAccountMetaFactory(programAddress, "programId");
   const instruction = {
     accounts: [
       getAccountMeta(accounts.authority),
@@ -157,7 +157,7 @@ export function getSetLimitOrdersInstruction<
     ],
     programAddress,
     data: getSetLimitOrdersInstructionDataEncoder().encode(
-      args as SetLimitOrdersInstructionDataArgs
+      args as SetLimitOrdersInstructionDataArgs,
     ),
   } as SetLimitOrdersInstruction<
     TProgramAddress,
@@ -186,11 +186,11 @@ export function parseSetLimitOrdersInstruction<
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+    IInstructionWithData<Uint8Array>,
 ): ParsedSetLimitOrdersInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 2) {
     // TODO: Coded error.
-    throw new Error('Not enough accounts');
+    throw new Error("Not enough accounts");
   }
   let accountIndex = 0;
   const getNextAccount = () => {

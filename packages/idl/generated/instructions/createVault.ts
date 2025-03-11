@@ -33,9 +33,9 @@ import {
   type TransactionSigner,
   type WritableAccount,
   type WritableSignerAccount,
-} from '@solana/kit';
-import { TUNA_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+} from "@solana/kit";
+import { TUNA_PROGRAM_ADDRESS } from "../programs";
+import { getAccountMetaFactory, type ResolvedAccount } from "../shared";
 
 export const CREATE_VAULT_DISCRIMINATOR = new Uint8Array([
   29, 237, 247, 208, 193, 82, 54, 135,
@@ -43,7 +43,7 @@ export const CREATE_VAULT_DISCRIMINATOR = new Uint8Array([
 
 export function getCreateVaultDiscriminatorBytes() {
   return fixEncoderSize(getBytesEncoder(), 8).encode(
-    CREATE_VAULT_DISCRIMINATOR
+    CREATE_VAULT_DISCRIMINATOR,
   );
 }
 
@@ -55,15 +55,15 @@ export type CreateVaultInstruction<
   TAccountVaultAta extends string | IAccountMeta<string> = string,
   TAccountTokenProgram extends
     | string
-    | IAccountMeta<string> = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+    | IAccountMeta<string> = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
   TAccountAssociatedTokenProgram extends string | IAccountMeta<string> = string,
   TAccountMint extends string | IAccountMeta<string> = string,
   TAccountSystemProgram extends
     | string
-    | IAccountMeta<string> = '11111111111111111111111111111111',
+    | IAccountMeta<string> = "11111111111111111111111111111111",
   TAccountRent extends
     | string
-    | IAccountMeta<string> = 'SysvarRent111111111111111111111111111111111',
+    | IAccountMeta<string> = "SysvarRent111111111111111111111111111111111",
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
   IInstructionWithData<Uint8Array> &
@@ -103,35 +103,39 @@ export type CreateVaultInstruction<
 
 export type CreateVaultInstructionData = {
   discriminator: ReadonlyUint8Array;
-  pythOraclePriceFeed: Address;
   interestRate: bigint;
   supplyLimit: bigint;
+  pythOraclePriceUpdate: Address;
+  pythOracleFeedId: Address;
 };
 
 export type CreateVaultInstructionDataArgs = {
-  pythOraclePriceFeed: Address;
   interestRate: number | bigint;
   supplyLimit: number | bigint;
+  pythOraclePriceUpdate: Address;
+  pythOracleFeedId: Address;
 };
 
 export function getCreateVaultInstructionDataEncoder(): Encoder<CreateVaultInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
-      ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['pythOraclePriceFeed', getAddressEncoder()],
-      ['interestRate', getU64Encoder()],
-      ['supplyLimit', getU64Encoder()],
+      ["discriminator", fixEncoderSize(getBytesEncoder(), 8)],
+      ["interestRate", getU64Encoder()],
+      ["supplyLimit", getU64Encoder()],
+      ["pythOraclePriceUpdate", getAddressEncoder()],
+      ["pythOracleFeedId", getAddressEncoder()],
     ]),
-    (value) => ({ ...value, discriminator: CREATE_VAULT_DISCRIMINATOR })
+    (value) => ({ ...value, discriminator: CREATE_VAULT_DISCRIMINATOR }),
   );
 }
 
 export function getCreateVaultInstructionDataDecoder(): Decoder<CreateVaultInstructionData> {
   return getStructDecoder([
-    ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['pythOraclePriceFeed', getAddressDecoder()],
-    ['interestRate', getU64Decoder()],
-    ['supplyLimit', getU64Decoder()],
+    ["discriminator", fixDecoderSize(getBytesDecoder(), 8)],
+    ["interestRate", getU64Decoder()],
+    ["supplyLimit", getU64Decoder()],
+    ["pythOraclePriceUpdate", getAddressDecoder()],
+    ["pythOracleFeedId", getAddressDecoder()],
   ]);
 }
 
@@ -141,7 +145,7 @@ export function getCreateVaultInstructionDataCodec(): Codec<
 > {
   return combineCodec(
     getCreateVaultInstructionDataEncoder(),
-    getCreateVaultInstructionDataDecoder()
+    getCreateVaultInstructionDataDecoder(),
   );
 }
 
@@ -165,9 +169,10 @@ export type CreateVaultInput<
   mint: Address<TAccountMint>;
   systemProgram?: Address<TAccountSystemProgram>;
   rent?: Address<TAccountRent>;
-  pythOraclePriceFeed: CreateVaultInstructionDataArgs['pythOraclePriceFeed'];
-  interestRate: CreateVaultInstructionDataArgs['interestRate'];
-  supplyLimit: CreateVaultInstructionDataArgs['supplyLimit'];
+  interestRate: CreateVaultInstructionDataArgs["interestRate"];
+  supplyLimit: CreateVaultInstructionDataArgs["supplyLimit"];
+  pythOraclePriceUpdate: CreateVaultInstructionDataArgs["pythOraclePriceUpdate"];
+  pythOracleFeedId: CreateVaultInstructionDataArgs["pythOracleFeedId"];
 };
 
 export function getCreateVaultInstruction<
@@ -193,7 +198,7 @@ export function getCreateVaultInstruction<
     TAccountSystemProgram,
     TAccountRent
   >,
-  config?: { programAddress?: TProgramAddress }
+  config?: { programAddress?: TProgramAddress },
 ): CreateVaultInstruction<
   TProgramAddress,
   TAccountAuthority,
@@ -235,18 +240,18 @@ export function getCreateVaultInstruction<
   // Resolve default values.
   if (!accounts.tokenProgram.value) {
     accounts.tokenProgram.value =
-      'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' as Address<'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'>;
+      "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA" as Address<"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA">;
   }
   if (!accounts.systemProgram.value) {
     accounts.systemProgram.value =
-      '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
+      "11111111111111111111111111111111" as Address<"11111111111111111111111111111111">;
   }
   if (!accounts.rent.value) {
     accounts.rent.value =
-      'SysvarRent111111111111111111111111111111111' as Address<'SysvarRent111111111111111111111111111111111'>;
+      "SysvarRent111111111111111111111111111111111" as Address<"SysvarRent111111111111111111111111111111111">;
   }
 
-  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+  const getAccountMeta = getAccountMetaFactory(programAddress, "programId");
   const instruction = {
     accounts: [
       getAccountMeta(accounts.authority),
@@ -261,7 +266,7 @@ export function getCreateVaultInstruction<
     ],
     programAddress,
     data: getCreateVaultInstructionDataEncoder().encode(
-      args as CreateVaultInstructionDataArgs
+      args as CreateVaultInstructionDataArgs,
     ),
   } as CreateVaultInstruction<
     TProgramAddress,
@@ -304,11 +309,11 @@ export function parseCreateVaultInstruction<
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+    IInstructionWithData<Uint8Array>,
 ): ParsedCreateVaultInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 9) {
     // TODO: Coded error.
-    throw new Error('Not enough accounts');
+    throw new Error("Not enough accounts");
   }
   let accountIndex = 0;
   const getNextAccount = () => {

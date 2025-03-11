@@ -30,9 +30,9 @@ import {
   type TransactionSigner,
   type WritableAccount,
   type WritableSignerAccount,
-} from '@solana/kit';
-import { TUNA_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+} from "@solana/kit";
+import { TUNA_PROGRAM_ADDRESS } from "../programs";
+import { getAccountMetaFactory, type ResolvedAccount } from "../shared";
 
 export const SET_MAX_SWAP_SLIPPAGE_DISCRIMINATOR = new Uint8Array([
   122, 42, 61, 99, 35, 230, 50, 154,
@@ -40,7 +40,7 @@ export const SET_MAX_SWAP_SLIPPAGE_DISCRIMINATOR = new Uint8Array([
 
 export function getSetMaxSwapSlippageDiscriminatorBytes() {
   return fixEncoderSize(getBytesEncoder(), 8).encode(
-    SET_MAX_SWAP_SLIPPAGE_DISCRIMINATOR
+    SET_MAX_SWAP_SLIPPAGE_DISCRIMINATOR,
   );
 }
 
@@ -74,20 +74,20 @@ export type SetMaxSwapSlippageInstructionDataArgs = { maxSwapSlippage: number };
 export function getSetMaxSwapSlippageInstructionDataEncoder(): Encoder<SetMaxSwapSlippageInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
-      ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['maxSwapSlippage', getU32Encoder()],
+      ["discriminator", fixEncoderSize(getBytesEncoder(), 8)],
+      ["maxSwapSlippage", getU32Encoder()],
     ]),
     (value) => ({
       ...value,
       discriminator: SET_MAX_SWAP_SLIPPAGE_DISCRIMINATOR,
-    })
+    }),
   );
 }
 
 export function getSetMaxSwapSlippageInstructionDataDecoder(): Decoder<SetMaxSwapSlippageInstructionData> {
   return getStructDecoder([
-    ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['maxSwapSlippage', getU32Decoder()],
+    ["discriminator", fixDecoderSize(getBytesDecoder(), 8)],
+    ["maxSwapSlippage", getU32Decoder()],
   ]);
 }
 
@@ -97,7 +97,7 @@ export function getSetMaxSwapSlippageInstructionDataCodec(): Codec<
 > {
   return combineCodec(
     getSetMaxSwapSlippageInstructionDataEncoder(),
-    getSetMaxSwapSlippageInstructionDataDecoder()
+    getSetMaxSwapSlippageInstructionDataDecoder(),
   );
 }
 
@@ -107,7 +107,7 @@ export type SetMaxSwapSlippageInput<
 > = {
   authority: TransactionSigner<TAccountAuthority>;
   tunaConfig: Address<TAccountTunaConfig>;
-  maxSwapSlippage: SetMaxSwapSlippageInstructionDataArgs['maxSwapSlippage'];
+  maxSwapSlippage: SetMaxSwapSlippageInstructionDataArgs["maxSwapSlippage"];
 };
 
 export function getSetMaxSwapSlippageInstruction<
@@ -116,7 +116,7 @@ export function getSetMaxSwapSlippageInstruction<
   TProgramAddress extends Address = typeof TUNA_PROGRAM_ADDRESS,
 >(
   input: SetMaxSwapSlippageInput<TAccountAuthority, TAccountTunaConfig>,
-  config?: { programAddress?: TProgramAddress }
+  config?: { programAddress?: TProgramAddress },
 ): SetMaxSwapSlippageInstruction<
   TProgramAddress,
   TAccountAuthority,
@@ -138,7 +138,7 @@ export function getSetMaxSwapSlippageInstruction<
   // Original args.
   const args = { ...input };
 
-  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+  const getAccountMeta = getAccountMetaFactory(programAddress, "programId");
   const instruction = {
     accounts: [
       getAccountMeta(accounts.authority),
@@ -146,7 +146,7 @@ export function getSetMaxSwapSlippageInstruction<
     ],
     programAddress,
     data: getSetMaxSwapSlippageInstructionDataEncoder().encode(
-      args as SetMaxSwapSlippageInstructionDataArgs
+      args as SetMaxSwapSlippageInstructionDataArgs,
     ),
   } as SetMaxSwapSlippageInstruction<
     TProgramAddress,
@@ -175,11 +175,11 @@ export function parseSetMaxSwapSlippageInstruction<
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
-    IInstructionWithData<Uint8Array>
+    IInstructionWithData<Uint8Array>,
 ): ParsedSetMaxSwapSlippageInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 2) {
     // TODO: Coded error.
-    throw new Error('Not enough accounts');
+    throw new Error("Not enough accounts");
   }
   let accountIndex = 0;
   const getNextAccount = () => {
@@ -194,7 +194,7 @@ export function parseSetMaxSwapSlippageInstruction<
       tunaConfig: getNextAccount(),
     },
     data: getSetMaxSwapSlippageInstructionDataDecoder().decode(
-      instruction.data
+      instruction.data,
     ),
   };
 }
