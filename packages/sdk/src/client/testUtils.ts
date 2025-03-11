@@ -1,4 +1,4 @@
-import { DefitunaIDL } from "@defituna/idl";
+import * as DefiTunaClient from "@defituna/client";
 import { address, createSolanaRpc, getAddressEncoder, getBase64Decoder, getBase64Encoder } from "@solana/web3.js";
 
 const TUNA_PROGRAM_ID = address("tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD");
@@ -11,14 +11,14 @@ const rpc = createSolanaRpc(process.env.RPC_URL!);
 export async function getMarkets() {
   const accounts = await rpc
     .getProgramAccounts(TUNA_PROGRAM_ID, {
-      filters: [{ dataSize: BigInt(DefitunaIDL.getMarketSize()) }],
+      filters: [{ dataSize: BigInt(DefiTunaClient.getMarketSize()) }],
       commitment: "processed",
       encoding: "base64",
       withContext: false,
     })
     .send();
 
-  const decoder = DefitunaIDL.getMarketDecoder();
+  const decoder = DefiTunaClient.getMarketDecoder();
 
   const encodedAccounts = accounts.map(({ account: { data } }) => base64Encoder.encode(data[0]));
   const decodedAccounts = encodedAccounts.map(x => decoder.decode(x));
@@ -33,14 +33,14 @@ export async function getMarkets() {
 export async function getVaults() {
   const accounts = await rpc
     .getProgramAccounts(TUNA_PROGRAM_ID, {
-      filters: [{ dataSize: BigInt(DefitunaIDL.getVaultSize()) }],
+      filters: [{ dataSize: BigInt(DefiTunaClient.getVaultSize()) }],
       commitment: "processed",
       encoding: "base64",
       withContext: false,
     })
     .send();
 
-  const decoder = DefitunaIDL.getVaultDecoder();
+  const decoder = DefiTunaClient.getVaultDecoder();
 
   const encodedAccounts = accounts.map(({ account: { data } }) => base64Encoder.encode(data[0]));
   const decodedAccounts = encodedAccounts.map(x => decoder.decode(x));
@@ -63,7 +63,7 @@ export async function getLendingPositions(userAddress: string) {
             encoding: "base64",
           },
         },
-        { dataSize: BigInt(DefitunaIDL.getLendingPositionSize()) },
+        { dataSize: BigInt(DefiTunaClient.getLendingPositionSize()) },
       ],
       commitment: "processed",
       encoding: "base64",
@@ -71,7 +71,7 @@ export async function getLendingPositions(userAddress: string) {
     })
     .send();
 
-  const decoder = DefitunaIDL.getLendingPositionDecoder();
+  const decoder = DefiTunaClient.getLendingPositionDecoder();
 
   const encodedAccounts = accounts.map(({ account: { data } }) => base64Encoder.encode(data[0]));
   const decodedAccounts = encodedAccounts.map(x => decoder.decode(x));
@@ -94,7 +94,7 @@ export async function getTunaPositions(userAddress: string) {
             encoding: "base64",
           },
         },
-        { dataSize: BigInt(DefitunaIDL.getTunaPositionSize()) },
+        { dataSize: BigInt(DefiTunaClient.getTunaPositionSize()) },
       ],
       commitment: "processed",
       encoding: "base64",
@@ -102,7 +102,7 @@ export async function getTunaPositions(userAddress: string) {
     })
     .send();
 
-  const decoder = DefitunaIDL.getTunaPositionDecoder();
+  const decoder = DefiTunaClient.getTunaPositionDecoder();
 
   const encodedAccounts = accounts.map(({ account: { data } }) => base64Encoder.encode(data[0]));
   const decodedAccounts = encodedAccounts.map(x => decoder.decode(x));
