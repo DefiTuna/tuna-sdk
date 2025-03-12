@@ -59,6 +59,8 @@ export const Pool = z.object({
   provider: PoolProviderSchema,
   tokenAMint: z.string(),
   tokenBMint: z.string(),
+  tokenAVault: z.string(),
+  tokenBVault: z.string(),
   tvlUsdc: z.coerce.number(),
   tickSpacing: z.number(),
   feeRate: z.number(),
