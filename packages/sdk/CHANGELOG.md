@@ -1,5 +1,11 @@
 # @defituna/sdk
 
+## 1.1.9
+
+### Patch Changes
+
+- d838649: Add pool vault addresses
+
 ## 1.1.8
 
 ### Patch Changes
