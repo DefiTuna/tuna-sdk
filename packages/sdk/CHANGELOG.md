@@ -1,5 +1,11 @@
 # @defituna/sdk
 
+## 1.1.14
+
+### Patch Changes
+
+- 403a52d: Market disabled field
+
 ## 1.1.13
 
 ### Patch Changes
