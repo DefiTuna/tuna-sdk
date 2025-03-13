@@ -1,5 +1,11 @@
 # @defituna/sdk
 
+## 1.1.16
+
+### Patch Changes
+
+- f1b6449: Add vault depositedShares field
+
 ## 1.1.15
 
 ### Patch Changes
