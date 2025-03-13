@@ -2,10 +2,12 @@ import camelcaseKeys from "camelcase-keys";
 import { z } from "zod";
 
 import * as schemas from "./schemas";
+import { PoolProvider, TunaPositionState } from "./schemas";
 
 /* Enums */
-export const PoolProvider = schemas.PoolProvider;
-export const TunaPositionState = schemas.TunaPositionState;
+export { PoolProvider, TunaPositionState };
+export type PoolProviderType = z.infer<typeof schemas.PoolProviderSchema>;
+export type TunaPositionStateType = z.infer<typeof schemas.TunaPositionStateSchema>;
 /* Entity types */
 export type Mint = z.infer<typeof schemas.Mint>;
 export type Market = z.infer<typeof schemas.Market>;
@@ -71,7 +73,7 @@ export class TunaApiClient {
         throw errorBody;
       }
       const data = await response.json();
-      const transformed = camelcaseKeys(data, { deep: true });
+      const transformed = camelcaseKeys(data, { deep: true, exclude: ["24h", "7d", "30d"] });
       return schema.parse(transformed.data);
     } catch (error) {
       if (retries > 0 && !(error instanceof Error && error.name === "AbortError")) {
