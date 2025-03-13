@@ -235,7 +235,7 @@ describe("Pools", async () => {
     expect(pools.every(pool => pool.tvlUsdc > 0)).toBe(true);
   });
   it("Have monthly stats", () => {
-    expect(pools.every(pool => !!pool.stats["30D"])).toBe(true);
+    expect(pools.every(pool => !!pool.stats["30d"])).toBe(true);
   });
 });
 

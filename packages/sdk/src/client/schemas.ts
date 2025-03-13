@@ -5,18 +5,18 @@ const amountWithUsd = z.object({
   usd: z.number(),
 });
 
-export enum PoolProvider {
-  ORCA = "orca",
-}
-export enum TunaPositionState {
-  OPEN = "open",
-  LIQUIDATED = "liquidated",
-  CLOSED_BY_LIMIT_ORDER = "closed_by_limit_order",
-  CLOSED = "closed",
-}
+export const PoolProvider = {
+  ORCA: "orca",
+} as const;
+export const TunaPositionState = {
+  OPEN: "open",
+  LIQUIDATED: "liquidated",
+  CLOSED_BY_LIMIT_ORDER: "closed_by_limit_order",
+  CLOSED: "closed",
+} as const;
 
-const PoolProviderSchema = z.enum([PoolProvider.ORCA, ...Object.values(PoolProvider)]);
-const TunaPositionStateSchema = z.enum([TunaPositionState.OPEN, ...Object.values(TunaPositionState)]);
+export const PoolProviderSchema = z.enum([PoolProvider.ORCA, ...Object.values(PoolProvider)]);
+export const TunaPositionStateSchema = z.enum([TunaPositionState.OPEN, ...Object.values(TunaPositionState)]);
 
 export const Mint = z.object({
   symbol: z.string(),
@@ -72,12 +72,20 @@ export const Pool = z.object({
   liquidity: z.coerce.bigint(),
   sqrtPrice: z.coerce.bigint(),
   tickCurrentIndex: z.number(),
-  stats: z.record(
-    z.object({
+  stats: z.object({
+    "24h": z.object({
       volume: z.coerce.number(),
       fees: z.coerce.number(),
     }),
-  ),
+    "7d": z.object({
+      volume: z.coerce.number(),
+      fees: z.coerce.number(),
+    }),
+    "30d": z.object({
+      volume: z.coerce.number(),
+      fees: z.coerce.number(),
+    }),
+  }),
 });
 
 export const Tick = z.object({
