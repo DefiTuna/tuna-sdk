@@ -1,5 +1,11 @@
 # @defituna/sdk
 
+## 1.1.11
+
+### Patch Changes
+
+- 66d95fc: Add Vault utilization field
+
 ## 1.1.10
 
 ### Patch Changes
