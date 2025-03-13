@@ -54,6 +54,7 @@ export const Vault = z.object({
   borrowedFunds: amountWithUsd,
   supplyLimit: amountWithUsd,
   borrowedShares: z.coerce.bigint(),
+  depositedShares: z.coerce.bigint(),
   supplyApy: z.number(),
   borrowApy: z.number(),
   utilization: z.number(),
