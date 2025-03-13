@@ -1,5 +1,11 @@
 # @defituna/sdk
 
+## 1.1.13
+
+### Patch Changes
+
+- 2b6f589: Pool fields adjustments
+
 ## 1.1.12
 
 ### Patch Changes
