@@ -59,6 +59,7 @@ export const Vault = z.object({
   borrowApy: z.number(),
   utilization: z.number(),
   pythOracleFeedId: z.string(),
+  pythOraclePriceUpdate: z.string(),
 });
 
 export const Pool = z.object({
