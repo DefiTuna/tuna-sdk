@@ -1,5 +1,11 @@
 # @defituna/sdk
 
+## 1.1.10
+
+### Patch Changes
+
+- 5659a2c: Add borrowedShares & pythOracleFeedId Vault fields
+
 ## 1.1.9
 
 ### Patch Changes
