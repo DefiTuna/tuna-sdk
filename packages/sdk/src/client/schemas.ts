@@ -33,6 +33,7 @@ export const Market = z.object({
   provider: PoolProviderSchema,
   maxLeverage: z.number(),
   protocolFee: z.number(),
+  protocolFeeOnCollateral: z.number(),
   liquidationFee: z.number(),
   liquidationThreshold: z.number(),
   limitOrderExecutionFee: z.number(),
