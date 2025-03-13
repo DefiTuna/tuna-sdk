@@ -36,6 +36,7 @@ export const Market = z.object({
   liquidationFee: z.number(),
   liquidationThreshold: z.number(),
   limitOrderExecutionFee: z.number(),
+  disabled: z.boolean(),
 });
 
 export const TokenOraclePrice = z.object({
