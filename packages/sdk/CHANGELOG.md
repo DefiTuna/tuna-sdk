@@ -1,5 +1,11 @@
 # @defituna/sdk
 
+## 1.1.17
+
+### Patch Changes
+
+- afa3d17: Add vault pythOraclePriceUpdate field
+
 ## 1.1.16
 
 ### Patch Changes
