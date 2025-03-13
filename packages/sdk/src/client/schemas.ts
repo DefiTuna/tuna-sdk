@@ -53,6 +53,7 @@ export const Vault = z.object({
   borrowedShares: z.coerce.bigint(),
   supplyApy: z.number(),
   borrowApy: z.number(),
+  utilization: z.number(),
   pythOracleFeedId: z.string(),
 });
 
