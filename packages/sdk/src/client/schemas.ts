@@ -50,8 +50,10 @@ export const Vault = z.object({
   depositedFunds: amountWithUsd,
   borrowedFunds: amountWithUsd,
   supplyLimit: amountWithUsd,
+  borrowedShares: z.coerce.bigint(),
   supplyApy: z.number(),
   borrowApy: z.number(),
+  pythOracleFeedId: z.string(),
 });
 
 export const Pool = z.object({
