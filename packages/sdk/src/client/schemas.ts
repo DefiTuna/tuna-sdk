@@ -27,14 +27,15 @@ export const Mint = z.object({
 
 export const Market = z.object({
   address: z.string(),
+  addressLookupTable: z.string(),
   poolAddress: z.string(),
-  feeRate: z.number(),
+  poolFeeRate: z.number(),
   provider: PoolProviderSchema,
-  maxLeverage: z.coerce.bigint(),
-  protocolFee: z.coerce.bigint(),
-  liquidationFee: z.coerce.bigint(),
-  liquidationThreshold: z.coerce.bigint(),
-  limitOrderExecutionFee: z.coerce.bigint(),
+  maxLeverage: z.number(),
+  protocolFee: z.number(),
+  liquidationFee: z.number(),
+  liquidationThreshold: z.number(),
+  limitOrderExecutionFee: z.number(),
 });
 
 export const TokenOraclePrice = z.object({

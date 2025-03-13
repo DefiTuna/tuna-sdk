@@ -66,7 +66,7 @@ describe("Markets", async () => {
     );
   });
   it("Have valid fee rate", () => {
-    expect(markets.every(market => market.feeRate > 0)).toBe(true);
+    expect(markets.every(market => market.poolFeeRate > 0)).toBe(true);
   });
 });
 
@@ -78,7 +78,7 @@ describe("Single Market", async () => {
 
   it("Returns market data", () => {
     expect(market.address).toBe(sampleMarketAddress);
-    expect(market.feeRate).toBeGreaterThan(0);
+    expect(market.poolFeeRate).toBeGreaterThan(0);
   });
 
   it("Returns 404 for unsaved market", async () => {
