@@ -1,5 +1,11 @@
 # @defituna/sdk
 
+## 1.1.15
+
+### Patch Changes
+
+- 6fadc51: Add market protocolFeeOnCollateral field
+
 ## 1.1.14
 
 ### Patch Changes
