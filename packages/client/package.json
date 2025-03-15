@@ -31,7 +31,13 @@
     "eslint": "eslint \"**/*.ts\"",
     "eslint:fix": "eslint \"**/*.ts\" --fix",
     "type-check": "tsc -p .",
-    "lint": "pnpm eslint && pnpm type-check"
+    "lint": "pnpm eslint && pnpm type-check",
+    "example:deposit_and_create": "tsx examples/lending/depositAndCreate.ts",
+    "example:withdraw": "tsx examples/lending/withdraw.ts",
+    "example:open_and_add_liquidity_orca": "tsx examples/tunaPosition/openAndAddLiquidityOrca.ts",
+    "example:collect_fees_orca": "tsx examples/tunaPosition/collectFeesOrca.ts",
+    "example:collect_and_compound_fees_orca": "tsx examples/tunaPosition/collectAndCompoundFeesOrca.ts",
+    "example:remove_liquidity_and_close_orca": "tsx examples/tunaPosition/removeLiquidityAndCloseOrca.ts"
   },
   "peerDependencies": {
     "@solana/kit": "^2.1.0"
@@ -41,10 +47,18 @@
     "@defituna/typescript-config": "^0.2.0",
     "@defituna/eslint-config": "^0.4.0",
     "@defituna/prettier-config": "^0.0.0",
+    "@orca-so/whirlpools-client": "^1.0.4",
+    "@orca-so/whirlpools-core": "^1.0.4",
+    "@solana-program/compute-budget": "^0.7.0",
+    "@solana-program/system": "^0.7.0",
+    "@solana-program/token": "^0.5.1",
+    "@solana-program/token-2022": "^0.4.0",
+    "dotenv": "^16.4.7",
     "eslint": "^8.57.0",
+    "ts-node": "^10.9.2",
     "tsup": "^8.3.5",
+    "tsx": "^4.19.3",
     "typescript": "5.5.4",
     "vite-tsconfig-paths": "^5.1.4"
-  },
-  "dependencies": {}
+  }
 }
