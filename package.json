@@ -8,7 +8,8 @@
     "lint": "turbo lint",
     "test": "turbo test",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "release": "changeset publish -v"
+    "release": "changeset publish -v",
+    "run_example": "bash -c 'if [ -z \"$1\" ]; then echo \"Please provide an example name\"; exit 1; fi; turbo example:$1 -- ${@:2}' --"
   },
   "devDependencies": {
     "prettier": "^3.5.0",
