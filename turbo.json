@@ -18,6 +18,30 @@
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "example:deposit_and_create": {
+      "dependsOn": [],
+      "cache": false
+    },
+    "example:withdraw": {
+      "dependsOn": [],
+      "cache": false
+    },
+    "example:collect_and_compound_fees_orca": {
+      "dependsOn": [],
+      "cache": false
+    },
+    "example:collect_fees_orca": {
+      "dependsOn": [],
+      "cache": false
+    },
+    "example:open_and_add_liquidity_orca": {
+      "dependsOn": [],
+      "cache": false
+    },
+    "example:remove_liquidity_and_close_orca": {
+      "dependsOn": [],
+      "cache": false
     }
   }
 }
