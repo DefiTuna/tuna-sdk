@@ -29,6 +29,7 @@ export * from './setMaxPercentageOfLeftovers';
 export * from './setMaxSwapSlippage';
 export * from './setOwnerAuthority';
 export * from './setSuspendedState';
+export * from './setTunaPositionFlags';
 export * from './updateMarket';
 export * from './updateVault';
 export * from './withdraw';

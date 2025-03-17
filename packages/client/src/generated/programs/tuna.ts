@@ -37,6 +37,7 @@ import {
   type ParsedSetMaxSwapSlippageInstruction,
   type ParsedSetOwnerAuthorityInstruction,
   type ParsedSetSuspendedStateInstruction,
+  type ParsedSetTunaPositionFlagsInstruction,
   type ParsedUpdateMarketInstruction,
   type ParsedUpdateVaultInstruction,
   type ParsedWithdrawInstruction,
@@ -177,6 +178,7 @@ export enum TunaInstruction {
   SetMaxSwapSlippage,
   SetOwnerAuthority,
   SetSuspendedState,
+  SetTunaPositionFlags,
   UpdateMarket,
   UpdateVault,
   Withdraw,
@@ -443,6 +445,17 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
+        new Uint8Array([110, 73, 96, 139, 194, 71, 253, 57])
+      ),
+      0
+    )
+  ) {
+    return TunaInstruction.SetTunaPositionFlags;
+  }
+  if (
+    containsBytes(
+      data,
+      fixEncoderSize(getBytesEncoder(), 8).encode(
         new Uint8Array([153, 39, 2, 197, 179, 50, 199, 217])
       ),
       0
@@ -549,6 +562,9 @@ export type ParsedTunaInstruction<
   | ({
       instructionType: TunaInstruction.SetSuspendedState;
     } & ParsedSetSuspendedStateInstruction<TProgram>)
+  | ({
+      instructionType: TunaInstruction.SetTunaPositionFlags;
+    } & ParsedSetTunaPositionFlagsInstruction<TProgram>)
   | ({
       instructionType: TunaInstruction.UpdateMarket;
     } & ParsedUpdateMarketInstruction<TProgram>)
