@@ -26,7 +26,6 @@
     "access": "public"
   },
   "scripts": {
-    "codama": "node ./codama.js",
     "build": "pnpm codama && tsup src/index.ts --format cjs,esm --dts",
     "dev": "pnpm codama && tsup src/index.ts --format cjs,esm --dts --watch",
     "eslint": "eslint \"**/*.ts\"",
@@ -40,11 +39,6 @@
   "devDependencies": {
     "@solana/kit": "^2.1.0",
     "@defituna/typescript-config": "^0.2.0",
-    "@codama/nodes": "^1.2.8",
-    "@codama/nodes-from-anchor": "^1.1.8",
-    "@codama/renderers": "^1.0.16",
-    "@codama/visitors-core": "^1.2.8",
-    "codama": "^1.2.8",
     "@defituna/eslint-config": "^0.4.0",
     "@defituna/prettier-config": "^0.0.0",
     "eslint": "^8.57.0",
