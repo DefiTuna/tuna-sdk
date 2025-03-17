@@ -1,7 +1,7 @@
 {
   "name": "@defituna/client",
   "description": "Typescript client to interact with DefiTuna's on-chain program.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": false,
   "license": "MIT",
   "main": "./dist/index.cjs",
@@ -26,7 +26,6 @@
     "access": "public"
   },
   "scripts": {
-    "postinstall": "pnpm build",
     "codama": "node ./codama.js",
     "build": "pnpm codama && tsup src/index.ts --format cjs,esm --dts",
     "dev": "pnpm codama && tsup src/index.ts --format cjs,esm --dts --watch",
