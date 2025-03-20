@@ -1,5 +1,11 @@
 # @defituna/client
 
+## 1.0.2
+
+### Patch Changes
+
+- Remove post-install script
+
 ## 1.0.1
 
 ### Patch Changes
