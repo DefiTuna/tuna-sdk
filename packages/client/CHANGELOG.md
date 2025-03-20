@@ -1,5 +1,11 @@
 # @defituna/client
 
+## 1.0.4
+
+### Patch Changes
+
+- f4fd7fc: Updated IDL to 1.0.58
+
 ## 1.0.3
 
 ### Patch Changes
