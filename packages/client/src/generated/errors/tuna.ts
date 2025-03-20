@@ -48,12 +48,12 @@ export const TUNA_ERROR__LIQUIDATION_THRESHOLD_IS_OUT_OF_RANGE = 0x177e; // 6014
 export const TUNA_ERROR__LIQUIDITY_ZERO = 0x177f; // 6015
 /** MarketDisabled: MarketDisabled */
 export const TUNA_ERROR__MARKET_DISABLED = 0x1780; // 6016
+/** MarketDebtLimitExceeded: MarketDebtLimitExceeded */
+export const TUNA_ERROR__MARKET_DEBT_LIMIT_EXCEEDED = 0x1781; // 6017
 /** MathOverflow: MathOverflow */
-export const TUNA_ERROR__MATH_OVERFLOW = 0x1781; // 6017
+export const TUNA_ERROR__MATH_OVERFLOW = 0x1782; // 6018
 /** MathUnderflow: MathUnderflow */
-export const TUNA_ERROR__MATH_UNDERFLOW = 0x1782; // 6018
-/** OpenInterestLimitExceeded: OpenInterestLimitExceeded */
-export const TUNA_ERROR__OPEN_INTEREST_LIMIT_EXCEEDED = 0x1783; // 6019
+export const TUNA_ERROR__MATH_UNDERFLOW = 0x1783; // 6019
 /** OracleStalePrice: OracleStalePrice */
 export const TUNA_ERROR__ORACLE_STALE_PRICE = 0x1784; // 6020
 /** OraclePriceDeviationThresholdExceeded: OraclePriceDeviationThresholdExceeded */
@@ -134,10 +134,10 @@ export type TunaError =
   | typeof TUNA_ERROR__LIQUIDATION_FEE_IS_OUT_OF_RANGE
   | typeof TUNA_ERROR__LIQUIDATION_THRESHOLD_IS_OUT_OF_RANGE
   | typeof TUNA_ERROR__LIQUIDITY_ZERO
+  | typeof TUNA_ERROR__MARKET_DEBT_LIMIT_EXCEEDED
   | typeof TUNA_ERROR__MARKET_DISABLED
   | typeof TUNA_ERROR__MATH_OVERFLOW
   | typeof TUNA_ERROR__MATH_UNDERFLOW
-  | typeof TUNA_ERROR__OPEN_INTEREST_LIMIT_EXCEEDED
   | typeof TUNA_ERROR__ORACLE_PRICE_DEVIATION_THRESHOLD_EXCEEDED
   | typeof TUNA_ERROR__ORACLE_PRICE_DEVIATION_THRESHOLD_OUT_OF_RANGE
   | typeof TUNA_ERROR__ORACLE_STALE_PRICE
@@ -189,10 +189,10 @@ if (process.env.NODE_ENV !== 'production') {
     [TUNA_ERROR__LIQUIDATION_FEE_IS_OUT_OF_RANGE]: `LiquidationFeeIsOutOfRange`,
     [TUNA_ERROR__LIQUIDATION_THRESHOLD_IS_OUT_OF_RANGE]: `LiquidationThresholdIsOutOfRange`,
     [TUNA_ERROR__LIQUIDITY_ZERO]: `Liquidity amount must be greater than zero.`,
+    [TUNA_ERROR__MARKET_DEBT_LIMIT_EXCEEDED]: `MarketDebtLimitExceeded`,
     [TUNA_ERROR__MARKET_DISABLED]: `MarketDisabled`,
     [TUNA_ERROR__MATH_OVERFLOW]: `MathOverflow`,
     [TUNA_ERROR__MATH_UNDERFLOW]: `MathUnderflow`,
-    [TUNA_ERROR__OPEN_INTEREST_LIMIT_EXCEEDED]: `OpenInterestLimitExceeded`,
     [TUNA_ERROR__ORACLE_PRICE_DEVIATION_THRESHOLD_EXCEEDED]: `OraclePriceDeviationThresholdExceeded`,
     [TUNA_ERROR__ORACLE_PRICE_DEVIATION_THRESHOLD_OUT_OF_RANGE]: `OraclePriceDeviationThresholdOutOfRange`,
     [TUNA_ERROR__ORACLE_STALE_PRICE]: `OracleStalePrice`,

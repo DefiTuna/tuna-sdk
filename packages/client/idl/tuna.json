@@ -2,7 +2,7 @@
   "address": "tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD",
   "metadata": {
     "name": "tuna",
-    "version": "1.0.55",
+    "version": "1.0.58",
     "spec": "0.1.0",
     "description": "DefiTuna"
   },
@@ -625,11 +625,11 @@
           "type": "bool"
         },
         {
-          "name": "open_interest_limit_a",
+          "name": "borrow_limit_a",
           "type": "u64"
         },
         {
-          "name": "open_interest_limit_b",
+          "name": "borrow_limit_b",
           "type": "u64"
         },
         {
@@ -1594,11 +1594,11 @@
           "type": "bool"
         },
         {
-          "name": "open_interest_limit_a",
+          "name": "borrow_limit_a",
           "type": "u64"
         },
         {
-          "name": "open_interest_limit_b",
+          "name": "borrow_limit_b",
           "type": "u64"
         },
         {
@@ -1906,18 +1906,18 @@
     },
     {
       "code": 6017,
+      "name": "MarketDebtLimitExceeded",
+      "msg": "MarketDebtLimitExceeded"
+    },
+    {
+      "code": 6018,
       "name": "MathOverflow",
       "msg": "MathOverflow"
     },
     {
-      "code": 6018,
+      "code": 6019,
       "name": "MathUnderflow",
       "msg": "MathUnderflow"
-    },
-    {
-      "code": 6019,
-      "name": "OpenInterestLimitExceeded",
-      "msg": "OpenInterestLimitExceeded"
     },
     {
       "code": 6020,
@@ -2245,30 +2245,30 @@
             "type": "bool"
           },
           {
-            "name": "open_interest_shares_a",
+            "name": "borrowed_shares_a",
             "docs": [
-              "Open interest in shares of token A."
+              "Total borrowed shares of token A."
             ],
             "type": "u64"
           },
           {
-            "name": "open_interest_shares_b",
+            "name": "borrowed_shares_b",
             "docs": [
-              "Open interest in shares of token B."
+              "Total borrowed shares of token B."
             ],
             "type": "u64"
           },
           {
-            "name": "open_interest_limit_a",
+            "name": "borrow_limit_a",
             "docs": [
-              "Open interest limit in token A."
+              "Total borrow limit for this market in token A."
             ],
             "type": "u64"
           },
           {
-            "name": "open_interest_limit_b",
+            "name": "borrow_limit_b",
             "docs": [
-              "Open interest limit in token B."
+              "Total borrow limit for this market in token B."
             ],
             "type": "u64"
           },

@@ -88,8 +88,8 @@ export type UpdateMarketInstructionData = {
   limitOrderExecutionFee: number;
   oraclePriceDeviationThreshold: number;
   disabled: boolean;
-  openInterestLimitA: bigint;
-  openInterestLimitB: bigint;
+  borrowLimitA: bigint;
+  borrowLimitB: bigint;
   maxSwapSlippage: number;
 };
 
@@ -103,8 +103,8 @@ export type UpdateMarketInstructionDataArgs = {
   limitOrderExecutionFee: number;
   oraclePriceDeviationThreshold: number;
   disabled: boolean;
-  openInterestLimitA: number | bigint;
-  openInterestLimitB: number | bigint;
+  borrowLimitA: number | bigint;
+  borrowLimitB: number | bigint;
   maxSwapSlippage: number;
 };
 
@@ -121,8 +121,8 @@ export function getUpdateMarketInstructionDataEncoder(): Encoder<UpdateMarketIns
       ['limitOrderExecutionFee', getU32Encoder()],
       ['oraclePriceDeviationThreshold', getU32Encoder()],
       ['disabled', getBooleanEncoder()],
-      ['openInterestLimitA', getU64Encoder()],
-      ['openInterestLimitB', getU64Encoder()],
+      ['borrowLimitA', getU64Encoder()],
+      ['borrowLimitB', getU64Encoder()],
       ['maxSwapSlippage', getU32Encoder()],
     ]),
     (value) => ({ ...value, discriminator: UPDATE_MARKET_DISCRIMINATOR })
@@ -141,8 +141,8 @@ export function getUpdateMarketInstructionDataDecoder(): Decoder<UpdateMarketIns
     ['limitOrderExecutionFee', getU32Decoder()],
     ['oraclePriceDeviationThreshold', getU32Decoder()],
     ['disabled', getBooleanDecoder()],
-    ['openInterestLimitA', getU64Decoder()],
-    ['openInterestLimitB', getU64Decoder()],
+    ['borrowLimitA', getU64Decoder()],
+    ['borrowLimitB', getU64Decoder()],
     ['maxSwapSlippage', getU32Decoder()],
   ]);
 }
@@ -174,8 +174,8 @@ export type UpdateMarketInput<
   limitOrderExecutionFee: UpdateMarketInstructionDataArgs['limitOrderExecutionFee'];
   oraclePriceDeviationThreshold: UpdateMarketInstructionDataArgs['oraclePriceDeviationThreshold'];
   disabled: UpdateMarketInstructionDataArgs['disabled'];
-  openInterestLimitA: UpdateMarketInstructionDataArgs['openInterestLimitA'];
-  openInterestLimitB: UpdateMarketInstructionDataArgs['openInterestLimitB'];
+  borrowLimitA: UpdateMarketInstructionDataArgs['borrowLimitA'];
+  borrowLimitB: UpdateMarketInstructionDataArgs['borrowLimitB'];
   maxSwapSlippage: UpdateMarketInstructionDataArgs['maxSwapSlippage'];
 };
 

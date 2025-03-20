@@ -81,14 +81,14 @@ export type Market = {
   oraclePriceDeviationThreshold: number;
   /** True if the market is disabled (no more position can be opened). */
   disabled: boolean;
-  /** Open interest in shares of token A. */
-  openInterestSharesA: bigint;
-  /** Open interest in shares of token B. */
-  openInterestSharesB: bigint;
-  /** Open interest limit in token A. */
-  openInterestLimitA: bigint;
-  /** Open interest limit in token B. */
-  openInterestLimitB: bigint;
+  /** Total borrowed shares of token A. */
+  borrowedSharesA: bigint;
+  /** Total borrowed shares of token B. */
+  borrowedSharesB: bigint;
+  /** Total borrow limit for this market in token A. */
+  borrowLimitA: bigint;
+  /** Total borrow limit for this market in token B. */
+  borrowLimitB: bigint;
   /** Maximum allowed swap slippage percentage. If it's set to zero, the DEFAULT_MAX_SWAP_SLIPPAGE is used. */
   maxSwapSlippage: number;
   /** Reserved */
@@ -122,14 +122,14 @@ export type MarketArgs = {
   oraclePriceDeviationThreshold: number;
   /** True if the market is disabled (no more position can be opened). */
   disabled: boolean;
-  /** Open interest in shares of token A. */
-  openInterestSharesA: number | bigint;
-  /** Open interest in shares of token B. */
-  openInterestSharesB: number | bigint;
-  /** Open interest limit in token A. */
-  openInterestLimitA: number | bigint;
-  /** Open interest limit in token B. */
-  openInterestLimitB: number | bigint;
+  /** Total borrowed shares of token A. */
+  borrowedSharesA: number | bigint;
+  /** Total borrowed shares of token B. */
+  borrowedSharesB: number | bigint;
+  /** Total borrow limit for this market in token A. */
+  borrowLimitA: number | bigint;
+  /** Total borrow limit for this market in token B. */
+  borrowLimitB: number | bigint;
   /** Maximum allowed swap slippage percentage. If it's set to zero, the DEFAULT_MAX_SWAP_SLIPPAGE is used. */
   maxSwapSlippage: number;
   /** Reserved */
@@ -153,10 +153,10 @@ export function getMarketEncoder(): Encoder<MarketArgs> {
       ['limitOrderExecutionFee', getU32Encoder()],
       ['oraclePriceDeviationThreshold', getU32Encoder()],
       ['disabled', getBooleanEncoder()],
-      ['openInterestSharesA', getU64Encoder()],
-      ['openInterestSharesB', getU64Encoder()],
-      ['openInterestLimitA', getU64Encoder()],
-      ['openInterestLimitB', getU64Encoder()],
+      ['borrowedSharesA', getU64Encoder()],
+      ['borrowedSharesB', getU64Encoder()],
+      ['borrowLimitA', getU64Encoder()],
+      ['borrowLimitB', getU64Encoder()],
       ['maxSwapSlippage', getU32Encoder()],
       ['reserved', fixEncoderSize(getBytesEncoder(), 211)],
     ]),
@@ -180,10 +180,10 @@ export function getMarketDecoder(): Decoder<Market> {
     ['limitOrderExecutionFee', getU32Decoder()],
     ['oraclePriceDeviationThreshold', getU32Decoder()],
     ['disabled', getBooleanDecoder()],
-    ['openInterestSharesA', getU64Decoder()],
-    ['openInterestSharesB', getU64Decoder()],
-    ['openInterestLimitA', getU64Decoder()],
-    ['openInterestLimitB', getU64Decoder()],
+    ['borrowedSharesA', getU64Decoder()],
+    ['borrowedSharesB', getU64Decoder()],
+    ['borrowLimitA', getU64Decoder()],
+    ['borrowLimitB', getU64Decoder()],
     ['maxSwapSlippage', getU32Decoder()],
     ['reserved', fixDecoderSize(getBytesDecoder(), 211)],
   ]);
