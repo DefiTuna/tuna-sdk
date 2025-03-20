@@ -27,6 +27,8 @@ import {
   getU16Encoder,
   getU32Decoder,
   getU32Encoder,
+  getU64Decoder,
+  getU64Encoder,
   getU8Decoder,
   getU8Encoder,
   transformEncoder,
@@ -79,6 +81,16 @@ export type Market = {
   oraclePriceDeviationThreshold: number;
   /** True if the market is disabled (no more position can be opened). */
   disabled: boolean;
+  /** Open interest in shares of token A. */
+  openInterestSharesA: bigint;
+  /** Open interest in shares of token B. */
+  openInterestSharesB: bigint;
+  /** Open interest limit in token A. */
+  openInterestLimitA: bigint;
+  /** Open interest limit in token B. */
+  openInterestLimitB: bigint;
+  /** Maximum allowed swap slippage percentage. If it's set to zero, the DEFAULT_MAX_SWAP_SLIPPAGE is used. */
+  maxSwapSlippage: number;
   /** Reserved */
   reserved: ReadonlyUint8Array;
 };
@@ -110,6 +122,16 @@ export type MarketArgs = {
   oraclePriceDeviationThreshold: number;
   /** True if the market is disabled (no more position can be opened). */
   disabled: boolean;
+  /** Open interest in shares of token A. */
+  openInterestSharesA: number | bigint;
+  /** Open interest in shares of token B. */
+  openInterestSharesB: number | bigint;
+  /** Open interest limit in token A. */
+  openInterestLimitA: number | bigint;
+  /** Open interest limit in token B. */
+  openInterestLimitB: number | bigint;
+  /** Maximum allowed swap slippage percentage. If it's set to zero, the DEFAULT_MAX_SWAP_SLIPPAGE is used. */
+  maxSwapSlippage: number;
   /** Reserved */
   reserved: ReadonlyUint8Array;
 };
@@ -131,7 +153,12 @@ export function getMarketEncoder(): Encoder<MarketArgs> {
       ['limitOrderExecutionFee', getU32Encoder()],
       ['oraclePriceDeviationThreshold', getU32Encoder()],
       ['disabled', getBooleanEncoder()],
-      ['reserved', fixEncoderSize(getBytesEncoder(), 247)],
+      ['openInterestSharesA', getU64Encoder()],
+      ['openInterestSharesB', getU64Encoder()],
+      ['openInterestLimitA', getU64Encoder()],
+      ['openInterestLimitB', getU64Encoder()],
+      ['maxSwapSlippage', getU32Encoder()],
+      ['reserved', fixEncoderSize(getBytesEncoder(), 211)],
     ]),
     (value) => ({ ...value, discriminator: MARKET_DISCRIMINATOR })
   );
@@ -153,7 +180,12 @@ export function getMarketDecoder(): Decoder<Market> {
     ['limitOrderExecutionFee', getU32Decoder()],
     ['oraclePriceDeviationThreshold', getU32Decoder()],
     ['disabled', getBooleanDecoder()],
-    ['reserved', fixDecoderSize(getBytesDecoder(), 247)],
+    ['openInterestSharesA', getU64Decoder()],
+    ['openInterestSharesB', getU64Decoder()],
+    ['openInterestLimitA', getU64Decoder()],
+    ['openInterestLimitB', getU64Decoder()],
+    ['maxSwapSlippage', getU32Decoder()],
+    ['reserved', fixDecoderSize(getBytesDecoder(), 211)],
   ]);
 }
 

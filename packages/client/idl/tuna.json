@@ -2,7 +2,7 @@
   "address": "tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD",
   "metadata": {
     "name": "tuna",
-    "version": "1.0.54",
+    "version": "1.0.55",
     "spec": "0.1.0",
     "description": "DefiTuna"
   },
@@ -40,7 +40,8 @@
           "name": "mint_b"
         },
         {
-          "name": "market"
+          "name": "market",
+          "writable": true
         },
         {
           "name": "vault_a",
@@ -145,6 +146,10 @@
         {
           "name": "min_added_amount_b",
           "type": "u64"
+        },
+        {
+          "name": "max_swap_slippage",
+          "type": "u32"
         }
       ]
     },
@@ -264,7 +269,8 @@
           "name": "mint_b"
         },
         {
-          "name": "market"
+          "name": "market",
+          "writable": true
         },
         {
           "name": "vault_a",
@@ -617,6 +623,18 @@
         {
           "name": "disabled",
           "type": "bool"
+        },
+        {
+          "name": "open_interest_limit_a",
+          "type": "u64"
+        },
+        {
+          "name": "open_interest_limit_b",
+          "type": "u64"
+        },
+        {
+          "name": "max_swap_slippage",
+          "type": "u32"
         }
       ]
     },
@@ -819,7 +837,8 @@
           "name": "mint_b"
         },
         {
-          "name": "market"
+          "name": "market",
+          "writable": true
         },
         {
           "name": "vault_a",
@@ -1021,7 +1040,8 @@
           "name": "tuna_config"
         },
         {
-          "name": "market"
+          "name": "market",
+          "writable": true
         },
         {
           "name": "mint_a"
@@ -1106,6 +1126,10 @@
           "type": "u32"
         },
         {
+          "name": "swap_to_token",
+          "type": "u8"
+        },
+        {
           "name": "min_removed_amount_a",
           "type": "u64"
         },
@@ -1114,8 +1138,8 @@
           "type": "u64"
         },
         {
-          "name": "swap_to_token",
-          "type": "u8"
+          "name": "max_swap_slippage",
+          "type": "u32"
         }
       ]
     },
@@ -1188,6 +1212,9 @@
           ],
           "writable": true,
           "signer": true
+        },
+        {
+          "name": "market"
         },
         {
           "name": "vault_a",
@@ -1403,36 +1430,6 @@
       ]
     },
     {
-      "name": "set_max_swap_slippage",
-      "discriminator": [
-        122,
-        42,
-        61,
-        99,
-        35,
-        230,
-        50,
-        154
-      ],
-      "accounts": [
-        {
-          "name": "authority",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "tuna_config",
-          "writable": true
-        }
-      ],
-      "args": [
-        {
-          "name": "max_swap_slippage",
-          "type": "u32"
-        }
-      ]
-    },
-    {
       "name": "set_owner_authority",
       "discriminator": [
         128,
@@ -1595,6 +1592,18 @@
         {
           "name": "disabled",
           "type": "bool"
+        },
+        {
+          "name": "open_interest_limit_a",
+          "type": "u64"
+        },
+        {
+          "name": "open_interest_limit_b",
+          "type": "u64"
+        },
+        {
+          "name": "max_swap_slippage",
+          "type": "u32"
         }
       ]
     },
@@ -1817,236 +1826,251 @@
     },
     {
       "code": 6001,
+      "name": "BadDebt",
+      "msg": "BadDebt"
+    },
+    {
+      "code": 6002,
       "name": "InvalidRemainingAccountsLength",
       "msg": "InvalidRemainingAccountsLength"
     },
     {
-      "code": 6002,
+      "code": 6003,
       "name": "InvalidTickArrayAccounts",
       "msg": "InvalidAccounts"
     },
     {
-      "code": 6003,
+      "code": 6004,
       "name": "InvalidAccountOwner",
       "msg": "InvalidAccountOwner"
     },
     {
-      "code": 6004,
+      "code": 6005,
       "name": "InvalidInstructionArguments",
       "msg": "InvalidInstructionArguments"
     },
     {
-      "code": 6005,
+      "code": 6006,
       "name": "InvalidSqrtPriceLimitDirection",
       "msg": "Provided SqrtPriceLimit not in the same direction as the swap."
     },
     {
-      "code": 6006,
+      "code": 6007,
       "name": "InvalidTickArraySequence",
       "msg": "InvalidTickArraySequence"
     },
     {
-      "code": 6007,
+      "code": 6008,
       "name": "InsufficientLiquidity",
       "msg": "InsufficientLiquidity"
     },
     {
-      "code": 6008,
+      "code": 6009,
       "name": "InterestRateIsOutOfRange",
       "msg": "InterestRateIsOutOfRange"
     },
     {
-      "code": 6009,
+      "code": 6010,
       "name": "LeverageIsOutOfRange",
       "msg": "LeverageIsOutOfRange"
     },
     {
-      "code": 6010,
+      "code": 6011,
       "name": "LeftoversExceeded",
       "msg": "LeftoversExceeded"
     },
     {
-      "code": 6011,
+      "code": 6012,
       "name": "LimitOrderExecutionFeeIsOutOfRange",
       "msg": "LimitOrderExecutionFeeIsOutOfRange"
     },
     {
-      "code": 6012,
+      "code": 6013,
       "name": "LiquidationFeeIsOutOfRange",
       "msg": "LiquidationFeeIsOutOfRange"
     },
     {
-      "code": 6013,
+      "code": 6014,
       "name": "LiquidationThresholdIsOutOfRange",
       "msg": "LiquidationThresholdIsOutOfRange"
     },
     {
-      "code": 6014,
+      "code": 6015,
       "name": "LiquidityZero",
       "msg": "Liquidity amount must be greater than zero."
     },
     {
-      "code": 6015,
+      "code": 6016,
       "name": "MarketDisabled",
       "msg": "MarketDisabled"
     },
     {
-      "code": 6016,
+      "code": 6017,
       "name": "MathOverflow",
       "msg": "MathOverflow"
     },
     {
-      "code": 6017,
+      "code": 6018,
       "name": "MathUnderflow",
       "msg": "MathUnderflow"
     },
     {
-      "code": 6018,
+      "code": 6019,
+      "name": "OpenInterestLimitExceeded",
+      "msg": "OpenInterestLimitExceeded"
+    },
+    {
+      "code": 6020,
       "name": "OracleStalePrice",
       "msg": "OracleStalePrice"
     },
     {
-      "code": 6019,
+      "code": 6021,
       "name": "OraclePriceDeviationThresholdExceeded",
       "msg": "OraclePriceDeviationThresholdExceeded"
     },
     {
-      "code": 6020,
+      "code": 6022,
       "name": "OraclePriceDeviationThresholdOutOfRange",
       "msg": "OraclePriceDeviationThresholdOutOfRange"
     },
     {
-      "code": 6021,
+      "code": 6023,
       "name": "PartialFillError",
       "msg": "Trade resulted in partial fill"
     },
     {
-      "code": 6022,
+      "code": 6024,
       "name": "PositionIsHealthy",
       "msg": "PositionIsHealthy"
     },
     {
-      "code": 6023,
+      "code": 6025,
       "name": "PositionIsLiquidated",
       "msg": "PositionIsLiquidated"
     },
     {
-      "code": 6024,
+      "code": 6026,
       "name": "PositionIsUnhealthy",
       "msg": "PositionIsUnhealthy"
     },
     {
-      "code": 6025,
+      "code": 6027,
       "name": "ProtocolFeeIsOutOfRange",
       "msg": "ProtocolFeeIsOutOfRange"
     },
     {
-      "code": 6026,
+      "code": 6028,
       "name": "SolverFailedToFindRoot",
       "msg": "SolverFailedToFindRoot"
     },
     {
-      "code": 6027,
+      "code": 6029,
       "name": "SqrtPriceOutOfBounds",
       "msg": "SqrtPriceOutOfBounds"
     },
     {
-      "code": 6028,
+      "code": 6030,
       "name": "SupplyLimitExceeded",
       "msg": "SupplyLimitExceeded"
     },
     {
-      "code": 6029,
+      "code": 6031,
       "name": "Suspended",
       "msg": "Suspended"
     },
     {
-      "code": 6030,
+      "code": 6032,
       "name": "SwapSlippageExceeded",
       "msg": "SwapSlippageExceeded"
     },
     {
-      "code": 6031,
+      "code": 6033,
+      "name": "SwapSlippageIsOutOfRange",
+      "msg": "SwapSlippageIsOutOfRange"
+    },
+    {
+      "code": 6034,
       "name": "TickIndexOfBounds",
       "msg": "TickIndexOfBounds"
     },
     {
-      "code": 6032,
+      "code": 6035,
       "name": "TypeCastOverflow",
       "msg": "TypeCastOverflow"
     },
     {
-      "code": 6033,
+      "code": 6036,
       "name": "UnexpectedValue",
       "msg": "UnexpectedValue"
     },
     {
-      "code": 6034,
+      "code": 6037,
       "name": "VaultNotInitialized",
       "msg": "VaultNotInitialized"
     },
     {
-      "code": 6035,
+      "code": 6038,
       "name": "WithdrawRequestExceedsUserBalance",
       "msg": "WithdrawRequestExceedsUserBalance"
     },
     {
-      "code": 6036,
+      "code": 6039,
       "name": "ZeroPriceRange",
       "msg": "ZeroPriceRange"
     },
     {
-      "code": 6037,
+      "code": 6040,
       "name": "ZeroTradableAmount",
       "msg": "There are no tradable amount to swap."
     },
     {
-      "code": 6038,
+      "code": 6041,
       "name": "ZeroYield",
       "msg": "ZeroYield"
     },
     {
-      "code": 6039,
+      "code": 6042,
       "name": "RaydiumInvalidFirstTickArrayAccount",
       "msg": "RaydiumInvalidFirstTickArrayAccount"
     },
     {
-      "code": 6040,
+      "code": 6043,
       "name": "RaydiumInvalidTickArray",
       "msg": "RaydiumInvalidTickArray"
     },
     {
-      "code": 6041,
+      "code": 6044,
       "name": "RaydiumInvaildTickIndex",
       "msg": "RaydiumInvaildTickIndex"
     },
     {
-      "code": 6042,
+      "code": 6045,
       "name": "RaydiumMaxTokenOverflow",
       "msg": "RaydiumMaxTokenOverflow"
     },
     {
-      "code": 6043,
+      "code": 6046,
       "name": "RaydiumNotEnoughTickArrayAccount",
       "msg": "RaydiumNotEnoughTickArrayAccount"
     },
     {
-      "code": 6044,
+      "code": 6047,
       "name": "RaydiumSqrtPriceLimitOverflow",
       "msg": "RaydiumSqrtPriceLimitOverflow"
     },
     {
-      "code": 6045,
+      "code": 6048,
       "name": "RaydiumZeroAmountSpecified",
       "msg": "RaydiumZeroAmountSpecified"
     },
     {
-      "code": 6046,
+      "code": 6049,
       "name": "UnableToLoadAccountData",
       "msg": "UnableToLoadAccountData"
     },
     {
-      "code": 6047,
+      "code": 6050,
       "name": "UnableToDeserializeAccountData",
       "msg": "UnableToDeserializeAccountData"
     }
@@ -2221,6 +2245,41 @@
             "type": "bool"
           },
           {
+            "name": "open_interest_shares_a",
+            "docs": [
+              "Open interest in shares of token A."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "open_interest_shares_b",
+            "docs": [
+              "Open interest in shares of token B."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "open_interest_limit_a",
+            "docs": [
+              "Open interest limit in token A."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "open_interest_limit_b",
+            "docs": [
+              "Open interest limit in token B."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "max_swap_slippage",
+            "docs": [
+              "Maximum allowed swap slippage percentage. If it's set to zero, the DEFAULT_MAX_SWAP_SLIPPAGE is used."
+            ],
+            "type": "u32"
+          },
+          {
             "name": "reserved",
             "docs": [
               "Reserved"
@@ -2228,7 +2287,7 @@
             "type": {
               "array": [
                 "u8",
-                247
+                211
               ]
             }
           }
@@ -2425,9 +2484,9 @@
             "type": "pubkey"
           },
           {
-            "name": "max_swap_slippage",
+            "name": "_max_swap_slippage",
             "docs": [
-              "Maximum allowed swap slippage percentage. If it's set to zero, the DEFAULT_MAX_SWAP_SLIPPAGE is used."
+              "OBSOLETE: Maximum allowed swap slippage percentage."
             ],
             "type": "u32"
           },
@@ -2585,14 +2644,14 @@
           {
             "name": "loan_funds_a",
             "docs": [
-              "The amount of funds (without accrued interest) borrowed by user from vault A. Only used to compute the interest a user owes."
+              "The amount of funds borrowed by user from vault A. Doesn't include accrued interest."
             ],
             "type": "u64"
           },
           {
             "name": "loan_funds_b",
             "docs": [
-              "The amount of funds (without accrued interest) borrowed by user from vault B. Only used to compute the interest a user owes."
+              "The amount of funds borrowed by user from vault B. Doesn't include accrued interest."
             ],
             "type": "u64"
           },

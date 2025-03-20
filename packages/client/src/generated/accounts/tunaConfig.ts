@@ -63,7 +63,7 @@ export type TunaConfig = {
   feeRecipient: Address;
   /** Owner of the program. Can change ownership and set the admin of the program. */
   ownerAuthority: Address;
-  /** Maximum allowed swap slippage percentage. If it's set to zero, the DEFAULT_MAX_SWAP_SLIPPAGE is used. */
+  /** OBSOLETE: Maximum allowed swap slippage percentage. */
   maxSwapSlippage: number;
   /** Maximum allowed percentage of leftovers. If it's set to zero, the DEFAULT_MAX_LEFTOVERS is used. */
   maxPercentageOfLeftovers: number;
@@ -92,7 +92,7 @@ export type TunaConfigArgs = {
   feeRecipient: Address;
   /** Owner of the program. Can change ownership and set the admin of the program. */
   ownerAuthority: Address;
-  /** Maximum allowed swap slippage percentage. If it's set to zero, the DEFAULT_MAX_SWAP_SLIPPAGE is used. */
+  /** OBSOLETE: Maximum allowed swap slippage percentage. */
   maxSwapSlippage: number;
   /** Maximum allowed percentage of leftovers. If it's set to zero, the DEFAULT_MAX_LEFTOVERS is used. */
   maxPercentageOfLeftovers: number;

@@ -22,6 +22,8 @@ import {
   getU16Encoder,
   getU32Decoder,
   getU32Encoder,
+  getU64Decoder,
+  getU64Encoder,
   transformEncoder,
   type Address,
   type Codec,
@@ -86,6 +88,9 @@ export type UpdateMarketInstructionData = {
   limitOrderExecutionFee: number;
   oraclePriceDeviationThreshold: number;
   disabled: boolean;
+  openInterestLimitA: bigint;
+  openInterestLimitB: bigint;
+  maxSwapSlippage: number;
 };
 
 export type UpdateMarketInstructionDataArgs = {
@@ -98,6 +103,9 @@ export type UpdateMarketInstructionDataArgs = {
   limitOrderExecutionFee: number;
   oraclePriceDeviationThreshold: number;
   disabled: boolean;
+  openInterestLimitA: number | bigint;
+  openInterestLimitB: number | bigint;
+  maxSwapSlippage: number;
 };
 
 export function getUpdateMarketInstructionDataEncoder(): Encoder<UpdateMarketInstructionDataArgs> {
@@ -113,6 +121,9 @@ export function getUpdateMarketInstructionDataEncoder(): Encoder<UpdateMarketIns
       ['limitOrderExecutionFee', getU32Encoder()],
       ['oraclePriceDeviationThreshold', getU32Encoder()],
       ['disabled', getBooleanEncoder()],
+      ['openInterestLimitA', getU64Encoder()],
+      ['openInterestLimitB', getU64Encoder()],
+      ['maxSwapSlippage', getU32Encoder()],
     ]),
     (value) => ({ ...value, discriminator: UPDATE_MARKET_DISCRIMINATOR })
   );
@@ -130,6 +141,9 @@ export function getUpdateMarketInstructionDataDecoder(): Decoder<UpdateMarketIns
     ['limitOrderExecutionFee', getU32Decoder()],
     ['oraclePriceDeviationThreshold', getU32Decoder()],
     ['disabled', getBooleanDecoder()],
+    ['openInterestLimitA', getU64Decoder()],
+    ['openInterestLimitB', getU64Decoder()],
+    ['maxSwapSlippage', getU32Decoder()],
   ]);
 }
 
@@ -160,6 +174,9 @@ export type UpdateMarketInput<
   limitOrderExecutionFee: UpdateMarketInstructionDataArgs['limitOrderExecutionFee'];
   oraclePriceDeviationThreshold: UpdateMarketInstructionDataArgs['oraclePriceDeviationThreshold'];
   disabled: UpdateMarketInstructionDataArgs['disabled'];
+  openInterestLimitA: UpdateMarketInstructionDataArgs['openInterestLimitA'];
+  openInterestLimitB: UpdateMarketInstructionDataArgs['openInterestLimitB'];
+  maxSwapSlippage: UpdateMarketInstructionDataArgs['maxSwapSlippage'];
 };
 
 export function getUpdateMarketInstruction<

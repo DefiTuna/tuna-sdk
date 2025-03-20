@@ -14,6 +14,8 @@ import {
   getBytesEncoder,
   getStructDecoder,
   getStructEncoder,
+  getU32Decoder,
+  getU32Encoder,
   getU64Decoder,
   getU64Encoder,
   transformEncoder,
@@ -91,7 +93,7 @@ export type AddLiquidityOrcaInstruction<
         ? ReadonlyAccount<TAccountMintB>
         : TAccountMintB,
       TAccountMarket extends string
-        ? ReadonlyAccount<TAccountMarket>
+        ? WritableAccount<TAccountMarket>
         : TAccountMarket,
       TAccountVaultA extends string
         ? WritableAccount<TAccountVaultA>
@@ -159,6 +161,7 @@ export type AddLiquidityOrcaInstructionData = {
   borrowB: bigint;
   minAddedAmountA: bigint;
   minAddedAmountB: bigint;
+  maxSwapSlippage: number;
 };
 
 export type AddLiquidityOrcaInstructionDataArgs = {
@@ -168,6 +171,7 @@ export type AddLiquidityOrcaInstructionDataArgs = {
   borrowB: number | bigint;
   minAddedAmountA: number | bigint;
   minAddedAmountB: number | bigint;
+  maxSwapSlippage: number;
 };
 
 export function getAddLiquidityOrcaInstructionDataEncoder(): Encoder<AddLiquidityOrcaInstructionDataArgs> {
@@ -180,6 +184,7 @@ export function getAddLiquidityOrcaInstructionDataEncoder(): Encoder<AddLiquidit
       ['borrowB', getU64Encoder()],
       ['minAddedAmountA', getU64Encoder()],
       ['minAddedAmountB', getU64Encoder()],
+      ['maxSwapSlippage', getU32Encoder()],
     ]),
     (value) => ({ ...value, discriminator: ADD_LIQUIDITY_ORCA_DISCRIMINATOR })
   );
@@ -194,6 +199,7 @@ export function getAddLiquidityOrcaInstructionDataDecoder(): Decoder<AddLiquidit
     ['borrowB', getU64Decoder()],
     ['minAddedAmountA', getU64Decoder()],
     ['minAddedAmountB', getU64Decoder()],
+    ['maxSwapSlippage', getU32Decoder()],
   ]);
 }
 
@@ -276,6 +282,7 @@ export type AddLiquidityOrcaInput<
   borrowB: AddLiquidityOrcaInstructionDataArgs['borrowB'];
   minAddedAmountA: AddLiquidityOrcaInstructionDataArgs['minAddedAmountA'];
   minAddedAmountB: AddLiquidityOrcaInstructionDataArgs['minAddedAmountB'];
+  maxSwapSlippage: AddLiquidityOrcaInstructionDataArgs['maxSwapSlippage'];
 };
 
 export function getAddLiquidityOrcaInstruction<
@@ -365,7 +372,7 @@ export function getAddLiquidityOrcaInstruction<
     tunaConfig: { value: input.tunaConfig ?? null, isWritable: false },
     mintA: { value: input.mintA ?? null, isWritable: false },
     mintB: { value: input.mintB ?? null, isWritable: false },
-    market: { value: input.market ?? null, isWritable: false },
+    market: { value: input.market ?? null, isWritable: true },
     vaultA: { value: input.vaultA ?? null, isWritable: true },
     vaultB: { value: input.vaultB ?? null, isWritable: true },
     vaultAAta: { value: input.vaultAAta ?? null, isWritable: true },

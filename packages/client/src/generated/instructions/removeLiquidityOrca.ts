@@ -87,7 +87,7 @@ export type RemoveLiquidityOrcaInstruction<
         ? ReadonlyAccount<TAccountTunaConfig>
         : TAccountTunaConfig,
       TAccountMarket extends string
-        ? ReadonlyAccount<TAccountMarket>
+        ? WritableAccount<TAccountMarket>
         : TAccountMarket,
       TAccountMintA extends string
         ? ReadonlyAccount<TAccountMintA>
@@ -150,16 +150,18 @@ export type RemoveLiquidityOrcaInstruction<
 export type RemoveLiquidityOrcaInstructionData = {
   discriminator: ReadonlyUint8Array;
   withdrawPercent: number;
+  swapToToken: number;
   minRemovedAmountA: bigint;
   minRemovedAmountB: bigint;
-  swapToToken: number;
+  maxSwapSlippage: number;
 };
 
 export type RemoveLiquidityOrcaInstructionDataArgs = {
   withdrawPercent: number;
+  swapToToken: number;
   minRemovedAmountA: number | bigint;
   minRemovedAmountB: number | bigint;
-  swapToToken: number;
+  maxSwapSlippage: number;
 };
 
 export function getRemoveLiquidityOrcaInstructionDataEncoder(): Encoder<RemoveLiquidityOrcaInstructionDataArgs> {
@@ -167,9 +169,10 @@ export function getRemoveLiquidityOrcaInstructionDataEncoder(): Encoder<RemoveLi
     getStructEncoder([
       ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
       ['withdrawPercent', getU32Encoder()],
+      ['swapToToken', getU8Encoder()],
       ['minRemovedAmountA', getU64Encoder()],
       ['minRemovedAmountB', getU64Encoder()],
-      ['swapToToken', getU8Encoder()],
+      ['maxSwapSlippage', getU32Encoder()],
     ]),
     (value) => ({
       ...value,
@@ -182,9 +185,10 @@ export function getRemoveLiquidityOrcaInstructionDataDecoder(): Decoder<RemoveLi
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
     ['withdrawPercent', getU32Decoder()],
+    ['swapToToken', getU8Decoder()],
     ['minRemovedAmountA', getU64Decoder()],
     ['minRemovedAmountB', getU64Decoder()],
-    ['swapToToken', getU8Decoder()],
+    ['maxSwapSlippage', getU32Decoder()],
   ]);
 }
 
@@ -258,9 +262,10 @@ export type RemoveLiquidityOrcaInput<
    */
   tokenProgram?: Address<TAccountTokenProgram>;
   withdrawPercent: RemoveLiquidityOrcaInstructionDataArgs['withdrawPercent'];
+  swapToToken: RemoveLiquidityOrcaInstructionDataArgs['swapToToken'];
   minRemovedAmountA: RemoveLiquidityOrcaInstructionDataArgs['minRemovedAmountA'];
   minRemovedAmountB: RemoveLiquidityOrcaInstructionDataArgs['minRemovedAmountB'];
-  swapToToken: RemoveLiquidityOrcaInstructionDataArgs['swapToToken'];
+  maxSwapSlippage: RemoveLiquidityOrcaInstructionDataArgs['maxSwapSlippage'];
 };
 
 export function getRemoveLiquidityOrcaInstruction<
@@ -342,7 +347,7 @@ export function getRemoveLiquidityOrcaInstruction<
   const originalAccounts = {
     authority: { value: input.authority ?? null, isWritable: true },
     tunaConfig: { value: input.tunaConfig ?? null, isWritable: false },
-    market: { value: input.market ?? null, isWritable: false },
+    market: { value: input.market ?? null, isWritable: true },
     mintA: { value: input.mintA ?? null, isWritable: false },
     mintB: { value: input.mintB ?? null, isWritable: false },
     vaultA: { value: input.vaultA ?? null, isWritable: true },

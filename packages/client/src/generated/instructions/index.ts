@@ -26,7 +26,6 @@ export * from './setFeeRecipient';
 export * from './setLimitOrders';
 export * from './setLiquidatorAuthority';
 export * from './setMaxPercentageOfLeftovers';
-export * from './setMaxSwapSlippage';
 export * from './setOwnerAuthority';
 export * from './setSuspendedState';
 export * from './setTunaPositionFlags';

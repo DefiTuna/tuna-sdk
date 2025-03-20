@@ -22,6 +22,8 @@ import {
   getU16Encoder,
   getU32Decoder,
   getU32Encoder,
+  getU64Decoder,
+  getU64Encoder,
   getU8Decoder,
   getU8Encoder,
   transformEncoder,
@@ -99,6 +101,9 @@ export type CreateMarketInstructionData = {
   limitOrderExecutionFee: number;
   oraclePriceDeviationThreshold: number;
   disabled: boolean;
+  openInterestLimitA: bigint;
+  openInterestLimitB: bigint;
+  maxSwapSlippage: number;
 };
 
 export type CreateMarketInstructionDataArgs = {
@@ -112,6 +117,9 @@ export type CreateMarketInstructionDataArgs = {
   limitOrderExecutionFee: number;
   oraclePriceDeviationThreshold: number;
   disabled: boolean;
+  openInterestLimitA: number | bigint;
+  openInterestLimitB: number | bigint;
+  maxSwapSlippage: number;
 };
 
 export function getCreateMarketInstructionDataEncoder(): Encoder<CreateMarketInstructionDataArgs> {
@@ -128,6 +136,9 @@ export function getCreateMarketInstructionDataEncoder(): Encoder<CreateMarketIns
       ['limitOrderExecutionFee', getU32Encoder()],
       ['oraclePriceDeviationThreshold', getU32Encoder()],
       ['disabled', getBooleanEncoder()],
+      ['openInterestLimitA', getU64Encoder()],
+      ['openInterestLimitB', getU64Encoder()],
+      ['maxSwapSlippage', getU32Encoder()],
     ]),
     (value) => ({ ...value, discriminator: CREATE_MARKET_DISCRIMINATOR })
   );
@@ -146,6 +157,9 @@ export function getCreateMarketInstructionDataDecoder(): Decoder<CreateMarketIns
     ['limitOrderExecutionFee', getU32Decoder()],
     ['oraclePriceDeviationThreshold', getU32Decoder()],
     ['disabled', getBooleanDecoder()],
+    ['openInterestLimitA', getU64Decoder()],
+    ['openInterestLimitB', getU64Decoder()],
+    ['maxSwapSlippage', getU32Decoder()],
   ]);
 }
 
@@ -181,6 +195,9 @@ export type CreateMarketInput<
   limitOrderExecutionFee: CreateMarketInstructionDataArgs['limitOrderExecutionFee'];
   oraclePriceDeviationThreshold: CreateMarketInstructionDataArgs['oraclePriceDeviationThreshold'];
   disabled: CreateMarketInstructionDataArgs['disabled'];
+  openInterestLimitA: CreateMarketInstructionDataArgs['openInterestLimitA'];
+  openInterestLimitB: CreateMarketInstructionDataArgs['openInterestLimitB'];
+  maxSwapSlippage: CreateMarketInstructionDataArgs['maxSwapSlippage'];
 };
 
 export function getCreateMarketInstruction<

@@ -89,9 +89,9 @@ export type TunaPosition = {
   loanSharesA: bigint;
   /** The amount of shares borrowed by user from vault B. */
   loanSharesB: bigint;
-  /** The amount of funds (without accrued interest) borrowed by user from vault A. Only used to compute the interest a user owes. */
+  /** The amount of funds borrowed by user from vault A. Doesn't include accrued interest. */
   loanFundsA: bigint;
-  /** The amount of funds (without accrued interest) borrowed by user from vault B. Only used to compute the interest a user owes. */
+  /** The amount of funds borrowed by user from vault B. Doesn't include accrued interest. */
   loanFundsB: bigint;
   /** The leftovers are funds that couldn't be added to a pool as liquidity. They remain in the position token account. */
   leftoversA: bigint;
@@ -151,9 +151,9 @@ export type TunaPositionArgs = {
   loanSharesA: number | bigint;
   /** The amount of shares borrowed by user from vault B. */
   loanSharesB: number | bigint;
-  /** The amount of funds (without accrued interest) borrowed by user from vault A. Only used to compute the interest a user owes. */
+  /** The amount of funds borrowed by user from vault A. Doesn't include accrued interest. */
   loanFundsA: number | bigint;
-  /** The amount of funds (without accrued interest) borrowed by user from vault B. Only used to compute the interest a user owes. */
+  /** The amount of funds borrowed by user from vault B. Doesn't include accrued interest. */
   loanFundsB: number | bigint;
   /** The leftovers are funds that couldn't be added to a pool as liquidity. They remain in the position token account. */
   leftoversA: number | bigint;

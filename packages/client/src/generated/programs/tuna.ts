@@ -34,7 +34,6 @@ import {
   type ParsedSetLimitOrdersInstruction,
   type ParsedSetLiquidatorAuthorityInstruction,
   type ParsedSetMaxPercentageOfLeftoversInstruction,
-  type ParsedSetMaxSwapSlippageInstruction,
   type ParsedSetOwnerAuthorityInstruction,
   type ParsedSetSuspendedStateInstruction,
   type ParsedSetTunaPositionFlagsInstruction,
@@ -175,7 +174,6 @@ export enum TunaInstruction {
   SetLimitOrders,
   SetLiquidatorAuthority,
   SetMaxPercentageOfLeftovers,
-  SetMaxSwapSlippage,
   SetOwnerAuthority,
   SetSuspendedState,
   SetTunaPositionFlags,
@@ -412,17 +410,6 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([122, 42, 61, 99, 35, 230, 50, 154])
-      ),
-      0
-    )
-  ) {
-    return TunaInstruction.SetMaxSwapSlippage;
-  }
-  if (
-    containsBytes(
-      data,
-      fixEncoderSize(getBytesEncoder(), 8).encode(
         new Uint8Array([128, 171, 210, 21, 103, 179, 80, 117])
       ),
       0
@@ -553,9 +540,6 @@ export type ParsedTunaInstruction<
   | ({
       instructionType: TunaInstruction.SetMaxPercentageOfLeftovers;
     } & ParsedSetMaxPercentageOfLeftoversInstruction<TProgram>)
-  | ({
-      instructionType: TunaInstruction.SetMaxSwapSlippage;
-    } & ParsedSetMaxSwapSlippageInstruction<TProgram>)
   | ({
       instructionType: TunaInstruction.SetOwnerAuthority;
     } & ParsedSetOwnerAuthorityInstruction<TProgram>)
