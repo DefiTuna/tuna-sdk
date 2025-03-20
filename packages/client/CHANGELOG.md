@@ -1,5 +1,11 @@
 # @defituna/client
 
+## 1.0.3
+
+### Patch Changes
+
+- 81664a2: Updated tuna program to 1.0.55
+
 ## 1.0.2
 
 ### Patch Changes
