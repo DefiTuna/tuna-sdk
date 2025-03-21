@@ -37,6 +37,10 @@ export const Market = z.object({
   liquidationFee: z.number(),
   liquidationThreshold: z.number(),
   limitOrderExecutionFee: z.number(),
+  borrowedSharesA: z.coerce.bigint(),
+  borrowedSharesB: z.coerce.bigint(),
+  borrowLimitA: amountWithUsd,
+  borrowLimitB: amountWithUsd,
   disabled: z.boolean(),
 });
 
