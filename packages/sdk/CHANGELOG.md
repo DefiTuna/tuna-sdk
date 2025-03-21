@@ -1,5 +1,11 @@
 # @defituna/sdk
 
+## 1.1.18
+
+### Patch Changes
+
+- cadf21d: Added Market borrow fields
+
 ## 1.1.17
 
 ### Patch Changes
