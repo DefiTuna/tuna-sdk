@@ -21,21 +21,23 @@
         "type-check": "tsc -p .",
         "lint": "pnpm eslint && pnpm type-check",
         "test": "vitest run --disable-console-intercept",
+        "test:start-server": "node scripts/startTestsServer.mjs",
         "test:watch": "vitest watch"
     },
     "devDependencies": {
-        "@defituna/eslint-config": "^0.4.0",
         "@defituna/client": "workspace:*",
+        "@defituna/eslint-config": "^0.4.0",
         "@defituna/prettier-config": "^0.0.0",
         "@defituna/typescript-config": "^0.2.0",
         "@solana/web3.js": "^2.0.0",
         "decimal.js": "^10.5.0",
         "dotenv": "^16.4.7",
         "eslint": "^8.57.0",
+        "express": "^4.21.2",
         "tsup": "^8.3.5",
         "typescript": "5.5.4",
         "vite-tsconfig-paths": "^5.1.4",
-        "vitest": "^2.1.8"
+        "vitest": "^3.0.9"
     },
     "dependencies": {
         "camelcase-keys": "^9.1.3",
