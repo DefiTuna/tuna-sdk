@@ -1,5 +1,11 @@
 # @defituna/sdk
 
+## 1.1.19
+
+### Patch Changes
+
+- 429906c: Add tokens pnl
+
 ## 1.1.18
 
 ### Patch Changes
