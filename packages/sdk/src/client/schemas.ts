@@ -5,6 +5,16 @@ const amountWithUsd = z.object({
   usd: z.number(),
 });
 
+const tokensPnl = z.object({
+  amount: z.coerce.bigint(),
+  bps: z.number(),
+});
+
+const usdPnl = z.object({
+  amount: z.number(),
+  bps: z.number(),
+});
+
 export const PoolProvider = {
   ORCA: "orca",
 } as const;
@@ -143,8 +153,7 @@ export const TunaPosition = z.object({
   compoundedYieldB: amountWithUsd,
   totalA: amountWithUsd,
   totalB: amountWithUsd,
-  pnl: z.object({
-    usd: z.number(),
-    bps: z.number(),
-  }),
+  pnlA: tokensPnl,
+  pnlB: tokensPnl,
+  pnlUsd: usdPnl,
 });
