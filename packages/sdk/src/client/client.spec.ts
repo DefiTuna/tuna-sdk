@@ -310,17 +310,17 @@ describe("Lending Positions", async () => {
           position.address,
           position.authority,
           position.mint,
-          position.totalFunds.amount - position.earnedFunds.amount,
+          position.funds.amount - position.earned.amount,
         ])
         .sort(([a], [b]) => a.toString().localeCompare(b.toString())),
     );
   });
   it("Have USD values for tokens", () => {
-    expect(lendingPositions.every(position => position.totalFunds.usd > 0 && position.earnedFunds.usd > 0)).toBe(true);
+    expect(lendingPositions.every(position => position.funds.usd > 0 && position.earned.usd > 0)).toBe(true);
   });
   it("Has correct values for sample position", () => {
-    expect(testPosition.totalFunds.amount).toBeGreaterThanOrEqual(20017787n);
-    expect(testPosition.earnedFunds.amount).toBeGreaterThanOrEqual(17787n);
+    expect(testPosition.funds.amount).toBeGreaterThanOrEqual(20017787n);
+    expect(testPosition.earned.amount).toBeGreaterThanOrEqual(17787n);
     expect(testPosition.mint).toEqual("So11111111111111111111111111111111111111112");
     expect(testPosition.vault).toEqual("Ev5X54o83Z3MDV6PzTT9jyGkCPj7zQUXe9apWmGcwLHF");
   });

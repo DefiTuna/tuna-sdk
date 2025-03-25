@@ -123,8 +123,9 @@ export const LendingPosition = z.object({
   authority: z.string(),
   mint: z.string(),
   vault: z.string(),
-  totalFunds: amountWithUsd,
-  earnedFunds: amountWithUsd,
+  shares: z.coerce.bigint(),
+  funds: amountWithUsd,
+  earned: amountWithUsd,
 });
 
 export const TunaPosition = z.object({
