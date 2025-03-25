@@ -1,5 +1,11 @@
 # @defituna/sdk
 
+## 1.1.20
+
+### Patch Changes
+
+- a97c4b2: Add market borrow fields
+
 ## 1.1.19
 
 ### Patch Changes
