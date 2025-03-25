@@ -1,5 +1,11 @@
 # @defituna/sdk
 
+## 1.1.21
+
+### Patch Changes
+
+- 6de4f5b: Add lending position shares & rename fields
+
 ## 1.1.20
 
 ### Patch Changes
