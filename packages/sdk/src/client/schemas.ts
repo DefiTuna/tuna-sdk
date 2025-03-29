@@ -15,6 +15,12 @@ const usdPnl = z.object({
   bps: z.number(),
 });
 
+export const NotificationEntity = {
+  POOL_SWAP: "pool_swap",
+} as const;
+export const NotificationAction = {
+  CREATE: "create",
+} as const;
 export const PoolProvider = {
   ORCA: "orca",
 } as const;
@@ -25,6 +31,8 @@ export const TunaPositionState = {
   CLOSED: "closed",
 } as const;
 
+export const NotificationEntitySchema = z.enum([NotificationEntity.POOL_SWAP, ...Object.values(NotificationEntity)]);
+export const NotificationActionSchema = z.enum([NotificationAction.CREATE, ...Object.values(NotificationAction)]);
 export const PoolProviderSchema = z.enum([PoolProvider.ORCA, ...Object.values(PoolProvider)]);
 export const TunaPositionStateSchema = z.enum([TunaPositionState.OPEN, ...Object.values(TunaPositionState)]);
 
@@ -160,3 +168,23 @@ export const TunaPosition = z.object({
   pnlB: tokensPnl,
   pnlUsd: usdPnl,
 });
+
+export const PoolSwap = z.object({
+  id: z.string(),
+  amountIn: z.coerce.bigint(),
+  amountOut: z.coerce.bigint(),
+  aToB: z.boolean(),
+  pool: z.string(),
+  time: z.coerce.date(),
+});
+
+const createNotificationSchema = <DataType extends z.ZodTypeAny>(dataSchema: DataType) =>
+  z.object({
+    entity: NotificationEntitySchema,
+    action: NotificationActionSchema,
+    data: dataSchema,
+    id: z.string(),
+    authority: z.nullable(z.string()),
+  });
+
+export const PoolSwapNotification = createNotificationSchema(PoolSwap);

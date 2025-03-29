@@ -2,12 +2,16 @@ import camelcaseKeys from "camelcase-keys";
 import { z } from "zod";
 
 import * as schemas from "./schemas";
-import { PoolProvider, TunaPositionState } from "./schemas";
+import { NotificationAction, NotificationEntity, PoolProvider, TunaPositionState } from "./schemas";
+
+/* Export schemas for raw data handling */
+export { schemas };
 
 /* Enums */
-export { PoolProvider, TunaPositionState };
+export { PoolProvider, TunaPositionState, NotificationAction, NotificationEntity };
 export type PoolProviderType = z.infer<typeof schemas.PoolProviderSchema>;
 export type TunaPositionStateType = z.infer<typeof schemas.TunaPositionStateSchema>;
+
 /* Entity types */
 export type Mint = z.infer<typeof schemas.Mint>;
 export type Market = z.infer<typeof schemas.Market>;
@@ -16,6 +20,7 @@ export type Vault = z.infer<typeof schemas.Vault>;
 export type Pool = z.infer<typeof schemas.Pool>;
 export type Tick = z.infer<typeof schemas.Tick>;
 export type PoolTicks = z.infer<typeof schemas.PoolTicks>;
+export type PoolSwap = z.infer<typeof schemas.PoolSwap>;
 export type LendingPosition = z.infer<typeof schemas.LendingPosition>;
 export type TunaPosition = z.infer<typeof schemas.TunaPosition>;
 
@@ -91,7 +96,7 @@ export class TunaApiClient {
     return await this.httpRequest(url.toString(), schemas.Mint.array());
   }
 
-  async getMint(mintAddress: String): Promise<Mint> {
+  async getMint(mintAddress: string): Promise<Mint> {
     const url = this.buildURL(`mints/${mintAddress}`);
     return await this.httpRequest(url.toString(), schemas.Mint);
   }
@@ -101,7 +106,7 @@ export class TunaApiClient {
     return await this.httpRequest(url.toString(), schemas.Market.array());
   }
 
-  async getMarket(marketAddress: String): Promise<Market> {
+  async getMarket(marketAddress: string): Promise<Market> {
     const url = this.buildURL(`markets/${marketAddress}`);
     return await this.httpRequest(url.toString(), schemas.Market);
   }
@@ -111,7 +116,7 @@ export class TunaApiClient {
     return await this.httpRequest(url.toString(), schemas.TokenOraclePrice.array());
   }
 
-  async getOraclePrice(mintAddress: String): Promise<TokenOraclePrice> {
+  async getOraclePrice(mintAddress: string): Promise<TokenOraclePrice> {
     const url = this.buildURL(`oracle-prices/${mintAddress}`);
     return await this.httpRequest(url.toString(), schemas.TokenOraclePrice);
   }
@@ -131,34 +136,46 @@ export class TunaApiClient {
     return await this.httpRequest(url.toString(), schemas.Pool.array());
   }
 
-  async getPool(address: String): Promise<Pool> {
+  async getPool(address: string): Promise<Pool> {
     const url = this.buildURL(`pools/${address}`);
     return await this.httpRequest(url.toString(), schemas.Pool);
   }
 
-  async getPoolTicks(poolAddress: String): Promise<PoolTicks> {
+  async getPoolTicks(poolAddress: string): Promise<PoolTicks> {
     const url = this.buildURL(`pools/${poolAddress}/ticks`);
     return await this.httpRequest(url.toString(), schemas.PoolTicks);
   }
 
-  async getUserLendingPositions(userAddress: String): Promise<LendingPosition[]> {
+  async getPoolSwaps(poolAddress: string): Promise<PoolSwap[]> {
+    const url = this.buildURL(`pools/${poolAddress}/swaps`);
+    return await this.httpRequest(url.toString(), schemas.PoolSwap.array());
+  }
+
+  async getUserLendingPositions(userAddress: string): Promise<LendingPosition[]> {
     const url = this.buildURL(`users/${userAddress}/lending-positions`);
     return await this.httpRequest(url.toString(), schemas.LendingPosition.array());
   }
 
-  async getUserLendingPositionByAddress(userAddress: String, lendingPositionAddress: String): Promise<LendingPosition> {
+  async getUserLendingPositionByAddress(userAddress: string, lendingPositionAddress: string): Promise<LendingPosition> {
     const url = this.buildURL(`users/${userAddress}/lending-positions/${lendingPositionAddress}`);
     return await this.httpRequest(url.toString(), schemas.LendingPosition);
   }
 
-  async getUserTunaPositions(userAddress: String): Promise<TunaPosition[]> {
+  async getUserTunaPositions(userAddress: string): Promise<TunaPosition[]> {
     const url = this.buildURL(`users/${userAddress}/tuna-positions`);
     return await this.httpRequest(url.toString(), schemas.TunaPosition.array());
   }
 
-  async getUserTunaPositionByAddress(userAddress: String, tunaPositionAddress: String): Promise<TunaPosition> {
+  async getUserTunaPositionByAddress(userAddress: string, tunaPositionAddress: string): Promise<TunaPosition> {
     const url = this.buildURL(`users/${userAddress}/tuna-positions/${tunaPositionAddress}`);
     return await this.httpRequest(url.toString(), schemas.TunaPosition);
+  }
+
+  async getPoolUpdatesStream(poolAddress: string): Promise<EventSource> {
+    const url = this.buildURL(`stream`);
+    this.appendUrlSearchParams(url, { pool: poolAddress });
+
+    return new EventSource(url.toString());
   }
 
   /* Utility functions */
@@ -169,5 +186,13 @@ export class TunaApiClient {
       // path relative to the parent.
       `${this.baseURL}${this.baseURL.endsWith("/") ? "" : "/"}`,
     );
+  }
+
+  private appendUrlSearchParams(url: URL, params: Record<string, string | boolean>) {
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined) {
+        url.searchParams.append(key, String(value));
+      }
+    });
   }
 }
