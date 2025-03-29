@@ -8,9 +8,6 @@
 
 export * from './lendingPosition';
 export * from './market';
-export * from './position';
-export * from './tickArray';
 export * from './tunaConfig';
 export * from './tunaPosition';
 export * from './vault';
-export * from './whirlpool';

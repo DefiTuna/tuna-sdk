@@ -5,13 +5,7 @@
 //! <https://github.com/codama-idl/codama>
 //!
 
-  pub(crate) mod r#position_reward_info;
-  pub(crate) mod r#tick;
   pub(crate) mod r#tuna_position_state;
-  pub(crate) mod r#whirlpool_reward_info;
 
-  pub use self::r#position_reward_info::*;
-  pub use self::r#tick::*;
   pub use self::r#tuna_position_state::*;
-  pub use self::r#whirlpool_reward_info::*;
 

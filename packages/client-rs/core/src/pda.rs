@@ -1,5 +1,5 @@
-use solana_program::pubkey::Pubkey;
 use crate::TUNA_ID;
+use solana_program::pubkey::Pubkey;
 
 pub fn get_tuna_position_address(position_mint: &Pubkey) -> (Pubkey, u8) {
     let seeds = &[b"tuna_position", position_mint.as_ref()];

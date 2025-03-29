@@ -26,8 +26,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "pnpm codama && tsup src/index.ts --format cjs,esm --dts",
-    "dev": "pnpm codama && tsup src/index.ts --format cjs,esm --dts --watch",
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
     "eslint": "eslint \"**/*.ts\"",
     "eslint:fix": "eslint \"**/*.ts\" --fix",
     "type-check": "tsc -p .",

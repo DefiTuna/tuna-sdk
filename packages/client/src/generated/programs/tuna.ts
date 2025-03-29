@@ -48,12 +48,9 @@ export const TUNA_PROGRAM_ADDRESS =
 export enum TunaAccount {
   LendingPosition,
   Market,
-  Position,
-  TickArray,
   TunaConfig,
   TunaPosition,
   Vault,
-  Whirlpool,
 }
 
 export function identifyTunaAccount(
@@ -81,28 +78,6 @@ export function identifyTunaAccount(
     )
   ) {
     return TunaAccount.Market;
-  }
-  if (
-    containsBytes(
-      data,
-      fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([170, 188, 143, 228, 122, 64, 247, 208])
-      ),
-      0
-    )
-  ) {
-    return TunaAccount.Position;
-  }
-  if (
-    containsBytes(
-      data,
-      fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([69, 97, 189, 190, 110, 7, 66, 187])
-      ),
-      0
-    )
-  ) {
-    return TunaAccount.TickArray;
   }
   if (
     containsBytes(
@@ -136,17 +111,6 @@ export function identifyTunaAccount(
     )
   ) {
     return TunaAccount.Vault;
-  }
-  if (
-    containsBytes(
-      data,
-      fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([63, 149, 209, 12, 225, 128, 99, 9])
-      ),
-      0
-    )
-  ) {
-    return TunaAccount.Whirlpool;
   }
   throw new Error(
     'The provided account could not be identified as a tuna account.'

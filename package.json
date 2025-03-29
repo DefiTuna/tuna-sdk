@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "codama": "node ./codama.mjs",
-    "build": "turbo build",
+    "build": "pnpm codama && turbo build",
     "dev": "turbo dev",
     "lint": "turbo lint",
     "test": "turbo test",

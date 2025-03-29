@@ -1,4 +1,11 @@
-import {createFromRoot} from 'codama'
+import {
+    addPdasVisitor, bytesTypeNode, bytesValueNode,
+    constantPdaSeedNode,
+    createFromRoot,
+    publicKeyTypeNode, publicKeyValueNode, stringTypeNode, stringValueNode,
+    updateAccountsVisitor, updateDefinedTypesVisitor,
+    variablePdaSeedNode
+} from 'codama'
 import {renderRustVisitor, renderJavaScriptVisitor} from '@codama/renderers'
 import {bottomUpTransformerVisitor} from '@codama/visitors-core'
 import {isNode, definedTypeNode, definedTypeLinkNode, camelCase} from '@codama/nodes'
@@ -9,6 +16,9 @@ const idl = JSON.parse(readFileSync("./idl/tuna.json", "utf8"));
 const codama = createFromRoot(rootNodeFromAnchor(idl));
 const clients = (process.argv[2] || 'rust,ts').split(',');
 
+// Resolve the account name duplicates in Orca and Raydium.
+// Not used now. Please, DO NOT delete!
+/*
 codama.update(
     bottomUpTransformerVisitor([
         {
@@ -27,17 +37,48 @@ codama.update(
         },
     ]),
 );
+*/
+
+// Delete Orca accounts
+codama.update(
+    updateAccountsVisitor({
+        whirlpool: {
+            delete: true,
+        },
+        position: {
+            delete: true
+        },
+        tick_array: {
+            delete: true,
+        },
+    }),
+);
+
+// Delete Orca types
+codama.update(
+    updateDefinedTypesVisitor({
+        position_reward_info: {
+            delete: true,
+        },
+        whirlpool_reward_info: {
+            delete: true,
+        },
+        tick: {
+            delete: true,
+        },
+    }),
+);
 
 if (clients.includes('rust')) {
     console.log('Generating rust visitor')
-    const rustVisitor = renderRustVisitor("./packages/client-rs/src/generated");
+    const rustVisitor = renderRustVisitor("./packages/client-rs/core/src/generated");
     codama.accept(rustVisitor);
 }
 
 if (clients.includes('ts')) {
     console.log('Generating ts visitor')
     const tsVisitor = renderJavaScriptVisitor("./packages/client/src/generated");
-    codama.accept(tsVisitor);    
+    codama.accept(tsVisitor);
 }
 
 console.log("All done")

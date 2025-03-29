@@ -2,7 +2,7 @@
 resolver = "2"
 
 members = [
-    "packages/*"
+    "packages/client-rs/*"
 ]
 
 exclude = [

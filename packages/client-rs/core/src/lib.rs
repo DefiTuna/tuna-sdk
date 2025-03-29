@@ -1,9 +1,6 @@
-#[rustfmt::skip]
-mod generated;
-
-mod pda;
 mod consts;
-
+mod generated;
+mod pda;
 //#[cfg(feature = "fetch")]
 //mod gpa;
 
@@ -20,8 +17,8 @@ pub use generated::shared::*;
 #[cfg(feature = "fetch")]
 pub(crate) use generated::*;
 
-pub use pda::*;
 pub use consts::*;
+pub use pda::*;
 
 //#[cfg(feature = "fetch")]
 //pub use gpa::*;
