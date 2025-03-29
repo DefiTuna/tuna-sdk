@@ -1,10 +1,16 @@
+import camelcaseKeys from "camelcase-keys";
 import { Decimal } from "decimal.js";
-import { describe, expect, it } from "vitest";
+import { EventSource as NodeEventSource } from "eventsource";
+import { once } from "node:events";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
-import { TunaApiClient } from "./client";
+import { NotificationEntity, schemas, TunaApiClient } from "./client";
 import * as testUtils from "./testUtils";
 
+vi.stubGlobal("EventSource", NodeEventSource);
+
 const TEST_WALLET_ADDRESS = "CYCf8sBj4zLZheRovh37rWLe7pK8Yn5G7nb4SeBmgfMG";
+const SOL_USDC_POOL_ADDRESS = "Czfq3xZZDmsdGdUyrNLtRhGc47cXcZtLG4crryfu44zE";
 
 const client = new TunaApiClient(process.env.API_BASE_URL!);
 
@@ -381,3 +387,43 @@ describe("Tuna Positions", async () => {
     expect(testPositionWithLeverage.yieldB.amount).toBeGreaterThanOrEqual(189n);
   });
 });
+
+describe("Pool swaps", async () => {
+  const poolSwaps = await client.getPoolSwaps(SOL_USDC_POOL_ADDRESS);
+
+  it("Returns correct data", () => {
+    expect(poolSwaps.length).toBeGreaterThan(0);
+    const sampleSwap = poolSwaps[0];
+    expect(sampleSwap.amountIn).toBeGreaterThan(0n);
+    expect(sampleSwap.amountOut).toBeGreaterThan(0n);
+    const swapTimestampSeconds = sampleSwap.time.getTime() / 1000;
+    const nowTimestampSeconds = Date.now() / 1000;
+    expect(swapTimestampSeconds).closeTo(nowTimestampSeconds, 60);
+  });
+});
+describe(
+  "Pool updates stream",
+  async () => {
+    let poolUpdatesStream: EventSource;
+
+    beforeAll(async () => {
+      poolUpdatesStream = await client.getPoolUpdatesStream(SOL_USDC_POOL_ADDRESS);
+    });
+
+    afterAll(() => {
+      poolUpdatesStream.close();
+    });
+
+    it("Receives messages", async () => {
+      const event = (await once(poolUpdatesStream, "message")) as MessageEvent<string>[];
+      const rawUpdate = camelcaseKeys(JSON.parse(event[0].data), { deep: true });
+
+      if (rawUpdate.entity === NotificationEntity.POOL_SWAP) {
+        const poolSwapNotification = schemas.PoolSwapNotification.parse(rawUpdate);
+        expect(poolSwapNotification.data.amountIn).toBeGreaterThan(0n);
+        expect(poolSwapNotification.data.amountOut).toBeGreaterThan(0n);
+      }
+    });
+  },
+  { timeout: 30000 },
+);

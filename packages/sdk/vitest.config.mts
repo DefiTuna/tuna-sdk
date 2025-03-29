@@ -7,6 +7,7 @@ export default defineConfig({
     globals: true,
     passWithNoTests: true,
     setupFiles: ["dotenv/config"],
+    testTimeout: 10000,
   },
   plugins: [tsconfigPaths()],
 });
