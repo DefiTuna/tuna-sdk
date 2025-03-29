@@ -64,6 +64,45 @@ importers:
         specifier: ^5.1.4
         version: 5.1.4(typescript@5.5.4)(vite@5.4.14(@types/node@22.13.0))
 
+  packages/client-rs:
+    devDependencies:
+      '@codama/nodes':
+        specifier: ^1.2.8
+        version: 1.2.8
+      '@codama/nodes-from-anchor':
+        specifier: ^1.1.8
+        version: 1.1.8(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.5.4)
+      '@codama/renderers':
+        specifier: ^1.0.16
+        version: 1.0.16(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.5.4)
+      '@codama/renderers-rust':
+        specifier: ^1.0.16
+        version: 1.0.16(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.5.4)
+      '@codama/visitors-core':
+        specifier: ^1.2.8
+        version: 1.2.8
+      '@defituna/eslint-config':
+        specifier: ^0.4.0
+        version: 0.4.0(eslint@8.57.1)(prettier@3.5.3)(turbo@2.4.1)(typescript@5.5.4)
+      '@defituna/prettier-config':
+        specifier: ^0.0.0
+        version: 0.0.0(prettier@3.5.3)
+      codama:
+        specifier: ^1.2.8
+        version: 1.2.8(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.5.4)
+      eslint:
+        specifier: ^8.57.0
+        version: 8.57.1
+      tsup:
+        specifier: ^8.3.5
+        version: 8.3.6(postcss@8.5.2)(typescript@5.5.4)
+      typescript:
+        specifier: 5.5.4
+        version: 5.5.4
+      vite-tsconfig-paths:
+        specifier: ^5.1.4
+        version: 5.1.4(typescript@5.5.4)(vite@5.4.14(@types/node@22.13.0))
+
   packages/sdk:
     dependencies:
       camelcase-keys:

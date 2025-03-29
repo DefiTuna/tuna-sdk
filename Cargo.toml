@@ -1,0 +1,11 @@
+[workspace]
+resolver = "2"
+
+members = [
+    "packages/*"
+]
+
+exclude = [
+    "packages/client",
+    "packages/sdk"
+]
