@@ -1,5 +1,11 @@
 # @defituna/sdk
 
+## 1.1.22
+
+### Patch Changes
+
+- b086fd3: Added pool swaps
+
 ## 1.1.21
 
 ### Patch Changes
