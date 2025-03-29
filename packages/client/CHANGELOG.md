@@ -1,5 +1,11 @@
 # @defituna/client
 
+## 1.0.5
+
+### Patch Changes
+
+- f1be18d: Removed Orca accounts and types
+
 ## 1.0.4
 
 ### Patch Changes
