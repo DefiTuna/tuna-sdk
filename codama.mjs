@@ -1,14 +1,8 @@
 import {
-    addPdasVisitor, bytesTypeNode, bytesValueNode,
-    constantPdaSeedNode,
     createFromRoot,
-    publicKeyTypeNode, publicKeyValueNode, stringTypeNode, stringValueNode,
     updateAccountsVisitor, updateDefinedTypesVisitor,
-    variablePdaSeedNode
 } from 'codama'
 import {renderRustVisitor, renderJavaScriptVisitor} from '@codama/renderers'
-import {bottomUpTransformerVisitor} from '@codama/visitors-core'
-import {isNode, definedTypeNode, definedTypeLinkNode, camelCase} from '@codama/nodes'
 import {rootNodeFromAnchor} from '@codama/nodes-from-anchor'
 import {readFileSync} from 'fs'
 

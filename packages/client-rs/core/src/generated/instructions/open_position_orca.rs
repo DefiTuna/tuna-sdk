@@ -65,6 +65,7 @@ impl OpenPositionOrca {
   pub fn instruction(&self, args: OpenPositionOrcaInstructionArgs) -> solana_program::instruction::Instruction {
     self.instruction_with_remaining_accounts(args, &[])
   }
+  #[allow(clippy::arithmetic_side_effects)]
   #[allow(clippy::vec_init_then_push)]
   pub fn instruction_with_remaining_accounts(&self, args: OpenPositionOrcaInstructionArgs, remaining_accounts: &[solana_program::instruction::AccountMeta]) -> solana_program::instruction::Instruction {
     let mut accounts = Vec::with_capacity(12+ remaining_accounts.len());
@@ -480,6 +481,7 @@ impl<'a, 'b> OpenPositionOrcaCpi<'a, 'b> {
   pub fn invoke_signed(&self, signers_seeds: &[&[&[u8]]]) -> solana_program::entrypoint::ProgramResult {
     self.invoke_signed_with_remaining_accounts(signers_seeds, &[])
   }
+  #[allow(clippy::arithmetic_side_effects)]
   #[allow(clippy::clone_on_copy)]
   #[allow(clippy::vec_init_then_push)]
   pub fn invoke_signed_with_remaining_accounts(

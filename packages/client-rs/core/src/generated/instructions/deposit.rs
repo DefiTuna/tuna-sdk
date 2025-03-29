@@ -44,6 +44,7 @@ impl Deposit {
   pub fn instruction(&self, args: DepositInstructionArgs) -> solana_program::instruction::Instruction {
     self.instruction_with_remaining_accounts(args, &[])
   }
+  #[allow(clippy::arithmetic_side_effects)]
   #[allow(clippy::vec_init_then_push)]
   pub fn instruction_with_remaining_accounts(&self, args: DepositInstructionArgs, remaining_accounts: &[solana_program::instruction::AccountMeta]) -> solana_program::instruction::Instruction {
     let mut accounts = Vec::with_capacity(9+ remaining_accounts.len());
@@ -337,6 +338,7 @@ impl<'a, 'b> DepositCpi<'a, 'b> {
   pub fn invoke_signed(&self, signers_seeds: &[&[&[u8]]]) -> solana_program::entrypoint::ProgramResult {
     self.invoke_signed_with_remaining_accounts(signers_seeds, &[])
   }
+  #[allow(clippy::arithmetic_side_effects)]
   #[allow(clippy::clone_on_copy)]
   #[allow(clippy::vec_init_then_push)]
   pub fn invoke_signed_with_remaining_accounts(
