@@ -1,5 +1,11 @@
 # @defituna/client
 
+## 1.0.6
+
+### Patch Changes
+
+- 293db82: Updated codama version
+
 ## 1.0.5
 
 ### Patch Changes
