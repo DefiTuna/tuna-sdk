@@ -1,5 +1,11 @@
 # @defituna/sdk
 
+## 1.1.24
+
+### Patch Changes
+
+- ec01461: Rename collateral fields
+
 ## 1.1.23
 
 ### Patch Changes
