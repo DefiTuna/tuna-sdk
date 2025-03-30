@@ -2,7 +2,7 @@
 resolver = "2"
 
 members = [
-    "packages/client-rs/*"
+    "rust-sdk/*"
 ]
 
 exclude = [
