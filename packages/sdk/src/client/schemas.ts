@@ -108,14 +108,17 @@ export const Pool = z.object({
     "24h": z.object({
       volume: z.coerce.number(),
       fees: z.coerce.number(),
+      yieldOverTvl: z.coerce.number(),
     }),
     "7d": z.object({
       volume: z.coerce.number(),
       fees: z.coerce.number(),
+      yieldOverTvl: z.coerce.number(),
     }),
     "30d": z.object({
       volume: z.coerce.number(),
       fees: z.coerce.number(),
+      yieldOverTvl: z.coerce.number(),
     }),
   }),
 });
@@ -156,9 +159,9 @@ export const TunaPosition = z.object({
   flags: z.number(),
   pool: z.string(),
   poolSqrtPrice: z.coerce.bigint(),
-  providedCollateralA: amountWithoutUsd,
-  providedCollateralB: amountWithoutUsd,
-  providedCollateralUsd: z.object({
+  depositedCollateralA: amountWithoutUsd,
+  depositedCollateralB: amountWithoutUsd,
+  depositedCollateralUsd: z.object({
     amount: z.number(),
   }),
   loanFundsA: amountWithUsd,
@@ -177,6 +180,7 @@ export const TunaPosition = z.object({
   pnlB: tokensPnl,
   pnlUsd: usdPnl,
   openedAt: z.coerce.date(),
+  updatedAtSlot: z.coerce.bigint(),
 });
 
 export const PoolSwap = z.object({
