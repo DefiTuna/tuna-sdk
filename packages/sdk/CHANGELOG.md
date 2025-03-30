@@ -1,5 +1,19 @@
 # @defituna/sdk
 
+## 1.1.23
+
+### Patch Changes
+
+- 44c272d: TunaPosition:
+
+  - Added openedAt field
+  - Added updatedAtSlot
+  - Added providedCollateralA, providedCollateralB, providedCollateralUsd fields
+
+  Pool
+
+  - Added stats.\*.yieldOverTvl field
+
 ## 1.1.22
 
 ### Patch Changes
