@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+const amountWithoutUsd = z.object({
+  amount: z.coerce.bigint(),
+});
+
 const amountWithUsd = z.object({
   amount: z.coerce.bigint(),
   usd: z.number(),
@@ -152,6 +156,11 @@ export const TunaPosition = z.object({
   flags: z.number(),
   pool: z.string(),
   poolSqrtPrice: z.coerce.bigint(),
+  providedCollateralA: amountWithoutUsd,
+  providedCollateralB: amountWithoutUsd,
+  providedCollateralUsd: z.object({
+    amount: z.number(),
+  }),
   loanFundsA: amountWithUsd,
   loanFundsB: amountWithUsd,
   currentLoanA: amountWithUsd,
@@ -167,6 +176,7 @@ export const TunaPosition = z.object({
   pnlA: tokensPnl,
   pnlB: tokensPnl,
   pnlUsd: usdPnl,
+  openedAt: z.coerce.date(),
 });
 
 export const PoolSwap = z.object({
