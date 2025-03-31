@@ -35,9 +35,9 @@ jobs:
       - name: Test
         run: |
           run: |
-            touch packages/sdk/.env
-            echo RPC_URL=$RPC_URL >> packages/sdk/.env
-            echo API_BASE_URL=$API_BASE_URL >> packages/sdk/.env
+            touch packages/ts/sdk/.env
+            echo RPC_URL=$RPC_URL >> packages/ts/sdk/.env
+            echo API_BASE_URL=$API_BASE_URL >> packages/ts/sdk/.env
             pnpm test
         env:
           RPC_URL: ${{ secrets.RPC_URL }}
