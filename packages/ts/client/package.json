@@ -1,0 +1,48 @@
+{
+  "name": "@defituna/client",
+  "description": "Typescript client to interact with DefiTuna's on-chain program.",
+  "version": "1.0.6",
+  "private": false,
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "eslint": "eslint \"src/*.ts\"",
+    "eslint:fix": "eslint \"src/*.ts\" --fix",
+    "type-check": "tsc -p .",
+    "lint": "pnpm eslint && pnpm type-check"
+  },
+  "peerDependencies": {
+    "@solana/kit": "^2.1.0"
+  },
+  "devDependencies": {
+    "@solana/kit": "^2.1.0",
+    "@defituna/typescript-config": "^0.2.0",
+    "@defituna/eslint-config": "^0.4.0",
+    "@defituna/prettier-config": "^0.0.0",
+    "@orca-so/whirlpools-client": "^1.0.4",
+    "@orca-so/whirlpools-core": "^1.0.4",
+    "@solana-program/compute-budget": "^0.7.0",
+    "@solana-program/system": "^0.7.0",
+    "@solana-program/token": "^0.5.1",
+    "@solana-program/token-2022": "^0.4.0",
+    "dotenv": "^16.4.7",
+    "eslint": "^8.57.0",
+    "ts-node": "^10.9.2",
+    "tsup": "^8.3.5",
+    "tsx": "^4.19.3",
+    "typescript": "5.5.4",
+    "vite-tsconfig-paths": "^5.1.4"
+  }
+}

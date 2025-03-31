@@ -65,13 +65,13 @@ codama.update(
 
 if (clients.includes('rust')) {
     console.log('Generating rust visitor')
-    const rustVisitor = renderRustVisitor("./packages/client-rs/core/src/generated");
+    const rustVisitor = renderRustVisitor("./packages/rust/client/src/generated");
     codama.accept(rustVisitor);
 }
 
 if (clients.includes('ts')) {
     console.log('Generating ts visitor')
-    const tsVisitor = renderJavaScriptVisitor("./packages/client/src/generated");
+    const tsVisitor = renderJavaScriptVisitor("./packages/ts/client/src/generated");
     codama.accept(tsVisitor);
 }
 
