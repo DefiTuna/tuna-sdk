@@ -57,7 +57,7 @@ const rpcSubscriptions = createSolanaRpcSubscriptions(WSS_URL);
  * @returns {Promise<void>} A promise that resolves when the transaction is confirmed.
  * @throws {Error} If the transaction fails to send or confirm.
  */
-export async function collectAndCompoundFeesOrca(tunaPositionMint: Address): Promise<void> {
+export async function collectAndCompoundFees(tunaPositionMint: Address): Promise<void> {
   /**
    * The Program Derived {@link Address Address} of the pool from Orca's Whirlpools to create the position in.
    * For this example we use the SOL/USDC Pool.
@@ -116,7 +116,7 @@ export async function collectAndCompoundFeesOrca(tunaPositionMint: Address): Pro
   const marketAccount: Account<Market> = await fetchMarket(rpc, marketPda);
 
   /**
-   * Defining Associated Token {@link Address Addresses} (*ATAs*) and their instructions, where required.
+   * Defining Associated Token {@link Address Addresses} (*ATAs*) and their instructions, where required;
    */
   /**
    * The Associated Token {@link Address Address} for the new *Position Mint (NFT)*, owned by the {@link _TunaPosition Tuna Position},
@@ -208,7 +208,7 @@ export async function collectAndCompoundFeesOrca(tunaPositionMint: Address): Pro
   const useLeverage = true;
 
   /**
-   * Defining additional accounts and input variables.
+   * Defining additional accounts and input variables;
    */
   /**
    * The on-chain Pyth Oracle account's {@link Address address} for *Token A*, storing a verified price update from a Pyth price feed.
@@ -232,7 +232,7 @@ export async function collectAndCompoundFeesOrca(tunaPositionMint: Address): Pro
   const tokenProgram = TOKEN_PROGRAM_ADDRESS;
 
   /**
-   * The *remainingAccounts* required for *Removing Liquidity* instruction.
+   * The *remainingAccounts* required for *Removing Liquidity* instruction;
    */
   /**
    * The Orca Position Account containing deserialized {@link _OrcaPosition data},
@@ -290,14 +290,14 @@ export async function collectAndCompoundFeesOrca(tunaPositionMint: Address): Pro
   ];
 
   /**
-   * Creation of instructions for collecting fees.
+   * Creation of instructions for collecting and compounding fees;
    */
   /**
-   * The CompoundFeesOrca instruction created via the Tuna Client, handling:
+   * The CollectAndCompoundFeesOrca instruction created via the Tuna Client, handling:
    * - Collecting the fees accrued in the *Whirlpool* through the *Orca Position* and transferring them back into the Position.
    * - Potentially maintaining the *leverage multiplier* the same, by borrowing an equal amount of *Tokens* as the compounded amount, controlled by `useLeverage`.
    */
-  const compoundFeesIx = getCollectAndCompoundFeesOrcaInstruction({
+  const collectAndCompoundFeesIx = getCollectAndCompoundFeesOrcaInstruction({
     authority: authority,
     tunaConfig: tunaConfigPda,
     market: marketPda,
@@ -323,14 +323,16 @@ export async function collectAndCompoundFeesOrca(tunaPositionMint: Address): Pro
   });
 
   // @ts-expect-error
-  compoundFeesIx.accounts.push(...remainingAccounts);
+  collectAndCompoundFeesIx.accounts.push(...remainingAccounts);
 
   /**
    * The instructions array in the proper order for collecting fees.
    */
-  const instructionsArray: IInstruction[] = [...ataIxs.createAtaIxs, compoundFeesIx, ...ataIxs.closeWSolAtaIxs].filter(
-    ix => ix !== null,
-  );
+  const instructionsArray: IInstruction[] = [
+    ...ataIxs.createAtaIxs,
+    collectAndCompoundFeesIx,
+    ...ataIxs.closeWSolAtaIxs,
+  ].filter(ix => ix !== null);
 
   /**
    * Signing and sending the transaction with all the instructions to the Solana network.
@@ -350,4 +352,4 @@ if (!tunaPositionMint) {
   process.exit(1);
 }
 
-collectAndCompoundFeesOrca(address(tunaPositionMint)).catch(console.error);
+collectAndCompoundFees(address(tunaPositionMint)).catch(console.error);

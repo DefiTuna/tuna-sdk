@@ -26,7 +26,7 @@ export async function prepareLendingAccountsAndParameters(rpc: Rpc<SolanaRpcApi>
   decimalsScale: bigint;
 }> {
   /**
-   * Define variables and accounts for Tuna *lending* operations.
+   * Define variables and accounts for Tuna *lending* operations;
    */
   /**
    * The {@link Address address} of the token mint to deposit/withdraw, identifying the target Tuna *Lending Vault*.
@@ -36,6 +36,7 @@ export async function prepareLendingAccountsAndParameters(rpc: Rpc<SolanaRpcApi>
   const tokenMintAddress: Address = address("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
   /**
    * The nominal amount to deposit, excluding *Token* decimals (e.g., 1 SOL as a flat value).
+   * Note For deai
    */
   const nominalAmount = 1n;
   /**
@@ -47,34 +48,38 @@ export async function prepareLendingAccountsAndParameters(rpc: Rpc<SolanaRpcApi>
   /**
    * The {@link TunaConfig Tuna Config} Program Derived {@link Address Address} for Tuna operations, fetched from the Tuna Client.
    */
-  const [tunaConfigPda] = await getTunaConfigAddress();
+  const tunaConfigPda = (await getTunaConfigAddress())[0];
   /**
-   * The {@link Lending Vault}  Program Derived {@link Address address}, fetched from the Tuna Client.
+   * The {@link _Vault Lending Vault} Program Derived {@link Address address}, fetched from the Tuna Client.
    * Derived from the token mint address.
    */
-  const [vaultPda] = await getLendingVaultAddress(tokenMintAddress);
+  const vaultPda = (await getLendingVaultAddress(tokenMintAddress))[0];
   /**
    * The {@link _LendingPosition Lending Position} Program Derived {@link Address address}, fetched from the Tuna Client.
    * Derived from the authority (user) address and the token mint address.
    */
-  const [lendingPositionPda] = await getLendingPositionAddress(authority.address, tokenMintAddress);
+  const lendingPositionPda = (await getLendingPositionAddress(authority.address, tokenMintAddress))[0];
 
   /**
    * The Associated Token {@link Address Address}, owned by the *authority*.
    */
-  const [authorityAta] = await findAssociatedTokenPda({
-    mint: tokenMintAddress,
-    owner: authority.address,
-    tokenProgram: TOKEN_PROGRAM_ADDRESS,
-  });
+  const authorityAta = (
+    await findAssociatedTokenPda({
+      mint: tokenMintAddress,
+      owner: authority.address,
+      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+    })
+  )[0];
   /**
    * The Associated Token {@link Address Address}, owned by the *Lending Vault*.
    */
-  const [vaultAta] = await findAssociatedTokenPda({
-    mint: tokenMintAddress,
-    owner: vaultPda,
-    tokenProgram: TOKEN_PROGRAM_ADDRESS,
-  });
+  const vaultAta = (
+    await findAssociatedTokenPda({
+      mint: tokenMintAddress,
+      owner: vaultPda,
+      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+    })
+  )[0];
 
   /**
    * Fetches token decimals for the Token, using {@link https://github.com/orca-so/whirlpools/tree/main/ts-sdk/client Orca's Whirlpool Client}.

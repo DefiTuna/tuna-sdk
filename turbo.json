@@ -43,7 +43,11 @@
       "dependsOn": [],
       "cache": false
     },
-    "example:retrieve_user_positions": {
+    "example:retrieve_lending_positions": {
+      "dependsOn": [],
+      "cache": false
+    },
+    "example:retrieve_tuna_positions": {
       "dependsOn": [],
       "cache": false
     }

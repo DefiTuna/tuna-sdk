@@ -57,11 +57,11 @@ const rpcSubscriptions = createSolanaRpcSubscriptions(WSS_URL);
  * Uses the SOL/USDC *Whirlpool* with preset withdrawal amounts and swap options for this example; these can be adjusted or passed through the function’s input.
  * Note: Combines opening and removing liquidity, though these actions can be performed separately, and liquidity can be removed multiple times
  * based on the available liquidity in the *Orca Position*.
- * @param tunaPositionMint - The {@link Address address} of the *Tuna Position Mint* identifying the position to manage.
+ * @param {Address} tunaPositionMint - The {@link Address address} of the *Tuna Position Mint* identifying the position to manage.
  * @returns {Promise<void>} A promise that resolves when the transaction is confirmed.
  * @throws {Error} If the transaction fails to send or confirm.
  */
-export async function orcaRemoveLiquidityAndClose(tunaPositionMint: Address): Promise<void> {
+export async function removeLiquidityAndClose(tunaPositionMint: Address): Promise<void> {
   /**
    * The Program Derived {@link Address Address} of the pool from Orca's Whirlpools to create the position in.
    * For this example we use the SOL/USDC Pool.
@@ -233,6 +233,7 @@ export async function orcaRemoveLiquidityAndClose(tunaPositionMint: Address): Pr
    * For this example since closing the Position after, set to 1000000 (100%) to remove all *liquidity*.
    */
   const withdrawPercent = 1000000;
+
   /**
    * The *remainingAccounts* required for *Removing Liquidity* instruction.
    */
@@ -283,8 +284,24 @@ export async function orcaRemoveLiquidityAndClose(tunaPositionMint: Address): Pr
    */
   const tunaPositionAccount: Account<TunaPosition> = await fetchTunaPosition(rpc, tunaPositionPda);
 
+  /**
+   * Creation of instructions for removing liquidity and closing positions.
+   */
+  /**
+   * The RemoveLiquidityOrca instruction created via the Tuna Client, handling:
+   * - Withdraws *tokens* from the *Whirlpool*s vaults to decrease the {@link _OrcaPosition Position's} liquidity.
+   * - Repays any potential borrowed funds from *Tuna* {@link _Vault Lending Vaults} ATAs, proportionally to the withdraw percentage.
+   * - Potential swap of tokens if user opts for it, in order to receive all in one token.
+   */
   let removeLiquidityOrcaIx: IInstruction | undefined = undefined;
 
+  /**
+   * Checks that position state is `Normal` in order to remove any remaining liquidity from it, otherwise skips removing liquidity.
+   * Available states are:
+   * - 0: Normal
+   * - 1: Liquidated
+   * - 2: ClosedByLimitOrder
+   */
   if (tunaPositionAccount.data.state === 0) {
     /**
      * The remaining accounts for the *RemoveLiquidity* instruction in {@link IAccountMeta Account Meta} format.
@@ -305,15 +322,6 @@ export async function orcaRemoveLiquidityAndClose(tunaPositionMint: Address): Pr
       { address: oraclePda, role: AccountRole.WRITABLE },
     ];
 
-    /**
-     * Creation of instructions for removing liquidity and closing positions.
-     */
-    /**
-     * The RemoveLiquidityOrca instruction created via the Tuna Client, handling:
-     * - Withdraws *tokens* from the *Whirlpool*s vaults to decrease the {@link _OrcaPosition Position's} liquidity.
-     * - Repays any potential borrowed funds from *Tuna* {@link _Vault Lending Vaults}s ATAs, proportionally to the withdraw percentage.
-     * - Potential swap of tokens if user opts for it, in order to receive all in one token.
-     */
     removeLiquidityOrcaIx = getRemoveLiquidityOrcaInstruction({
       authority: authority,
       tunaConfig: tunaConfigPda,
@@ -370,7 +378,7 @@ export async function orcaRemoveLiquidityAndClose(tunaPositionMint: Address): Pr
   });
 
   /**
-   * The instructions array in the proper order for opening positions and adding liquidity.
+   * The instructions array in the proper order for removing liquidity and closing a position.
    */
   const instructionsArray: IInstruction[] = [
     ...ataIxs.createAtaIxs,
@@ -397,4 +405,4 @@ if (!tunaPositionMint) {
   process.exit(1);
 }
 
-orcaRemoveLiquidityAndClose(address(tunaPositionMint)).catch(console.error);
+removeLiquidityAndClose(address(tunaPositionMint)).catch(console.error);

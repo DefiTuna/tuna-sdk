@@ -67,8 +67,8 @@ const rpcSubscriptions = createSolanaRpcSubscriptions(WSS_URL);
  * @returns {Promise<void>} A promise that resolves when the transaction is confirmed.
  * @throws {Error} If the transaction fails to send or confirm.
  */
-export async function orcaOpenPositionAndAddLiquidity(): Promise<void> {
-  /** Defining variables required to open an Orca *position* and add liquidity with borrowed funds from Tuna's *Lending Pools*. */
+export async function openPositionAndAddLiquidity(): Promise<void> {
+  /** Defining variables required to open an Orca *Position* and add liquidity with borrowed funds from Tuna's *Lending Pools*. */
   /**
    * The nominal amounts of *Token A* (SOL in this example) and *Token B* (USDC in this example) to deposit for liquidity,
    * as a flat value (e.g., 1 SOL) excluding decimals.
@@ -335,7 +335,7 @@ export async function orcaOpenPositionAndAddLiquidity(): Promise<void> {
   const associatedTokenProgram = ASSOCIATED_TOKEN_PROGRAM_ADDRESS;
   /**
    * The {@link TOKEN_2022_PROGRAM_ADDRESS Token 2022 Program} {@link Address address}
-   * for handling *Position Mint NFT* creation.
+   * for handling minting the *Position Token* in the AddLiquidity instruction.
    */
   const token2022Program = TOKEN_2022_PROGRAM_ADDRESS;
   /**
@@ -344,7 +344,7 @@ export async function orcaOpenPositionAndAddLiquidity(): Promise<void> {
    */
   const whirlpoolProgram = WHIRLPOOL_PROGRAM_ADDRESS;
   /**
-   * The {@link SYSTEM_PROGRAM_ADDRESS System Program} {@link Address address}, required for any Solana account creation.
+   * The {@link SYSTEM_PROGRAM_ADDRESS System Program} {@link Address address}, required for account initialization.
    */
   const systemProgram = SYSTEM_PROGRAM_ADDRESS;
   /**
@@ -357,12 +357,12 @@ export async function orcaOpenPositionAndAddLiquidity(): Promise<void> {
    * The lower {@link _Tick Tick} index for the {@link _OrcaPosition Orca Position}’s range, identifying the lowest Tick at which the Position is active in the {@link Whirlpool Whirlpool}.
    * Note: Must be divisible by the {@link Whirlpool Whirlpool}'s `tickSpacing`.
    */
-  const lowerTickIndex = -20748;
+  const tickLowerIndex = -20748;
   /**
    * The upper {@link _Tick Tick} index for the {@link _OrcaPosition Orca Position}'s range, identifying the highest Tick at which the Position is active in the {@link Whirlpool Whirlpool}.
    * Note: Must be divisible by the {@link Whirlpool Whirlpool}'s `tickSpacing`.
    */
-  const upperTickIndex = -20148;
+  const tickUpperIndex = -20148;
 
   /**
    * The {@link _Tick Tick} index for an optional *Stop-Loss* limit order below the {@link _OrcaPosition Orca Position}’s range in the {@link Whirlpool Whirlpool}.
@@ -439,11 +439,11 @@ export async function orcaOpenPositionAndAddLiquidity(): Promise<void> {
   /**
    * The {@link _TickArray Tick Array} containing the lower {@link Tick Tick} of the {@link _OrcaPosition Orca Position} range
    */
-  const lowerTickArrayPda = await deriveTickArrayPda(whirlpoolAccount.data, whirlpoolPda, lowerTickIndex);
+  const tickLowerArrayPda = await deriveTickArrayPda(whirlpoolAccount.data, whirlpoolPda, tickLowerIndex);
   /**
    * The {@link _TickArray Tick Array} containing the  upper {@link Tick Tick} of the {@link _OrcaPosition Orca Position} range
    */
-  const upperTickArrayPda = await deriveTickArrayPda(whirlpoolAccount.data, whirlpoolPda, upperTickIndex);
+  const tickUpperArrayPda = await deriveTickArrayPda(whirlpoolAccount.data, whirlpoolPda, tickUpperIndex);
   /**
    * The Oracle Program Derived {@link Address Address}, for the Orca *Whirlpool*,
    * fetched via {@link https://github.com/orca-so/whirlpools/tree/main/ts-sdk/client Orca's Whirlpool Client}.
@@ -456,8 +456,8 @@ export async function orcaOpenPositionAndAddLiquidity(): Promise<void> {
    */
   const remainingAccounts: IAccountMeta[] = [
     ...tickArraysForSwapMeta,
-    { address: lowerTickArrayPda, role: AccountRole.WRITABLE },
-    { address: upperTickArrayPda, role: AccountRole.WRITABLE },
+    { address: tickLowerArrayPda, role: AccountRole.WRITABLE },
+    { address: tickUpperArrayPda, role: AccountRole.WRITABLE },
     { address: whirlpoolAccount.data.tokenVaultA, role: AccountRole.WRITABLE },
     { address: whirlpoolAccount.data.tokenVaultB, role: AccountRole.WRITABLE },
     { address: oraclePda, role: AccountRole.WRITABLE },
@@ -480,8 +480,8 @@ export async function orcaOpenPositionAndAddLiquidity(): Promise<void> {
     orcaPosition: orcaPositionPda,
     tunaPositionAta: tunaPositionAta,
     tunaPositionMint: newPositionMintKeypair,
-    tickLowerIndex: lowerTickIndex,
-    tickUpperIndex: upperTickIndex,
+    tickLowerIndex: tickLowerIndex,
+    tickUpperIndex: tickUpperIndex,
     tickStopLossIndex: tickStopLossIndex,
     tickTakeProfitIndex: tickTakeProfitIndex,
     metadataUpdateAuth: metadataUpdateAuth,
@@ -494,7 +494,7 @@ export async function orcaOpenPositionAndAddLiquidity(): Promise<void> {
 
   /**
    * The AddLiquidityOrca instruction created via the Tuna Client, handling:
-   * - Potential borrowing of funds from *Tuna* {@link _Vault Lending Vaults}s ATAs.
+   * - Potential borrowing of funds from *Tuna* {@link _Vault Lending Vaults} ATAs.
    * - Potential swap of tokens if deposit ratio is different from the {@link _OrcaPosition Position's} range-to-price ratio.
    * - Depositing *tokens* to the *Whirlpool*s vaults to increase the {@link _OrcaPosition Position's} liquidity.
    */
@@ -560,4 +560,4 @@ export async function orcaOpenPositionAndAddLiquidity(): Promise<void> {
   );
 }
 
-orcaOpenPositionAndAddLiquidity().catch(console.error);
+openPositionAndAddLiquidity().catch(console.error);

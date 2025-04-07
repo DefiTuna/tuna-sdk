@@ -2,7 +2,8 @@
 resolver = "2"
 
 members = [
-    "packages/rust/*"
+    "packages/rust/*",
+    "examples/rust"
 ]
 
 exclude = [

@@ -50,7 +50,7 @@ const rpcSubscriptions = createSolanaRpcSubscriptions(WSS_URL);
  * @returns {Promise<void>} A promise that resolves when the transaction is confirmed.
  * @throws {Error} If the transaction fails to send or confirm.
  */
-export async function orcaCollectFees(tunaPositionMint: Address): Promise<void> {
+export async function collectFees(tunaPositionMint: Address): Promise<void> {
   /**
    * The Program Derived {@link Address Address} of the pool from Orca's Whirlpools to create the position in.
    * For this example we use the SOL/USDC Pool.
@@ -103,7 +103,7 @@ export async function orcaCollectFees(tunaPositionMint: Address): Promise<void> 
   )[0];
 
   /**
-   * The ATA instructions object containing ATA creation and closure isntructions
+   * The ATA instructions object containing ATA creation and closure instructions
    */
   const ataIxs: AtaInstructions = {
     createAtaIxs: [],
@@ -236,4 +236,4 @@ if (!tunaPositionMint) {
   process.exit(1);
 }
 
-orcaCollectFees(address(tunaPositionMint)).catch(console.error);
+collectFees(address(tunaPositionMint)).catch(console.error);
