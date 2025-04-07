@@ -37,8 +37,7 @@ export async function withdrawLendingPosition(): Promise<void> {
 
   /**
    * The withdraw instruction interacts with the Tuna program to withdraw the funds into the lending position.
-   * Here we have a choice to pass either funds or shares. For simplicity reasons we will use funds, we also provide
-   * an example and detailed explanation on how to calculcate `funds -> shares` and `shares -> funds`.
+   * Here we have a choice to pass either funds or shares. For simplicity reasons we will use funds.
    */
   const withdrawLendingPoolIx = getWithdrawInstruction({
     authority,
