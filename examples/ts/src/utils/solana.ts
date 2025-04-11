@@ -1,4 +1,5 @@
 import {
+  Account,
   Address,
   appendTransactionMessageInstructions,
   CompilableTransactionMessage,
@@ -7,6 +8,9 @@ import {
   createTransactionMessage,
   fetchJsonParsedAccount,
   getBase64EncodedWireTransaction,
+  getBase64Encoder,
+  GetProgramAccountsDatasizeFilter,
+  GetProgramAccountsMemcmpFilter,
   getSignatureFromTransaction,
   IInstruction,
   KeyPairSigner,
@@ -20,6 +24,7 @@ import {
   signTransactionMessageWithSigners,
   SolanaRpcApi,
   SolanaRpcSubscriptionsApi,
+  VariableSizeDecoder,
 } from "@solana/kit";
 import { getSetComputeUnitLimitInstruction, getSetComputeUnitPriceInstruction } from "@solana-program/compute-budget";
 import { getTransferSolInstruction } from "@solana-program/system";
@@ -120,10 +125,16 @@ export const findOrCreateAtaWithAuth = async (
 
 /**
  * Constructs and sends a transaction on the Solana blockchain, signed by the provided keypair, with priority fees applied.
+ * @param {Rpc<SolanaRpcApi>} rpc - The {@link Rpc rpc} client for Solana blockchain interactions.
+ * @param {RpcSubscriptions<SolanaRpcSubscriptionsApi>} rpcSubscriptions - The {@link RpcSubscriptions rpcs subscriptions}
+ * for real time updates on the Solana blockchain.
  * @param {KeyPairSigner} signer - The {@link KeyPairSigner keypair signer} of the account authorizing the transaction.
  * @param {IInstruction[]} instructions - An array of {@link IInstruction instructions} to be executed by the transaction.
- * @param {number} [computeUnitLimit] - Optional limit for *Compute Units* used in the transaction, which, combined with a fetched
- * *Priority Fee*, determines transaction prioritization. If undefined, it’s estimated with a buffer (up to *MAX_CU_LIMIT*).
+ * @param {Address} [addressLookupTableAddress] - Optional {@link addressLookupTableAddress addressLookupTable address} for
+ * efficiently handling more addresses per transaction.
+ * @param {SolanaTransactionSimulation} [simulation] - Optional {@link SolanaTransactionSimulation similation} with the *computeUnitLimit*
+ * used in the transaction, which, combined with a fetched *Priority Fee*, determines transaction prioritization.
+ * If undefined, it’s estimated with a buffer (up to *MAX_CU_LIMIT*).
  * @returns {Promise<Signature>} A promise resolving to the {@link Signature signature} of the confirmed transaction.
  */
 export const createAndSendTransaction = async (
@@ -184,10 +195,17 @@ export const createAndSendTransaction = async (
   return getSignatureFromTransaction(signedTransaction);
 };
 
+/**
+ * Simulates a transaction on the Solana blockchain, calculating and returning the `computeUnitLimit` necessary for the transaction.
+ * @param {Rpc<SolanaRpcApi>} rpc - The {@link Rpc rpc} client for Solana blockchain interactions.
+ * @param {CompilableTransactionMessage} txm - The {@link CompilableTransactionMessage transaction message} containg all accounts and instructions.
+ * @param {Number} failedAttempts - The failed attemps counter (between 0 and 3). Increases for every failed attempt.
+ * @returns {Promise<SolanaTransactionSimulation>} A promise resolving to a object containing the `computeUnitLimit`.
+ */
 const simulateTransaction = async (
   rpc: Rpc<SolanaRpcApi>,
   txm: CompilableTransactionMessage,
-  failedAttempts = 0,
+  failedAttempts: number = 0,
 ): Promise<SolanaTransactionSimulation> => {
   const transaction = compileTransaction(txm);
   const base64EncodedTransaction = getBase64EncodedWireTransaction(transaction);
@@ -210,3 +228,39 @@ const simulateTransaction = async (
     computeUnitLimit: computeUnitLimitWithReserve,
   };
 };
+
+/**
+ * Fetches decoded PDAs with specific filters.
+ * @param {Rpc<SolanaRpcApi>} rpc - The {@link Rpc rpc} client for Solana blockchain interactions.
+ * @param {GetProgramAccountsMemcmpFilter} memcmpFilter - The {@link GetProgramAccountsMemcmpFilter memcmp filter} to refine
+ * the search for the Program accounts.
+ * @param {GetProgramAccountsDatasizeFilter} dataSizeFilter - The {@link GetProgramAccountsDatasizeFilter size of the data filter} to refine
+ * the search for the Program accounts.
+ * @param {VariableSizeDecoder<T>} decoder - The decoder for the specific PDA and it's type.
+ * @returns {Promise<SolanaTransactionSimulation>} A promise resolving to a object containing the `computeUnitLimit`.
+ */
+export async function fetchDecodedProgramAccounts<T extends object>(
+  rpc: Rpc<SolanaRpcApi>,
+  programAddress: Address,
+  memcmpFilter: GetProgramAccountsMemcmpFilter,
+  dataSizeFilter: GetProgramAccountsDatasizeFilter,
+  decoder: VariableSizeDecoder<T>,
+): Promise<Account<T>[]> {
+  const accounts = await rpc
+    .getProgramAccounts(programAddress, {
+      encoding: "base64",
+      filters: [memcmpFilter, dataSizeFilter],
+    })
+    .send();
+
+  const base64Encoder = getBase64Encoder();
+
+  const encodedAccounts = accounts.map(({ account: { data } }) => base64Encoder.encode(data[0]));
+  const decodedAccounts = encodedAccounts.map(x => decoder.decode(x));
+  return decodedAccounts.map((data, i) => ({
+    ...accounts[i].account,
+    address: accounts[i].pubkey,
+    programAddress,
+    data,
+  }));
+}

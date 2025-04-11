@@ -12,8 +12,11 @@ Each example is provided as an isolated script that can be executed directly usi
 - **`pnpm run_example collect_fees_orca <POSITION_MINT_ADDRESS>`**: Collects fees from a specified position in an Orca liquidity pool.
 - **`pnpm run_example collect_and_compound_fees_orca <POSITION_MINT_ADDRESS>`**: Collects and compounds fees for a given position in an Orca liquidity pool.
 - **`pnpm run_example remove_liquidity_and_close_orca <POSITION_MINT_ADDRESS>`**: Removes liquidity and closes a position in an Orca liquidity pool.
+- **`pnpm run_example retrieve_user_positions <METHOD> [USER_ADDRESS]`**: Retrieves either tuna positions or lending positions for a user.
 
 **Note**: For scripts requiring a `POSITION_MINT_ADDRESS`, provide a valid address of an existing liquidity position as an argument when running the command.
+
+**Note**: For scripts requiring a `METHOD`, provide a either `"tuna"` or `"lending"`.
 
 ## Prerequisites before Running the Examples
 

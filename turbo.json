@@ -42,6 +42,10 @@
     "example:remove_liquidity_and_close_orca": {
       "dependsOn": [],
       "cache": false
+    },
+    "example:retrieve_user_positions": {
+      "dependsOn": [],
+      "cache": false
     }
   }
 }
