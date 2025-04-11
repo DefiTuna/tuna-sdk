@@ -18,7 +18,8 @@
         "example:open_and_add_liquidity_orca": "tsx src/tunaPosition/openAndAddLiquidityOrca.ts",
         "example:collect_fees_orca": "tsx src/tunaPosition/collectFeesOrca.ts",
         "example:collect_and_compound_fees_orca": "tsx src/tunaPosition/collectAndCompoundFeesOrca.ts",
-        "example:remove_liquidity_and_close_orca": "tsx src/tunaPosition/removeLiquidityAndCloseOrca.ts"
+        "example:remove_liquidity_and_close_orca": "tsx src/tunaPosition/removeLiquidityAndCloseOrca.ts",
+        "example:retrieve_user_positions": "tsx src/tunaPosition/retrieveUserPositions.ts"
     },
     "devDependencies": {
         "@defituna/typescript-config": "^0.2.0",

@@ -346,7 +346,7 @@ export async function collectAndCompoundFeesOrca(tunaPositionMint: Address): Pro
 
 const tunaPositionMint = process.argv[2];
 if (!tunaPositionMint) {
-  console.error("Please provide a the address for the tunaPositionMint as an argument.");
+  console.error("Please provide the address for the tunaPositionMint as an argument.");
   process.exit(1);
 }
 

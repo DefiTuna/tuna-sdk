@@ -1,12 +1,17 @@
 {
-    "extends": "@defituna/typescript-config/base.json",
-    "include": ["src"],
-    "exclude": ["node_modules"],
-    "compilerOptions": {
-      "baseUrl": ".",
-      "paths": {
-        "@defituna/client": ["./src/index.ts"]
-      }
+  "extends": "@defituna/typescript-config/base.json",
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "node_modules"
+  ],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@defituna/client": [
+        "../../packages/ts/client/src/index.ts"
+      ]
     }
   }
-  
+}
