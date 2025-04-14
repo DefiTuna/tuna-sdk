@@ -2,10 +2,9 @@
 resolver = "2"
 
 members = [
-    "rust-sdk/*"
+    "packages/rust/*"
 ]
 
 exclude = [
-    "packages/client",
-    "packages/sdk"
+    "packages/ts"
 ]
