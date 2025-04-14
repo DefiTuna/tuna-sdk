@@ -14,8 +14,8 @@ pub use generated::instructions;
 pub use generated::programs::*;
 pub use generated::types;
 
-//#[cfg(feature = "fetch")]
-//pub use generated::shared::*;
+#[cfg(feature = "fetch")]
+pub use generated::shared::*;
 
 #[cfg(feature = "fetch")]
 pub(crate) use generated::*;
