@@ -2,18 +2,18 @@ use crate::accounts::*;
 use crate::consts::HUNDRED_PERCENT;
 use crate::math::fixed::Rounding;
 use crate::math::orca::liquidity::get_amounts_for_liquidity;
-use crate::math::orca::tick_math::{sqrt_price_from_tick_index, MAX_TICK_INDEX, MIN_TICK_INDEX};
 use crate::math::{sqrt_price_x64_to_price_x64, Fixed128};
 use crate::types::*;
 use crate::TunaError as ErrorCode;
 use fixed::types::U64F64;
+use orca_whirlpools_core::{tick_index_to_sqrt_price, MAX_TICK_INDEX, MIN_TICK_INDEX};
 use std::fmt;
 
 impl TunaPosition {
     /// Returns the total position balance.
     pub fn get_total_balance(&self, sqrt_price: u128) -> Result<(u64, u64), ErrorCode> {
-        let lower_sqrt_price_x64 = sqrt_price_from_tick_index(self.tick_lower_index);
-        let upper_sqrt_price_x64 = sqrt_price_from_tick_index(self.tick_upper_index);
+        let lower_sqrt_price_x64 = tick_index_to_sqrt_price(self.tick_lower_index);
+        let upper_sqrt_price_x64 = tick_index_to_sqrt_price(self.tick_upper_index);
         get_amounts_for_liquidity(sqrt_price, lower_sqrt_price_x64, upper_sqrt_price_x64, self.liquidity)
     }
 
@@ -80,14 +80,14 @@ impl TunaPosition {
         }
 
         if self.tick_stop_loss_index >= MIN_TICK_INDEX {
-            let stop_loss_sqrt_price = sqrt_price_from_tick_index(self.tick_stop_loss_index);
+            let stop_loss_sqrt_price = tick_index_to_sqrt_price(self.tick_stop_loss_index);
             if sqrt_price <= stop_loss_sqrt_price {
                 return true;
             }
         }
 
         if self.tick_take_profit_index <= MAX_TICK_INDEX {
-            let take_profit_sqrt_price = sqrt_price_from_tick_index(self.tick_take_profit_index);
+            let take_profit_sqrt_price = tick_index_to_sqrt_price(self.tick_take_profit_index);
             if sqrt_price >= take_profit_sqrt_price {
                 return true;
             }
