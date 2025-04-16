@@ -8,7 +8,7 @@ use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
 use std::str::FromStr;
-use tuna_client::accounts::{fetch_vault};
+use defituna_client::accounts::{fetch_vault};
 
 use crate::constants::WSOL_MINT;
 use anyhow::{anyhow, Result};

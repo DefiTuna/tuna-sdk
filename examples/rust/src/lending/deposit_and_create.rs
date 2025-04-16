@@ -9,7 +9,7 @@ use spl_token::{
   instruction::{close_account, sync_native},
   ID as TOKEN_PROGRAM_ID,
 };
-use tuna_client::instructions::{CreateLendingPositionBuilder, DepositBuilder};
+use defituna_client::instructions::{CreateLendingPositionBuilder, DepositBuilder};
 
 use crate::utils::{
   common::{account_exists, is_wsol_mint},

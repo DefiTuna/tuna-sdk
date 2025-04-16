@@ -17,13 +17,13 @@ use solana_sdk::{instruction::Instruction, pubkey::Pubkey, signature::Keypair, s
 use spl_associated_token_account::{self, get_associated_token_address_with_program_id};
 use spl_token;
 use spl_token_2022;
-use tuna_client::accounts::{fetch_market, fetch_tuna_config};
-use tuna_client::{
+use defituna_client::accounts::{fetch_market, fetch_tuna_config};
+use defituna_client::{
   get_market_address, get_tuna_config_address, get_tuna_position_address, get_vault_address,
   instructions::{AddLiquidityOrcaBuilder, OpenPositionOrcaBuilder},
   TUNA_POSITION_FLAGS_STOP_LOSS_SWAP_TO_TOKEN_B,
 };
-use tuna_client::{NO_TAKE_PROFIT, WP_NFT_UPDATE_AUTH};
+use defituna_client::{NO_TAKE_PROFIT, WP_NFT_UPDATE_AUTH};
 
 /// Opens a position in an Orca Liquidity Pool and adds liquidity using borrowed funds from Tuna Lending Pools.
 /// Uses the SOL/USDC Whirlpool with preset amounts and leverage for this example; these can be adjusted or passed through the function’s input.

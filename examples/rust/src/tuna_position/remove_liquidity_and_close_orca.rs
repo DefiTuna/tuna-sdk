@@ -14,7 +14,7 @@ use solana_sdk::{
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 use spl_token::ID as TOKEN_PROGRAM_ID;
 use spl_token_2022::ID as TOKEN_2022_PROGRAM_ID;
-use tuna_client::{
+use defituna_client::{
   accounts::{fetch_market, fetch_tuna_position},
   get_market_address, get_tuna_config_address, get_tuna_position_address, get_vault_address,
   instructions::{ClosePositionOrcaBuilder, RemoveLiquidityOrcaBuilder},

@@ -1,4 +1,4 @@
-import {address} from "@solana/kit";
+import { address } from "@solana/kit";
 
 export const HUNDRED_PERCENT = 1000000;
 export const LEVERAGE_ONE = HUNDRED_PERCENT; // 1.0x

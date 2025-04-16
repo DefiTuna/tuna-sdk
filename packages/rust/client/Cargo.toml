@@ -1,6 +1,6 @@
 [package]
-name = "tuna-client"
-version = "1.0.0"
+name = "defituna-client"
+version = "0.0.0"
 homepage = "https://defituna.com"
 repository = "https://github.com/DefiTuna/tuna-sdk"
 keywords = ["solana", "crypto", "defi", "dex", "amm"]

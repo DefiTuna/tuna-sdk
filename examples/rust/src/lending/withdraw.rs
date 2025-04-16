@@ -3,7 +3,7 @@ use solana_client::rpc_client::RpcClient;
 use solana_sdk::{instruction::Instruction, signer::Signer};
 use spl_associated_token_account::{instruction::create_associated_token_account, ID as ASSOCIATED_TOKEN_PROGRAM_ID};
 use spl_token::{instruction::close_account, ID as TOKEN_PROGRAM_ID};
-use tuna_client::instructions::WithdrawBuilder;
+use defituna_client::instructions::WithdrawBuilder;
 
 use crate::utils::{
   common::{account_exists, is_wsol_mint},
