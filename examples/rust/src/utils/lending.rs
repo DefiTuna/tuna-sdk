@@ -3,7 +3,7 @@ use solana_client::rpc_client::RpcClient;
 use solana_sdk::{pubkey::Pubkey, signer::Signer};
 use spl_associated_token_account::get_associated_token_address;
 use std::{ops::Mul, str::FromStr};
-use tuna_client::{get_lending_position_address, get_tuna_config_address, get_vault_address};
+use defituna_client::{get_lending_position_address, get_tuna_config_address, get_vault_address};
 
 use super::common::get_mint_decimals;
 

@@ -6,7 +6,7 @@ use solana_client::{
   rpc_filter::{Memcmp, MemcmpEncodedBytes, RpcFilterType},
 };
 use solana_sdk::{commitment_config::CommitmentConfig, pubkey::Pubkey};
-use tuna_client::{self, accounts::LendingPosition};
+use defituna_client::{self, accounts::LendingPosition};
 
 /// Retrieves all Lending Positions belonging to the user.
 ///
@@ -34,7 +34,7 @@ pub fn retrieve_user_lending_positions(rpc: RpcClient, user_address: Pubkey) -> 
     sort_results: None,
   };
 
-  let accounts = rpc.get_program_accounts_with_config(&tuna_client::TUNA_ID, config)?;
+  let accounts = rpc.get_program_accounts_with_config(&defituna_client::TUNA_ID, config)?;
 
   println!("Amount of positions: {}", accounts.len());
 

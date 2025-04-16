@@ -26,4 +26,4 @@ orca_whirlpools_core = { version = "^1.0.6" }
 solana-account-decoder = { version = "^2.0.25" }
 anyhow = { version = "1.0.98" }
 
-tuna_client = { package = "tuna-client", path = '../../packages/rust/client', features = ["fetch"] }
+defituna_client = { package = "defituna-client", path = '../../packages/rust/client', features = ["fetch"] }

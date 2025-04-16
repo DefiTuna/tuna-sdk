@@ -1,0 +1,8 @@
+{
+  "name": "@defituna/rust-client",
+  "description": "Rust client to interact with DefiTuna's on-chain program.",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "sideEffects": false
+}
