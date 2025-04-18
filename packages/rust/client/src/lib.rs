@@ -3,6 +3,7 @@ pub mod implementation;
 pub mod math;
 
 mod generated;
+mod gpa;
 mod pda;
 
 //#[cfg(feature = "fetch")]
@@ -21,6 +22,7 @@ pub use generated::shared::*;
 pub(crate) use generated::*;
 
 pub use consts::*;
+pub use gpa::*;
 pub use implementation::*;
 pub use math::*;
 pub use pda::*;
