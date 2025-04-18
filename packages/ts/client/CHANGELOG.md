@@ -1,5 +1,11 @@
 # @defituna/client
 
+## 1.0.7
+
+### Patch Changes
+
+- 0e0e455: Updated tuna constants
+
 ## 1.0.6
 
 ### Patch Changes
