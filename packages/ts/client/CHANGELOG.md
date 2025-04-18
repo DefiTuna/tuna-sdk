@@ -1,5 +1,11 @@
 # @defituna/client
 
+## 1.0.8
+
+### Patch Changes
+
+- f766847: Added tuna position fetch filters
+
 ## 1.0.7
 
 ### Patch Changes
