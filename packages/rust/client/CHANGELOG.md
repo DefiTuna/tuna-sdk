@@ -1,5 +1,11 @@
 # @defituna/rust-client
 
+## 1.0.5
+
+### Patch Changes
+
+- 1f106e5: Added tuna position filters to rust client
+
 ## 1.0.4
 
 ### Patch Changes
