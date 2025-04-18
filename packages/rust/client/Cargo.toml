@@ -2,6 +2,8 @@
 name = "defituna-client"
 version = "0.0.0"
 homepage = "https://defituna.com"
+description = "Rust client to interact with DefiTuna's on-chain program."
+license = "MIT"
 repository = "https://github.com/DefiTuna/tuna-sdk"
 keywords = ["solana", "crypto", "defi", "dex", "amm"]
 edition = "2021"
