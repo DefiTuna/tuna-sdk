@@ -1,5 +1,11 @@
 # @defituna/rust-client
 
+## 1.0.4
+
+### Patch Changes
+
+- e1ceecc: Add README.md
+
 ## 1.0.3
 
 ### Patch Changes
