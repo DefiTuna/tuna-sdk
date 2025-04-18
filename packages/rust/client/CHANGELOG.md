@@ -1,5 +1,11 @@
 # @defituna/rust-client
 
+## 1.0.3
+
+### Patch Changes
+
+- 52f2b37: Add metadata fields to Cargo.toml
+
 ## 1.0.2
 
 ### Patch Changes
