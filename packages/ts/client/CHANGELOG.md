@@ -1,5 +1,11 @@
 # @defituna/client
 
+## 1.0.10
+
+### Patch Changes
+
+- 03c74d1: Added lending position filters
+
 ## 1.0.9
 
 ### Patch Changes

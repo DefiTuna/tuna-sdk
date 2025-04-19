@@ -1,5 +1,11 @@
 # @defituna/rust-client
 
+## 1.0.7
+
+### Patch Changes
+
+- 03c74d1: Added lending position filters
+
 ## 1.0.6
 
 ### Patch Changes
