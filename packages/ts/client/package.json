@@ -16,7 +16,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "build": "node ./codama.mjs && tsup src/index.ts --format cjs,esm --dts",
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
     "eslint": "eslint \"src/*.ts\"",
     "eslint:fix": "eslint \"src/*.ts\" --fix",
@@ -37,6 +37,12 @@
     "@solana-program/system": "^0.7.0",
     "@solana-program/token": "^0.5.1",
     "@solana-program/token-2022": "^0.4.0",
+    "@codama/nodes": "^1.2.11",
+    "@codama/renderers-rust": "^1.0.19",
+    "@codama/visitors-core": "^1.2.11",
+    "@codama/nodes-from-anchor": "^1.1.11",
+    "@codama/renderers": "^1.0.19",
+    "codama": "^1.2.11",
     "dotenv": "^16.4.7",
     "eslint": "^8.57.0",
     "ts-node": "^10.9.2",

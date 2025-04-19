@@ -4,5 +4,16 @@
   "version": "1.0.5",
   "private": true,
   "license": "MIT",
-  "sideEffects": false
+  "sideEffects": false,
+  "scripts": {
+    "build": "node ./codama.mjs"
+  },
+  "devDependencies": {
+    "@codama/nodes": "^1.2.11",
+    "@codama/renderers-rust": "^1.0.19",
+    "@codama/visitors-core": "^1.2.11",
+    "@codama/nodes-from-anchor": "^1.1.11",
+    "@codama/renderers": "^1.0.19",
+    "codama": "^1.2.11"
+  }
 }
