@@ -1,0 +1,26 @@
+import { Address, IInstruction, TransactionSigner } from "@solana/kit";
+import {
+  getCreateLendingPositionInstruction,
+  getLendingPositionAddress,
+  getLendingVaultAddress,
+  getTunaConfigAddress,
+} from "../index.ts";
+import { ASSOCIATED_TOKEN_PROGRAM_ADDRESS } from "@solana-program/token-2022";
+
+export async function createLendingPositionInstruction(
+  authority: TransactionSigner,
+  mint: Address,
+): Promise<IInstruction> {
+  const tunaConfig = (await getTunaConfigAddress())[0];
+  const vault = (await getLendingVaultAddress(mint))[0];
+  const lendingPosition = (await getLendingPositionAddress(authority.address, mint))[0];
+
+  return getCreateLendingPositionInstruction({
+    lendingPosition,
+    poolMint: mint,
+    vault,
+    authority,
+    tunaConfig,
+    associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
+  });
+}

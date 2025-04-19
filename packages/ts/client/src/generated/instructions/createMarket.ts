@@ -97,7 +97,7 @@ export type CreateMarketInstructionData = {
   protocolFee: number;
   protocolFeeOnCollateral: number;
   liquidationFee: number;
-  liquidationRatio: number;
+  liquidationThreshold: number;
   limitOrderExecutionFee: number;
   oraclePriceDeviationThreshold: number;
   disabled: boolean;
@@ -113,7 +113,7 @@ export type CreateMarketInstructionDataArgs = {
   protocolFee: number;
   protocolFeeOnCollateral: number;
   liquidationFee: number;
-  liquidationRatio: number;
+  liquidationThreshold: number;
   limitOrderExecutionFee: number;
   oraclePriceDeviationThreshold: number;
   disabled: boolean;
@@ -132,7 +132,7 @@ export function getCreateMarketInstructionDataEncoder(): Encoder<CreateMarketIns
       ['protocolFee', getU16Encoder()],
       ['protocolFeeOnCollateral', getU16Encoder()],
       ['liquidationFee', getU32Encoder()],
-      ['liquidationRatio', getU32Encoder()],
+      ['liquidationThreshold', getU32Encoder()],
       ['limitOrderExecutionFee', getU32Encoder()],
       ['oraclePriceDeviationThreshold', getU32Encoder()],
       ['disabled', getBooleanEncoder()],
@@ -153,7 +153,7 @@ export function getCreateMarketInstructionDataDecoder(): Decoder<CreateMarketIns
     ['protocolFee', getU16Decoder()],
     ['protocolFeeOnCollateral', getU16Decoder()],
     ['liquidationFee', getU32Decoder()],
-    ['liquidationRatio', getU32Decoder()],
+    ['liquidationThreshold', getU32Decoder()],
     ['limitOrderExecutionFee', getU32Decoder()],
     ['oraclePriceDeviationThreshold', getU32Decoder()],
     ['disabled', getBooleanDecoder()],
@@ -191,7 +191,7 @@ export type CreateMarketInput<
   protocolFee: CreateMarketInstructionDataArgs['protocolFee'];
   protocolFeeOnCollateral: CreateMarketInstructionDataArgs['protocolFeeOnCollateral'];
   liquidationFee: CreateMarketInstructionDataArgs['liquidationFee'];
-  liquidationRatio: CreateMarketInstructionDataArgs['liquidationRatio'];
+  liquidationThreshold: CreateMarketInstructionDataArgs['liquidationThreshold'];
   limitOrderExecutionFee: CreateMarketInstructionDataArgs['limitOrderExecutionFee'];
   oraclePriceDeviationThreshold: CreateMarketInstructionDataArgs['oraclePriceDeviationThreshold'];
   disabled: CreateMarketInstructionDataArgs['disabled'];

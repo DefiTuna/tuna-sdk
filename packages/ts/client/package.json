@@ -23,20 +23,19 @@
     "type-check": "tsc -p .",
     "lint": "pnpm eslint && pnpm type-check"
   },
-  "peerDependencies": {
-    "@solana/kit": "^2.1.0"
-  },
-  "devDependencies": {
+  "dependencies": {
     "@solana/kit": "^2.1.0",
-    "@defituna/typescript-config": "^0.2.0",
-    "@defituna/eslint-config": "^0.4.0",
-    "@defituna/prettier-config": "^0.0.0",
     "@orca-so/whirlpools-client": "^1.0.4",
     "@orca-so/whirlpools-core": "^1.0.4",
     "@solana-program/compute-budget": "^0.7.0",
     "@solana-program/system": "^0.7.0",
     "@solana-program/token": "^0.5.1",
-    "@solana-program/token-2022": "^0.4.0",
+    "@solana-program/token-2022": "^0.4.0"
+  },
+  "devDependencies": {
+    "@defituna/typescript-config": "^0.2.0",
+    "@defituna/eslint-config": "^0.4.0",
+    "@defituna/prettier-config": "^0.0.0",
     "@codama/nodes": "^1.2.11",
     "@codama/renderers-rust": "^1.0.19",
     "@codama/visitors-core": "^1.2.11",

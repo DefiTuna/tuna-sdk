@@ -84,7 +84,7 @@ export type UpdateMarketInstructionData = {
   protocolFee: number;
   protocolFeeOnCollateral: number;
   liquidationFee: number;
-  liquidationRatio: number;
+  liquidationThreshold: number;
   limitOrderExecutionFee: number;
   oraclePriceDeviationThreshold: number;
   disabled: boolean;
@@ -99,7 +99,7 @@ export type UpdateMarketInstructionDataArgs = {
   protocolFee: number;
   protocolFeeOnCollateral: number;
   liquidationFee: number;
-  liquidationRatio: number;
+  liquidationThreshold: number;
   limitOrderExecutionFee: number;
   oraclePriceDeviationThreshold: number;
   disabled: boolean;
@@ -117,7 +117,7 @@ export function getUpdateMarketInstructionDataEncoder(): Encoder<UpdateMarketIns
       ['protocolFee', getU16Encoder()],
       ['protocolFeeOnCollateral', getU16Encoder()],
       ['liquidationFee', getU32Encoder()],
-      ['liquidationRatio', getU32Encoder()],
+      ['liquidationThreshold', getU32Encoder()],
       ['limitOrderExecutionFee', getU32Encoder()],
       ['oraclePriceDeviationThreshold', getU32Encoder()],
       ['disabled', getBooleanEncoder()],
@@ -137,7 +137,7 @@ export function getUpdateMarketInstructionDataDecoder(): Decoder<UpdateMarketIns
     ['protocolFee', getU16Decoder()],
     ['protocolFeeOnCollateral', getU16Decoder()],
     ['liquidationFee', getU32Decoder()],
-    ['liquidationRatio', getU32Decoder()],
+    ['liquidationThreshold', getU32Decoder()],
     ['limitOrderExecutionFee', getU32Decoder()],
     ['oraclePriceDeviationThreshold', getU32Decoder()],
     ['disabled', getBooleanDecoder()],
@@ -170,7 +170,7 @@ export type UpdateMarketInput<
   protocolFee: UpdateMarketInstructionDataArgs['protocolFee'];
   protocolFeeOnCollateral: UpdateMarketInstructionDataArgs['protocolFeeOnCollateral'];
   liquidationFee: UpdateMarketInstructionDataArgs['liquidationFee'];
-  liquidationRatio: UpdateMarketInstructionDataArgs['liquidationRatio'];
+  liquidationThreshold: UpdateMarketInstructionDataArgs['liquidationThreshold'];
   limitOrderExecutionFee: UpdateMarketInstructionDataArgs['limitOrderExecutionFee'];
   oraclePriceDeviationThreshold: UpdateMarketInstructionDataArgs['oraclePriceDeviationThreshold'];
   disabled: UpdateMarketInstructionDataArgs['disabled'];

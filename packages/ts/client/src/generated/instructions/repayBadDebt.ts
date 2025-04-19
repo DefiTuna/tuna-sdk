@@ -51,7 +51,7 @@ export type RepayBadDebtInstruction<
   TAccountTunaConfig extends string | IAccountMeta<string> = string,
   TAccountVault extends string | IAccountMeta<string> = string,
   TAccountVaultAta extends string | IAccountMeta<string> = string,
-  TAccountUserAta extends string | IAccountMeta<string> = string,
+  TAccountAuthorityAta extends string | IAccountMeta<string> = string,
   TAccountTokenProgram extends
     | string
     | IAccountMeta<string> = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
@@ -73,9 +73,9 @@ export type RepayBadDebtInstruction<
       TAccountVaultAta extends string
         ? WritableAccount<TAccountVaultAta>
         : TAccountVaultAta,
-      TAccountUserAta extends string
-        ? WritableAccount<TAccountUserAta>
-        : TAccountUserAta,
+      TAccountAuthorityAta extends string
+        ? WritableAccount<TAccountAuthorityAta>
+        : TAccountAuthorityAta,
       TAccountTokenProgram extends string
         ? ReadonlyAccount<TAccountTokenProgram>
         : TAccountTokenProgram,
@@ -128,14 +128,14 @@ export type RepayBadDebtInput<
   TAccountTunaConfig extends string = string,
   TAccountVault extends string = string,
   TAccountVaultAta extends string = string,
-  TAccountUserAta extends string = string,
+  TAccountAuthorityAta extends string = string,
   TAccountTokenProgram extends string = string,
 > = {
   authority: TransactionSigner<TAccountAuthority>;
   tunaConfig: Address<TAccountTunaConfig>;
   vault: Address<TAccountVault>;
   vaultAta: Address<TAccountVaultAta>;
-  userAta: Address<TAccountUserAta>;
+  authorityAta: Address<TAccountAuthorityAta>;
   tokenProgram?: Address<TAccountTokenProgram>;
   funds: RepayBadDebtInstructionDataArgs['funds'];
   shares: RepayBadDebtInstructionDataArgs['shares'];
@@ -146,7 +146,7 @@ export function getRepayBadDebtInstruction<
   TAccountTunaConfig extends string,
   TAccountVault extends string,
   TAccountVaultAta extends string,
-  TAccountUserAta extends string,
+  TAccountAuthorityAta extends string,
   TAccountTokenProgram extends string,
   TProgramAddress extends Address = typeof TUNA_PROGRAM_ADDRESS,
 >(
@@ -155,7 +155,7 @@ export function getRepayBadDebtInstruction<
     TAccountTunaConfig,
     TAccountVault,
     TAccountVaultAta,
-    TAccountUserAta,
+    TAccountAuthorityAta,
     TAccountTokenProgram
   >,
   config?: { programAddress?: TProgramAddress }
@@ -165,7 +165,7 @@ export function getRepayBadDebtInstruction<
   TAccountTunaConfig,
   TAccountVault,
   TAccountVaultAta,
-  TAccountUserAta,
+  TAccountAuthorityAta,
   TAccountTokenProgram
 > {
   // Program address.
@@ -177,7 +177,7 @@ export function getRepayBadDebtInstruction<
     tunaConfig: { value: input.tunaConfig ?? null, isWritable: false },
     vault: { value: input.vault ?? null, isWritable: true },
     vaultAta: { value: input.vaultAta ?? null, isWritable: true },
-    userAta: { value: input.userAta ?? null, isWritable: true },
+    authorityAta: { value: input.authorityAta ?? null, isWritable: true },
     tokenProgram: { value: input.tokenProgram ?? null, isWritable: false },
   };
   const accounts = originalAccounts as Record<
@@ -201,7 +201,7 @@ export function getRepayBadDebtInstruction<
       getAccountMeta(accounts.tunaConfig),
       getAccountMeta(accounts.vault),
       getAccountMeta(accounts.vaultAta),
-      getAccountMeta(accounts.userAta),
+      getAccountMeta(accounts.authorityAta),
       getAccountMeta(accounts.tokenProgram),
     ],
     programAddress,
@@ -214,7 +214,7 @@ export function getRepayBadDebtInstruction<
     TAccountTunaConfig,
     TAccountVault,
     TAccountVaultAta,
-    TAccountUserAta,
+    TAccountAuthorityAta,
     TAccountTokenProgram
   >;
 
@@ -231,7 +231,7 @@ export type ParsedRepayBadDebtInstruction<
     tunaConfig: TAccountMetas[1];
     vault: TAccountMetas[2];
     vaultAta: TAccountMetas[3];
-    userAta: TAccountMetas[4];
+    authorityAta: TAccountMetas[4];
     tokenProgram: TAccountMetas[5];
   };
   data: RepayBadDebtInstructionData;
@@ -262,7 +262,7 @@ export function parseRepayBadDebtInstruction<
       tunaConfig: getNextAccount(),
       vault: getNextAccount(),
       vaultAta: getNextAccount(),
-      userAta: getNextAccount(),
+      authorityAta: getNextAccount(),
       tokenProgram: getNextAccount(),
     },
     data: getRepayBadDebtInstructionDataDecoder().decode(instruction.data),
