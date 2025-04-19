@@ -1,5 +1,11 @@
 # @defituna/client
 
+## 1.0.9
+
+### Patch Changes
+
+- 73ad25a: Moved codama script inside packages
+
 ## 1.0.8
 
 ### Patch Changes

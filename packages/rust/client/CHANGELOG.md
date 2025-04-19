@@ -1,5 +1,11 @@
 # @defituna/rust-client
 
+## 1.0.6
+
+### Patch Changes
+
+- 73ad25a: Moved codama script inside packages
+
 ## 1.0.5
 
 ### Patch Changes
