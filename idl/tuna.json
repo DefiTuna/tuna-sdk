@@ -2,7 +2,7 @@
   "address": "tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD",
   "metadata": {
     "name": "tuna",
-    "version": "1.0.58",
+    "version": "1.0.62",
     "spec": "0.1.0",
     "description": "DefiTuna"
   },
@@ -609,7 +609,7 @@
           "type": "u32"
         },
         {
-          "name": "liquidation_ratio",
+          "name": "liquidation_threshold",
           "type": "u32"
         },
         {
@@ -1172,7 +1172,7 @@
           "writable": true
         },
         {
-          "name": "user_ata",
+          "name": "authority_ata",
           "writable": true
         },
         {
@@ -1578,7 +1578,7 @@
           "type": "u32"
         },
         {
-          "name": "liquidation_ratio",
+          "name": "liquidation_threshold",
           "type": "u32"
         },
         {
