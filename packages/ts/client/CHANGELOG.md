@@ -1,5 +1,11 @@
 # @defituna/client
 
+## 1.0.11
+
+### Patch Changes
+
+- 6f3611f: Added simplified tuna instructions
+
 ## 1.0.10
 
 ### Patch Changes
