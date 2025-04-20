@@ -1,7 +1,7 @@
 {
   "name": "@defituna/client",
   "description": "Typescript client to interact with DefiTuna's on-chain program.",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "private": false,
   "license": "MIT",
   "main": "./dist/index.js",
