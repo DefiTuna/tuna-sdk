@@ -1,5 +1,11 @@
 # @defituna/client
 
+## 1.0.12
+
+### Patch Changes
+
+- a04a33a: Improved instruction helpers
+
 ## 1.0.11
 
 ### Patch Changes
