@@ -1,11 +1,11 @@
 import { Address, IInstruction, TransactionSigner } from "@solana/kit";
+import { ASSOCIATED_TOKEN_PROGRAM_ADDRESS } from "@solana-program/token-2022";
 import {
   getCreateLendingPositionInstruction,
   getLendingPositionAddress,
   getLendingVaultAddress,
   getTunaConfigAddress,
 } from "../index.ts";
-import { ASSOCIATED_TOKEN_PROGRAM_ADDRESS } from "@solana-program/token-2022";
 
 export async function createLendingPositionInstruction(
   authority: TransactionSigner,

@@ -10,30 +10,20 @@ import {
   TransactionSigner,
 } from "@solana/kit";
 import { findAssociatedTokenPda, TOKEN_2022_PROGRAM_ADDRESS } from "@solana-program/token-2022";
-import { getTickArrayStartTickIndex } from "@orca-so/whirlpools-core";
-import {
-  fetchAllMaybeTickArray,
-  getInitializeTickArrayInstruction,
-  getOracleAddress,
-  getPositionAddress,
-  getTickArrayAddress,
-  Whirlpool,
-  WHIRLPOOL_PROGRAM_ADDRESS,
-} from "@orca-so/whirlpools-client";
+import { getOracleAddress, getPositionAddress, Whirlpool, WHIRLPOOL_PROGRAM_ADDRESS } from "@orca-so/whirlpools-client";
 import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
 import {
-  AddLiquidityOrcaInstructionDataArgs,
-  getAddLiquidityOrcaInstruction,
+  getCollectAndCompoundFeesOrcaInstruction,
+  getCreateMaybeAtaInstructions,
   getMarketAddress,
   getSwapTickArrayAddresses,
   getTickArrayAddressFromTickIndex,
   TunaConfig,
   TunaPosition,
   Vault,
-  getCreateMaybeAtaInstructions,
 } from "../index.ts";
 
-export async function addLiquidityOrcaInstructions(
+export async function collectAndCompoundFeesOrcaInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
   tunaConfig: Account<TunaConfig, Address>,
@@ -41,36 +31,11 @@ export async function addLiquidityOrcaInstructions(
   vaultA: Account<Vault, Address>,
   vaultB: Account<Vault, Address>,
   whirlpool: Account<Whirlpool, Address>,
-  args: AddLiquidityOrcaInstructionDataArgs,
-  cleanupInstructions?: IInstruction[],
+  useLeverage: boolean,
 ): Promise<IInstruction[]> {
   const mintA = whirlpool.data.tokenMintA;
   const mintB = whirlpool.data.tokenMintB;
   const instructions: IInstruction[] = [];
-
-  //
-  // Add create user's token account instructions if needed.
-  //
-
-  const createUserAtaAInstructions = await getCreateMaybeAtaInstructions(
-    rpc,
-    authority,
-    mintA,
-    authority.address,
-    TOKEN_PROGRAM_ADDRESS,
-    args.collateralA,
-  );
-  instructions.push(...createUserAtaAInstructions.init);
-
-  const createUserAtaBInstructions = await getCreateMaybeAtaInstructions(
-    rpc,
-    authority,
-    mintB,
-    authority.address,
-    TOKEN_PROGRAM_ADDRESS,
-    args.collateralB,
-  );
-  instructions.push(...createUserAtaBInstructions.init);
 
   //
   // Add create fee recipient's token account instructions if needed.
@@ -95,77 +60,38 @@ export async function addLiquidityOrcaInstructions(
   instructions.push(...createFeeRecipientAtaBInstructions.init);
 
   //
-  // Add create tick arrays instructions if needed.
-  //
-  const lowerTickArrayIndex = getTickArrayStartTickIndex(tunaPosition.data.tickLowerIndex, whirlpool.data.tickSpacing);
-  const [lowerTickArrayAddress] = await getTickArrayAddress(whirlpool.address, lowerTickArrayIndex);
-
-  const upperTickArrayIndex = getTickArrayStartTickIndex(tunaPosition.data.tickUpperIndex, whirlpool.data.tickSpacing);
-  const [upperTickArrayAddress] = await getTickArrayAddress(whirlpool.address, upperTickArrayIndex);
-
-  const [lowerTickArray, upperTickArray] = await fetchAllMaybeTickArray(rpc, [
-    lowerTickArrayAddress,
-    upperTickArrayAddress,
-  ]);
-
-  // Create a tick array it doesn't exist.
-  if (!lowerTickArray.exists) {
-    instructions.push(
-      getInitializeTickArrayInstruction({
-        whirlpool: whirlpool.address,
-        funder: authority,
-        tickArray: lowerTickArrayAddress,
-        startTickIndex: lowerTickArrayIndex,
-      }),
-    );
-  }
-
-  // Create a tick array it doesn't exist.
-  if (!upperTickArray.exists && lowerTickArrayIndex !== upperTickArrayIndex) {
-    instructions.push(
-      getInitializeTickArrayInstruction({
-        whirlpool: whirlpool.address,
-        funder: authority,
-        tickArray: upperTickArrayAddress,
-        startTickIndex: upperTickArrayIndex,
-      }),
-    );
-  }
-
-  //
-  // Finally add liquidity increase instruction.
+  // Finally add collect and compound fees instruction.
   //
 
-  const ix = await addLiquidityOrcaInstruction(authority, tunaConfig, tunaPosition, vaultA, vaultB, whirlpool, args);
+  const ix = await collectAndCompoundFeesOrcaInstruction(
+    authority,
+    tunaConfig,
+    tunaPosition,
+    vaultA,
+    vaultB,
+    whirlpool,
+    useLeverage,
+  );
   instructions.push(ix);
 
   //
   // Close WSOL accounts if needed.
   //
 
-  if (cleanupInstructions) {
-    cleanupInstructions.push(...createUserAtaAInstructions.cleanup);
-    cleanupInstructions.push(...createUserAtaBInstructions.cleanup);
-    cleanupInstructions.push(...createFeeRecipientAtaAInstructions.cleanup);
-    cleanupInstructions.push(...createFeeRecipientAtaBInstructions.cleanup);
-  } else {
-    instructions.push(...createUserAtaAInstructions.cleanup);
-    instructions.push(...createUserAtaBInstructions.cleanup);
-    instructions.push(...createFeeRecipientAtaAInstructions.cleanup);
-    instructions.push(...createFeeRecipientAtaBInstructions.cleanup);
-  }
+  instructions.push(...createFeeRecipientAtaAInstructions.cleanup);
+  instructions.push(...createFeeRecipientAtaBInstructions.cleanup);
 
   return instructions;
 }
 
-export async function addLiquidityOrcaInstruction(
+export async function collectAndCompoundFeesOrcaInstruction(
   authority: TransactionSigner,
   tunaConfig: Account<TunaConfig, Address>,
   tunaPosition: Account<TunaPosition, Address>,
   vaultA: Account<Vault, Address>,
   vaultB: Account<Vault, Address>,
   whirlpool: Account<Whirlpool, Address>,
-  args: AddLiquidityOrcaInstructionDataArgs,
+  useLeverage: boolean,
 ): Promise<IInstruction> {
   const mintA = whirlpool.data.tokenMintA;
   const mintB = whirlpool.data.tokenMintB;
@@ -180,22 +106,6 @@ export async function addLiquidityOrcaInstruction(
       owner: tunaPosition.address,
       mint: positionMint,
       tokenProgram: TOKEN_2022_PROGRAM_ADDRESS,
-    })
-  )[0];
-
-  const tunaPositionOwnerAtaA = (
-    await findAssociatedTokenPda({
-      owner: authority.address,
-      mint: mintA,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
-    })
-  )[0];
-
-  const tunaPositionOwnerAtaB = (
-    await findAssociatedTokenPda({
-      owner: authority.address,
-      mint: mintB,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
     })
   )[0];
 
@@ -266,8 +176,7 @@ export async function addLiquidityOrcaInstruction(
     { address: orcaOracleAddress, role: AccountRole.WRITABLE },
   ];
 
-  const ix = getAddLiquidityOrcaInstruction({
-    ...args,
+  const ix = getCollectAndCompoundFeesOrcaInstruction({
     market: marketAddress,
     mintA,
     mintB,
@@ -282,14 +191,13 @@ export async function addLiquidityOrcaInstruction(
     tunaPositionAta,
     tunaPositionAtaA,
     tunaPositionAtaB,
-    tunaPositionOwnerAtaA,
-    tunaPositionOwnerAtaB,
-    orcaPosition: orcaPositionAddress,
-    tunaPosition: tunaPosition.address,
     feeRecipientAtaA,
     feeRecipientAtaB,
+    orcaPosition: orcaPositionAddress,
+    tunaPosition: tunaPosition.address,
     whirlpool: whirlpool.address,
     whirlpoolProgram: WHIRLPOOL_PROGRAM_ADDRESS,
+    useLeverage,
   });
 
   // @ts-expect-error don't worry about the error

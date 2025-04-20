@@ -1,10 +1,10 @@
+import { Address, IInstruction, TransactionSigner } from "@solana/kit";
 import {
   getLendingVaultAddress,
   getTunaConfigAddress,
   getUpdateVaultInstruction,
   UpdateVaultInstructionDataArgs,
 } from "../index.ts";
-import { Address, IInstruction, TransactionSigner } from "@solana/kit";
 
 export async function updateVaultInstruction(
   authority: TransactionSigner,

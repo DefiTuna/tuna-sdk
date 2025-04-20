@@ -1,12 +1,42 @@
-import { Address, IInstruction, TransactionSigner } from "@solana/kit";
+import { Address, GetAccountInfoApi, GetMultipleAccountsApi, IInstruction, Rpc, TransactionSigner } from "@solana/kit";
+import { ASSOCIATED_TOKEN_PROGRAM_ADDRESS, findAssociatedTokenPda } from "@solana-program/token-2022";
+import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
 import {
+  getCreateMaybeAtaInstructions,
   getDepositInstruction,
   getLendingPositionAddress,
   getLendingVaultAddress,
   getTunaConfigAddress,
 } from "../index.ts";
-import { ASSOCIATED_TOKEN_PROGRAM_ADDRESS, findAssociatedTokenPda } from "@solana-program/token-2022";
-import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
+
+export async function depositInstructions(
+  rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
+  authority: TransactionSigner,
+  mint: Address,
+  amount: bigint,
+): Promise<IInstruction[]> {
+  const instructions: IInstruction[] = [];
+
+  // Add create user's token account instruction if needed.
+  const createUserAtaInstructions = await getCreateMaybeAtaInstructions(
+    rpc,
+    authority,
+    mint,
+    authority.address,
+    TOKEN_PROGRAM_ADDRESS,
+    amount,
+  );
+  instructions.push(...createUserAtaInstructions.init);
+
+  // Add withdraw instruction
+  const ix = await depositInstruction(authority, mint, amount);
+  instructions.push(ix);
+
+  // Close WSOL accounts if needed.
+  instructions.push(...createUserAtaInstructions.cleanup);
+
+  return instructions;
+}
 
 export async function depositInstruction(
   authority: TransactionSigner,

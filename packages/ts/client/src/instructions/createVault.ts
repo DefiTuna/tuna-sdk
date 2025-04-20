@@ -1,13 +1,13 @@
+import { Address, IInstruction, TransactionSigner } from "@solana/kit";
+import { ASSOCIATED_TOKEN_PROGRAM_ADDRESS, findAssociatedTokenPda } from "@solana-program/token-2022";
+import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
 import {
-  createAtaInstruction,
+  getCreateAtaInstruction,
   CreateVaultInstructionDataArgs,
   getCreateVaultInstruction,
   getLendingVaultAddress,
   getTunaConfigAddress,
 } from "../index.ts";
-import { Address, IInstruction, TransactionSigner } from "@solana/kit";
-import { ASSOCIATED_TOKEN_PROGRAM_ADDRESS, findAssociatedTokenPda } from "@solana-program/token-2022";
-import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
 
 export async function createVaultInstructions(
   authority: TransactionSigner,
@@ -26,7 +26,7 @@ export async function createVaultInstructions(
   )[0];
 
   return [
-    await createAtaInstruction(mint, vault, authority, TOKEN_PROGRAM_ADDRESS),
+    await getCreateAtaInstruction(mint, vault, authority, TOKEN_PROGRAM_ADDRESS),
     getCreateVaultInstruction({
       authority,
       mint,

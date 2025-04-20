@@ -1,10 +1,3 @@
-import {
-  getMarketAddress,
-  getOpenPositionOrcaInstruction,
-  getTunaPositionAddress,
-  OpenPositionOrcaInstructionData,
-  WP_NFT_UPDATE_AUTH,
-} from "../index.ts";
 import { type Account, Address, IInstruction, TransactionSigner } from "@solana/kit";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
@@ -14,6 +7,13 @@ import {
 } from "@solana-program/token-2022";
 import { getPositionAddress, Whirlpool, WHIRLPOOL_PROGRAM_ADDRESS } from "@orca-so/whirlpools-client";
 import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
+import {
+  getMarketAddress,
+  getOpenPositionOrcaInstruction,
+  getTunaPositionAddress,
+  OpenPositionOrcaInstructionData,
+  WP_NFT_UPDATE_AUTH,
+} from "../index.ts";
 
 export async function openPositionOrcaInstructions(
   authority: TransactionSigner,
