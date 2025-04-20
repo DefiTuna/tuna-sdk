@@ -1,12 +1,11 @@
-import { address, Address, GetAccountInfoApi, IInstruction, Rpc, TransactionSigner } from "@solana/kit";
+import { address, Address, IInstruction, TransactionSigner } from "@solana/kit";
 import { findAssociatedTokenPda, TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
 import {
-  fetchMaybeToken,
   getCloseAccountInstruction,
-  getCreateAssociatedTokenInstruction,
+  getCreateAssociatedTokenIdempotentInstruction,
   getSyncNativeInstruction,
 } from "@solana-program/token-2022";
-import { getTransferSolInstruction, SYSTEM_PROGRAM_ADDRESS } from "@solana-program/system";
+import { getTransferSolInstruction } from "@solana-program/system";
 
 export const NATIVE_MINT = address("So11111111111111111111111111111111111111112");
 
@@ -24,61 +23,16 @@ export async function getCreateAtaInstruction(
     })
   )[0];
 
-  return getCreateAssociatedTokenInstruction({
+  return getCreateAssociatedTokenIdempotentInstruction({
     mint,
     owner,
     ata,
     payer,
     tokenProgram,
-    systemProgram: SYSTEM_PROGRAM_ADDRESS,
   });
 }
 
-export async function getCreateMaybeAtaInstruction(
-  rpc: Rpc<GetAccountInfoApi>,
-  payer: TransactionSigner,
-  mint: Address,
-  owner: Address,
-  tokenProgram: Address = TOKEN_PROGRAM_ADDRESS,
-): Promise<IInstruction | undefined> {
-  return (await getCreateMaybeAtaInstructionAndAddress(rpc, payer, mint, owner, tokenProgram)).instruction;
-}
-
-export async function getCreateMaybeAtaInstructionAndAddress(
-  rpc: Rpc<GetAccountInfoApi>,
-  payer: TransactionSigner,
-  mint: Address,
-  owner: Address,
-  tokenProgram: Address = TOKEN_PROGRAM_ADDRESS,
-): Promise<{ instruction: IInstruction | undefined; address: Address }> {
-  const associateTokenAddress = (
-    await findAssociatedTokenPda({
-      mint,
-      owner,
-      tokenProgram,
-    })
-  )[0];
-
-  const token = await fetchMaybeToken(rpc, associateTokenAddress);
-  if (!token.exists) {
-    return {
-      instruction: getCreateAssociatedTokenInstruction({
-        ata: associateTokenAddress,
-        mint,
-        owner,
-        payer,
-        tokenProgram,
-        systemProgram: SYSTEM_PROGRAM_ADDRESS,
-      }),
-      address: associateTokenAddress,
-    };
-  }
-
-  return { instruction: undefined, address: associateTokenAddress };
-}
-
-export async function getCreateMaybeAtaInstructions(
-  rpc: Rpc<GetAccountInfoApi>,
+export async function getCreateAtaInstructions(
   payer: TransactionSigner,
   mint: Address,
   owner: Address,
@@ -88,28 +42,23 @@ export async function getCreateMaybeAtaInstructions(
   const init: IInstruction[] = [];
   const cleanup: IInstruction[] = [];
 
-  const createAta = await getCreateMaybeAtaInstructionAndAddress(rpc, payer, mint, owner, tokenProgram);
-  if (createAta.instruction !== undefined) init.push(createAta.instruction);
+  const ata = (await findAssociatedTokenPda({ mint, owner, tokenProgram }))[0];
+  init.push(getCreateAssociatedTokenIdempotentInstruction({ payer, ata, mint, owner, tokenProgram }));
 
   if (mint == NATIVE_MINT) {
     if (amount && amount > 0) {
-      init.push(
-        getTransferSolInstruction({
-          source: payer,
-          destination: createAta.address,
-          amount,
-        }),
-        getSyncNativeInstruction({ account: createAta.address }),
-      );
+      init.push(getTransferSolInstruction({ source: payer, destination: ata, amount }));
+      init.push(getSyncNativeInstruction({ account: ata }, { programAddress: tokenProgram }));
     }
 
-    cleanup.push(
-      getCloseAccountInstruction({
-        account: createAta.address,
-        destination: payer.address,
-        owner,
-      }),
-    );
+    if (owner == payer.address) {
+      cleanup.push(
+        getCloseAccountInstruction(
+          { account: ata, destination: payer.address, owner },
+          { programAddress: tokenProgram },
+        ),
+      );
+    }
   }
 
   return { init, cleanup };

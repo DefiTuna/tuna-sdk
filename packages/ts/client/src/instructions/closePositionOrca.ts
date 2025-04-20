@@ -1,24 +1,15 @@
-import {
-  type Account,
-  Address,
-  GetAccountInfoApi,
-  GetMultipleAccountsApi,
-  IInstruction,
-  Rpc,
-  TransactionSigner,
-} from "@solana/kit";
+import { type Account, Address, IInstruction, TransactionSigner } from "@solana/kit";
 import { findAssociatedTokenPda, TOKEN_2022_PROGRAM_ADDRESS } from "@solana-program/token-2022";
 import { getPositionAddress, Whirlpool, WHIRLPOOL_PROGRAM_ADDRESS } from "@orca-so/whirlpools-client";
 import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
 import {
   getClosePositionOrcaInstruction,
-  getCreateMaybeAtaInstructions,
+  getCreateAtaInstructions,
   getTunaConfigAddress,
   getTunaPositionAddress,
 } from "../index.ts";
 
 export async function closePositionOrcaInstructions(
-  rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
   positionMint: Address,
   whirlpool: Account<Whirlpool, Address>,
@@ -31,8 +22,7 @@ export async function closePositionOrcaInstructions(
   // Add create user's token account instructions if needed.
   //
 
-  const createUserAtaAInstructions = await getCreateMaybeAtaInstructions(
-    rpc,
+  const createUserAtaAInstructions = await getCreateAtaInstructions(
     authority,
     mintA,
     authority.address,
@@ -40,8 +30,7 @@ export async function closePositionOrcaInstructions(
   );
   instructions.push(...createUserAtaAInstructions.init);
 
-  const createUserAtaBInstructions = await getCreateMaybeAtaInstructions(
-    rpc,
+  const createUserAtaBInstructions = await getCreateAtaInstructions(
     authority,
     mintB,
     authority.address,

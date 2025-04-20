@@ -1,8 +1,8 @@
-import { Address, GetAccountInfoApi, GetMultipleAccountsApi, IInstruction, Rpc, TransactionSigner } from "@solana/kit";
+import { Address, IInstruction, TransactionSigner } from "@solana/kit";
 import { ASSOCIATED_TOKEN_PROGRAM_ADDRESS, findAssociatedTokenPda } from "@solana-program/token-2022";
 import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
 import {
-  getCreateMaybeAtaInstructions,
+  getCreateAtaInstructions,
   getLendingPositionAddress,
   getLendingVaultAddress,
   getTunaConfigAddress,
@@ -10,7 +10,6 @@ import {
 } from "../index.ts";
 
 export async function withdrawInstructions(
-  rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
   mint: Address,
   funds: bigint,
@@ -19,8 +18,7 @@ export async function withdrawInstructions(
   const instructions: IInstruction[] = [];
 
   // Add create user's token account instruction if needed.
-  const createUserAtaInstructions = await getCreateMaybeAtaInstructions(
-    rpc,
+  const createUserAtaInstructions = await getCreateAtaInstructions(
     authority,
     mint,
     authority.address,

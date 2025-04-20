@@ -1,19 +1,9 @@
-import {
-  type Account,
-  AccountRole,
-  Address,
-  GetAccountInfoApi,
-  GetMultipleAccountsApi,
-  IAccountMeta,
-  IInstruction,
-  Rpc,
-  TransactionSigner,
-} from "@solana/kit";
+import { type Account, AccountRole, Address, IAccountMeta, IInstruction, TransactionSigner } from "@solana/kit";
 import { findAssociatedTokenPda, TOKEN_2022_PROGRAM_ADDRESS } from "@solana-program/token-2022";
 import { getOracleAddress, getPositionAddress, Whirlpool, WHIRLPOOL_PROGRAM_ADDRESS } from "@orca-so/whirlpools-client";
 import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
 import {
-  getCreateMaybeAtaInstructions,
+  getCreateAtaInstructions,
   getMarketAddress,
   getRemoveLiquidityOrcaInstruction,
   getSwapTickArrayAddresses,
@@ -25,40 +15,41 @@ import {
 } from "../index.ts";
 
 export async function removeLiquidityOrcaInstructions(
-  rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
   tunaPosition: Account<TunaPosition, Address>,
   vaultA: Account<Vault, Address>,
   vaultB: Account<Vault, Address>,
   whirlpool: Account<Whirlpool, Address>,
   args: RemoveLiquidityOrcaInstructionDataArgs,
+  setupInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
 ): Promise<IInstruction[]> {
   const mintA = whirlpool.data.tokenMintA;
   const mintB = whirlpool.data.tokenMintB;
   const instructions: IInstruction[] = [];
 
+  if (!setupInstructions) setupInstructions = instructions;
+  if (!cleanupInstructions) cleanupInstructions = instructions;
+
   //
   // Add create user's token account instructions if needed.
   //
 
-  const createUserAtaAInstructions = await getCreateMaybeAtaInstructions(
-    rpc,
+  const createUserAtaAInstructions = await getCreateAtaInstructions(
     authority,
     mintA,
     authority.address,
     TOKEN_PROGRAM_ADDRESS,
   );
-  instructions.push(...createUserAtaAInstructions.init);
+  setupInstructions.push(...createUserAtaAInstructions.init);
 
-  const createUserAtaBInstructions = await getCreateMaybeAtaInstructions(
-    rpc,
+  const createUserAtaBInstructions = await getCreateAtaInstructions(
     authority,
     mintB,
     authority.address,
     TOKEN_PROGRAM_ADDRESS,
   );
-  instructions.push(...createUserAtaBInstructions.init);
+  setupInstructions.push(...createUserAtaBInstructions.init);
 
   //
   // Finally add liquidity decrease instruction.
@@ -71,13 +62,8 @@ export async function removeLiquidityOrcaInstructions(
   // Close WSOL accounts if needed.
   //
 
-  if (cleanupInstructions) {
-    cleanupInstructions.push(...createUserAtaAInstructions.cleanup);
-    cleanupInstructions.push(...createUserAtaBInstructions.cleanup);
-  } else {
-    instructions.push(...createUserAtaAInstructions.cleanup);
-    instructions.push(...createUserAtaBInstructions.cleanup);
-  }
+  cleanupInstructions.push(...createUserAtaAInstructions.cleanup);
+  cleanupInstructions.push(...createUserAtaBInstructions.cleanup);
 
   return instructions;
 }

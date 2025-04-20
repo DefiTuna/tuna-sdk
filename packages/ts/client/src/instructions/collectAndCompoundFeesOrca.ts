@@ -1,20 +1,10 @@
-import {
-  type Account,
-  AccountRole,
-  Address,
-  GetAccountInfoApi,
-  GetMultipleAccountsApi,
-  IAccountMeta,
-  IInstruction,
-  Rpc,
-  TransactionSigner,
-} from "@solana/kit";
+import { type Account, AccountRole, Address, IAccountMeta, IInstruction, TransactionSigner } from "@solana/kit";
 import { findAssociatedTokenPda, TOKEN_2022_PROGRAM_ADDRESS } from "@solana-program/token-2022";
 import { getOracleAddress, getPositionAddress, Whirlpool, WHIRLPOOL_PROGRAM_ADDRESS } from "@orca-so/whirlpools-client";
 import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
 import {
   getCollectAndCompoundFeesOrcaInstruction,
-  getCreateMaybeAtaInstructions,
+  getCreateAtaInstructions,
   getMarketAddress,
   getSwapTickArrayAddresses,
   getTickArrayAddressFromTickIndex,
@@ -24,7 +14,6 @@ import {
 } from "../index.ts";
 
 export async function collectAndCompoundFeesOrcaInstructions(
-  rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
   tunaConfig: Account<TunaConfig, Address>,
   tunaPosition: Account<TunaPosition, Address>,
@@ -41,8 +30,7 @@ export async function collectAndCompoundFeesOrcaInstructions(
   // Add create fee recipient's token account instructions if needed.
   //
 
-  const createFeeRecipientAtaAInstructions = await getCreateMaybeAtaInstructions(
-    rpc,
+  const createFeeRecipientAtaAInstructions = await getCreateAtaInstructions(
     authority,
     mintA,
     tunaConfig.data.feeRecipient,
@@ -50,8 +38,7 @@ export async function collectAndCompoundFeesOrcaInstructions(
   );
   instructions.push(...createFeeRecipientAtaAInstructions.init);
 
-  const createFeeRecipientAtaBInstructions = await getCreateMaybeAtaInstructions(
-    rpc,
+  const createFeeRecipientAtaBInstructions = await getCreateAtaInstructions(
     authority,
     mintB,
     tunaConfig.data.feeRecipient,
