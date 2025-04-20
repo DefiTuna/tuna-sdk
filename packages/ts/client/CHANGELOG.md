@@ -1,5 +1,11 @@
 # @defituna/client
 
+## 1.0.13
+
+### Patch Changes
+
+- 29b682c: Added WSOL mint support in instruction helpers
+
 ## 1.0.12
 
 ### Patch Changes
