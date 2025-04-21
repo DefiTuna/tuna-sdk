@@ -21,7 +21,8 @@
     "eslint": "eslint \"src/*.ts\"",
     "eslint:fix": "eslint \"src/*.ts\" --fix",
     "type-check": "tsc -p .",
-    "lint": "pnpm eslint && pnpm type-check"
+    "lint": "pnpm eslint && pnpm type-check",
+    "clean": "rimraf dist src/generated"
   },
   "dependencies": {
     "@solana/kit": "^2.1.0",
@@ -48,6 +49,7 @@
     "tsup": "^8.3.5",
     "tsx": "^4.19.3",
     "typescript": "5.5.4",
-    "vite-tsconfig-paths": "^5.1.4"
+    "vite-tsconfig-paths": "^5.1.4",
+    "rimraf": "^6.0.1"
   }
 }

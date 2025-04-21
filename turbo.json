@@ -15,6 +15,7 @@
     },
     "lint": {},
     "test": {},
+    "clean": {},
     "dev": {
       "cache": false,
       "persistent": true

@@ -6,7 +6,8 @@
   "license": "MIT",
   "sideEffects": false,
   "scripts": {
-    "build": "node ./codama.mjs"
+    "build": "node ./codama.mjs",
+    "clean": "rimraf src/generated"
   },
   "devDependencies": {
     "@codama/nodes": "^1.2.11",
@@ -14,6 +15,7 @@
     "@codama/visitors-core": "^1.2.11",
     "@codama/nodes-from-anchor": "^1.1.11",
     "@codama/renderers": "^1.0.19",
-    "codama": "^1.2.11"
+    "codama": "^1.2.11",
+    "rimraf": "^6.0.1"
   }
 }
