@@ -12,13 +12,9 @@ export async function getSwapTickArrayAddresses(whirlpool: Account<Whirlpool, Ad
   let tickArrayStep = _TICK_ARRAY_SIZE() * whirlpool.data.tickSpacing;
   if (aToB) tickArrayStep = -tickArrayStep;
 
-  const firstTickIndex = whirlpool.data.tickCurrentIndex;
-  const secondTickIndex = whirlpool.data.tickCurrentIndex + tickArrayStep;
-  const thirdTickIndex = whirlpool.data.tickCurrentIndex + tickArrayStep * 2;
-
-  const firstStartTickIndex = getTickArrayStartTickIndex(firstTickIndex, whirlpool.data.tickSpacing);
-  const secondStartTickIndex = getTickArrayStartTickIndex(secondTickIndex, whirlpool.data.tickSpacing);
-  const thirdStartTickIndex = getTickArrayStartTickIndex(thirdTickIndex, whirlpool.data.tickSpacing);
+  const firstStartTickIndex = getTickArrayStartTickIndex(whirlpool.data.tickCurrentIndex, whirlpool.data.tickSpacing);
+  const secondStartTickIndex = firstStartTickIndex + tickArrayStep;
+  const thirdStartTickIndex = firstStartTickIndex + tickArrayStep * 2;
 
   const [firstTickArray] = await getTickArrayAddress(whirlpool.address, firstStartTickIndex);
   const [secondTickArray] = await getTickArrayAddress(whirlpool.address, secondStartTickIndex);

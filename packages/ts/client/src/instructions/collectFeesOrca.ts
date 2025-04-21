@@ -1,22 +1,30 @@
-import { type Account, Address, IInstruction, TransactionSigner } from "@solana/kit";
+import { type Account, AccountRole, Address, IAccountMeta, IInstruction, TransactionSigner } from "@solana/kit";
 import { findAssociatedTokenPda, TOKEN_2022_PROGRAM_ADDRESS } from "@solana-program/token-2022";
 import { getPositionAddress, Whirlpool, WHIRLPOOL_PROGRAM_ADDRESS } from "@orca-so/whirlpools-client";
 import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
 import {
   getCollectFeesOrcaInstruction,
   getCreateAtaInstructions,
+  getSwapTickArrayAddresses,
+  getTickArrayAddressFromTickIndex,
   getTunaConfigAddress,
   getTunaPositionAddress,
+  TunaPosition,
 } from "../index.ts";
 
 export async function collectFeesOrcaInstructions(
   authority: TransactionSigner,
-  positionMint: Address,
+  tunaPosition: Account<TunaPosition, Address>,
   whirlpool: Account<Whirlpool, Address>,
+  setupInstructions?: IInstruction[],
+  cleanupInstructions?: IInstruction[],
 ): Promise<IInstruction[]> {
   const mintA = whirlpool.data.tokenMintA;
   const mintB = whirlpool.data.tokenMintB;
   const instructions: IInstruction[] = [];
+
+  if (!setupInstructions) setupInstructions = instructions;
+  if (!cleanupInstructions) cleanupInstructions = instructions;
 
   //
   // Add create user's token account instructions if needed.
@@ -28,7 +36,7 @@ export async function collectFeesOrcaInstructions(
     authority.address,
     TOKEN_PROGRAM_ADDRESS,
   );
-  instructions.push(...createUserAtaAInstructions.init);
+  setupInstructions.push(...createUserAtaAInstructions.init);
 
   const createUserAtaBInstructions = await getCreateAtaInstructions(
     authority,
@@ -36,32 +44,33 @@ export async function collectFeesOrcaInstructions(
     authority.address,
     TOKEN_PROGRAM_ADDRESS,
   );
-  instructions.push(...createUserAtaBInstructions.init);
+  setupInstructions.push(...createUserAtaBInstructions.init);
 
   //
-  // Add collect fees instruction.
+  // Add collect fees instruction.cd te
   //
 
-  const ix = await collectFeesOrcaInstruction(authority, positionMint, whirlpool);
+  const ix = await collectFeesOrcaInstruction(authority, tunaPosition, whirlpool);
   instructions.push(ix);
 
   //
   // Close WSOL accounts if needed.
   //
 
-  instructions.push(...createUserAtaAInstructions.cleanup);
-  instructions.push(...createUserAtaBInstructions.cleanup);
+  cleanupInstructions.push(...createUserAtaAInstructions.cleanup);
+  cleanupInstructions.push(...createUserAtaBInstructions.cleanup);
 
   return instructions;
 }
 
 export async function collectFeesOrcaInstruction(
   authority: TransactionSigner,
-  positionMint: Address,
+  tunaPosition: Account<TunaPosition, Address>,
   whirlpool: Account<Whirlpool, Address>,
 ): Promise<IInstruction> {
   const mintA = whirlpool.data.tokenMintA;
   const mintB = whirlpool.data.tokenMintB;
+  const positionMint = tunaPosition.data.positionMint;
 
   const tunaConfig = (await getTunaConfigAddress())[0];
   const orcaPositionAddress = (await getPositionAddress(positionMint))[0];
@@ -107,7 +116,17 @@ export async function collectFeesOrcaInstruction(
     })
   )[0];
 
-  return getCollectFeesOrcaInstruction({
+  const lowerTickArrayAddress = await getTickArrayAddressFromTickIndex(whirlpool, tunaPosition.data.tickLowerIndex);
+  const upperTickArrayAddress = await getTickArrayAddressFromTickIndex(whirlpool, tunaPosition.data.tickUpperIndex);
+
+  const remainingAccounts: IAccountMeta[] = [
+    { address: lowerTickArrayAddress, role: AccountRole.WRITABLE },
+    { address: upperTickArrayAddress, role: AccountRole.WRITABLE },
+    { address: whirlpool.data.tokenVaultA, role: AccountRole.WRITABLE },
+    { address: whirlpool.data.tokenVaultB, role: AccountRole.WRITABLE },
+  ];
+
+  const ix = getCollectFeesOrcaInstruction({
     authority,
     tunaConfig,
     tunaPositionAta,
@@ -120,4 +139,9 @@ export async function collectFeesOrcaInstruction(
     whirlpool: whirlpool.address,
     whirlpoolProgram: WHIRLPOOL_PROGRAM_ADDRESS,
   });
+
+  // @ts-expect-error don't worry about the error
+  ix.accounts.push(...remainingAccounts);
+
+  return ix;
 }
