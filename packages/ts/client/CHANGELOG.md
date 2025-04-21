@@ -1,5 +1,11 @@
 # @defituna/client
 
+## 1.0.14
+
+### Patch Changes
+
+- 5094087: Fixed collectFeesOrca instruction helper
+
 ## 1.0.13
 
 ### Patch Changes
