@@ -1,5 +1,11 @@
 # @defituna/client
 
+## 1.0.15
+
+### Patch Changes
+
+- aae6898: Changed addLiquidityOrca instruction helper
+
 ## 1.0.14
 
 ### Patch Changes
