@@ -28,16 +28,18 @@ import {
   getSwapTickArrayAddresses,
   getTickArrayAddressFromTickIndex,
   TunaConfig,
-  TunaPosition,
   Vault,
   getCreateAtaInstructions,
+  getTunaPositionAddress,
 } from "../index.ts";
 
 export async function addLiquidityOrcaInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
+  positionMint: Address,
+  tickLowerIndex: number,
+  tickUpperIndex: number,
   tunaConfig: Account<TunaConfig, Address>,
-  tunaPosition: Account<TunaPosition, Address>,
   vaultA: Account<Vault, Address>,
   vaultB: Account<Vault, Address>,
   whirlpool: Account<Whirlpool, Address>,
@@ -97,10 +99,10 @@ export async function addLiquidityOrcaInstructions(
   //
   // Add create tick arrays instructions if needed.
   //
-  const lowerTickArrayIndex = getTickArrayStartTickIndex(tunaPosition.data.tickLowerIndex, whirlpool.data.tickSpacing);
+  const lowerTickArrayIndex = getTickArrayStartTickIndex(tickLowerIndex, whirlpool.data.tickSpacing);
   const [lowerTickArrayAddress] = await getTickArrayAddress(whirlpool.address, lowerTickArrayIndex);
 
-  const upperTickArrayIndex = getTickArrayStartTickIndex(tunaPosition.data.tickUpperIndex, whirlpool.data.tickSpacing);
+  const upperTickArrayIndex = getTickArrayStartTickIndex(tickUpperIndex, whirlpool.data.tickSpacing);
   const [upperTickArrayAddress] = await getTickArrayAddress(whirlpool.address, upperTickArrayIndex);
 
   const [lowerTickArray, upperTickArray] = await fetchAllMaybeTickArray(rpc, [
@@ -136,7 +138,17 @@ export async function addLiquidityOrcaInstructions(
   // Finally add liquidity increase instruction.
   //
 
-  const ix = await addLiquidityOrcaInstruction(authority, tunaConfig, tunaPosition, vaultA, vaultB, whirlpool, args);
+  const ix = await addLiquidityOrcaInstruction(
+    authority,
+    positionMint,
+    tickLowerIndex,
+    tickUpperIndex,
+    tunaConfig,
+    vaultA,
+    vaultB,
+    whirlpool,
+    args,
+  );
   instructions.push(ix);
 
   //
@@ -153,8 +165,10 @@ export async function addLiquidityOrcaInstructions(
 
 export async function addLiquidityOrcaInstruction(
   authority: TransactionSigner,
+  positionMint: Address,
+  tickLowerIndex: number,
+  tickUpperIndex: number,
   tunaConfig: Account<TunaConfig, Address>,
-  tunaPosition: Account<TunaPosition, Address>,
   vaultA: Account<Vault, Address>,
   vaultB: Account<Vault, Address>,
   whirlpool: Account<Whirlpool, Address>,
@@ -162,7 +176,7 @@ export async function addLiquidityOrcaInstruction(
 ): Promise<IInstruction> {
   const mintA = whirlpool.data.tokenMintA;
   const mintB = whirlpool.data.tokenMintB;
-  const positionMint = tunaPosition.data.positionMint;
+  const tunaPositionAddress = (await getTunaPositionAddress(positionMint))[0];
 
   const marketAddress = (await getMarketAddress(whirlpool.address))[0];
   const orcaPositionAddress = (await getPositionAddress(positionMint))[0];
@@ -170,7 +184,7 @@ export async function addLiquidityOrcaInstruction(
 
   const tunaPositionAta = (
     await findAssociatedTokenPda({
-      owner: tunaPosition.address,
+      owner: tunaPositionAddress,
       mint: positionMint,
       tokenProgram: TOKEN_2022_PROGRAM_ADDRESS,
     })
@@ -194,7 +208,7 @@ export async function addLiquidityOrcaInstruction(
 
   const tunaPositionAtaA = (
     await findAssociatedTokenPda({
-      owner: tunaPosition.address,
+      owner: tunaPositionAddress,
       mint: mintA,
       tokenProgram: TOKEN_PROGRAM_ADDRESS,
     })
@@ -202,7 +216,7 @@ export async function addLiquidityOrcaInstruction(
 
   const tunaPositionAtaB = (
     await findAssociatedTokenPda({
-      owner: tunaPosition.address,
+      owner: tunaPositionAddress,
       mint: mintB,
       tokenProgram: TOKEN_PROGRAM_ADDRESS,
     })
@@ -242,8 +256,8 @@ export async function addLiquidityOrcaInstruction(
 
   const aToBTickArrays = await getSwapTickArrayAddresses(whirlpool, true);
   const bToATickArrays = await getSwapTickArrayAddresses(whirlpool, false);
-  const lowerTickArrayAddress = await getTickArrayAddressFromTickIndex(whirlpool, tunaPosition.data.tickLowerIndex);
-  const upperTickArrayAddress = await getTickArrayAddressFromTickIndex(whirlpool, tunaPosition.data.tickUpperIndex);
+  const lowerTickArrayAddress = await getTickArrayAddressFromTickIndex(whirlpool, tickLowerIndex);
+  const upperTickArrayAddress = await getTickArrayAddressFromTickIndex(whirlpool, tickUpperIndex);
 
   const remainingAccounts: IAccountMeta[] = [
     { address: aToBTickArrays[0], role: AccountRole.WRITABLE },
@@ -278,7 +292,7 @@ export async function addLiquidityOrcaInstruction(
     tunaPositionOwnerAtaA,
     tunaPositionOwnerAtaB,
     orcaPosition: orcaPositionAddress,
-    tunaPosition: tunaPosition.address,
+    tunaPosition: tunaPositionAddress,
     feeRecipientAtaA,
     feeRecipientAtaB,
     whirlpool: whirlpool.address,
