@@ -9,9 +9,10 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@defituna/client": [
-        "../../packages/ts/client/src/index.ts"
+      "@defituna/rpc": [
+        "./node_modules/@defituna/cli/src/rpc"
       ]
-    }
-  }
+    },
+    "module": "es2022"
+  },
 }

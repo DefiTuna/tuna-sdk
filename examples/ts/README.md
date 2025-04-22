@@ -8,7 +8,7 @@ Each example is provided as an isolated script that can be executed directly usi
 
 - **`pnpm run_example deposit_and_create`**: Creates a new position in our lending pools and deposits funds into it.
 - **`pnpm run_example withdraw`**: Withdraws funds from a position in our lending pools.
-- **`pnpm run_example open_and_add_liquidity_orca`**: Opens a new position in an Orca liquidity pool and adds liquidity, with optional leverage and Tuna-specific automation features (stop loss, take profit, and auto-compounding).
+- **`pnpm run_example open_position_with_liquidity_orca`**: Opens a new position in an Orca liquidity pool and adds liquidity, with optional leverage and Tuna-specific automation features (stop loss, take profit, and auto-compounding).
 - **`pnpm run_example collect_fees_orca <POSITION_MINT_ADDRESS>`**: Collects fees from a specified position in an Orca liquidity pool.
 - **`pnpm run_example collect_and_compound_fees_orca <POSITION_MINT_ADDRESS>`**: Collects and compounds fees for a given position in an Orca liquidity pool.
 - **`pnpm run_example remove_liquidity_and_close_orca <POSITION_MINT_ADDRESS>`**: Removes liquidity and closes a position in an Orca liquidity pool.

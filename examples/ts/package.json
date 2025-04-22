@@ -7,6 +7,7 @@
   "files": [
     "README.md"
   ],
+  "type": "module",
   "sideEffects": false,
   "scripts": {
     "eslint": "eslint \"**/*.ts\"",
@@ -15,7 +16,7 @@
     "lint": "pnpm eslint && pnpm type-check",
     "example:deposit_and_create": "tsx src/lending/depositAndCreate.ts",
     "example:withdraw": "tsx src/lending/withdraw.ts",
-    "example:open_and_add_liquidity_orca": "tsx src/tunaPosition/openAndAddLiquidityOrca.ts",
+    "example:open_position_with_liquidity_orca": "tsx src/tunaPosition/openPositionWithLiquidityOrca.ts",
     "example:collect_fees_orca": "tsx src/tunaPosition/collectFeesOrca.ts",
     "example:collect_and_compound_fees_orca": "tsx src/tunaPosition/collectAndCompoundFeesOrca.ts",
     "example:remove_liquidity_and_close_orca": "tsx src/tunaPosition/removeLiquidityAndCloseOrca.ts",
@@ -34,6 +35,7 @@
   },
   "dependencies": {
     "@defituna/client": "workspace:*",
+    "@defituna/cli": "workspace:*",
     "@solana/kit": "^2.1.0",
     "@orca-so/whirlpools-client": "^1.0.4",
     "@orca-so/whirlpools-core": "^1.0.4",
