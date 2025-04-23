@@ -70,18 +70,18 @@ export async function openPositionOrcaInstructions(
     }),
 
     getOpenPositionOrcaInstruction({
-      associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
-      token2022Program: TOKEN_2022_PROGRAM_ADDRESS,
       authority,
-      ...args,
       market: marketAddress,
-      metadataUpdateAuth: WP_NFT_UPDATE_AUTH,
       orcaPosition: orcaPositionAddress,
       tunaPosition: tunaPositionAddress,
       tunaPositionAta,
       tunaPositionMint: positionMint,
-      whirlpool: whirlpool.address,
       whirlpoolProgram: WHIRLPOOL_PROGRAM_ADDRESS,
+      whirlpool: whirlpool.address,
+      metadataUpdateAuth: WP_NFT_UPDATE_AUTH,
+      associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
+      token2022Program: TOKEN_2022_PROGRAM_ADDRESS,
+      ...args,
     }),
   ];
 }

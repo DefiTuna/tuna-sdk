@@ -18,6 +18,7 @@ export * from './createVault';
 export * from './deposit';
 export * from './liquidatePositionOrca';
 export * from './openPositionOrca';
+export * from './openPositionWithLiquidityOrca';
 export * from './removeLiquidityOrca';
 export * from './repayBadDebt';
 export * from './repayDebt';

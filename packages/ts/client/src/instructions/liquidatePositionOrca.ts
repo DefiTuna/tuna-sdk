@@ -3,6 +3,7 @@ import { findAssociatedTokenPda, TOKEN_2022_PROGRAM_ADDRESS } from "@solana-prog
 import { getOracleAddress, getPositionAddress, Whirlpool, WHIRLPOOL_PROGRAM_ADDRESS } from "@orca-so/whirlpools-client";
 import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
 import {
+  getCreateAtaInstructions,
   getLiquidatePositionOrcaInstruction,
   getMarketAddress,
   getSwapTickArrayAddresses,
@@ -11,6 +12,64 @@ import {
   TunaPosition,
   Vault,
 } from "../index.ts";
+
+export async function liquidatePositionOrcaInstructions(
+  authority: TransactionSigner,
+  tunaConfig: Account<TunaConfig, Address>,
+  tunaPosition: Account<TunaPosition, Address>,
+  vaultA: Account<Vault, Address>,
+  vaultB: Account<Vault, Address>,
+  whirlpool: Account<Whirlpool, Address>,
+  withdrawPercent: number,
+): Promise<IInstruction[]> {
+  const mintA = whirlpool.data.tokenMintA;
+  const mintB = whirlpool.data.tokenMintB;
+  const instructions: IInstruction[] = [];
+
+  //
+  // Add create liquidator's token account instructions if needed.
+  //
+
+  const createLiquidatorAtaAInstructions = await getCreateAtaInstructions(
+    authority,
+    mintA,
+    tunaConfig.data.liquidatorAuthority,
+    TOKEN_PROGRAM_ADDRESS,
+  );
+  instructions.push(...createLiquidatorAtaAInstructions.init);
+
+  const createLiquidatorAtaBInstructions = await getCreateAtaInstructions(
+    authority,
+    mintB,
+    tunaConfig.data.liquidatorAuthority,
+    TOKEN_PROGRAM_ADDRESS,
+  );
+  instructions.push(...createLiquidatorAtaBInstructions.init);
+
+  //
+  // Finally add liquidity decrease instruction.
+  //
+
+  const ix = await liquidatePositionOrcaInstruction(
+    authority,
+    tunaConfig,
+    tunaPosition,
+    vaultA,
+    vaultB,
+    whirlpool,
+    withdrawPercent,
+  );
+  instructions.push(ix);
+
+  //
+  // Close WSOL accounts if needed.
+  //
+
+  instructions.push(...createLiquidatorAtaAInstructions.cleanup);
+  instructions.push(...createLiquidatorAtaBInstructions.cleanup);
+
+  return instructions;
+}
 
 export async function liquidatePositionOrcaInstruction(
   authority: TransactionSigner,

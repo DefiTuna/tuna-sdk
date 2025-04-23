@@ -84,7 +84,7 @@ impl Default for UpdateMarketInstructionData {
                 pub protocol_fee: u16,
                 pub protocol_fee_on_collateral: u16,
                 pub liquidation_fee: u32,
-                pub liquidation_ratio: u32,
+                pub liquidation_threshold: u32,
                 pub limit_order_execution_fee: u32,
                 pub oracle_price_deviation_threshold: u32,
                 pub disabled: bool,
@@ -111,7 +111,7 @@ pub struct UpdateMarketBuilder {
                 protocol_fee: Option<u16>,
                 protocol_fee_on_collateral: Option<u16>,
                 liquidation_fee: Option<u32>,
-                liquidation_ratio: Option<u32>,
+                liquidation_threshold: Option<u32>,
                 limit_order_execution_fee: Option<u32>,
                 oracle_price_deviation_threshold: Option<u32>,
                 disabled: Option<bool>,
@@ -166,8 +166,8 @@ impl UpdateMarketBuilder {
         self
       }
                 #[inline(always)]
-      pub fn liquidation_ratio(&mut self, liquidation_ratio: u32) -> &mut Self {
-        self.liquidation_ratio = Some(liquidation_ratio);
+      pub fn liquidation_threshold(&mut self, liquidation_threshold: u32) -> &mut Self {
+        self.liquidation_threshold = Some(liquidation_threshold);
         self
       }
                 #[inline(always)]
@@ -225,7 +225,7 @@ impl UpdateMarketBuilder {
                                                                   protocol_fee: self.protocol_fee.clone().expect("protocol_fee is not set"),
                                                                   protocol_fee_on_collateral: self.protocol_fee_on_collateral.clone().expect("protocol_fee_on_collateral is not set"),
                                                                   liquidation_fee: self.liquidation_fee.clone().expect("liquidation_fee is not set"),
-                                                                  liquidation_ratio: self.liquidation_ratio.clone().expect("liquidation_ratio is not set"),
+                                                                  liquidation_threshold: self.liquidation_threshold.clone().expect("liquidation_threshold is not set"),
                                                                   limit_order_execution_fee: self.limit_order_execution_fee.clone().expect("limit_order_execution_fee is not set"),
                                                                   oracle_price_deviation_threshold: self.oracle_price_deviation_threshold.clone().expect("oracle_price_deviation_threshold is not set"),
                                                                   disabled: self.disabled.clone().expect("disabled is not set"),
@@ -370,7 +370,7 @@ impl<'a, 'b> UpdateMarketCpiBuilder<'a, 'b> {
                                 protocol_fee: None,
                                 protocol_fee_on_collateral: None,
                                 liquidation_fee: None,
-                                liquidation_ratio: None,
+                                liquidation_threshold: None,
                                 limit_order_execution_fee: None,
                                 oracle_price_deviation_threshold: None,
                                 disabled: None,
@@ -422,8 +422,8 @@ impl<'a, 'b> UpdateMarketCpiBuilder<'a, 'b> {
         self
       }
                 #[inline(always)]
-      pub fn liquidation_ratio(&mut self, liquidation_ratio: u32) -> &mut Self {
-        self.instruction.liquidation_ratio = Some(liquidation_ratio);
+      pub fn liquidation_threshold(&mut self, liquidation_threshold: u32) -> &mut Self {
+        self.instruction.liquidation_threshold = Some(liquidation_threshold);
         self
       }
                 #[inline(always)]
@@ -484,7 +484,7 @@ impl<'a, 'b> UpdateMarketCpiBuilder<'a, 'b> {
                                                                   protocol_fee: self.instruction.protocol_fee.clone().expect("protocol_fee is not set"),
                                                                   protocol_fee_on_collateral: self.instruction.protocol_fee_on_collateral.clone().expect("protocol_fee_on_collateral is not set"),
                                                                   liquidation_fee: self.instruction.liquidation_fee.clone().expect("liquidation_fee is not set"),
-                                                                  liquidation_ratio: self.instruction.liquidation_ratio.clone().expect("liquidation_ratio is not set"),
+                                                                  liquidation_threshold: self.instruction.liquidation_threshold.clone().expect("liquidation_threshold is not set"),
                                                                   limit_order_execution_fee: self.instruction.limit_order_execution_fee.clone().expect("limit_order_execution_fee is not set"),
                                                                   oracle_price_deviation_threshold: self.instruction.oracle_price_deviation_threshold.clone().expect("oracle_price_deviation_threshold is not set"),
                                                                   disabled: self.instruction.disabled.clone().expect("disabled is not set"),
@@ -517,7 +517,7 @@ struct UpdateMarketCpiBuilderInstruction<'a, 'b> {
                 protocol_fee: Option<u16>,
                 protocol_fee_on_collateral: Option<u16>,
                 liquidation_fee: Option<u32>,
-                liquidation_ratio: Option<u32>,
+                liquidation_threshold: Option<u32>,
                 limit_order_execution_fee: Option<u32>,
                 oracle_price_deviation_threshold: Option<u32>,
                 disabled: Option<bool>,

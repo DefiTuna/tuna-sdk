@@ -1,5 +1,6 @@
 export * from "./addLiquidityOrca";
 export * from "./closePositionOrca";
+export * from "./collectAndCompoundFeesOrca";
 export * from "./collectFeesOrca";
 export * from "./createLendingPosition";
 export * from "./createMarket";
@@ -8,6 +9,7 @@ export * from "./createVault";
 export * from "./deposit";
 export * from "./liquidatePositionOrca";
 export * from "./openPositionOrca";
+export * from "./openPositionWithLiquidityOrca";
 export * from "./removeLiquidityOrca";
 export * from "./repayBadDebt";
 export * from "./updateMarket";

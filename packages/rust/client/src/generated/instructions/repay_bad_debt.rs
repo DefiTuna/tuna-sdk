@@ -25,7 +25,7 @@ pub struct RepayBadDebt {
           pub vault_ata: solana_program::pubkey::Pubkey,
           
               
-          pub user_ata: solana_program::pubkey::Pubkey,
+          pub authority_ata: solana_program::pubkey::Pubkey,
           
               
           pub token_program: solana_program::pubkey::Pubkey,
@@ -56,7 +56,7 @@ impl RepayBadDebt {
             false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new(
-            self.user_ata,
+            self.authority_ata,
             false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -112,7 +112,7 @@ impl Default for RepayBadDebtInstructionData {
           ///   1. `[]` tuna_config
                 ///   2. `[writable]` vault
                 ///   3. `[writable]` vault_ata
-                ///   4. `[writable]` user_ata
+                ///   4. `[writable]` authority_ata
                 ///   5. `[optional]` token_program (default to `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
 #[derive(Clone, Debug, Default)]
 pub struct RepayBadDebtBuilder {
@@ -120,7 +120,7 @@ pub struct RepayBadDebtBuilder {
                 tuna_config: Option<solana_program::pubkey::Pubkey>,
                 vault: Option<solana_program::pubkey::Pubkey>,
                 vault_ata: Option<solana_program::pubkey::Pubkey>,
-                user_ata: Option<solana_program::pubkey::Pubkey>,
+                authority_ata: Option<solana_program::pubkey::Pubkey>,
                 token_program: Option<solana_program::pubkey::Pubkey>,
                         funds: Option<u64>,
                 shares: Option<u64>,
@@ -152,8 +152,8 @@ impl RepayBadDebtBuilder {
                     self
     }
             #[inline(always)]
-    pub fn user_ata(&mut self, user_ata: solana_program::pubkey::Pubkey) -> &mut Self {
-                        self.user_ata = Some(user_ata);
+    pub fn authority_ata(&mut self, authority_ata: solana_program::pubkey::Pubkey) -> &mut Self {
+                        self.authority_ata = Some(authority_ata);
                     self
     }
             /// `[optional account, default to 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA']`
@@ -191,7 +191,7 @@ impl RepayBadDebtBuilder {
                                         tuna_config: self.tuna_config.expect("tuna_config is not set"),
                                         vault: self.vault.expect("vault is not set"),
                                         vault_ata: self.vault_ata.expect("vault_ata is not set"),
-                                        user_ata: self.user_ata.expect("user_ata is not set"),
+                                        authority_ata: self.authority_ata.expect("authority_ata is not set"),
                                         token_program: self.token_program.unwrap_or(solana_program::pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")),
                       };
           let args = RepayBadDebtInstructionArgs {
@@ -219,7 +219,7 @@ impl RepayBadDebtBuilder {
               pub vault_ata: &'b solana_program::account_info::AccountInfo<'a>,
                 
                     
-              pub user_ata: &'b solana_program::account_info::AccountInfo<'a>,
+              pub authority_ata: &'b solana_program::account_info::AccountInfo<'a>,
                 
                     
               pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
@@ -243,7 +243,7 @@ pub struct RepayBadDebtCpi<'a, 'b> {
           pub vault_ata: &'b solana_program::account_info::AccountInfo<'a>,
           
               
-          pub user_ata: &'b solana_program::account_info::AccountInfo<'a>,
+          pub authority_ata: &'b solana_program::account_info::AccountInfo<'a>,
           
               
           pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
@@ -263,7 +263,7 @@ impl<'a, 'b> RepayBadDebtCpi<'a, 'b> {
               tuna_config: accounts.tuna_config,
               vault: accounts.vault,
               vault_ata: accounts.vault_ata,
-              user_ata: accounts.user_ata,
+              authority_ata: accounts.authority_ata,
               token_program: accounts.token_program,
                     __args: args,
           }
@@ -306,7 +306,7 @@ impl<'a, 'b> RepayBadDebtCpi<'a, 'b> {
             false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.user_ata.key,
+            *self.authority_ata.key,
             false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -335,7 +335,7 @@ impl<'a, 'b> RepayBadDebtCpi<'a, 'b> {
                         account_infos.push(self.tuna_config.clone());
                         account_infos.push(self.vault.clone());
                         account_infos.push(self.vault_ata.clone());
-                        account_infos.push(self.user_ata.clone());
+                        account_infos.push(self.authority_ata.clone());
                         account_infos.push(self.token_program.clone());
               remaining_accounts.iter().for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
 
@@ -355,7 +355,7 @@ impl<'a, 'b> RepayBadDebtCpi<'a, 'b> {
           ///   1. `[]` tuna_config
                 ///   2. `[writable]` vault
                 ///   3. `[writable]` vault_ata
-                ///   4. `[writable]` user_ata
+                ///   4. `[writable]` authority_ata
           ///   5. `[]` token_program
 #[derive(Clone, Debug)]
 pub struct RepayBadDebtCpiBuilder<'a, 'b> {
@@ -370,7 +370,7 @@ impl<'a, 'b> RepayBadDebtCpiBuilder<'a, 'b> {
               tuna_config: None,
               vault: None,
               vault_ata: None,
-              user_ata: None,
+              authority_ata: None,
               token_program: None,
                                             funds: None,
                                 shares: None,
@@ -399,8 +399,8 @@ impl<'a, 'b> RepayBadDebtCpiBuilder<'a, 'b> {
                     self
     }
       #[inline(always)]
-    pub fn user_ata(&mut self, user_ata: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
-                        self.instruction.user_ata = Some(user_ata);
+    pub fn authority_ata(&mut self, authority_ata: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+                        self.instruction.authority_ata = Some(authority_ata);
                     self
     }
       #[inline(always)]
@@ -455,7 +455,7 @@ impl<'a, 'b> RepayBadDebtCpiBuilder<'a, 'b> {
                   
           vault_ata: self.instruction.vault_ata.expect("vault_ata is not set"),
                   
-          user_ata: self.instruction.user_ata.expect("user_ata is not set"),
+          authority_ata: self.instruction.authority_ata.expect("authority_ata is not set"),
                   
           token_program: self.instruction.token_program.expect("token_program is not set"),
                           __args: args,
@@ -471,7 +471,7 @@ struct RepayBadDebtCpiBuilderInstruction<'a, 'b> {
                 tuna_config: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 vault: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 vault_ata: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-                user_ata: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+                authority_ata: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 token_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                         funds: Option<u64>,
                 shares: Option<u64>,

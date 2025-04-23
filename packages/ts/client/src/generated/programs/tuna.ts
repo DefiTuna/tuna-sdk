@@ -26,6 +26,7 @@ import {
   type ParsedDepositInstruction,
   type ParsedLiquidatePositionOrcaInstruction,
   type ParsedOpenPositionOrcaInstruction,
+  type ParsedOpenPositionWithLiquidityOrcaInstruction,
   type ParsedRemoveLiquidityOrcaInstruction,
   type ParsedRepayBadDebtInstruction,
   type ParsedRepayDebtInstruction,
@@ -130,6 +131,7 @@ export enum TunaInstruction {
   Deposit,
   LiquidatePositionOrca,
   OpenPositionOrca,
+  OpenPositionWithLiquidityOrca,
   RemoveLiquidityOrca,
   RepayBadDebt,
   RepayDebt,
@@ -281,6 +283,17 @@ export function identifyTunaInstruction(
     )
   ) {
     return TunaInstruction.OpenPositionOrca;
+  }
+  if (
+    containsBytes(
+      data,
+      fixEncoderSize(getBytesEncoder(), 8).encode(
+        new Uint8Array([163, 21, 84, 199, 172, 40, 87, 122])
+      ),
+      0
+    )
+  ) {
+    return TunaInstruction.OpenPositionWithLiquidityOrca;
   }
   if (
     containsBytes(
@@ -480,6 +493,9 @@ export type ParsedTunaInstruction<
   | ({
       instructionType: TunaInstruction.OpenPositionOrca;
     } & ParsedOpenPositionOrcaInstruction<TProgram>)
+  | ({
+      instructionType: TunaInstruction.OpenPositionWithLiquidityOrca;
+    } & ParsedOpenPositionWithLiquidityOrcaInstruction<TProgram>)
   | ({
       instructionType: TunaInstruction.RemoveLiquidityOrca;
     } & ParsedRemoveLiquidityOrcaInstruction<TProgram>)

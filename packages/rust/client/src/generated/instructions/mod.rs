@@ -17,6 +17,7 @@
   pub(crate) mod r#deposit;
   pub(crate) mod r#liquidate_position_orca;
   pub(crate) mod r#open_position_orca;
+  pub(crate) mod r#open_position_with_liquidity_orca;
   pub(crate) mod r#remove_liquidity_orca;
   pub(crate) mod r#repay_bad_debt;
   pub(crate) mod r#repay_debt;
@@ -44,6 +45,7 @@
   pub use self::r#deposit::*;
   pub use self::r#liquidate_position_orca::*;
   pub use self::r#open_position_orca::*;
+  pub use self::r#open_position_with_liquidity_orca::*;
   pub use self::r#remove_liquidity_orca::*;
   pub use self::r#repay_bad_debt::*;
   pub use self::r#repay_debt::*;
