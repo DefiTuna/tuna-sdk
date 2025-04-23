@@ -144,18 +144,17 @@ export async function liquidatePositionOrcaInstruction(
     })
   )[0];
 
-  const aToBTickArrays = await getSwapTickArrayAddresses(whirlpool, true);
-  const bToATickArrays = await getSwapTickArrayAddresses(whirlpool, false);
+  const swapTickArrays = await getSwapTickArrayAddresses(whirlpool);
+
   const lowerTickArrayAddress = await getTickArrayAddressFromTickIndex(whirlpool, tunaPosition.data.tickLowerIndex);
   const upperTickArrayAddress = await getTickArrayAddressFromTickIndex(whirlpool, tunaPosition.data.tickUpperIndex);
 
   const remainingAccounts: IAccountMeta[] = [
-    { address: aToBTickArrays[0], role: AccountRole.WRITABLE },
-    { address: aToBTickArrays[1], role: AccountRole.WRITABLE },
-    { address: aToBTickArrays[2], role: AccountRole.WRITABLE },
-    { address: bToATickArrays[0], role: AccountRole.WRITABLE },
-    { address: bToATickArrays[1], role: AccountRole.WRITABLE },
-    { address: bToATickArrays[2], role: AccountRole.WRITABLE },
+    { address: swapTickArrays[0], role: AccountRole.WRITABLE },
+    { address: swapTickArrays[1], role: AccountRole.WRITABLE },
+    { address: swapTickArrays[2], role: AccountRole.WRITABLE },
+    { address: swapTickArrays[3], role: AccountRole.WRITABLE },
+    { address: swapTickArrays[4], role: AccountRole.WRITABLE },
     { address: lowerTickArrayAddress, role: AccountRole.WRITABLE },
     { address: upperTickArrayAddress, role: AccountRole.WRITABLE },
     { address: whirlpool.data.tokenVaultA, role: AccountRole.WRITABLE },
