@@ -1046,7 +1046,8 @@
           "name": "mint_b"
         },
         {
-          "name": "market"
+          "name": "market",
+          "writable": true
         },
         {
           "name": "vault_a",

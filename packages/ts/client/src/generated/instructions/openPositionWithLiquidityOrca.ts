@@ -100,7 +100,7 @@ export type OpenPositionWithLiquidityOrcaInstruction<
         ? ReadonlyAccount<TAccountMintB>
         : TAccountMintB,
       TAccountMarket extends string
-        ? ReadonlyAccount<TAccountMarket>
+        ? WritableAccount<TAccountMarket>
         : TAccountMarket,
       TAccountVaultA extends string
         ? WritableAccount<TAccountVaultA>
@@ -432,7 +432,7 @@ export function getOpenPositionWithLiquidityOrcaInstruction<
     tunaConfig: { value: input.tunaConfig ?? null, isWritable: false },
     mintA: { value: input.mintA ?? null, isWritable: false },
     mintB: { value: input.mintB ?? null, isWritable: false },
-    market: { value: input.market ?? null, isWritable: false },
+    market: { value: input.market ?? null, isWritable: true },
     vaultA: { value: input.vaultA ?? null, isWritable: true },
     vaultB: { value: input.vaultB ?? null, isWritable: true },
     vaultAAta: { value: input.vaultAAta ?? null, isWritable: true },
