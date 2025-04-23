@@ -1,5 +1,11 @@
 # @defituna/client
 
+## 1.0.17
+
+### Patch Changes
+
+- edfc1b8: Bugfix in openPositionWithLiquidity instruction
+
 ## 1.0.16
 
 ### Patch Changes
