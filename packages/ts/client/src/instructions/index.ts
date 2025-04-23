@@ -12,6 +12,7 @@ export * from "./openPositionOrca";
 export * from "./openPositionWithLiquidityOrca";
 export * from "./removeLiquidityOrca";
 export * from "./repayBadDebt";
+export * from "./setLimitOrders";
 export * from "./updateMarket";
 export * from "./updateVault";
 export * from "./withdraw";
