@@ -1,5 +1,12 @@
 # @defituna/client
 
+## 1.0.16
+
+### Patch Changes
+
+- f86e213: Fixed the broken build
+- 089c5a5: Added openPositionWithLiquidity instruction. Updated tuna to 1.0.63.
+
 ## 1.0.15
 
 ### Patch Changes
