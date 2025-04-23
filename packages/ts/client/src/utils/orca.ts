@@ -8,17 +8,16 @@ export async function getTickArrayAddressFromTickIndex(whirlpool: Account<Whirlp
   return tickArrayPda;
 }
 
-export async function getSwapTickArrayAddresses(whirlpool: Account<Whirlpool, Address>, aToB: boolean) {
-  let tickArrayStep = _TICK_ARRAY_SIZE() * whirlpool.data.tickSpacing;
-  if (aToB) tickArrayStep = -tickArrayStep;
+export async function getSwapTickArrayAddresses(whirlpool: Account<Whirlpool, Address>): Promise<Address[]> {
+  const tickArrayStep = _TICK_ARRAY_SIZE() * whirlpool.data.tickSpacing;
+  const currentArrayStartTickIndex = getTickArrayStartTickIndex(
+    whirlpool.data.tickCurrentIndex,
+    whirlpool.data.tickSpacing,
+  );
 
-  const firstStartTickIndex = getTickArrayStartTickIndex(whirlpool.data.tickCurrentIndex, whirlpool.data.tickSpacing);
-  const secondStartTickIndex = firstStartTickIndex + tickArrayStep;
-  const thirdStartTickIndex = firstStartTickIndex + tickArrayStep * 2;
-
-  const [firstTickArray] = await getTickArrayAddress(whirlpool.address, firstStartTickIndex);
-  const [secondTickArray] = await getTickArrayAddress(whirlpool.address, secondStartTickIndex);
-  const [thirdTickArray] = await getTickArrayAddress(whirlpool.address, thirdStartTickIndex);
-
-  return [firstTickArray, secondTickArray, thirdTickArray] as const;
+  return Promise.all(
+    [-2, -1, 0, 1, 2].map(
+      async i => (await getTickArrayAddress(whirlpool.address, currentArrayStartTickIndex + i * tickArrayStep))[0],
+    ),
+  );
 }
