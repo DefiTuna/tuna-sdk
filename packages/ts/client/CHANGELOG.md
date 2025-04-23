@@ -1,5 +1,11 @@
 # @defituna/client
 
+## 1.0.18
+
+### Patch Changes
+
+- e8b6496: Added setLimitOrders instruction helper
+
 ## 1.0.17
 
 ### Patch Changes
