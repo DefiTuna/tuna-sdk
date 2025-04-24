@@ -1,5 +1,11 @@
 # @defituna/rust-client
 
+## 1.0.8
+
+### Patch Changes
+
+- dcb2645: Added liquidate_position_orca and collect_and_compound_fees_orca instruction helpers
+
 ## 1.0.7
 
 ### Patch Changes
