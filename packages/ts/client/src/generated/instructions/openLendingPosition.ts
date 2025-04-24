@@ -33,17 +33,17 @@ import {
 import { TUNA_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
-export const CREATE_LENDING_POSITION_DISCRIMINATOR = new Uint8Array([
-  129, 187, 56, 84, 108, 205, 25, 80,
+export const OPEN_LENDING_POSITION_DISCRIMINATOR = new Uint8Array([
+  174, 227, 181, 127, 78, 227, 244, 19,
 ]);
 
-export function getCreateLendingPositionDiscriminatorBytes() {
+export function getOpenLendingPositionDiscriminatorBytes() {
   return fixEncoderSize(getBytesEncoder(), 8).encode(
-    CREATE_LENDING_POSITION_DISCRIMINATOR
+    OPEN_LENDING_POSITION_DISCRIMINATOR
   );
 }
 
-export type CreateLendingPositionInstruction<
+export type OpenLendingPositionInstruction<
   TProgram extends string = typeof TUNA_PROGRAM_ADDRESS,
   TAccountAuthority extends string | IAccountMeta<string> = string,
   TAccountTunaConfig extends string | IAccountMeta<string> = string,
@@ -97,39 +97,39 @@ export type CreateLendingPositionInstruction<
     ]
   >;
 
-export type CreateLendingPositionInstructionData = {
+export type OpenLendingPositionInstructionData = {
   discriminator: ReadonlyUint8Array;
 };
 
-export type CreateLendingPositionInstructionDataArgs = {};
+export type OpenLendingPositionInstructionDataArgs = {};
 
-export function getCreateLendingPositionInstructionDataEncoder(): Encoder<CreateLendingPositionInstructionDataArgs> {
+export function getOpenLendingPositionInstructionDataEncoder(): Encoder<OpenLendingPositionInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['discriminator', fixEncoderSize(getBytesEncoder(), 8)]]),
     (value) => ({
       ...value,
-      discriminator: CREATE_LENDING_POSITION_DISCRIMINATOR,
+      discriminator: OPEN_LENDING_POSITION_DISCRIMINATOR,
     })
   );
 }
 
-export function getCreateLendingPositionInstructionDataDecoder(): Decoder<CreateLendingPositionInstructionData> {
+export function getOpenLendingPositionInstructionDataDecoder(): Decoder<OpenLendingPositionInstructionData> {
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
   ]);
 }
 
-export function getCreateLendingPositionInstructionDataCodec(): Codec<
-  CreateLendingPositionInstructionDataArgs,
-  CreateLendingPositionInstructionData
+export function getOpenLendingPositionInstructionDataCodec(): Codec<
+  OpenLendingPositionInstructionDataArgs,
+  OpenLendingPositionInstructionData
 > {
   return combineCodec(
-    getCreateLendingPositionInstructionDataEncoder(),
-    getCreateLendingPositionInstructionDataDecoder()
+    getOpenLendingPositionInstructionDataEncoder(),
+    getOpenLendingPositionInstructionDataDecoder()
   );
 }
 
-export type CreateLendingPositionInput<
+export type OpenLendingPositionInput<
   TAccountAuthority extends string = string,
   TAccountTunaConfig extends string = string,
   TAccountVault extends string = string,
@@ -151,7 +151,7 @@ export type CreateLendingPositionInput<
   associatedTokenProgram: Address<TAccountAssociatedTokenProgram>;
 };
 
-export function getCreateLendingPositionInstruction<
+export function getOpenLendingPositionInstruction<
   TAccountAuthority extends string,
   TAccountTunaConfig extends string,
   TAccountVault extends string,
@@ -163,7 +163,7 @@ export function getCreateLendingPositionInstruction<
   TAccountAssociatedTokenProgram extends string,
   TProgramAddress extends Address = typeof TUNA_PROGRAM_ADDRESS,
 >(
-  input: CreateLendingPositionInput<
+  input: OpenLendingPositionInput<
     TAccountAuthority,
     TAccountTunaConfig,
     TAccountVault,
@@ -175,7 +175,7 @@ export function getCreateLendingPositionInstruction<
     TAccountAssociatedTokenProgram
   >,
   config?: { programAddress?: TProgramAddress }
-): CreateLendingPositionInstruction<
+): OpenLendingPositionInstruction<
   TProgramAddress,
   TAccountAuthority,
   TAccountTunaConfig,
@@ -238,8 +238,8 @@ export function getCreateLendingPositionInstruction<
       getAccountMeta(accounts.associatedTokenProgram),
     ],
     programAddress,
-    data: getCreateLendingPositionInstructionDataEncoder().encode({}),
-  } as CreateLendingPositionInstruction<
+    data: getOpenLendingPositionInstructionDataEncoder().encode({}),
+  } as OpenLendingPositionInstruction<
     TProgramAddress,
     TAccountAuthority,
     TAccountTunaConfig,
@@ -255,7 +255,7 @@ export function getCreateLendingPositionInstruction<
   return instruction;
 }
 
-export type ParsedCreateLendingPositionInstruction<
+export type ParsedOpenLendingPositionInstruction<
   TProgram extends string = typeof TUNA_PROGRAM_ADDRESS,
   TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
 > = {
@@ -271,17 +271,17 @@ export type ParsedCreateLendingPositionInstruction<
     rent: TAccountMetas[7];
     associatedTokenProgram: TAccountMetas[8];
   };
-  data: CreateLendingPositionInstructionData;
+  data: OpenLendingPositionInstructionData;
 };
 
-export function parseCreateLendingPositionInstruction<
+export function parseOpenLendingPositionInstruction<
   TProgram extends string,
   TAccountMetas extends readonly IAccountMeta[],
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
     IInstructionWithData<Uint8Array>
-): ParsedCreateLendingPositionInstruction<TProgram, TAccountMetas> {
+): ParsedOpenLendingPositionInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 9) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
@@ -305,7 +305,7 @@ export function parseCreateLendingPositionInstruction<
       rent: getNextAccount(),
       associatedTokenProgram: getNextAccount(),
     },
-    data: getCreateLendingPositionInstructionDataDecoder().decode(
+    data: getOpenLendingPositionInstructionDataDecoder().decode(
       instruction.data
     ),
   };

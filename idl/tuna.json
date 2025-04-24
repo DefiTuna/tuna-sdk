@@ -506,52 +506,6 @@
       ]
     },
     {
-      "name": "create_lending_position",
-      "discriminator": [
-        129,
-        187,
-        56,
-        84,
-        108,
-        205,
-        25,
-        80
-      ],
-      "accounts": [
-        {
-          "name": "authority",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "tuna_config"
-        },
-        {
-          "name": "vault"
-        },
-        {
-          "name": "lending_position",
-          "writable": true
-        },
-        {
-          "name": "pool_mint"
-        },
-        {
-          "name": "token_program"
-        },
-        {
-          "name": "system_program"
-        },
-        {
-          "name": "rent"
-        },
-        {
-          "name": "associated_token_program"
-        }
-      ],
-      "args": []
-    },
-    {
       "name": "create_market",
       "discriminator": [
         103,
@@ -917,6 +871,52 @@
           "type": "u32"
         }
       ]
+    },
+    {
+      "name": "open_lending_position",
+      "discriminator": [
+        174,
+        227,
+        181,
+        127,
+        78,
+        227,
+        244,
+        19
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tuna_config"
+        },
+        {
+          "name": "vault"
+        },
+        {
+          "name": "lending_position",
+          "writable": true
+        },
+        {
+          "name": "pool_mint"
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "system_program"
+        },
+        {
+          "name": "rent"
+        },
+        {
+          "name": "associated_token_program"
+        }
+      ],
+      "args": []
     },
     {
       "name": "open_position_orca",

@@ -19,12 +19,12 @@ import {
   type ParsedCollectAndCompoundFeesOrcaInstruction,
   type ParsedCollectFeesOrcaInstruction,
   type ParsedCollectRewardOrcaInstruction,
-  type ParsedCreateLendingPositionInstruction,
   type ParsedCreateMarketInstruction,
   type ParsedCreateTunaConfigInstruction,
   type ParsedCreateVaultInstruction,
   type ParsedDepositInstruction,
   type ParsedLiquidatePositionOrcaInstruction,
+  type ParsedOpenLendingPositionInstruction,
   type ParsedOpenPositionOrcaInstruction,
   type ParsedOpenPositionWithLiquidityOrcaInstruction,
   type ParsedRemoveLiquidityOrcaInstruction,
@@ -124,12 +124,12 @@ export enum TunaInstruction {
   CollectAndCompoundFeesOrca,
   CollectFeesOrca,
   CollectRewardOrca,
-  CreateLendingPosition,
   CreateMarket,
   CreateTunaConfig,
   CreateVault,
   Deposit,
   LiquidatePositionOrca,
+  OpenLendingPosition,
   OpenPositionOrca,
   OpenPositionWithLiquidityOrca,
   RemoveLiquidityOrca,
@@ -211,17 +211,6 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([129, 187, 56, 84, 108, 205, 25, 80])
-      ),
-      0
-    )
-  ) {
-    return TunaInstruction.CreateLendingPosition;
-  }
-  if (
-    containsBytes(
-      data,
-      fixEncoderSize(getBytesEncoder(), 8).encode(
         new Uint8Array([103, 226, 97, 235, 200, 188, 251, 254])
       ),
       0
@@ -272,6 +261,17 @@ export function identifyTunaInstruction(
     )
   ) {
     return TunaInstruction.LiquidatePositionOrca;
+  }
+  if (
+    containsBytes(
+      data,
+      fixEncoderSize(getBytesEncoder(), 8).encode(
+        new Uint8Array([174, 227, 181, 127, 78, 227, 244, 19])
+      ),
+      0
+    )
+  ) {
+    return TunaInstruction.OpenLendingPosition;
   }
   if (
     containsBytes(
@@ -473,9 +473,6 @@ export type ParsedTunaInstruction<
       instructionType: TunaInstruction.CollectRewardOrca;
     } & ParsedCollectRewardOrcaInstruction<TProgram>)
   | ({
-      instructionType: TunaInstruction.CreateLendingPosition;
-    } & ParsedCreateLendingPositionInstruction<TProgram>)
-  | ({
       instructionType: TunaInstruction.CreateMarket;
     } & ParsedCreateMarketInstruction<TProgram>)
   | ({
@@ -490,6 +487,9 @@ export type ParsedTunaInstruction<
   | ({
       instructionType: TunaInstruction.LiquidatePositionOrca;
     } & ParsedLiquidatePositionOrcaInstruction<TProgram>)
+  | ({
+      instructionType: TunaInstruction.OpenLendingPosition;
+    } & ParsedOpenLendingPositionInstruction<TProgram>)
   | ({
       instructionType: TunaInstruction.OpenPositionOrca;
     } & ParsedOpenPositionOrcaInstruction<TProgram>)
