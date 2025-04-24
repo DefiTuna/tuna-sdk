@@ -6,7 +6,7 @@
   "license": "MIT",
   "sideEffects": false,
   "scripts": {
-    "build": "node ./codama.mjs",
+    "build": "node ./codama.mjs && cargo build",
     "clean": "rimraf src/generated"
   },
   "devDependencies": {

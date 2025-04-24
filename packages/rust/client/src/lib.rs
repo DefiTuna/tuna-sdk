@@ -1,5 +1,6 @@
 pub mod consts;
 pub mod implementation;
+pub mod ixbuilder;
 pub mod math;
 pub mod utils;
 
@@ -26,8 +27,6 @@ pub use gpa::*;
 
 pub use consts::*;
 pub use implementation::*;
+pub use ixbuilder::*;
 pub use math::*;
 pub use pda::*;
-
-//#[cfg(feature = "fetch")]
-//pub use gpa::*;
