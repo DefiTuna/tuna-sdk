@@ -127,7 +127,7 @@ impl OpenPositionWithLiquidityOrca {
             self.mint_b,
             false
           ));
-                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                                          accounts.push(solana_program::instruction::AccountMeta::new(
             self.market,
             false
           ));
@@ -274,7 +274,7 @@ impl Default for OpenPositionWithLiquidityOrcaInstructionData {
           ///   1. `[]` tuna_config
           ///   2. `[]` mint_a
           ///   3. `[]` mint_b
-          ///   4. `[]` market
+                ///   4. `[writable]` market
                 ///   5. `[writable]` vault_a
                 ///   6. `[writable]` vault_b
                 ///   7. `[writable]` vault_a_ata
@@ -871,7 +871,7 @@ impl<'a, 'b> OpenPositionWithLiquidityOrcaCpi<'a, 'b> {
             *self.mint_b.key,
             false
           ));
-                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+                                          accounts.push(solana_program::instruction::AccountMeta::new(
             *self.market.key,
             false
           ));
@@ -1021,7 +1021,7 @@ impl<'a, 'b> OpenPositionWithLiquidityOrcaCpi<'a, 'b> {
           ///   1. `[]` tuna_config
           ///   2. `[]` mint_a
           ///   3. `[]` mint_b
-          ///   4. `[]` market
+                ///   4. `[writable]` market
                 ///   5. `[writable]` vault_a
                 ///   6. `[writable]` vault_b
                 ///   7. `[writable]` vault_a_ata

@@ -6,7 +6,7 @@ use solana_client::{
     nonblocking::rpc_client::RpcClient,
     rpc_filter::{Memcmp, RpcFilterType},
 };
-use solana_sdk::pubkey::Pubkey;
+use solana_program::pubkey::Pubkey;
 
 use crate::accounts::TunaPosition;
 use crate::generated::shared::DecodedAccount;
@@ -33,10 +33,7 @@ impl From<TunaPositionFilter> for RpcFilterType {
     }
 }
 
-pub async fn fetch_all_tuna_position_with_filter(
-    rpc: &RpcClient,
-    filters: Vec<TunaPositionFilter>,
-) -> Result<Vec<DecodedAccount<TunaPosition>>, Box<dyn Error>> {
+pub async fn fetch_all_tuna_position_with_filter(rpc: &RpcClient, filters: Vec<TunaPositionFilter>) -> Result<Vec<DecodedAccount<TunaPosition>>, Box<dyn Error>> {
     let discriminator = TUNA_POSITION_DISCRIMINATOR.to_vec();
     let mut filters: Vec<RpcFilterType> = filters.into_iter().map(|filter| filter.into()).collect();
     filters.push(RpcFilterType::Memcmp(Memcmp::new_raw_bytes(0, discriminator)));

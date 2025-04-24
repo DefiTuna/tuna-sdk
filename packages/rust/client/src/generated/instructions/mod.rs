@@ -10,12 +10,12 @@
   pub(crate) mod r#collect_and_compound_fees_orca;
   pub(crate) mod r#collect_fees_orca;
   pub(crate) mod r#collect_reward_orca;
-  pub(crate) mod r#create_lending_position;
   pub(crate) mod r#create_market;
   pub(crate) mod r#create_tuna_config;
   pub(crate) mod r#create_vault;
   pub(crate) mod r#deposit;
   pub(crate) mod r#liquidate_position_orca;
+  pub(crate) mod r#open_lending_position;
   pub(crate) mod r#open_position_orca;
   pub(crate) mod r#open_position_with_liquidity_orca;
   pub(crate) mod r#remove_liquidity_orca;
@@ -38,12 +38,12 @@
   pub use self::r#collect_and_compound_fees_orca::*;
   pub use self::r#collect_fees_orca::*;
   pub use self::r#collect_reward_orca::*;
-  pub use self::r#create_lending_position::*;
   pub use self::r#create_market::*;
   pub use self::r#create_tuna_config::*;
   pub use self::r#create_vault::*;
   pub use self::r#deposit::*;
   pub use self::r#liquidate_position_orca::*;
+  pub use self::r#open_lending_position::*;
   pub use self::r#open_position_orca::*;
   pub use self::r#open_position_with_liquidity_orca::*;
   pub use self::r#remove_liquidity_orca::*;
