@@ -5,7 +5,6 @@ import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
 import {
   getCollectFeesOrcaInstruction,
   getCreateAtaInstructions,
-  getSwapTickArrayAddresses,
   getTickArrayAddressFromTickIndex,
   getTunaConfigAddress,
   getTunaPositionAddress,

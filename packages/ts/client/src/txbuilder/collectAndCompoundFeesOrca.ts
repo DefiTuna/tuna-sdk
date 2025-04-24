@@ -3,8 +3,8 @@ import { findAssociatedTokenPda, TOKEN_2022_PROGRAM_ADDRESS } from "@solana-prog
 import { getOracleAddress, getPositionAddress, Whirlpool, WHIRLPOOL_PROGRAM_ADDRESS } from "@orca-so/whirlpools-client";
 import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
 import {
+  getCollectAndCompoundFeesOrcaInstruction,
   getCreateAtaInstructions,
-  getLiquidatePositionOrcaInstruction,
   getMarketAddress,
   getSwapTickArrayAddresses,
   getTickArrayAddressFromTickIndex,
@@ -13,51 +13,51 @@ import {
   Vault,
 } from "../index.ts";
 
-export async function liquidatePositionOrcaInstructions(
+export async function collectAndCompoundFeesOrcaInstructions(
   authority: TransactionSigner,
-  tunaConfig: Account<TunaConfig, Address>,
   tunaPosition: Account<TunaPosition, Address>,
+  tunaConfig: Account<TunaConfig, Address>,
   vaultA: Account<Vault, Address>,
   vaultB: Account<Vault, Address>,
   whirlpool: Account<Whirlpool, Address>,
-  withdrawPercent: number,
+  useLeverage: boolean,
 ): Promise<IInstruction[]> {
   const mintA = whirlpool.data.tokenMintA;
   const mintB = whirlpool.data.tokenMintB;
   const instructions: IInstruction[] = [];
 
   //
-  // Add create liquidator's token account instructions if needed.
+  // Add create fee recipient's token account instructions if needed.
   //
 
-  const createLiquidatorAtaAInstructions = await getCreateAtaInstructions(
+  const createFeeRecipientAtaAInstructions = await getCreateAtaInstructions(
     authority,
     mintA,
-    tunaConfig.data.liquidatorAuthority,
+    tunaConfig.data.feeRecipient,
     TOKEN_PROGRAM_ADDRESS,
   );
-  instructions.push(...createLiquidatorAtaAInstructions.init);
+  instructions.push(...createFeeRecipientAtaAInstructions.init);
 
-  const createLiquidatorAtaBInstructions = await getCreateAtaInstructions(
+  const createFeeRecipientAtaBInstructions = await getCreateAtaInstructions(
     authority,
     mintB,
-    tunaConfig.data.liquidatorAuthority,
+    tunaConfig.data.feeRecipient,
     TOKEN_PROGRAM_ADDRESS,
   );
-  instructions.push(...createLiquidatorAtaBInstructions.init);
+  instructions.push(...createFeeRecipientAtaBInstructions.init);
 
   //
-  // Finally add liquidity decrease instruction.
+  // Finally add collect and compound fees instruction.
   //
 
-  const ix = await liquidatePositionOrcaInstruction(
+  const ix = await collectAndCompoundFeesOrcaInstruction(
     authority,
     tunaConfig,
     tunaPosition,
     vaultA,
     vaultB,
     whirlpool,
-    withdrawPercent,
+    useLeverage,
   );
   instructions.push(ix);
 
@@ -65,20 +65,20 @@ export async function liquidatePositionOrcaInstructions(
   // Close WSOL accounts if needed.
   //
 
-  instructions.push(...createLiquidatorAtaAInstructions.cleanup);
-  instructions.push(...createLiquidatorAtaBInstructions.cleanup);
+  instructions.push(...createFeeRecipientAtaAInstructions.cleanup);
+  instructions.push(...createFeeRecipientAtaBInstructions.cleanup);
 
   return instructions;
 }
 
-export async function liquidatePositionOrcaInstruction(
+export async function collectAndCompoundFeesOrcaInstruction(
   authority: TransactionSigner,
   tunaConfig: Account<TunaConfig, Address>,
   tunaPosition: Account<TunaPosition, Address>,
   vaultA: Account<Vault, Address>,
   vaultB: Account<Vault, Address>,
   whirlpool: Account<Whirlpool, Address>,
-  withdrawPercent: number,
+  useLeverage: boolean,
 ): Promise<IInstruction> {
   const mintA = whirlpool.data.tokenMintA;
   const mintB = whirlpool.data.tokenMintB;
@@ -128,24 +128,23 @@ export async function liquidatePositionOrcaInstruction(
     })
   )[0];
 
-  const liquidationFeeRecipientAtaA = (
+  const feeRecipientAtaA = (
     await findAssociatedTokenPda({
-      owner: tunaConfig.data.liquidatorAuthority,
+      owner: tunaConfig.data.feeRecipient,
       mint: mintA,
       tokenProgram: TOKEN_PROGRAM_ADDRESS,
     })
   )[0];
 
-  const liquidationFeeRecipientAtaB = (
+  const feeRecipientAtaB = (
     await findAssociatedTokenPda({
-      owner: tunaConfig.data.liquidatorAuthority,
+      owner: tunaConfig.data.feeRecipient,
       mint: mintB,
       tokenProgram: TOKEN_PROGRAM_ADDRESS,
     })
   )[0];
 
   const swapTickArrays = await getSwapTickArrayAddresses(whirlpool);
-
   const lowerTickArrayAddress = await getTickArrayAddressFromTickIndex(whirlpool, tunaPosition.data.tickLowerIndex);
   const upperTickArrayAddress = await getTickArrayAddressFromTickIndex(whirlpool, tunaPosition.data.tickUpperIndex);
 
@@ -162,7 +161,7 @@ export async function liquidatePositionOrcaInstruction(
     { address: orcaOracleAddress, role: AccountRole.WRITABLE },
   ];
 
-  const ix = getLiquidatePositionOrcaInstruction({
+  const ix = getCollectAndCompoundFeesOrcaInstruction({
     market: marketAddress,
     mintA,
     mintB,
@@ -177,13 +176,13 @@ export async function liquidatePositionOrcaInstruction(
     tunaPositionAta,
     tunaPositionAtaA,
     tunaPositionAtaB,
+    feeRecipientAtaA,
+    feeRecipientAtaB,
     orcaPosition: orcaPositionAddress,
     tunaPosition: tunaPosition.address,
-    liquidationFeeRecipientAtaA,
-    liquidationFeeRecipientAtaB,
     whirlpool: whirlpool.address,
     whirlpoolProgram: WHIRLPOOL_PROGRAM_ADDRESS,
-    withdrawPercent,
+    useLeverage,
   });
 
   // @ts-expect-error don't worry about the error

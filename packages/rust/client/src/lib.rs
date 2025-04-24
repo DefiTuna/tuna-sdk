@@ -1,7 +1,7 @@
 pub mod consts;
 pub mod implementation;
-pub mod ixbuilder;
 pub mod math;
+pub mod txbuilder;
 pub mod utils;
 
 mod generated;
@@ -27,6 +27,6 @@ pub use gpa::*;
 
 pub use consts::*;
 pub use implementation::*;
-pub use ixbuilder::*;
 pub use math::*;
 pub use pda::*;
+pub use txbuilder::*;
