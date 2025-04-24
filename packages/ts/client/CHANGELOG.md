@@ -1,5 +1,11 @@
 # @defituna/client
 
+## 1.0.20
+
+### Patch Changes
+
+- 4505283: Improved the transaction builder
+
 ## 1.0.19
 
 ### Patch Changes
