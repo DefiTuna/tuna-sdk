@@ -1,7 +1,7 @@
 use crate::accounts::{TunaPosition, Vault};
 use crate::instructions::{LiquidatePositionOrca, LiquidatePositionOrcaInstructionArgs};
 use crate::utils::orca::get_swap_tick_arrays;
-use crate::{get_tuna_config_address, get_tuna_position_address, get_vault_address};
+use crate::{get_market_address, get_tuna_config_address, get_tuna_position_address, get_vault_address};
 use orca_whirlpools_client::{get_oracle_address, get_position_address, get_tick_array_address, Whirlpool};
 use orca_whirlpools_core::get_tick_array_start_tick_index;
 use solana_program::instruction::{AccountMeta, Instruction};
@@ -11,30 +11,29 @@ use spl_associated_token_account::{get_associated_token_address, get_associated_
 
 pub fn liquidate_position_orca_instructions(
     authority: &Pubkey,
-    market_address: &Pubkey,
+    tuna_position: &TunaPosition,
     vault_a: &Vault,
     vault_b: &Vault,
-    tuna_position: &TunaPosition,
     whirlpool: &Whirlpool,
     withdraw_percent: u32,
 ) -> Vec<Instruction> {
     vec![
         create_associated_token_account_idempotent(authority, authority, &vault_a.mint, &spl_token::ID),
         create_associated_token_account_idempotent(authority, authority, &vault_b.mint, &spl_token::ID),
-        liquidate_position_orca_instruction(authority, market_address, vault_a, vault_b, tuna_position, whirlpool, withdraw_percent),
+        liquidate_position_orca_instruction(authority, tuna_position, vault_a, vault_b, whirlpool, withdraw_percent),
     ]
 }
 
 pub fn liquidate_position_orca_instruction(
     authority: &Pubkey,
-    market_address: &Pubkey,
+    tuna_position: &TunaPosition,
     vault_a: &Vault,
     vault_b: &Vault,
-    tuna_position: &TunaPosition,
     whirlpool: &Whirlpool,
     withdraw_percent: u32,
 ) -> Instruction {
     let tuna_config_address = get_tuna_config_address().0;
+    let market_address = get_market_address(&tuna_position.pool).0;
     let tuna_position_address = get_tuna_position_address(&tuna_position.position_mint).0;
 
     let vault_a_address = get_vault_address(&tuna_position.mint_a).0;
@@ -54,7 +53,7 @@ pub fn liquidate_position_orca_instruction(
         tuna_config: tuna_config_address,
         mint_a: tuna_position.mint_a,
         mint_b: tuna_position.mint_b,
-        market: *market_address,
+        market: market_address,
         vault_a: vault_a_address,
         vault_b: vault_b_address,
         vault_a_ata: get_associated_token_address(&vault_a_address, &tuna_position.mint_a),
