@@ -1,5 +1,11 @@
 # @defituna/client
 
+## 1.0.22
+
+### Patch Changes
+
+- 304b61e: Updated ts examples
+
 ## 1.0.21
 
 ### Patch Changes
