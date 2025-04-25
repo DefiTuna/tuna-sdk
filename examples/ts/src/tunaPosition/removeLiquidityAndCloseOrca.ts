@@ -363,8 +363,6 @@ export async function removeLiquidityAndClose(tunaPositionMint: Address): Promis
    */
   const closePositionOrcaTx = getClosePositionOrcaInstruction({
     authority: authority,
-    tunaConfig: tunaConfigPda,
-    whirlpool: whirlpoolPda,
     tunaPosition: tunaPositionPda,
     orcaPosition: orcaPositionPda,
     tunaPositionMint: tunaPositionMint,
@@ -373,8 +371,6 @@ export async function removeLiquidityAndClose(tunaPositionMint: Address): Promis
     tunaPositionAtaB: tunaPositionAtaB,
     whirlpoolProgram: WHIRLPOOL_PROGRAM_ADDRESS,
     token2022Program: TOKEN_2022_PROGRAM_ADDRESS,
-    tunaPositionOwnerAtaA: authorityAtaA,
-    tunaPositionOwnerAtaB: authorityAtaB,
   });
 
   /**

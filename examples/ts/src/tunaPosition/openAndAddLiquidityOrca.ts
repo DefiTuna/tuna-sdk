@@ -474,12 +474,16 @@ export async function openPositionAndAddLiquidity(): Promise<void> {
    */
   const openPositionOrcaIx = getOpenPositionOrcaInstruction({
     authority: authority,
+    mintA: whirlpoolAccount.data.tokenMintA,
+    mintB: whirlpoolAccount.data.tokenMintB,
     whirlpool: whirlpoolPda,
     market: marketPda,
     tunaPosition: tunaPositionPda,
     orcaPosition: orcaPositionPda,
     tunaPositionAta: tunaPositionAta,
     tunaPositionMint: newPositionMintKeypair,
+    tunaPositionAtaA: tunaPositionAtaA,
+    tunaPositionAtaB: tunaPositionAtaB,
     tickLowerIndex: tickLowerIndex,
     tickUpperIndex: tickUpperIndex,
     tickStopLossIndex: tickStopLossIndex,
