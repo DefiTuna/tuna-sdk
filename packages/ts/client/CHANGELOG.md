@@ -1,5 +1,11 @@
 # @defituna/client
 
+## 1.0.23
+
+### Patch Changes
+
+- 78dc7dc: Added instruction builders to rust client
+
 ## 1.0.22
 
 ### Patch Changes
