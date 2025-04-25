@@ -21,14 +21,14 @@ export async function removeLiquidityOrcaInstructions(
   vaultB: Account<Vault, Address>,
   whirlpool: Account<Whirlpool, Address>,
   args: RemoveLiquidityOrcaInstructionDataArgs,
-  setupInstructions?: IInstruction[],
+  createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
 ): Promise<IInstruction[]> {
   const mintA = whirlpool.data.tokenMintA;
   const mintB = whirlpool.data.tokenMintB;
   const instructions: IInstruction[] = [];
 
-  if (!setupInstructions) setupInstructions = instructions;
+  if (!createInstructions) createInstructions = instructions;
   if (!cleanupInstructions) cleanupInstructions = instructions;
 
   //
@@ -41,7 +41,7 @@ export async function removeLiquidityOrcaInstructions(
     authority.address,
     TOKEN_PROGRAM_ADDRESS,
   );
-  setupInstructions.push(...createUserAtaAInstructions.init);
+  createInstructions.push(...createUserAtaAInstructions.init);
 
   const createUserAtaBInstructions = await getCreateAtaInstructions(
     authority,
@@ -49,7 +49,7 @@ export async function removeLiquidityOrcaInstructions(
     authority.address,
     TOKEN_PROGRAM_ADDRESS,
   );
-  setupInstructions.push(...createUserAtaBInstructions.init);
+  createInstructions.push(...createUserAtaBInstructions.init);
 
   //
   // Finally add liquidity decrease instruction.

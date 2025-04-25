@@ -15,14 +15,14 @@ export async function collectFeesOrcaInstructions(
   authority: TransactionSigner,
   tunaPosition: Account<TunaPosition, Address>,
   whirlpool: Account<Whirlpool, Address>,
-  setupInstructions?: IInstruction[],
+  createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
 ): Promise<IInstruction[]> {
   const mintA = whirlpool.data.tokenMintA;
   const mintB = whirlpool.data.tokenMintB;
   const instructions: IInstruction[] = [];
 
-  if (!setupInstructions) setupInstructions = instructions;
+  if (!createInstructions) createInstructions = instructions;
   if (!cleanupInstructions) cleanupInstructions = instructions;
 
   //
@@ -35,7 +35,7 @@ export async function collectFeesOrcaInstructions(
     authority.address,
     TOKEN_PROGRAM_ADDRESS,
   );
-  setupInstructions.push(...createUserAtaAInstructions.init);
+  createInstructions.push(...createUserAtaAInstructions.init);
 
   const createUserAtaBInstructions = await getCreateAtaInstructions(
     authority,
@@ -43,10 +43,10 @@ export async function collectFeesOrcaInstructions(
     authority.address,
     TOKEN_PROGRAM_ADDRESS,
   );
-  setupInstructions.push(...createUserAtaBInstructions.init);
+  createInstructions.push(...createUserAtaBInstructions.init);
 
   //
-  // Add collect fees instruction.cd te
+  // Add collect fees instruction.
   //
 
   const ix = await collectFeesOrcaInstruction(authority, tunaPosition, whirlpool);

@@ -1,3 +1,6 @@
+use solana_program::pubkey;
+use solana_program::pubkey::Pubkey;
+
 pub const HUNDRED_PERCENT: u32 = 1000000;
 pub const LEVERAGE_ONE: u32 = HUNDRED_PERCENT; // 1.0x
 
@@ -22,4 +25,4 @@ pub const TUNA_POSITION_FLAGS_AUTO_COMPOUND_YIELD: u32 = 1 << 4;
 pub const TUNA_POSITION_FLAGS_AUTO_COMPOUND_YIELD_WITH_LEVERAGE: u32 = 1 << 5;
 pub const TUNA_POSITION_FLAGS_MASK: u32 = (1 << 6) - 1;
 
-pub const WP_NFT_UPDATE_AUTH: &str = "3axbTs2z5GBy6usVbNVoqEgZMng3vZvMnAoX29BFfwhr";
+pub const WP_NFT_UPDATE_AUTH: Pubkey = pubkey!("3axbTs2z5GBy6usVbNVoqEgZMng3vZvMnAoX29BFfwhr");

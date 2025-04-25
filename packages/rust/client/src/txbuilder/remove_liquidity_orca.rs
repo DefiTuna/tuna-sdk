@@ -1,40 +1,50 @@
 use crate::accounts::{TunaPosition, Vault};
-use crate::instructions::{LiquidatePositionOrca, LiquidatePositionOrcaInstructionArgs};
+use crate::instructions::{RemoveLiquidityOrca, RemoveLiquidityOrcaInstructionArgs};
+use crate::utils::get_create_ata_instructions;
 use crate::utils::orca::get_swap_tick_arrays;
 use crate::{get_market_address, get_tuna_config_address, get_tuna_position_address, get_vault_address};
 use orca_whirlpools_client::{get_oracle_address, get_position_address, get_tick_array_address, Whirlpool};
 use orca_whirlpools_core::get_tick_array_start_tick_index;
 use solana_program::instruction::{AccountMeta, Instruction};
 use solana_program::pubkey::Pubkey;
-use spl_associated_token_account::instruction::create_associated_token_account_idempotent;
 use spl_associated_token_account::{get_associated_token_address, get_associated_token_address_with_program_id};
 
-pub fn liquidate_position_orca_instructions(
+pub fn remove_liquidity_orca_instructions(
     authority: &Pubkey,
     tuna_position: &TunaPosition,
     vault_a: &Vault,
     vault_b: &Vault,
     whirlpool: &Whirlpool,
-    withdraw_percent: u32,
+    args: RemoveLiquidityOrcaInstructionArgs,
 ) -> Vec<Instruction> {
-    vec![
-        create_associated_token_account_idempotent(authority, authority, &vault_a.mint, &spl_token::ID),
-        create_associated_token_account_idempotent(authority, authority, &vault_b.mint, &spl_token::ID),
-        liquidate_position_orca_instruction(authority, tuna_position, vault_a, vault_b, whirlpool, withdraw_percent),
-    ]
+    let mint_a = whirlpool.token_mint_a;
+    let mint_b = whirlpool.token_mint_b;
+
+    let authority_ata_a_instructions = get_create_ata_instructions(&mint_a, authority, authority, &spl_token::ID, 0);
+    let authority_ata_b_instructions = get_create_ata_instructions(&mint_b, authority, authority, &spl_token::ID, 0);
+
+    let mut instructions = vec![];
+    instructions.extend(authority_ata_a_instructions.create);
+    instructions.extend(authority_ata_b_instructions.create);
+
+    instructions.push(remove_liquidity_orca_instruction(authority, tuna_position, vault_a, vault_b, whirlpool, args));
+
+    instructions.extend(authority_ata_a_instructions.cleanup);
+    instructions.extend(authority_ata_b_instructions.cleanup);
+
+    instructions
 }
 
-pub fn liquidate_position_orca_instruction(
+pub fn remove_liquidity_orca_instruction(
     authority: &Pubkey,
     tuna_position: &TunaPosition,
     vault_a: &Vault,
     vault_b: &Vault,
     whirlpool: &Whirlpool,
-    withdraw_percent: u32,
+    args: RemoveLiquidityOrcaInstructionArgs,
 ) -> Instruction {
     let mint_a = whirlpool.token_mint_a;
     let mint_b = whirlpool.token_mint_b;
-    let whirlpool_address = tuna_position.pool;
 
     assert_eq!(vault_a.mint, mint_a);
     assert_eq!(vault_b.mint, mint_b);
@@ -44,8 +54,13 @@ pub fn liquidate_position_orca_instruction(
     let tuna_config_address = get_tuna_config_address().0;
     let market_address = get_market_address(&tuna_position.pool).0;
     let tuna_position_address = get_tuna_position_address(&tuna_position.position_mint).0;
+
+    let tuna_position_owner_ata_a = get_associated_token_address(&authority, &mint_a);
+    let tuna_position_owner_ata_b = get_associated_token_address(&authority, &mint_b);
+
     let vault_a_address = get_vault_address(&mint_a).0;
     let vault_b_address = get_vault_address(&mint_b).0;
+    let whirlpool_address = tuna_position.pool;
 
     let tick_array_lower_start_tick_index = get_tick_array_start_tick_index(tuna_position.tick_lower_index, whirlpool.tick_spacing);
     let tick_array_lower_address = get_tick_array_address(&whirlpool_address, tick_array_lower_start_tick_index).unwrap().0;
@@ -55,22 +70,22 @@ pub fn liquidate_position_orca_instruction(
 
     let swap_ticks_arrays = get_swap_tick_arrays(whirlpool.tick_current_index, whirlpool.tick_spacing, &whirlpool_address);
 
-    let ix_builder = LiquidatePositionOrca {
+    let ix_builder = RemoveLiquidityOrca {
         authority: *authority,
         tuna_config: tuna_config_address,
-        mint_a,
-        mint_b,
+        mint_a: tuna_position.mint_a,
+        mint_b: tuna_position.mint_b,
         market: market_address,
         vault_a: vault_a_address,
         vault_b: vault_b_address,
-        vault_a_ata: get_associated_token_address(&vault_a_address, &mint_a),
-        vault_b_ata: get_associated_token_address(&vault_b_address, &mint_b),
+        vault_a_ata: get_associated_token_address(&vault_a_address, &tuna_position.mint_a),
+        vault_b_ata: get_associated_token_address(&vault_b_address, &tuna_position.mint_b),
         tuna_position: tuna_position_address,
         tuna_position_ata: get_associated_token_address_with_program_id(&tuna_position_address, &tuna_position.position_mint, &spl_token_2022::ID),
-        tuna_position_ata_a: get_associated_token_address(&tuna_position_address, &mint_a),
-        tuna_position_ata_b: get_associated_token_address(&tuna_position_address, &mint_b),
-        liquidation_fee_recipient_ata_a: get_associated_token_address(authority, &mint_a),
-        liquidation_fee_recipient_ata_b: get_associated_token_address(authority, &mint_b),
+        tuna_position_ata_a: get_associated_token_address(&tuna_position_address, &tuna_position.mint_a),
+        tuna_position_ata_b: get_associated_token_address(&tuna_position_address, &tuna_position.mint_b),
+        tuna_position_owner_ata_a,
+        tuna_position_owner_ata_b,
         pyth_oracle_price_feed_a: vault_a.pyth_oracle_price_update,
         pyth_oracle_price_feed_b: vault_b.pyth_oracle_price_update,
         whirlpool_program: orca_whirlpools_client::ID,
@@ -80,7 +95,7 @@ pub fn liquidate_position_orca_instruction(
     };
 
     ix_builder.instruction_with_remaining_accounts(
-        LiquidatePositionOrcaInstructionArgs { withdraw_percent },
+        args,
         &[
             AccountMeta::new(swap_ticks_arrays[0], false),
             AccountMeta::new(swap_ticks_arrays[1], false),

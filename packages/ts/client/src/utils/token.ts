@@ -51,6 +51,7 @@ export async function getCreateAtaInstructions(
       init.push(getSyncNativeInstruction({ account: ata }, { programAddress: tokenProgram }));
     }
 
+    // Close WSOL account on the cleanup stage if the token account belongs to the payer.
     if (owner == payer.address) {
       cleanup.push(
         getCloseAccountInstruction(

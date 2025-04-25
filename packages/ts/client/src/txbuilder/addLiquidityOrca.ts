@@ -43,14 +43,14 @@ export async function addLiquidityOrcaInstructions(
   vaultB: Account<Vault, Address>,
   whirlpool: Account<Whirlpool, Address>,
   args: AddLiquidityOrcaInstructionDataArgs,
-  setupInstructions?: IInstruction[],
+  createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
 ): Promise<IInstruction[]> {
   const mintA = whirlpool.data.tokenMintA;
   const mintB = whirlpool.data.tokenMintB;
   const instructions: IInstruction[] = [];
 
-  if (!setupInstructions) setupInstructions = instructions;
+  if (!createInstructions) createInstructions = instructions;
   if (!cleanupInstructions) cleanupInstructions = instructions;
 
   //
@@ -64,7 +64,7 @@ export async function addLiquidityOrcaInstructions(
     TOKEN_PROGRAM_ADDRESS,
     args.collateralA,
   );
-  setupInstructions.push(...createUserAtaAInstructions.init);
+  createInstructions.push(...createUserAtaAInstructions.init);
 
   const createUserAtaBInstructions = await getCreateAtaInstructions(
     authority,
@@ -73,7 +73,7 @@ export async function addLiquidityOrcaInstructions(
     TOKEN_PROGRAM_ADDRESS,
     args.collateralB,
   );
-  setupInstructions.push(...createUserAtaBInstructions.init);
+  createInstructions.push(...createUserAtaBInstructions.init);
 
   //
   // Add create fee recipient's token account instructions if needed.
@@ -85,7 +85,7 @@ export async function addLiquidityOrcaInstructions(
     tunaConfig.data.feeRecipient,
     TOKEN_PROGRAM_ADDRESS,
   );
-  setupInstructions.push(...createFeeRecipientAtaAInstructions.init);
+  createInstructions.push(...createFeeRecipientAtaAInstructions.init);
 
   const createFeeRecipientAtaBInstructions = await getCreateAtaInstructions(
     authority,
@@ -93,7 +93,7 @@ export async function addLiquidityOrcaInstructions(
     tunaConfig.data.feeRecipient,
     TOKEN_PROGRAM_ADDRESS,
   );
-  setupInstructions.push(...createFeeRecipientAtaBInstructions.init);
+  createInstructions.push(...createFeeRecipientAtaBInstructions.init);
 
   //
   // Add create tick arrays instructions if needed.
