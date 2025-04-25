@@ -2,7 +2,7 @@
   "address": "tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD",
   "metadata": {
     "name": "tuna",
-    "version": "1.0.63",
+    "version": "1.0.64",
     "spec": "0.1.0",
     "description": "DefiTuna"
   },
@@ -177,9 +177,6 @@
           "signer": true
         },
         {
-          "name": "tuna_config"
-        },
-        {
           "name": "tuna_position",
           "writable": true
         },
@@ -200,23 +197,12 @@
           "writable": true
         },
         {
-          "name": "tuna_position_owner_ata_a",
-          "writable": true
-        },
-        {
-          "name": "tuna_position_owner_ata_b",
-          "writable": true
-        },
-        {
           "name": "whirlpool_program",
           "docs": [
             "",
             "ORCA accounts",
             ""
           ]
-        },
-        {
-          "name": "whirlpool"
         },
         {
           "name": "orca_position",
@@ -942,6 +928,12 @@
           "signer": true
         },
         {
+          "name": "mint_a"
+        },
+        {
+          "name": "mint_b"
+        },
+        {
           "name": "market"
         },
         {
@@ -955,6 +947,14 @@
         },
         {
           "name": "tuna_position_ata",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_a",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_b",
           "writable": true
         },
         {
@@ -976,12 +976,15 @@
           "name": "metadata_update_auth"
         },
         {
-          "name": "token_2022_program",
+          "name": "token_program",
           "docs": [
             "",
             "Other accounts",
             ""
           ]
+        },
+        {
+          "name": "token_2022_program"
         },
         {
           "name": "system_program"
@@ -2132,121 +2135,126 @@
     },
     {
       "code": 6027,
+      "name": "PositionNotEmpty",
+      "msg": "PositionNotEmpty"
+    },
+    {
+      "code": 6028,
       "name": "ProtocolFeeIsOutOfRange",
       "msg": "ProtocolFeeIsOutOfRange"
     },
     {
-      "code": 6028,
+      "code": 6029,
       "name": "SolverFailedToFindRoot",
       "msg": "SolverFailedToFindRoot"
     },
     {
-      "code": 6029,
+      "code": 6030,
       "name": "SqrtPriceOutOfBounds",
       "msg": "SqrtPriceOutOfBounds"
     },
     {
-      "code": 6030,
+      "code": 6031,
       "name": "SupplyLimitExceeded",
       "msg": "SupplyLimitExceeded"
     },
     {
-      "code": 6031,
+      "code": 6032,
       "name": "Suspended",
       "msg": "Suspended"
     },
     {
-      "code": 6032,
+      "code": 6033,
       "name": "SwapSlippageExceeded",
       "msg": "SwapSlippageExceeded"
     },
     {
-      "code": 6033,
+      "code": 6034,
       "name": "SwapSlippageIsOutOfRange",
       "msg": "SwapSlippageIsOutOfRange"
     },
     {
-      "code": 6034,
+      "code": 6035,
       "name": "TickIndexOfBounds",
       "msg": "TickIndexOfBounds"
     },
     {
-      "code": 6035,
+      "code": 6036,
       "name": "TypeCastOverflow",
       "msg": "TypeCastOverflow"
     },
     {
-      "code": 6036,
+      "code": 6037,
       "name": "UnexpectedValue",
       "msg": "UnexpectedValue"
     },
     {
-      "code": 6037,
+      "code": 6038,
       "name": "VaultNotInitialized",
       "msg": "VaultNotInitialized"
     },
     {
-      "code": 6038,
+      "code": 6039,
       "name": "WithdrawRequestExceedsUserBalance",
       "msg": "WithdrawRequestExceedsUserBalance"
     },
     {
-      "code": 6039,
+      "code": 6040,
       "name": "ZeroPriceRange",
       "msg": "ZeroPriceRange"
     },
     {
-      "code": 6040,
+      "code": 6041,
       "name": "ZeroTradableAmount",
       "msg": "There are no tradable amount to swap."
     },
     {
-      "code": 6041,
+      "code": 6042,
       "name": "ZeroYield",
       "msg": "ZeroYield"
     },
     {
-      "code": 6042,
+      "code": 6043,
       "name": "RaydiumInvalidFirstTickArrayAccount",
       "msg": "RaydiumInvalidFirstTickArrayAccount"
     },
     {
-      "code": 6043,
+      "code": 6044,
       "name": "RaydiumInvalidTickArray",
       "msg": "RaydiumInvalidTickArray"
     },
     {
-      "code": 6044,
+      "code": 6045,
       "name": "RaydiumInvaildTickIndex",
       "msg": "RaydiumInvaildTickIndex"
     },
     {
-      "code": 6045,
+      "code": 6046,
       "name": "RaydiumMaxTokenOverflow",
       "msg": "RaydiumMaxTokenOverflow"
     },
     {
-      "code": 6046,
+      "code": 6047,
       "name": "RaydiumNotEnoughTickArrayAccount",
       "msg": "RaydiumNotEnoughTickArrayAccount"
     },
     {
-      "code": 6047,
+      "code": 6048,
       "name": "RaydiumSqrtPriceLimitOverflow",
       "msg": "RaydiumSqrtPriceLimitOverflow"
     },
     {
-      "code": 6048,
+      "code": 6049,
       "name": "RaydiumZeroAmountSpecified",
       "msg": "RaydiumZeroAmountSpecified"
     },
     {
-      "code": 6049,
+      "code": 6050,
       "name": "UnableToLoadAccountData",
       "msg": "UnableToLoadAccountData"
     },
     {
-      "code": 6050,
+      "code": 6051,
       "name": "UnableToDeserializeAccountData",
       "msg": "UnableToDeserializeAccountData"
     }

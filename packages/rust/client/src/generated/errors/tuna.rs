@@ -91,78 +91,81 @@ pub enum TunaError {
     /// 6026 - PositionIsUnhealthy
     #[error("PositionIsUnhealthy")]
     PositionIsUnhealthy = 0x178A,
-    /// 6027 - ProtocolFeeIsOutOfRange
+    /// 6027 - PositionNotEmpty
+    #[error("PositionNotEmpty")]
+    PositionNotEmpty = 0x178B,
+    /// 6028 - ProtocolFeeIsOutOfRange
     #[error("ProtocolFeeIsOutOfRange")]
-    ProtocolFeeIsOutOfRange = 0x178B,
-    /// 6028 - SolverFailedToFindRoot
+    ProtocolFeeIsOutOfRange = 0x178C,
+    /// 6029 - SolverFailedToFindRoot
     #[error("SolverFailedToFindRoot")]
-    SolverFailedToFindRoot = 0x178C,
-    /// 6029 - SqrtPriceOutOfBounds
+    SolverFailedToFindRoot = 0x178D,
+    /// 6030 - SqrtPriceOutOfBounds
     #[error("SqrtPriceOutOfBounds")]
-    SqrtPriceOutOfBounds = 0x178D,
-    /// 6030 - SupplyLimitExceeded
+    SqrtPriceOutOfBounds = 0x178E,
+    /// 6031 - SupplyLimitExceeded
     #[error("SupplyLimitExceeded")]
-    SupplyLimitExceeded = 0x178E,
-    /// 6031 - Suspended
+    SupplyLimitExceeded = 0x178F,
+    /// 6032 - Suspended
     #[error("Suspended")]
-    Suspended = 0x178F,
-    /// 6032 - SwapSlippageExceeded
+    Suspended = 0x1790,
+    /// 6033 - SwapSlippageExceeded
     #[error("SwapSlippageExceeded")]
-    SwapSlippageExceeded = 0x1790,
-    /// 6033 - SwapSlippageIsOutOfRange
+    SwapSlippageExceeded = 0x1791,
+    /// 6034 - SwapSlippageIsOutOfRange
     #[error("SwapSlippageIsOutOfRange")]
-    SwapSlippageIsOutOfRange = 0x1791,
-    /// 6034 - TickIndexOfBounds
+    SwapSlippageIsOutOfRange = 0x1792,
+    /// 6035 - TickIndexOfBounds
     #[error("TickIndexOfBounds")]
-    TickIndexOfBounds = 0x1792,
-    /// 6035 - TypeCastOverflow
+    TickIndexOfBounds = 0x1793,
+    /// 6036 - TypeCastOverflow
     #[error("TypeCastOverflow")]
-    TypeCastOverflow = 0x1793,
-    /// 6036 - UnexpectedValue
+    TypeCastOverflow = 0x1794,
+    /// 6037 - UnexpectedValue
     #[error("UnexpectedValue")]
-    UnexpectedValue = 0x1794,
-    /// 6037 - VaultNotInitialized
+    UnexpectedValue = 0x1795,
+    /// 6038 - VaultNotInitialized
     #[error("VaultNotInitialized")]
-    VaultNotInitialized = 0x1795,
-    /// 6038 - WithdrawRequestExceedsUserBalance
+    VaultNotInitialized = 0x1796,
+    /// 6039 - WithdrawRequestExceedsUserBalance
     #[error("WithdrawRequestExceedsUserBalance")]
-    WithdrawRequestExceedsUserBalance = 0x1796,
-    /// 6039 - ZeroPriceRange
+    WithdrawRequestExceedsUserBalance = 0x1797,
+    /// 6040 - ZeroPriceRange
     #[error("ZeroPriceRange")]
-    ZeroPriceRange = 0x1797,
-    /// 6040 - There are no tradable amount to swap.
+    ZeroPriceRange = 0x1798,
+    /// 6041 - There are no tradable amount to swap.
     #[error("There are no tradable amount to swap.")]
-    ZeroTradableAmount = 0x1798,
-    /// 6041 - ZeroYield
+    ZeroTradableAmount = 0x1799,
+    /// 6042 - ZeroYield
     #[error("ZeroYield")]
-    ZeroYield = 0x1799,
-    /// 6042 - RaydiumInvalidFirstTickArrayAccount
+    ZeroYield = 0x179A,
+    /// 6043 - RaydiumInvalidFirstTickArrayAccount
     #[error("RaydiumInvalidFirstTickArrayAccount")]
-    RaydiumInvalidFirstTickArrayAccount = 0x179A,
-    /// 6043 - RaydiumInvalidTickArray
+    RaydiumInvalidFirstTickArrayAccount = 0x179B,
+    /// 6044 - RaydiumInvalidTickArray
     #[error("RaydiumInvalidTickArray")]
-    RaydiumInvalidTickArray = 0x179B,
-    /// 6044 - RaydiumInvaildTickIndex
+    RaydiumInvalidTickArray = 0x179C,
+    /// 6045 - RaydiumInvaildTickIndex
     #[error("RaydiumInvaildTickIndex")]
-    RaydiumInvaildTickIndex = 0x179C,
-    /// 6045 - RaydiumMaxTokenOverflow
+    RaydiumInvaildTickIndex = 0x179D,
+    /// 6046 - RaydiumMaxTokenOverflow
     #[error("RaydiumMaxTokenOverflow")]
-    RaydiumMaxTokenOverflow = 0x179D,
-    /// 6046 - RaydiumNotEnoughTickArrayAccount
+    RaydiumMaxTokenOverflow = 0x179E,
+    /// 6047 - RaydiumNotEnoughTickArrayAccount
     #[error("RaydiumNotEnoughTickArrayAccount")]
-    RaydiumNotEnoughTickArrayAccount = 0x179E,
-    /// 6047 - RaydiumSqrtPriceLimitOverflow
+    RaydiumNotEnoughTickArrayAccount = 0x179F,
+    /// 6048 - RaydiumSqrtPriceLimitOverflow
     #[error("RaydiumSqrtPriceLimitOverflow")]
-    RaydiumSqrtPriceLimitOverflow = 0x179F,
-    /// 6048 - RaydiumZeroAmountSpecified
+    RaydiumSqrtPriceLimitOverflow = 0x17A0,
+    /// 6049 - RaydiumZeroAmountSpecified
     #[error("RaydiumZeroAmountSpecified")]
-    RaydiumZeroAmountSpecified = 0x17A0,
-    /// 6049 - UnableToLoadAccountData
+    RaydiumZeroAmountSpecified = 0x17A1,
+    /// 6050 - UnableToLoadAccountData
     #[error("UnableToLoadAccountData")]
-    UnableToLoadAccountData = 0x17A1,
-    /// 6050 - UnableToDeserializeAccountData
+    UnableToLoadAccountData = 0x17A2,
+    /// 6051 - UnableToDeserializeAccountData
     #[error("UnableToDeserializeAccountData")]
-    UnableToDeserializeAccountData = 0x17A2,
+    UnableToDeserializeAccountData = 0x17A3,
 }
 
 impl solana_program::program_error::PrintProgramError for TunaError {

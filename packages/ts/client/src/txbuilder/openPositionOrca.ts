@@ -2,7 +2,6 @@ import { type Account, Address, IInstruction, TransactionSigner } from "@solana/
 import {
   ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
   findAssociatedTokenPda,
-  getCreateAssociatedTokenInstruction,
   TOKEN_2022_PROGRAM_ADDRESS,
 } from "@solana-program/token-2022";
 import { getPositionAddress, Whirlpool, WHIRLPOOL_PROGRAM_ADDRESS } from "@orca-so/whirlpools-client";
@@ -15,12 +14,12 @@ import {
   WP_NFT_UPDATE_AUTH,
 } from "../index.ts";
 
-export async function openPositionOrcaInstructions(
+export async function openPositionOrcaInstruction(
   authority: TransactionSigner,
   positionMint: TransactionSigner,
   whirlpool: Account<Whirlpool, Address>,
   args: Omit<OpenPositionOrcaInstructionData, "discriminator">,
-): Promise<IInstruction[]> {
+): Promise<IInstruction> {
   const mintA = whirlpool.data.tokenMintA;
   const mintB = whirlpool.data.tokenMintB;
 
@@ -52,36 +51,22 @@ export async function openPositionOrcaInstructions(
     })
   )[0];
 
-  return [
-    getCreateAssociatedTokenInstruction({
-      payer: authority,
-      owner: tunaPositionAddress,
-      ata: tunaPositionAtaA,
-      mint: mintA,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
-    }),
-
-    getCreateAssociatedTokenInstruction({
-      payer: authority,
-      owner: tunaPositionAddress,
-      ata: tunaPositionAtaB,
-      mint: mintB,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
-    }),
-
-    getOpenPositionOrcaInstruction({
-      authority,
-      market: marketAddress,
-      orcaPosition: orcaPositionAddress,
-      tunaPosition: tunaPositionAddress,
-      tunaPositionAta,
-      tunaPositionMint: positionMint,
-      whirlpoolProgram: WHIRLPOOL_PROGRAM_ADDRESS,
-      whirlpool: whirlpool.address,
-      metadataUpdateAuth: WP_NFT_UPDATE_AUTH,
-      associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
-      token2022Program: TOKEN_2022_PROGRAM_ADDRESS,
-      ...args,
-    }),
-  ];
+  return getOpenPositionOrcaInstruction({
+    authority,
+    market: marketAddress,
+    mintA,
+    mintB,
+    orcaPosition: orcaPositionAddress,
+    tunaPosition: tunaPositionAddress,
+    tunaPositionMint: positionMint,
+    tunaPositionAta,
+    tunaPositionAtaA,
+    tunaPositionAtaB,
+    whirlpoolProgram: WHIRLPOOL_PROGRAM_ADDRESS,
+    whirlpool: whirlpool.address,
+    metadataUpdateAuth: WP_NFT_UPDATE_AUTH,
+    associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
+    token2022Program: TOKEN_2022_PROGRAM_ADDRESS,
+    ...args,
+  });
 }

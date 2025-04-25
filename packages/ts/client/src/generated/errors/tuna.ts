@@ -68,54 +68,56 @@ export const TUNA_ERROR__POSITION_IS_HEALTHY = 0x1788; // 6024
 export const TUNA_ERROR__POSITION_IS_LIQUIDATED = 0x1789; // 6025
 /** PositionIsUnhealthy: PositionIsUnhealthy */
 export const TUNA_ERROR__POSITION_IS_UNHEALTHY = 0x178a; // 6026
+/** PositionNotEmpty: PositionNotEmpty */
+export const TUNA_ERROR__POSITION_NOT_EMPTY = 0x178b; // 6027
 /** ProtocolFeeIsOutOfRange: ProtocolFeeIsOutOfRange */
-export const TUNA_ERROR__PROTOCOL_FEE_IS_OUT_OF_RANGE = 0x178b; // 6027
+export const TUNA_ERROR__PROTOCOL_FEE_IS_OUT_OF_RANGE = 0x178c; // 6028
 /** SolverFailedToFindRoot: SolverFailedToFindRoot */
-export const TUNA_ERROR__SOLVER_FAILED_TO_FIND_ROOT = 0x178c; // 6028
+export const TUNA_ERROR__SOLVER_FAILED_TO_FIND_ROOT = 0x178d; // 6029
 /** SqrtPriceOutOfBounds: SqrtPriceOutOfBounds */
-export const TUNA_ERROR__SQRT_PRICE_OUT_OF_BOUNDS = 0x178d; // 6029
+export const TUNA_ERROR__SQRT_PRICE_OUT_OF_BOUNDS = 0x178e; // 6030
 /** SupplyLimitExceeded: SupplyLimitExceeded */
-export const TUNA_ERROR__SUPPLY_LIMIT_EXCEEDED = 0x178e; // 6030
+export const TUNA_ERROR__SUPPLY_LIMIT_EXCEEDED = 0x178f; // 6031
 /** Suspended: Suspended */
-export const TUNA_ERROR__SUSPENDED = 0x178f; // 6031
+export const TUNA_ERROR__SUSPENDED = 0x1790; // 6032
 /** SwapSlippageExceeded: SwapSlippageExceeded */
-export const TUNA_ERROR__SWAP_SLIPPAGE_EXCEEDED = 0x1790; // 6032
+export const TUNA_ERROR__SWAP_SLIPPAGE_EXCEEDED = 0x1791; // 6033
 /** SwapSlippageIsOutOfRange: SwapSlippageIsOutOfRange */
-export const TUNA_ERROR__SWAP_SLIPPAGE_IS_OUT_OF_RANGE = 0x1791; // 6033
+export const TUNA_ERROR__SWAP_SLIPPAGE_IS_OUT_OF_RANGE = 0x1792; // 6034
 /** TickIndexOfBounds: TickIndexOfBounds */
-export const TUNA_ERROR__TICK_INDEX_OF_BOUNDS = 0x1792; // 6034
+export const TUNA_ERROR__TICK_INDEX_OF_BOUNDS = 0x1793; // 6035
 /** TypeCastOverflow: TypeCastOverflow */
-export const TUNA_ERROR__TYPE_CAST_OVERFLOW = 0x1793; // 6035
+export const TUNA_ERROR__TYPE_CAST_OVERFLOW = 0x1794; // 6036
 /** UnexpectedValue: UnexpectedValue */
-export const TUNA_ERROR__UNEXPECTED_VALUE = 0x1794; // 6036
+export const TUNA_ERROR__UNEXPECTED_VALUE = 0x1795; // 6037
 /** VaultNotInitialized: VaultNotInitialized */
-export const TUNA_ERROR__VAULT_NOT_INITIALIZED = 0x1795; // 6037
+export const TUNA_ERROR__VAULT_NOT_INITIALIZED = 0x1796; // 6038
 /** WithdrawRequestExceedsUserBalance: WithdrawRequestExceedsUserBalance */
-export const TUNA_ERROR__WITHDRAW_REQUEST_EXCEEDS_USER_BALANCE = 0x1796; // 6038
+export const TUNA_ERROR__WITHDRAW_REQUEST_EXCEEDS_USER_BALANCE = 0x1797; // 6039
 /** ZeroPriceRange: ZeroPriceRange */
-export const TUNA_ERROR__ZERO_PRICE_RANGE = 0x1797; // 6039
+export const TUNA_ERROR__ZERO_PRICE_RANGE = 0x1798; // 6040
 /** ZeroTradableAmount: There are no tradable amount to swap. */
-export const TUNA_ERROR__ZERO_TRADABLE_AMOUNT = 0x1798; // 6040
+export const TUNA_ERROR__ZERO_TRADABLE_AMOUNT = 0x1799; // 6041
 /** ZeroYield: ZeroYield */
-export const TUNA_ERROR__ZERO_YIELD = 0x1799; // 6041
+export const TUNA_ERROR__ZERO_YIELD = 0x179a; // 6042
 /** RaydiumInvalidFirstTickArrayAccount: RaydiumInvalidFirstTickArrayAccount */
-export const TUNA_ERROR__RAYDIUM_INVALID_FIRST_TICK_ARRAY_ACCOUNT = 0x179a; // 6042
+export const TUNA_ERROR__RAYDIUM_INVALID_FIRST_TICK_ARRAY_ACCOUNT = 0x179b; // 6043
 /** RaydiumInvalidTickArray: RaydiumInvalidTickArray */
-export const TUNA_ERROR__RAYDIUM_INVALID_TICK_ARRAY = 0x179b; // 6043
+export const TUNA_ERROR__RAYDIUM_INVALID_TICK_ARRAY = 0x179c; // 6044
 /** RaydiumInvaildTickIndex: RaydiumInvaildTickIndex */
-export const TUNA_ERROR__RAYDIUM_INVAILD_TICK_INDEX = 0x179c; // 6044
+export const TUNA_ERROR__RAYDIUM_INVAILD_TICK_INDEX = 0x179d; // 6045
 /** RaydiumMaxTokenOverflow: RaydiumMaxTokenOverflow */
-export const TUNA_ERROR__RAYDIUM_MAX_TOKEN_OVERFLOW = 0x179d; // 6045
+export const TUNA_ERROR__RAYDIUM_MAX_TOKEN_OVERFLOW = 0x179e; // 6046
 /** RaydiumNotEnoughTickArrayAccount: RaydiumNotEnoughTickArrayAccount */
-export const TUNA_ERROR__RAYDIUM_NOT_ENOUGH_TICK_ARRAY_ACCOUNT = 0x179e; // 6046
+export const TUNA_ERROR__RAYDIUM_NOT_ENOUGH_TICK_ARRAY_ACCOUNT = 0x179f; // 6047
 /** RaydiumSqrtPriceLimitOverflow: RaydiumSqrtPriceLimitOverflow */
-export const TUNA_ERROR__RAYDIUM_SQRT_PRICE_LIMIT_OVERFLOW = 0x179f; // 6047
+export const TUNA_ERROR__RAYDIUM_SQRT_PRICE_LIMIT_OVERFLOW = 0x17a0; // 6048
 /** RaydiumZeroAmountSpecified: RaydiumZeroAmountSpecified */
-export const TUNA_ERROR__RAYDIUM_ZERO_AMOUNT_SPECIFIED = 0x17a0; // 6048
+export const TUNA_ERROR__RAYDIUM_ZERO_AMOUNT_SPECIFIED = 0x17a1; // 6049
 /** UnableToLoadAccountData: UnableToLoadAccountData */
-export const TUNA_ERROR__UNABLE_TO_LOAD_ACCOUNT_DATA = 0x17a1; // 6049
+export const TUNA_ERROR__UNABLE_TO_LOAD_ACCOUNT_DATA = 0x17a2; // 6050
 /** UnableToDeserializeAccountData: UnableToDeserializeAccountData */
-export const TUNA_ERROR__UNABLE_TO_DESERIALIZE_ACCOUNT_DATA = 0x17a2; // 6050
+export const TUNA_ERROR__UNABLE_TO_DESERIALIZE_ACCOUNT_DATA = 0x17a3; // 6051
 
 export type TunaError =
   | typeof TUNA_ERROR__AMOUNT_SLIPPAGE_EXCEEDED
@@ -145,6 +147,7 @@ export type TunaError =
   | typeof TUNA_ERROR__POSITION_IS_HEALTHY
   | typeof TUNA_ERROR__POSITION_IS_LIQUIDATED
   | typeof TUNA_ERROR__POSITION_IS_UNHEALTHY
+  | typeof TUNA_ERROR__POSITION_NOT_EMPTY
   | typeof TUNA_ERROR__PROTOCOL_FEE_IS_OUT_OF_RANGE
   | typeof TUNA_ERROR__RAYDIUM_INVAILD_TICK_INDEX
   | typeof TUNA_ERROR__RAYDIUM_INVALID_FIRST_TICK_ARRAY_ACCOUNT
@@ -200,6 +203,7 @@ if (process.env.NODE_ENV !== 'production') {
     [TUNA_ERROR__POSITION_IS_HEALTHY]: `PositionIsHealthy`,
     [TUNA_ERROR__POSITION_IS_LIQUIDATED]: `PositionIsLiquidated`,
     [TUNA_ERROR__POSITION_IS_UNHEALTHY]: `PositionIsUnhealthy`,
+    [TUNA_ERROR__POSITION_NOT_EMPTY]: `PositionNotEmpty`,
     [TUNA_ERROR__PROTOCOL_FEE_IS_OUT_OF_RANGE]: `ProtocolFeeIsOutOfRange`,
     [TUNA_ERROR__RAYDIUM_INVAILD_TICK_INDEX]: `RaydiumInvaildTickIndex`,
     [TUNA_ERROR__RAYDIUM_INVALID_FIRST_TICK_ARRAY_ACCOUNT]: `RaydiumInvalidFirstTickArrayAccount`,

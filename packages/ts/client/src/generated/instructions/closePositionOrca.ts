@@ -46,16 +46,12 @@ export function getClosePositionOrcaDiscriminatorBytes() {
 export type ClosePositionOrcaInstruction<
   TProgram extends string = typeof TUNA_PROGRAM_ADDRESS,
   TAccountAuthority extends string | IAccountMeta<string> = string,
-  TAccountTunaConfig extends string | IAccountMeta<string> = string,
   TAccountTunaPosition extends string | IAccountMeta<string> = string,
   TAccountTunaPositionMint extends string | IAccountMeta<string> = string,
   TAccountTunaPositionAta extends string | IAccountMeta<string> = string,
   TAccountTunaPositionAtaA extends string | IAccountMeta<string> = string,
   TAccountTunaPositionAtaB extends string | IAccountMeta<string> = string,
-  TAccountTunaPositionOwnerAtaA extends string | IAccountMeta<string> = string,
-  TAccountTunaPositionOwnerAtaB extends string | IAccountMeta<string> = string,
   TAccountWhirlpoolProgram extends string | IAccountMeta<string> = string,
-  TAccountWhirlpool extends string | IAccountMeta<string> = string,
   TAccountOrcaPosition extends string | IAccountMeta<string> = string,
   TAccountTokenProgram extends
     | string
@@ -70,9 +66,6 @@ export type ClosePositionOrcaInstruction<
         ? WritableSignerAccount<TAccountAuthority> &
             IAccountSignerMeta<TAccountAuthority>
         : TAccountAuthority,
-      TAccountTunaConfig extends string
-        ? ReadonlyAccount<TAccountTunaConfig>
-        : TAccountTunaConfig,
       TAccountTunaPosition extends string
         ? WritableAccount<TAccountTunaPosition>
         : TAccountTunaPosition,
@@ -88,18 +81,9 @@ export type ClosePositionOrcaInstruction<
       TAccountTunaPositionAtaB extends string
         ? WritableAccount<TAccountTunaPositionAtaB>
         : TAccountTunaPositionAtaB,
-      TAccountTunaPositionOwnerAtaA extends string
-        ? WritableAccount<TAccountTunaPositionOwnerAtaA>
-        : TAccountTunaPositionOwnerAtaA,
-      TAccountTunaPositionOwnerAtaB extends string
-        ? WritableAccount<TAccountTunaPositionOwnerAtaB>
-        : TAccountTunaPositionOwnerAtaB,
       TAccountWhirlpoolProgram extends string
         ? ReadonlyAccount<TAccountWhirlpoolProgram>
         : TAccountWhirlpoolProgram,
-      TAccountWhirlpool extends string
-        ? ReadonlyAccount<TAccountWhirlpool>
-        : TAccountWhirlpool,
       TAccountOrcaPosition extends string
         ? WritableAccount<TAccountOrcaPosition>
         : TAccountOrcaPosition,
@@ -144,16 +128,12 @@ export function getClosePositionOrcaInstructionDataCodec(): Codec<
 
 export type ClosePositionOrcaInput<
   TAccountAuthority extends string = string,
-  TAccountTunaConfig extends string = string,
   TAccountTunaPosition extends string = string,
   TAccountTunaPositionMint extends string = string,
   TAccountTunaPositionAta extends string = string,
   TAccountTunaPositionAtaA extends string = string,
   TAccountTunaPositionAtaB extends string = string,
-  TAccountTunaPositionOwnerAtaA extends string = string,
-  TAccountTunaPositionOwnerAtaB extends string = string,
   TAccountWhirlpoolProgram extends string = string,
-  TAccountWhirlpool extends string = string,
   TAccountOrcaPosition extends string = string,
   TAccountTokenProgram extends string = string,
   TAccountToken2022Program extends string = string,
@@ -164,21 +144,17 @@ export type ClosePositionOrcaInput<
    *
    */
   authority: TransactionSigner<TAccountAuthority>;
-  tunaConfig: Address<TAccountTunaConfig>;
   tunaPosition: Address<TAccountTunaPosition>;
   tunaPositionMint: Address<TAccountTunaPositionMint>;
   tunaPositionAta: Address<TAccountTunaPositionAta>;
   tunaPositionAtaA: Address<TAccountTunaPositionAtaA>;
   tunaPositionAtaB: Address<TAccountTunaPositionAtaB>;
-  tunaPositionOwnerAtaA: Address<TAccountTunaPositionOwnerAtaA>;
-  tunaPositionOwnerAtaB: Address<TAccountTunaPositionOwnerAtaB>;
   /**
    *
    * ORCA accounts
    *
    */
   whirlpoolProgram: Address<TAccountWhirlpoolProgram>;
-  whirlpool: Address<TAccountWhirlpool>;
   orcaPosition: Address<TAccountOrcaPosition>;
   /**
    *
@@ -191,16 +167,12 @@ export type ClosePositionOrcaInput<
 
 export function getClosePositionOrcaInstruction<
   TAccountAuthority extends string,
-  TAccountTunaConfig extends string,
   TAccountTunaPosition extends string,
   TAccountTunaPositionMint extends string,
   TAccountTunaPositionAta extends string,
   TAccountTunaPositionAtaA extends string,
   TAccountTunaPositionAtaB extends string,
-  TAccountTunaPositionOwnerAtaA extends string,
-  TAccountTunaPositionOwnerAtaB extends string,
   TAccountWhirlpoolProgram extends string,
-  TAccountWhirlpool extends string,
   TAccountOrcaPosition extends string,
   TAccountTokenProgram extends string,
   TAccountToken2022Program extends string,
@@ -208,16 +180,12 @@ export function getClosePositionOrcaInstruction<
 >(
   input: ClosePositionOrcaInput<
     TAccountAuthority,
-    TAccountTunaConfig,
     TAccountTunaPosition,
     TAccountTunaPositionMint,
     TAccountTunaPositionAta,
     TAccountTunaPositionAtaA,
     TAccountTunaPositionAtaB,
-    TAccountTunaPositionOwnerAtaA,
-    TAccountTunaPositionOwnerAtaB,
     TAccountWhirlpoolProgram,
-    TAccountWhirlpool,
     TAccountOrcaPosition,
     TAccountTokenProgram,
     TAccountToken2022Program
@@ -226,16 +194,12 @@ export function getClosePositionOrcaInstruction<
 ): ClosePositionOrcaInstruction<
   TProgramAddress,
   TAccountAuthority,
-  TAccountTunaConfig,
   TAccountTunaPosition,
   TAccountTunaPositionMint,
   TAccountTunaPositionAta,
   TAccountTunaPositionAtaA,
   TAccountTunaPositionAtaB,
-  TAccountTunaPositionOwnerAtaA,
-  TAccountTunaPositionOwnerAtaB,
   TAccountWhirlpoolProgram,
-  TAccountWhirlpool,
   TAccountOrcaPosition,
   TAccountTokenProgram,
   TAccountToken2022Program
@@ -246,7 +210,6 @@ export function getClosePositionOrcaInstruction<
   // Original accounts.
   const originalAccounts = {
     authority: { value: input.authority ?? null, isWritable: true },
-    tunaConfig: { value: input.tunaConfig ?? null, isWritable: false },
     tunaPosition: { value: input.tunaPosition ?? null, isWritable: true },
     tunaPositionMint: {
       value: input.tunaPositionMint ?? null,
@@ -261,19 +224,10 @@ export function getClosePositionOrcaInstruction<
       value: input.tunaPositionAtaB ?? null,
       isWritable: true,
     },
-    tunaPositionOwnerAtaA: {
-      value: input.tunaPositionOwnerAtaA ?? null,
-      isWritable: true,
-    },
-    tunaPositionOwnerAtaB: {
-      value: input.tunaPositionOwnerAtaB ?? null,
-      isWritable: true,
-    },
     whirlpoolProgram: {
       value: input.whirlpoolProgram ?? null,
       isWritable: false,
     },
-    whirlpool: { value: input.whirlpool ?? null, isWritable: false },
     orcaPosition: { value: input.orcaPosition ?? null, isWritable: true },
     tokenProgram: { value: input.tokenProgram ?? null, isWritable: false },
     token2022Program: {
@@ -296,16 +250,12 @@ export function getClosePositionOrcaInstruction<
   const instruction = {
     accounts: [
       getAccountMeta(accounts.authority),
-      getAccountMeta(accounts.tunaConfig),
       getAccountMeta(accounts.tunaPosition),
       getAccountMeta(accounts.tunaPositionMint),
       getAccountMeta(accounts.tunaPositionAta),
       getAccountMeta(accounts.tunaPositionAtaA),
       getAccountMeta(accounts.tunaPositionAtaB),
-      getAccountMeta(accounts.tunaPositionOwnerAtaA),
-      getAccountMeta(accounts.tunaPositionOwnerAtaB),
       getAccountMeta(accounts.whirlpoolProgram),
-      getAccountMeta(accounts.whirlpool),
       getAccountMeta(accounts.orcaPosition),
       getAccountMeta(accounts.tokenProgram),
       getAccountMeta(accounts.token2022Program),
@@ -315,16 +265,12 @@ export function getClosePositionOrcaInstruction<
   } as ClosePositionOrcaInstruction<
     TProgramAddress,
     TAccountAuthority,
-    TAccountTunaConfig,
     TAccountTunaPosition,
     TAccountTunaPositionMint,
     TAccountTunaPositionAta,
     TAccountTunaPositionAtaA,
     TAccountTunaPositionAtaB,
-    TAccountTunaPositionOwnerAtaA,
-    TAccountTunaPositionOwnerAtaB,
     TAccountWhirlpoolProgram,
-    TAccountWhirlpool,
     TAccountOrcaPosition,
     TAccountTokenProgram,
     TAccountToken2022Program
@@ -346,31 +292,27 @@ export type ParsedClosePositionOrcaInstruction<
      */
 
     authority: TAccountMetas[0];
-    tunaConfig: TAccountMetas[1];
-    tunaPosition: TAccountMetas[2];
-    tunaPositionMint: TAccountMetas[3];
-    tunaPositionAta: TAccountMetas[4];
-    tunaPositionAtaA: TAccountMetas[5];
-    tunaPositionAtaB: TAccountMetas[6];
-    tunaPositionOwnerAtaA: TAccountMetas[7];
-    tunaPositionOwnerAtaB: TAccountMetas[8];
+    tunaPosition: TAccountMetas[1];
+    tunaPositionMint: TAccountMetas[2];
+    tunaPositionAta: TAccountMetas[3];
+    tunaPositionAtaA: TAccountMetas[4];
+    tunaPositionAtaB: TAccountMetas[5];
     /**
      *
      * ORCA accounts
      *
      */
 
-    whirlpoolProgram: TAccountMetas[9];
-    whirlpool: TAccountMetas[10];
-    orcaPosition: TAccountMetas[11];
+    whirlpoolProgram: TAccountMetas[6];
+    orcaPosition: TAccountMetas[7];
     /**
      *
      * Other accounts
      *
      */
 
-    tokenProgram: TAccountMetas[12];
-    token2022Program: TAccountMetas[13];
+    tokenProgram: TAccountMetas[8];
+    token2022Program: TAccountMetas[9];
   };
   data: ClosePositionOrcaInstructionData;
 };
@@ -383,7 +325,7 @@ export function parseClosePositionOrcaInstruction<
     IInstructionWithAccounts<TAccountMetas> &
     IInstructionWithData<Uint8Array>
 ): ParsedClosePositionOrcaInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 14) {
+  if (instruction.accounts.length < 10) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
   }
@@ -397,16 +339,12 @@ export function parseClosePositionOrcaInstruction<
     programAddress: instruction.programAddress,
     accounts: {
       authority: getNextAccount(),
-      tunaConfig: getNextAccount(),
       tunaPosition: getNextAccount(),
       tunaPositionMint: getNextAccount(),
       tunaPositionAta: getNextAccount(),
       tunaPositionAtaA: getNextAccount(),
       tunaPositionAtaB: getNextAccount(),
-      tunaPositionOwnerAtaA: getNextAccount(),
-      tunaPositionOwnerAtaB: getNextAccount(),
       whirlpoolProgram: getNextAccount(),
-      whirlpool: getNextAccount(),
       orcaPosition: getNextAccount(),
       tokenProgram: getNextAccount(),
       token2022Program: getNextAccount(),

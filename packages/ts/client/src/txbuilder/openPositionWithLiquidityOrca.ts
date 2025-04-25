@@ -12,7 +12,6 @@ import {
 import {
   ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
   findAssociatedTokenPda,
-  getCreateAssociatedTokenInstruction,
   TOKEN_2022_PROGRAM_ADDRESS,
 } from "@solana-program/token-2022";
 import { getTickArrayStartTickIndex } from "@orca-so/whirlpools-core";
@@ -51,8 +50,6 @@ export async function openPositionWithLiquidityOrcaInstructions(
   setupInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
 ): Promise<IInstruction[]> {
-  const tunaPositionAddress = (await getTunaPositionAddress(positionMint.address))[0];
-
   const mintA = whirlpool.data.tokenMintA;
   const mintB = whirlpool.data.tokenMintB;
   const instructions: IInstruction[] = [];
@@ -101,44 +98,6 @@ export async function openPositionWithLiquidityOrcaInstructions(
     TOKEN_PROGRAM_ADDRESS,
   );
   setupInstructions.push(...createFeeRecipientAtaBInstructions.init);
-
-  //
-  // Create tuna position ATAs
-  //
-
-  const tunaPositionAtaA = (
-    await findAssociatedTokenPda({
-      owner: tunaPositionAddress,
-      mint: mintA,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
-    })
-  )[0];
-
-  const tunaPositionAtaB = (
-    await findAssociatedTokenPda({
-      owner: tunaPositionAddress,
-      mint: mintB,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
-    })
-  )[0];
-
-  setupInstructions.push(
-    getCreateAssociatedTokenInstruction({
-      payer: authority,
-      owner: tunaPositionAddress,
-      ata: tunaPositionAtaA,
-      mint: mintA,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
-    }),
-
-    getCreateAssociatedTokenInstruction({
-      payer: authority,
-      owner: tunaPositionAddress,
-      ata: tunaPositionAtaB,
-      mint: mintB,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
-    }),
-  );
 
   //
   // Add create tick arrays instructions if needed.
