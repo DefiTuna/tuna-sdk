@@ -4,7 +4,7 @@ on:
     branches:
       - main
 concurrency: ${{ github.workflow }}-${{ github.ref }}
-permissions: {}
+permissions: { }
 jobs:
   release:
     # IMPORTANT: prevent this action from running on forks
@@ -42,14 +42,25 @@ jobs:
           override: true
       - name: Install cargo-edit
         run: cargo install cargo-edit
-      - name: Update Cargo.toml version
+      - name: Update Cargo.toml version in rust defituna-client
         run: |
           cd packages/rust/client
           VERSION=$(jq -r .version package.json)
           cargo set-version $VERSION
-      - name: Publish Rust crate
+      - name: Publish rust defituna-client
         run: |
           cd packages/rust/client
+          cargo publish --allow-dirty || [ $? -eq 101 ]
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+      - name: Update Cargo.toml version in rust defituna-txsender
+        run: |
+          cd packages/rust/txsender
+          VERSION=$(jq -r .version package.json)
+          cargo set-version $VERSION
+      - name: Publish rust defituna-txsender
+        run: |
+          cd packages/rust/txsender
           cargo publish --allow-dirty || [ $? -eq 101 ]
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}

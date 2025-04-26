@@ -1,0 +1,13 @@
+{
+  "name": "@defituna/rust-txsender",
+  "description": "Rust transaction sending library to interact with DefiTuna's on-chain program.",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "sideEffects": false,
+  "scripts": {
+    "build": "cargo build"
+  },
+  "devDependencies": {
+  }
+}
