@@ -7,14 +7,14 @@ use orca_whirlpools_client::{
     get_oracle_address, get_position_address, get_tick_array_address, get_whirlpool_address, InitializeTickArray, InitializeTickArrayInstructionArgs, Whirlpool,
 };
 use orca_whirlpools_core::get_tick_array_start_tick_index;
-use solana_client::nonblocking::rpc_client::RpcClient;
+use solana_client::rpc_client::RpcClient;
 use solana_program::instruction::{AccountMeta, Instruction};
 use solana_program::pubkey::Pubkey;
 use solana_program::system_program;
 use spl_associated_token_account::instruction::create_associated_token_account_idempotent;
 use spl_associated_token_account::{get_associated_token_address, get_associated_token_address_with_program_id};
 
-pub async fn open_position_with_liquidity_orca_instructions(
+pub fn open_position_with_liquidity_orca_instructions(
     rpc: &RpcClient,
     authority: &Pubkey,
     position_mint: &Pubkey,
@@ -47,7 +47,6 @@ pub async fn open_position_with_liquidity_orca_instructions(
 
     let tick_array_infos = rpc
         .get_multiple_accounts(&[lower_tick_array_address.into(), upper_tick_array_address.into()])
-        .await
         .unwrap();
 
     if tick_array_infos[0].is_none() {

@@ -3,7 +3,7 @@ use std::error::Error;
 pub const TUNA_POSITION_DISCRIMINATOR: &[u8] = &[76, 197, 161, 51, 232, 15, 137, 220];
 
 use solana_client::{
-    nonblocking::rpc_client::RpcClient,
+    rpc_client::RpcClient,
     rpc_filter::{Memcmp, RpcFilterType},
 };
 use solana_program::pubkey::Pubkey;
@@ -33,9 +33,9 @@ impl From<TunaPositionFilter> for RpcFilterType {
     }
 }
 
-pub async fn fetch_all_tuna_position_with_filter(rpc: &RpcClient, filters: Vec<TunaPositionFilter>) -> Result<Vec<DecodedAccount<TunaPosition>>, Box<dyn Error>> {
+pub fn fetch_all_tuna_position_with_filter(rpc: &RpcClient, filters: Vec<TunaPositionFilter>) -> Result<Vec<DecodedAccount<TunaPosition>>, Box<dyn Error>> {
     let discriminator = TUNA_POSITION_DISCRIMINATOR.to_vec();
     let mut filters: Vec<RpcFilterType> = filters.into_iter().map(|filter| filter.into()).collect();
     filters.push(RpcFilterType::Memcmp(Memcmp::new_raw_bytes(0, discriminator)));
-    fetch_decoded_program_accounts(rpc, filters).await
+    fetch_decoded_program_accounts(rpc, filters)
 }
