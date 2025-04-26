@@ -103,9 +103,9 @@ pub async fn send_smart_transaction(
 
     // Add a tip instruction to the end of the instructions list if jito tips are provided.
     if let Some(jito_config) = tx_config.jito.clone() {
-        let rnd = rand::rng().random::<u64>();
+        let rnd = rand::rng().random_range(0..JITO_TIP_ACCOUNTS.len());
         let tip_amount = jito_config.tips.max(MIN_JITO_TIP_LAMPORTS);
-        let random_tip_account = Pubkey::from_str(JITO_TIP_ACCOUNTS[(rnd as usize) % JITO_TIP_ACCOUNTS.len()]).unwrap();
+        let random_tip_account = Pubkey::from_str(JITO_TIP_ACCOUNTS[rnd]).unwrap();
         let tip_instruction = system_instruction::transfer(payer, &random_tip_account, tip_amount);
         all_instructions.push(tip_instruction);
     }
