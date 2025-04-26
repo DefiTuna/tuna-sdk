@@ -1,5 +1,11 @@
 # @defituna/rust-client
 
+## 1.0.11
+
+### Patch Changes
+
+- 357661d: Replaced nonblocking rpc client with a blocking one
+
 ## 1.0.10
 
 ### Patch Changes
