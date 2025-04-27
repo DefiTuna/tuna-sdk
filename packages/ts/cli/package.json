@@ -1,0 +1,23 @@
+{
+  "name": "@defituna/cli",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "tsc --noEmit",
+    "start": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@defituna/client": "workspace:*",
+    "@solana/kit": "^2.1.0",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "@defituna/typescript-config": "^0.2.0",
+    "@defituna/eslint-config": "^0.4.0",
+    "@defituna/prettier-config": "^0.0.0",
+    "@types/node": "^22.15.2",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3"
+  }
+}

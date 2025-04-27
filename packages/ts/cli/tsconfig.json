@@ -1,0 +1,10 @@
+{
+  "extends": "@defituna/typescript-config/base.json",
+  "include": ["src"],
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "module": "preserve",
+    "target": "es2022",
+    "esModuleInterop": true
+  },
+}
