@@ -1,8 +1,7 @@
 import BaseCommand, { addressArg, addressFlag, bigintFlag, percentFlag, pythFeedIdFlag } from "../base.ts";
 import { sendTransaction, signer } from "../rpc.ts";
-import { createVaultInstructions } from "@defituna/client";
+import { createVaultInstructions, CreateVaultInstructionDataArgs } from "@defituna/client";
 import { address } from "@solana/kit";
-import { CreateVaultInstructionDataArgs } from "@defituna/client/src";
 
 export default class UpdateVault extends BaseCommand {
   static override args = {
@@ -45,6 +44,7 @@ export default class UpdateVault extends BaseCommand {
 
     const instructions = await createVaultInstructions(signer, args.mint, ixArgs);
 
+    console.log("");
     console.log("Sending a transaction...");
     const signature = await sendTransaction(instructions);
     console.log("Transaction landed:", signature);

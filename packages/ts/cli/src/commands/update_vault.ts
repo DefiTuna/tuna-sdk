@@ -71,10 +71,13 @@ export default class UpdateVault extends BaseCommand {
       pythOraclePriceUpdate: newData.pythOraclePriceUpdate,
     });
 
+    console.log("");
     if (!_.isEqual(newData, vault.data)) {
       console.log("Sending a transaction...");
       const signature = await sendTransaction([ix]);
       console.log("Transaction landed:", signature);
+    } else {
+      console.log("Nothing to update!");
     }
   }
 }

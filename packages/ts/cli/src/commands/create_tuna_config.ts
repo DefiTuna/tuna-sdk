@@ -26,6 +26,7 @@ export default class CreateTunaConfig extends BaseCommand {
 
     const ix = await createTunaConfigInstruction(signer, args.adminAuthority, args.feeRecipient, args.liquidationAuthority, args.ownerAuthority);
 
+    console.log("");
     console.log("Sending a transaction...");
     const signature = await sendTransaction([ix]);
     console.log("Transaction landed:", signature);
