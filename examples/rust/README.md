@@ -8,7 +8,7 @@ Each example is provided as an isolated script that can be executed directly usi
 
 - **`cargo run -- deposit_and_create`**: Creates a new position in our lending pools and deposits funds into it.
 - **`cargo run -- withdraw`**: Withdraws funds from a position in our lending pools.
-- **`cargo run -- open_and_add_liquidity_orca`**: Opens a new position in an Orca liquidity pool and adds liquidity, with optional leverage and Tuna-specific automation features (stop loss, take profit, and auto-compounding).
+- **`cargo run -- open_position_with_liquidity_orca`**: Opens a new position in an Orca liquidity pool and adds liquidity, with optional leverage and Tuna-specific automation features (stop loss, take profit, and auto-compounding).
 - **`cargo run -- collect_fees_orca <POSITION_MINT_ADDRESS>`**: Collects fees from a specified position in an Orca liquidity pool.
 - **`cargo run -- collect_and_compound_fees_orca <POSITION_MINT_ADDRESS>`**: Collects and compounds fees for a given position in an Orca liquidity pool.
 - **`cargo run -- remove_liquidity_and_close_orca <POSITION_MINT_ADDRESS>`**: Removes liquidity and closes a position in an Orca liquidity pool.

@@ -10,7 +10,7 @@ pub enum Method {
   Withdraw,
   CollectAndCompoundFeesOrca,
   CollectFeesOrca,
-  OpenAndAddLiquidityOrca,
+  OpenPositionWithLiquidityOrca,
   RemoveLiquidityAndCloseOrca,
   RetrieveLendingPositions,
   RetrieveTunaPositions,
@@ -20,7 +20,7 @@ impl Method {
     match s.to_lowercase().as_str() {
       "deposit_and_create" => Ok(Self::DepositAndCreate),
       "withdraw" => Ok(Self::Withdraw),
-      "open_and_add_liquidity_orca" => Ok(Self::OpenAndAddLiquidityOrca),
+      "open_position_with_liquidity_orca" => Ok(Self::OpenPositionWithLiquidityOrca),
       "collect_fees_orca" => Ok(Self::CollectFeesOrca),
       "collect_and_compound_fees_orca" => Ok(Self::CollectAndCompoundFeesOrca),
       "remove_liquidity_and_close_orca" => Ok(Self::RemoveLiquidityAndCloseOrca),

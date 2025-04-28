@@ -10,26 +10,14 @@ use solana_sdk::{
   pubkey::Pubkey,
   signature::Keypair,
   signer::Signer,
-  system_instruction::transfer,
   transaction::VersionedTransaction,
 };
-use spl_associated_token_account::{get_associated_token_address, instruction::create_associated_token_account};
 use std::{
   thread::sleep,
   time::{Duration, Instant},
 };
 
-use spl_token::{
-  instruction::{close_account, sync_native},
-  ID as TOKEN_PROGRAM_ID,
-};
-
-use crate::{
-  constants::{MAX_CU_LIMIT, MIN_COMPUTE_UNIT_PRICE},
-  types::{ATAInstructions, SolanaTransactionSimulation},
-};
-
-use super::common::{account_exists, is_wsol_mint};
+use crate::constants::{MAX_CU_LIMIT, MIN_COMPUTE_UNIT_PRICE};
 
 /// Constructs and sends a transaction on the Solana blockchain, signed by the provided keypair, with priority fees applied.
 ///
@@ -51,20 +39,17 @@ pub fn create_and_send_transaction(
   instructions: &mut Vec<Instruction>,
   signing_keypairs: Option<Vec<Keypair>>,
   address_lookup_table: Option<Pubkey>,
-  simulation: Option<SolanaTransactionSimulation>,
+  compute_unit_limit: Option<u32>,
 ) -> Result<()> {
-  let simulation_ref = simulation.as_ref();
 
   let blockhash: Hash = rpc.get_latest_blockhash()?;
 
-  if simulation_ref.is_none() {
+  if compute_unit_limit.is_none() {
     let set_compute_unit_limit_ix = ComputeBudgetInstruction::set_compute_unit_limit(
-      simulation_ref
-        .unwrap_or(&SolanaTransactionSimulation {
-          compute_unit_limit: MAX_CU_LIMIT,
-        })
-        .clone()
-        .compute_unit_limit,
+      compute_unit_limit
+        .unwrap_or(
+          MAX_CU_LIMIT,
+        ),
     );
 
     let set_compute_unit_price_ix = ComputeBudgetInstruction::set_compute_unit_price(MIN_COMPUTE_UNIT_PRICE);
@@ -102,8 +87,8 @@ pub fn create_and_send_transaction(
 
   let transaction = VersionedTransaction::try_new(versioned_message, &all_signers)?;
 
-  if simulation_ref.is_none() {
-    let simulation = simulate_transaction(&rpc, &transaction)?;
+  if compute_unit_limit.is_none() {
+    let compute_unit_limit_new = simulate_transaction(&rpc, &transaction)?;
 
     return Ok(create_and_send_transaction(
       &rpc,
@@ -111,7 +96,7 @@ pub fn create_and_send_transaction(
       instructions,
       signing_keypairs,
       address_lookup_table,
-      Some(simulation),
+      Some(compute_unit_limit_new),
     )?);
   }
 
@@ -139,7 +124,7 @@ pub fn create_and_send_transaction(
           return Ok(());
         }
         Err(e) => {
-          bail!("Transaction failed: {:?}", e);
+          bail!("Transaction with signature {:?} failed: {:?}", signature, e);
         }
       },
     }
@@ -158,102 +143,14 @@ pub fn create_and_send_transaction(
 pub fn simulate_transaction(
   rpc: &RpcClient,
   transaction: &VersionedTransaction,
-) -> Result<SolanaTransactionSimulation> {
+) -> Result<u32> {
   let simulation = rpc.simulate_transaction(transaction)?;
 
   if let Some(units_consumed) = simulation.value.units_consumed {
     let temp = (units_consumed as u64 * 115) / 100;
     let compute_unit_limit_with_reserve = temp.min(MAX_CU_LIMIT as u64) as u32;
-    Ok(SolanaTransactionSimulation {
-      compute_unit_limit: compute_unit_limit_with_reserve,
-    })
+    Ok(compute_unit_limit_with_reserve)
   } else {
     bail!("Simulation failed")
   }
-}
-
-/// Creates or retrieves an *Associated Token Address* (*ATA*) on the Solana blockchain, adding creation instructions if needed.
-///
-/// # Parameters
-/// - `rpc`: The `RpcClient` for interacting with the Solana blockchain.
-/// - `ata_instructions`: The mutable `ATAInstructions` struct for storing instructions to be passed to the transaction.
-/// - `payer`: The payer funding the instruction fees.
-/// - `mint`: The address of the Token Mint.
-/// - `owner`: The address of the ATA owner.
-/// - `token_program`: The optional address of the Token Program, defaults to TOKEN_PROGRAM_ADDRESS.
-///
-/// # Returns
-/// - `Result<()>`: Returns `Ok(Pubkey)` with the address of the ATA if the transaction is successful, or an error if it fails.
-pub fn find_or_create_ata(
-  rpc: &RpcClient,
-  ata_instructions: &mut ATAInstructions,
-  payer: &Pubkey,
-  mint: &Pubkey,
-  owner: &Pubkey,
-  token_program: Option<&Pubkey>,
-) -> Result<Pubkey> {
-  let associated_token_address = get_associated_token_address(&owner, &mint);
-
-  if account_exists(rpc, &associated_token_address)? {
-    ata_instructions.create_ata_ixs.push(create_associated_token_account(
-      &payer,
-      &owner,
-      &mint,
-      &token_program.unwrap_or(&TOKEN_PROGRAM_ID),
-    ));
-  }
-
-  Ok(associated_token_address)
-}
-
-/// Creates or retrieves an *Associated Token Address* (*ATA*) on the Solana blockchain, handling the *WSOL* case with additional *instructions*.
-///
-/// # Parameters
-/// - `rpc`: The `RpcClient` for interacting with the Solana blockchain.
-/// - `ata_instructions`: The mutable `ATAInstructions` struct for storing instructions to be passed to the transaction.
-/// - `authority`: The payer funding the instruction fees.
-/// - `mint`: The address of the Token Mint.
-/// - `amount`: The amount to transfer to the *ATA* if the *Token Mint* is *WSOL*.
-///
-/// # Returns
-/// - `Result<()>`: Returns `Ok(Pubkey)` with the address of the ATA if the transaction is successful, or an error if it fails.
-pub fn find_or_create_ata_with_auth(
-  rpc: &RpcClient,
-  ata_instructions: &mut ATAInstructions,
-  authority: &Box<dyn Signer>,
-  mint: &Pubkey,
-  amount: Option<u64>,
-) -> Result<Pubkey> {
-  let associated_token_address = find_or_create_ata(
-    &rpc,
-    ata_instructions,
-    &authority.pubkey(),
-    &mint,
-    &authority.pubkey(),
-    None,
-  )?;
-
-  if is_wsol_mint(&mint)? {
-    if amount.is_some() && amount.unwrap() > 0 {
-      ata_instructions.wsol_ata_ixs.push(transfer(
-        &authority.pubkey(),
-        &associated_token_address,
-        amount.unwrap(),
-      ));
-
-      ata_instructions
-        .wsol_ata_ixs
-        .push(sync_native(&TOKEN_PROGRAM_ID, &associated_token_address)?);
-    }
-
-    ata_instructions.close_wsol_ata_ixs.push(close_account(
-      &TOKEN_PROGRAM_ID,
-      &associated_token_address,
-      &authority.pubkey(),
-      &authority.pubkey(),
-      &[&authority.pubkey()],
-    )?);
-  }
-
-  Ok(associated_token_address)
 }

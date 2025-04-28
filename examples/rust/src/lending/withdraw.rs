@@ -1,88 +1,31 @@
 use anyhow::Result;
+use defituna_client::withdraw_instructions;
 use solana_client::rpc_client::RpcClient;
-use solana_sdk::{instruction::Instruction, signer::Signer};
-use spl_associated_token_account::{instruction::create_associated_token_account, ID as ASSOCIATED_TOKEN_PROGRAM_ID};
-use spl_token::{instruction::close_account, ID as TOKEN_PROGRAM_ID};
-use defituna_client::instructions::WithdrawBuilder;
+use solana_sdk::signer::Signer;
 
-use crate::utils::{
-  common::{account_exists, is_wsol_mint},
-  lending::{prepare_lending_accounts_and_parameters, LendingAccountsAndParameters},
-  solana::create_and_send_transaction,
-};
+use crate::utils::{common::get_mint_decimals, rpc::create_and_send_transaction};
 
-pub struct WithdrawLendingPositionInstructions {
-  withdraw_lending_ix: Instruction,
-  create_ata_ix: Option<Instruction>,
-  close_wsol_ata_ix: Option<Instruction>,
-}
+use std::ops::Mul;
 
 pub fn withdraw(rpc: RpcClient, authority: Box<dyn Signer>) -> Result<()> {
-  // Get common accounts and parameters necessary for both `createAndDepositLendingPosition()` and `withdrawLendingPosition()`
-  let LendingAccountsAndParameters {
-    token_mint_address,
-    amount,
-    tuna_config_pda,
-    vault_pda,
-    lending_position_pda,
-    authority_ata,
-    vault_ata,
-  } = prepare_lending_accounts_and_parameters(&rpc, &authority)?;
+  // The address of the token mint to deposit/withdraw, identifying the target Tuna Lending Vault.
+  // Set to the USDC token address in our examples;
+  // There are methods in our sdk to fetch all available lending vaults and their respective mint addresses.
+  let token_mint_address = spl_token::native_mint::ID;
+  // The nominal amount to deposit, excluding Token decimals (e.g., 1 SOL as a flat value, or 0.5 SOL).
+  let nominal_amount: f64 = 1.0;
+  // Fetches token decimals for the Token, using Whirlpool Client.
+  let decimals = get_mint_decimals(&rpc, &token_mint_address)?;
+  // The amount in lamports to deposit, including Token decimals (e.g. 1_000_000_000 SOL as a flat value for a whole unit of SOL)
+  let amount = nominal_amount
+    .mul(f64::try_from(10_u32.pow(decimals as u32))?)
+    .round()
+    .abs() as u64;
 
   // The withdraw instruction interacts with the Tuna program to withdraw the funds into the lending position.
   // Here we have a choice to pass either funds or shares. For simplicity reasons we will use funds.
-  let mut withdraw_lending_builder = WithdrawBuilder::new();
-  withdraw_lending_builder
-    .authority(authority.pubkey())
-    .authority_ata(authority_ata)
-    .tuna_config(tuna_config_pda)
-    .lending_position(lending_position_pda)
-    .vault(vault_pda)
-    .vault_ata(vault_ata)
-    .mint(token_mint_address)
-    .funds(amount)
-    .shares(0)
-    .token_program(TOKEN_PROGRAM_ID)
-    .associated_token_program(ASSOCIATED_TOKEN_PROGRAM_ID);
-
-  // The instructions object contains all the instructions required and optional to withdraw from a Lending Position.
-  let mut instructions = WithdrawLendingPositionInstructions {
-    withdraw_lending_ix: withdraw_lending_builder.instruction(),
-    create_ata_ix: None,
-    close_wsol_ata_ix: None,
-  };
-
-  // If the authority ATA doesn't exist, we need to create it. We rely on the createATA instruction from Solana's Token program.
-  // This is specially important when the token mint is WSOL, since we must always create it before transferring to and from it.
-  if account_exists(&rpc, &authority_ata)? {
-    instructions.create_ata_ix = Some(create_associated_token_account(
-      &authority.pubkey(),
-      &authority.pubkey(),
-      &token_mint_address,
-      &TOKEN_PROGRAM_ID,
-    ));
-  }
-
-  // If the token mint is WSOL (Wrapped SOL), we need to ensure any remaining SOL is returned to the owner, by closing the ATA.
-  if is_wsol_mint(&token_mint_address)? {
-    instructions.close_wsol_ata_ix = Some(close_account(
-      &TOKEN_PROGRAM_ID,
-      &authority_ata,
-      &authority.pubkey(),
-      &authority.pubkey(),
-      &[&authority.pubkey()],
-    )?);
-  }
-
-  // The instructions array contains all the instructions required to withdraw from a Lending Position.
-  // We filter out any null instructions that are not required.
-  let mut instructions_array: Vec<Instruction> = instructions
-    .create_ata_ix
-    .into_iter()
-    .chain(std::iter::once(instructions.withdraw_lending_ix))
-    .chain(instructions.close_wsol_ata_ix.into_iter())
-    .collect();
+  let mut instructions = withdraw_instructions(&authority.pubkey(), &token_mint_address, amount, 0);
 
   // We sign and send the transaction to the network, which will withdraw from the Lending Position.
-  create_and_send_transaction(&rpc, &authority, &mut instructions_array, None, None, None)
+  create_and_send_transaction(&rpc, &authority, &mut instructions, None, None, None)
 }
