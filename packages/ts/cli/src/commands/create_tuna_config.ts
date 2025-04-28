@@ -1,23 +1,33 @@
-import { address, Address } from "@solana/kit";
-import { sendTransaction, signer } from "../utils/rpc";
+import BaseCommand, { addressArg } from "../base.ts";
+import { sendTransaction, signer } from "../rpc.ts";
 import { createTunaConfigInstruction } from "@defituna/client";
 
-if (process.argv.length < 7) {
-  console.log("Not enough arguments for the command");
-  console.log("");
-  console.log("Usage: pnpm run start create_tuna_config owner_authority admin_authority liquidation_authority fee_recipient");
-  console.log("");
-  console.log("owner_authority          address       Owner authority.");
-  console.log("admin_authority          address       Administrator authority.");
-  console.log("liquidation_authority    address       Liquidator authority.");
-  console.log("fee_recipient            address       Authority who receives all protocol fees of the platform.");
-} else {
-  await run(address(process.argv[3]), address(process.argv[4]), address(process.argv[5]), address(process.argv[6]));
-}
+export default class CreateTunaConfig extends BaseCommand {
+  static override args = {
+    ownerAuthority: addressArg({
+      description: "Owner authority",
+      required: true,
+    }),
+    adminAuthority: addressArg({
+      description: "Administrator authority",
+      required: true,
+    }),
+    liquidationAuthority: addressArg({ description: "Liquidator authority", required: true }),
+    feeRecipient: addressArg({
+      description: "Authority who receives all protocol fees of the platform",
+      required: true,
+    }),
+  };
+  static override description = "Create a global tuna config";
+  static override examples = ["<%= config.bin %> <%= command.id %> address address address address"];
 
-async function run(ownerAuthority: Address, adminAuthority: Address, liquidationAuthority: Address, feeRecipient: Address) {
-  const ix = await createTunaConfigInstruction(signer, adminAuthority, feeRecipient, liquidationAuthority, ownerAuthority);
+  public async run() {
+    const { args } = await this.parse(CreateTunaConfig);
 
-  const signature = await sendTransaction([ix]);
-  console.log("Transaction landed:", signature);
+    const ix = await createTunaConfigInstruction(signer, args.adminAuthority, args.feeRecipient, args.liquidationAuthority, args.ownerAuthority);
+
+    console.log("Sending a transaction...");
+    const signature = await sendTransaction([ix]);
+    console.log("Transaction landed:", signature);
+  }
 }

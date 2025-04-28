@@ -3,21 +3,33 @@
   "version": "1.0.0",
   "type": "module",
   "private": true,
+  "bin": {
+    "tuna-cli": "./bin/run.js"
+  },
   "scripts": {
     "build": "tsc --noEmit",
-    "start": "tsx src/index.ts"
+    "start": "./bin/dev.js"
   },
   "dependencies": {
     "@defituna/client": "workspace:*",
+    "@oclif/core": "^4.2.10",
     "@solana/kit": "^2.1.0",
-    "dotenv": "^16.4.7"
+    "dotenv": "^16.4.7",
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "@defituna/typescript-config": "^0.2.0",
     "@defituna/eslint-config": "^0.4.0",
     "@defituna/prettier-config": "^0.0.0",
+    "@defituna/typescript-config": "^0.2.0",
     "@types/node": "^22.15.2",
-    "tsx": "^4.19.3",
+    "ts-node": "^10.9.2",
+    "oclif": "^4",
     "typescript": "^5.8.3"
+  },
+  "oclif": {
+    "bin": "tuna-cli",
+    "commands": "./src/commands",
+    "dirname": "tuna-cli",
+    "topicSeparator": " "
   }
 }
