@@ -1,12 +1,8 @@
 use anyhow::Result;
-use solana_account_decoder::UiAccountEncoding;
-use solana_client::{
-  rpc_client::RpcClient,
-  rpc_config::{RpcAccountInfoConfig, RpcProgramAccountsConfig},
-  rpc_filter::{Memcmp, MemcmpEncodedBytes, RpcFilterType},
-};
-use solana_sdk::{commitment_config::CommitmentConfig, pubkey::Pubkey};
-use defituna_client::{self, accounts::LendingPosition};
+use defituna_client::{fetch_all_lending_position_with_filter, LendingPositionFilter};
+
+use solana_client::rpc_client::RpcClient;
+use solana_sdk::pubkey::Pubkey;
 
 /// Retrieves all Lending Positions belonging to the user.
 ///
@@ -17,32 +13,9 @@ use defituna_client::{self, accounts::LendingPosition};
 /// # Returns
 /// - `Result<()>`: Returns `Ok(())` if the transaction is successful, or an error if it fails.
 pub fn retrieve_user_lending_positions(rpc: RpcClient, user_address: Pubkey) -> Result<()> {
-  let memcmp = RpcFilterType::Memcmp(Memcmp::new(11, MemcmpEncodedBytes::Base58(user_address.to_string())));
+  let filters = vec![LendingPositionFilter::Authority(user_address)];
 
-  let config = RpcProgramAccountsConfig {
-    filters: Some(vec![
-      RpcFilterType::DataSize(u64::try_from(LendingPosition::LEN)?),
-      memcmp,
-    ]),
-    account_config: RpcAccountInfoConfig {
-      encoding: Some(UiAccountEncoding::Base64),
-      data_slice: None,
-      commitment: Some(CommitmentConfig::processed()),
-      min_context_slot: None,
-    },
-    with_context: None,
-    sort_results: None,
-  };
-
-  let accounts = rpc.get_program_accounts_with_config(&defituna_client::TUNA_ID, config)?;
-
-  println!("Amount of positions: {}", accounts.len());
-
-  let mut positions = Vec::new();
-  for (pubkey, account) in accounts {
-    let position = LendingPosition::from_bytes(&account.data)?;
-    positions.push((pubkey, position));
-  }
+  let positions = fetch_all_lending_position_with_filter(&rpc, filters).map_err(|e| anyhow::anyhow!(e.to_string()))?;
 
   if positions.len() == 0 {
     println!("No positions found for user address {}", user_address);

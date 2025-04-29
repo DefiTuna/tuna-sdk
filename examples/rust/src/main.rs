@@ -12,7 +12,7 @@ use lending::{
 use solana_client::rpc_client::RpcClient;
 use tuna_position::{
   collect_and_compound_fees_orca::collect_and_compound_fees, collect_fees_orca::collect_fees,
-  open_and_add_liquidity_orca::open_position_and_add_liquidity,
+  open_position_with_liquidity_orca::open_position_with_liquidity,
   remove_liquidity_and_close_orca::remove_liquidity_and_close, retrieve_tuna_positions::retrieve_user_tuna_positions,
 };
 
@@ -35,7 +35,7 @@ fn main() -> Result<()> {
   match method {
     Method::DepositAndCreate => deposit_and_create(rpc, wallet),
     Method::Withdraw => withdraw(rpc, wallet),
-    Method::OpenAndAddLiquidityOrca => open_position_and_add_liquidity(rpc, wallet),
+    Method::OpenPositionWithLiquidityOrca => open_position_with_liquidity(rpc, wallet),
     Method::CollectFeesOrca => collect_fees(rpc, wallet, tuna_position_mint.unwrap()),
     Method::CollectAndCompoundFeesOrca => collect_and_compound_fees(rpc, wallet, tuna_position_mint.unwrap()),
     Method::RemoveLiquidityAndCloseOrca => remove_liquidity_and_close(rpc, wallet, tuna_position_mint.unwrap()),

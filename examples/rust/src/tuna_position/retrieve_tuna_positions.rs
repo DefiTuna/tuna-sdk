@@ -1,12 +1,7 @@
 use anyhow::Result;
-use solana_account_decoder::UiAccountEncoding;
-use solana_client::{
-  rpc_client::RpcClient,
-  rpc_config::{RpcAccountInfoConfig, RpcProgramAccountsConfig},
-  rpc_filter::{Memcmp, MemcmpEncodedBytes, RpcFilterType},
-};
-use solana_sdk::{commitment_config::CommitmentConfig, pubkey::Pubkey};
-use defituna_client::{self, accounts::TunaPosition};
+use defituna_client::{self, fetch_all_tuna_position_with_filter, TunaPositionFilter};
+use solana_client::rpc_client::RpcClient;
+use solana_sdk::pubkey::Pubkey;
 
 /// Retrieves all Tuna Positions belonging to the user.
 ///
@@ -17,29 +12,11 @@ use defituna_client::{self, accounts::TunaPosition};
 /// # Returns
 /// - `Result<()>`: Returns `Ok(())` if the transaction is successful, or an error if it fails.
 pub fn retrieve_user_tuna_positions(rpc: RpcClient, user_address: Pubkey) -> Result<()> {
-  let memcmp = RpcFilterType::Memcmp(Memcmp::new(11, MemcmpEncodedBytes::Base58(user_address.to_string())));
+  let filters = vec![TunaPositionFilter::Authority(user_address)];
 
-  let config = RpcProgramAccountsConfig {
-    filters: Some(vec![RpcFilterType::DataSize(u64::try_from(TunaPosition::LEN)?), memcmp]),
-    account_config: RpcAccountInfoConfig {
-      encoding: Some(UiAccountEncoding::Base64),
-      data_slice: None,
-      commitment: Some(CommitmentConfig::processed()),
-      min_context_slot: None,
-    },
-    with_context: None,
-    sort_results: None,
-  };
+  let positions = fetch_all_tuna_position_with_filter(&rpc, filters).map_err(|e| anyhow::anyhow!(e.to_string()))?;
 
-  let accounts = rpc.get_program_accounts_with_config(&defituna_client::TUNA_ID, config)?;
-
-  println!("Amount of positions: {}", accounts.len());
-
-  let mut positions = Vec::new();
-  for (pubkey, account) in accounts {
-    let position = TunaPosition::from_bytes(&account.data)?;
-    positions.push((pubkey, position));
-  }
+  println!("Amount of positions: {}", positions.len());
 
   if positions.len() == 0 {
     println!("No positions found for user address {}", user_address);
