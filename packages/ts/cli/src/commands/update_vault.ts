@@ -64,6 +64,18 @@ export default class UpdateVault extends BaseCommand {
       newData.interestRate = (INTEREST_RATE_100_PERCENT * BigInt(Math.floor(flags.interestRate * 10000))) / 1000000n;
     }
 
+    if (flags.supplyLimit !== undefined) {
+      newData.supplyLimit = flags.supplyLimit;
+    }
+
+    if (flags.pythOracleFeedId !== undefined) {
+      newData.pythOracleFeedId = flags.pythOracleFeedId;
+    }
+
+    if (flags.pythOraclePriceUpdate !== undefined) {
+      newData.pythOraclePriceUpdate = flags.pythOraclePriceUpdate;
+    }
+
     const ix = await updateVaultInstruction(signer, args.mint, {
       interestRate: newData.interestRate,
       supplyLimit: newData.supplyLimit,

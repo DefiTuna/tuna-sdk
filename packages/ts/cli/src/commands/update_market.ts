@@ -1,4 +1,4 @@
-import BaseCommand, { addressArg, addressFlag, bigintFlag, percentFlag } from "../base.ts";
+import BaseCommand, { addressArg, addressFlag, bigintFlag } from "../base.ts";
 import { rpc, sendTransaction, signer } from "../rpc.ts";
 import { fetchMarket, getMarketAddress, updateMarketInstruction } from "@defituna/client";
 import _ from "lodash";
@@ -51,7 +51,7 @@ export default class UpdateMarket extends BaseCommand {
       description: "Oracle price deviation threshold from the spot price",
     }),
     maxSwapSlippage: bigintFlag({
-      description: "Maximum allowed swap slippage on the market",
+      description: "Maximum allowed swap slippage for the market",
     }),
   };
   static override description = "Update a tuna market";
