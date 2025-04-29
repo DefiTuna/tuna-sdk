@@ -1,5 +1,11 @@
 # @defituna/rust-client
 
+## 1.0.12
+
+### Patch Changes
+
+- f208a6a: Replace Memcmp filter method
+
 ## 1.0.11
 
 ### Patch Changes
