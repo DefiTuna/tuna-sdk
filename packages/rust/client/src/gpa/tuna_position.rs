@@ -24,18 +24,17 @@ pub enum TunaPositionFilter {
 impl From<TunaPositionFilter> for RpcFilterType {
     fn from(val: TunaPositionFilter) -> Self {
         match val {
-            TunaPositionFilter::Authority(address) => RpcFilterType::Memcmp(Memcmp::new_raw_bytes(11, address.to_bytes().to_vec())),
-            TunaPositionFilter::Pool(address) => RpcFilterType::Memcmp(Memcmp::new_raw_bytes(43, address.to_bytes().to_vec())),
-            TunaPositionFilter::MintA(address) => RpcFilterType::Memcmp(Memcmp::new_raw_bytes(75, address.to_bytes().to_vec())),
-            TunaPositionFilter::MintB(address) => RpcFilterType::Memcmp(Memcmp::new_raw_bytes(107, address.to_bytes().to_vec())),
-            TunaPositionFilter::Mint(address) => RpcFilterType::Memcmp(Memcmp::new_raw_bytes(139, address.to_bytes().to_vec())),
+            TunaPositionFilter::Authority(address) => RpcFilterType::Memcmp(Memcmp::new_base58_encoded(11, &address.to_bytes())),
+            TunaPositionFilter::Pool(address) => RpcFilterType::Memcmp(Memcmp::new_base58_encoded(43, &address.to_bytes())),
+            TunaPositionFilter::MintA(address) => RpcFilterType::Memcmp(Memcmp::new_base58_encoded(75, &address.to_bytes())),
+            TunaPositionFilter::MintB(address) => RpcFilterType::Memcmp(Memcmp::new_base58_encoded(107, &address.to_bytes())),
+            TunaPositionFilter::Mint(address) => RpcFilterType::Memcmp(Memcmp::new_base58_encoded(139, &address.to_bytes())),
         }
     }
 }
 
 pub fn fetch_all_tuna_position_with_filter(rpc: &RpcClient, filters: Vec<TunaPositionFilter>) -> Result<Vec<DecodedAccount<TunaPosition>>, Box<dyn Error>> {
-    let discriminator = TUNA_POSITION_DISCRIMINATOR.to_vec();
     let mut filters: Vec<RpcFilterType> = filters.into_iter().map(|filter| filter.into()).collect();
-    filters.push(RpcFilterType::Memcmp(Memcmp::new_raw_bytes(0, discriminator)));
+    filters.push(RpcFilterType::Memcmp(Memcmp::new_base58_encoded(0, TUNA_POSITION_DISCRIMINATOR)));
     fetch_decoded_program_accounts(rpc, filters)
 }
