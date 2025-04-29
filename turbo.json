@@ -36,7 +36,7 @@
       "dependsOn": [],
       "cache": false
     },
-    "example:open_and_add_liquidity_orca": {
+    "example:open_position_with_liquidity_orca": {
       "dependsOn": [],
       "cache": false
     },

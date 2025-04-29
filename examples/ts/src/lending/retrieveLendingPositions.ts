@@ -1,28 +1,7 @@
-import {
-  getLendingPositionDecoder,
-  getLendingPositionSize,
-  LendingPosition,
-  TUNA_PROGRAM_ADDRESS,
-} from "@defituna/client";
-import {
-  Address,
-  address,
-  createSolanaRpc,
-  getAddressEncoder,
-  getBase64Decoder,
-  GetProgramAccountsDatasizeFilter,
-  GetProgramAccountsMemcmpFilter,
-  KeyPairSigner as _KeyPairSigner,
-} from "@solana/kit";
-import { configDotenv } from "dotenv";
+import { fetchAllLendingPositionWithFilter, LendingPosition, lendingPositionAuthorityFilter } from "@defituna/client";
+import { Address, address, KeyPairSigner as _KeyPairSigner } from "@solana/kit";
 import { loadKeypair } from "src/utils/common";
-import { fetchDecodedProgramAccounts } from "src/utils/solana";
-
-configDotenv({ path: "./.env" });
-
-const RPC_URL = process.env.RPC_URL || "https://api.mainnet-beta.solana.com";
-
-const rpc = createSolanaRpc(RPC_URL);
+import { rpc } from "src/utils/rpc";
 
 /**
  * Retrieves all {@link LendingPosition Lending Positions} belonging to the user.
@@ -39,46 +18,14 @@ export async function retrieveUserLendingPositions(userAddress?: Address): Promi
   const userKeypair = await loadKeypair();
 
   /**
-   * An encoder that serializes a base58-encoded address to a byte array.
+   * The Authority address filter
    */
-  const addressEncoder = getAddressEncoder();
-  /**
-   * A decoder that deserializes base-64 encoded strings from a byte array.
-   */
-  const base64Decoder = getBase64Decoder();
-
-  /**
-   * The memcmp filter, containing:
-   * - bytes: the value in byte array for the `authority` field to filter with
-   * - encoding: the enconding type as "base64"
-   * - offset: the offset position of the `authority` field (Discriminator + version + bump)
-   */
-  const memcmpFilter: GetProgramAccountsMemcmpFilter = {
-    memcmp: {
-      bytes: base64Decoder.decode(addressEncoder.encode(userAddress ?? userKeypair.address)),
-      encoding: "base64",
-      offset: 11n,
-    },
-  };
-
-  /**
-   * The dataSize filter, containing:
-   * - dataSize: the size of the LendingPosition PDA
-   */
-  const dataSizeFilter: GetProgramAccountsDatasizeFilter = {
-    dataSize: BigInt(getLendingPositionSize()),
-  };
+  const filter = lendingPositionAuthorityFilter(userAddress ?? userKeypair.address);
 
   /**
    * The Lending Positions belonging to the user (userAddress if provided otherwise address from userKeypair).
    */
-  const lendingPositionAccounts = await fetchDecodedProgramAccounts(
-    rpc,
-    TUNA_PROGRAM_ADDRESS,
-    memcmpFilter,
-    dataSizeFilter,
-    getLendingPositionDecoder(),
-  );
+  const lendingPositionAccounts = await fetchAllLendingPositionWithFilter(rpc, filter);
 
   if (lendingPositionAccounts.length === 0) {
     // eslint-disable-next-line no-console

@@ -19,16 +19,16 @@ importers:
         version: 1.1.11(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
       '@codama/renderers':
         specifier: ^1.0.19
-        version: 1.0.19(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+        version: 1.0.19(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
       '@codama/renderers-rust':
         specifier: ^1.0.19
-        version: 1.0.19(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+        version: 1.0.19(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
       '@codama/visitors-core':
         specifier: ^1.2.11
         version: 1.2.11
       codama:
         specifier: ^1.2.11
-        version: 1.2.11(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+        version: 1.2.11(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
       prettier:
         specifier: ^3.5.0
         version: 3.5.3
@@ -41,6 +41,9 @@ importers:
 
   examples/ts:
     dependencies:
+      '@defituna/cli':
+        specifier: workspace:*
+        version: link:../../packages/ts/cli
       '@defituna/client':
         specifier: workspace:*
         version: link:../../packages/ts/client
@@ -89,7 +92,7 @@ importers:
         version: 5.8.3
       vite-tsconfig-paths:
         specifier: ^5.1.4
-        version: 5.1.4(typescript@5.8.3)(vite@6.2.4(@types/node@22.15.2)(tsx@4.19.3))
+        version: 5.1.4(typescript@5.8.3)(vite@6.2.4(@types/node@22.13.14)(tsx@4.19.3))
 
   packages/rust/client:
     devDependencies:
@@ -101,16 +104,16 @@ importers:
         version: 1.1.12(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
       '@codama/renderers':
         specifier: ^1.0.20
-        version: 1.0.20(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+        version: 1.0.20(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
       '@codama/renderers-rust':
         specifier: ^1.0.20
-        version: 1.0.20(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+        version: 1.0.20(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
       '@codama/visitors-core':
         specifier: ^1.2.12
         version: 1.2.12
       codama:
         specifier: ^1.2.12
-        version: 1.2.12(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+        version: 1.2.12(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
@@ -189,10 +192,10 @@ importers:
         version: 1.1.12(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
       '@codama/renderers':
         specifier: ^1.0.20
-        version: 1.0.20(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+        version: 1.0.20(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
       '@codama/renderers-rust':
         specifier: ^1.0.20
-        version: 1.0.20(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+        version: 1.0.20(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
       '@codama/visitors-core':
         specifier: ^1.2.12
         version: 1.2.12
@@ -207,7 +210,7 @@ importers:
         version: 0.2.0
       codama:
         specifier: ^1.2.12
-        version: 1.2.12(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+        version: 1.2.12(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
       dotenv:
         specifier: ^16.4.7
         version: 16.4.7
@@ -4923,14 +4926,14 @@ snapshots:
       human-id: 4.1.1
       prettier: 2.8.8
 
-  '@codama/cli@1.0.10(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)':
+  '@codama/cli@1.0.10(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)':
     dependencies:
       '@codama/nodes': 1.2.11
       '@codama/nodes-from-anchor': 1.1.11(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
-      '@codama/renderers': 1.0.19(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
-      '@codama/renderers-js': 1.2.10(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
-      '@codama/renderers-js-umi': 1.1.12(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
-      '@codama/renderers-rust': 1.0.19(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+      '@codama/renderers': 1.0.19(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+      '@codama/renderers-js': 1.2.10(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+      '@codama/renderers-js-umi': 1.1.12(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+      '@codama/renderers-rust': 1.0.19(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
       '@codama/visitors': 1.2.11
       '@codama/visitors-core': 1.2.11
       commander: 13.1.0
@@ -4941,14 +4944,14 @@ snapshots:
       - fastestsmallesttextencoderdecoder
       - typescript
 
-  '@codama/cli@1.0.11(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)':
+  '@codama/cli@1.0.11(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)':
     dependencies:
       '@codama/nodes': 1.2.12
       '@codama/nodes-from-anchor': 1.1.12(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
-      '@codama/renderers': 1.0.20(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
-      '@codama/renderers-js': 1.2.11(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
-      '@codama/renderers-js-umi': 1.1.13(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
-      '@codama/renderers-rust': 1.0.20(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+      '@codama/renderers': 1.0.20(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+      '@codama/renderers-js': 1.2.11(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+      '@codama/renderers-js-umi': 1.1.13(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+      '@codama/renderers-rust': 1.0.20(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
       '@codama/visitors': 1.2.12
       '@codama/visitors-core': 1.2.12
       commander: 13.1.0
@@ -5019,7 +5022,7 @@ snapshots:
       '@codama/nodes': 1.2.12
       '@codama/visitors-core': 1.2.12
 
-  '@codama/renderers-js-umi@1.1.12(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)':
+  '@codama/renderers-js-umi@1.1.12(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)':
     dependencies:
       '@codama/errors': 1.2.11
       '@codama/nodes': 1.2.11
@@ -5027,14 +5030,14 @@ snapshots:
       '@codama/validators': 1.2.11
       '@codama/visitors-core': 1.2.11
       '@solana/codecs-strings': 2.0.0-rc.4(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
-      nunjucks: 3.2.4(chokidar@4.0.3)
+      nunjucks: 3.2.4
       prettier: 3.5.3
     transitivePeerDependencies:
       - chokidar
       - fastestsmallesttextencoderdecoder
       - typescript
 
-  '@codama/renderers-js-umi@1.1.13(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)':
+  '@codama/renderers-js-umi@1.1.13(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)':
     dependencies:
       '@codama/errors': 1.2.12
       '@codama/nodes': 1.2.12
@@ -5042,14 +5045,14 @@ snapshots:
       '@codama/validators': 1.2.12
       '@codama/visitors-core': 1.2.12
       '@solana/codecs-strings': 2.0.0-rc.4(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
-      nunjucks: 3.2.4(chokidar@4.0.3)
+      nunjucks: 3.2.4
       prettier: 3.5.3
     transitivePeerDependencies:
       - chokidar
       - fastestsmallesttextencoderdecoder
       - typescript
 
-  '@codama/renderers-js@1.2.10(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)':
+  '@codama/renderers-js@1.2.10(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)':
     dependencies:
       '@codama/errors': 1.2.11
       '@codama/nodes': 1.2.11
@@ -5057,14 +5060,14 @@ snapshots:
       '@codama/renderers-core': 1.0.13
       '@codama/visitors-core': 1.2.11
       '@solana/codecs-strings': 2.0.0-rc.4(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
-      nunjucks: 3.2.4(chokidar@4.0.3)
+      nunjucks: 3.2.4
       prettier: 3.5.3
     transitivePeerDependencies:
       - chokidar
       - fastestsmallesttextencoderdecoder
       - typescript
 
-  '@codama/renderers-js@1.2.11(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)':
+  '@codama/renderers-js@1.2.11(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)':
     dependencies:
       '@codama/errors': 1.2.12
       '@codama/nodes': 1.2.12
@@ -5072,54 +5075,54 @@ snapshots:
       '@codama/renderers-core': 1.0.14
       '@codama/visitors-core': 1.2.12
       '@solana/codecs-strings': 2.0.0-rc.4(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
-      nunjucks: 3.2.4(chokidar@4.0.3)
+      nunjucks: 3.2.4
       prettier: 3.5.3
     transitivePeerDependencies:
       - chokidar
       - fastestsmallesttextencoderdecoder
       - typescript
 
-  '@codama/renderers-rust@1.0.19(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)':
+  '@codama/renderers-rust@1.0.19(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)':
     dependencies:
       '@codama/errors': 1.2.11
       '@codama/nodes': 1.2.11
       '@codama/renderers-core': 1.0.13
       '@codama/visitors-core': 1.2.11
       '@solana/codecs-strings': 2.0.0-rc.4(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
-      nunjucks: 3.2.4(chokidar@4.0.3)
+      nunjucks: 3.2.4
     transitivePeerDependencies:
       - chokidar
       - fastestsmallesttextencoderdecoder
       - typescript
 
-  '@codama/renderers-rust@1.0.20(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)':
+  '@codama/renderers-rust@1.0.20(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)':
     dependencies:
       '@codama/errors': 1.2.12
       '@codama/nodes': 1.2.12
       '@codama/renderers-core': 1.0.14
       '@codama/visitors-core': 1.2.12
       '@solana/codecs-strings': 2.0.0-rc.4(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
-      nunjucks: 3.2.4(chokidar@4.0.3)
+      nunjucks: 3.2.4
     transitivePeerDependencies:
       - chokidar
       - fastestsmallesttextencoderdecoder
       - typescript
 
-  '@codama/renderers@1.0.19(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)':
+  '@codama/renderers@1.0.19(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)':
     dependencies:
-      '@codama/renderers-js': 1.2.10(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
-      '@codama/renderers-js-umi': 1.1.12(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
-      '@codama/renderers-rust': 1.0.19(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+      '@codama/renderers-js': 1.2.10(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+      '@codama/renderers-js-umi': 1.1.12(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+      '@codama/renderers-rust': 1.0.19(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
     transitivePeerDependencies:
       - chokidar
       - fastestsmallesttextencoderdecoder
       - typescript
 
-  '@codama/renderers@1.0.20(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)':
+  '@codama/renderers@1.0.20(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)':
     dependencies:
-      '@codama/renderers-js': 1.2.11(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
-      '@codama/renderers-js-umi': 1.1.13(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
-      '@codama/renderers-rust': 1.0.20(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+      '@codama/renderers-js': 1.2.11(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+      '@codama/renderers-js-umi': 1.1.13(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+      '@codama/renderers-rust': 1.0.20(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
     transitivePeerDependencies:
       - chokidar
       - fastestsmallesttextencoderdecoder
@@ -5173,8 +5176,8 @@ snapshots:
       eslint-config-next: 14.2.26(eslint@8.57.1)(typescript@5.8.3)
       eslint-config-prettier: 9.1.0(eslint@8.57.1)
       eslint-config-turbo: 2.3.3(eslint@8.57.1)
-      eslint-import-resolver-typescript: 3.10.0(eslint-plugin-import@2.31.0)(eslint@8.57.1)
-      eslint-plugin-import: 2.31.0(@typescript-eslint/parser@8.29.0(eslint@8.57.1)(typescript@5.8.3))(eslint-import-resolver-typescript@3.10.0)(eslint@8.57.1)
+      eslint-import-resolver-typescript: 3.10.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.29.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1))(eslint@8.57.1)
+      eslint-plugin-import: 2.31.0(@typescript-eslint/parser@8.29.0(eslint@8.57.1)(typescript@5.8.3))(eslint-import-resolver-typescript@3.10.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.29.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1))(eslint@8.57.1))(eslint@8.57.1)
       eslint-plugin-prettier: 5.2.5(eslint-config-prettier@9.1.0(eslint@8.57.1))(eslint@8.57.1)(prettier@3.5.3)
       eslint-plugin-react: 7.37.4(eslint@8.57.1)
       eslint-plugin-simple-import-sort: 12.1.1(eslint@8.57.1)
@@ -6916,9 +6919,9 @@ snapshots:
 
   cli-width@4.1.0: {}
 
-  codama@1.2.11(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3):
+  codama@1.2.11(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3):
     dependencies:
-      '@codama/cli': 1.0.10(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+      '@codama/cli': 1.0.10(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
       '@codama/errors': 1.2.11
       '@codama/nodes': 1.2.11
       '@codama/validators': 1.2.11
@@ -6928,9 +6931,9 @@ snapshots:
       - fastestsmallesttextencoderdecoder
       - typescript
 
-  codama@1.2.12(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3):
+  codama@1.2.12(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3):
     dependencies:
-      '@codama/cli': 1.0.11(chokidar@4.0.3)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+      '@codama/cli': 1.0.11(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
       '@codama/errors': 1.2.12
       '@codama/nodes': 1.2.12
       '@codama/validators': 1.2.12
@@ -7278,6 +7281,21 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  eslint-import-resolver-typescript@3.10.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.29.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1))(eslint@8.57.1):
+    dependencies:
+      '@nolyfill/is-core-module': 1.0.39
+      debug: 4.4.0(supports-color@8.1.1)
+      eslint: 8.57.1
+      get-tsconfig: 4.10.0
+      is-bun-module: 2.0.0
+      stable-hash: 0.0.5
+      tinyglobby: 0.2.12
+      unrs-resolver: 1.3.3
+    optionalDependencies:
+      eslint-plugin-import: 2.31.0(@typescript-eslint/parser@8.29.0(eslint@8.57.1)(typescript@5.8.3))(eslint-import-resolver-typescript@3.10.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.29.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1))(eslint@8.57.1))(eslint@8.57.1)
+    transitivePeerDependencies:
+      - supports-color
+
   eslint-import-resolver-typescript@3.10.0(eslint-plugin-import@2.31.0)(eslint@8.57.1):
     dependencies:
       '@nolyfill/is-core-module': 1.0.39
@@ -7293,6 +7311,17 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  eslint-module-utils@2.12.0(@typescript-eslint/parser@8.29.0(eslint@8.57.1)(typescript@5.8.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.29.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1))(eslint@8.57.1))(eslint@8.57.1):
+    dependencies:
+      debug: 3.2.7
+    optionalDependencies:
+      '@typescript-eslint/parser': 8.29.0(eslint@8.57.1)(typescript@5.8.3)
+      eslint: 8.57.1
+      eslint-import-resolver-node: 0.3.9
+      eslint-import-resolver-typescript: 3.10.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.29.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1))(eslint@8.57.1)
+    transitivePeerDependencies:
+      - supports-color
+
   eslint-module-utils@2.12.0(@typescript-eslint/parser@8.29.0(eslint@8.57.1)(typescript@5.8.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.0(eslint-plugin-import@2.31.0)(eslint@8.57.1))(eslint@8.57.1):
     dependencies:
       debug: 3.2.7
@@ -7302,6 +7331,35 @@ snapshots:
       eslint-import-resolver-node: 0.3.9
       eslint-import-resolver-typescript: 3.10.0(eslint-plugin-import@2.31.0)(eslint@8.57.1)
     transitivePeerDependencies:
+      - supports-color
+
+  eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.29.0(eslint@8.57.1)(typescript@5.8.3))(eslint-import-resolver-typescript@3.10.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.29.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1))(eslint@8.57.1))(eslint@8.57.1):
+    dependencies:
+      '@rtsao/scc': 1.1.0
+      array-includes: 3.1.8
+      array.prototype.findlastindex: 1.2.6
+      array.prototype.flat: 1.3.3
+      array.prototype.flatmap: 1.3.3
+      debug: 3.2.7
+      doctrine: 2.1.0
+      eslint: 8.57.1
+      eslint-import-resolver-node: 0.3.9
+      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.29.0(eslint@8.57.1)(typescript@5.8.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.29.0(eslint@8.57.1)(typescript@5.8.3))(eslint@8.57.1))(eslint@8.57.1))(eslint@8.57.1)
+      hasown: 2.0.2
+      is-core-module: 2.16.1
+      is-glob: 4.0.3
+      minimatch: 3.1.2
+      object.fromentries: 2.0.8
+      object.groupby: 1.0.3
+      object.values: 1.2.1
+      semver: 6.3.1
+      string.prototype.trimend: 1.0.9
+      tsconfig-paths: 3.15.0
+    optionalDependencies:
+      '@typescript-eslint/parser': 8.29.0(eslint@8.57.1)(typescript@5.8.3)
+    transitivePeerDependencies:
+      - eslint-import-resolver-typescript
+      - eslint-import-resolver-webpack
       - supports-color
 
   eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.29.0(eslint@8.57.1)(typescript@5.8.3))(eslint-import-resolver-typescript@3.10.0)(eslint@8.57.1):
@@ -8241,13 +8299,11 @@ snapshots:
 
   normalize-url@8.0.1: {}
 
-  nunjucks@3.2.4(chokidar@4.0.3):
+  nunjucks@3.2.4:
     dependencies:
       a-sync-waterfall: 1.0.1
       asap: 2.0.6
       commander: 5.1.0
-    optionalDependencies:
-      chokidar: 4.0.3
 
   object-assign@4.1.1: {}
 

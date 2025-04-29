@@ -8,11 +8,10 @@ import {
   Rpc,
   SolanaRpcApi,
 } from "@solana/kit";
-import { fetchMint, Mint as _Mint, Token } from "@solana-program/token";
+import { fetchMint, Mint as _Mint } from "@solana-program/token";
 import fs from "fs";
 import os from "os";
 import path from "path";
-import { WSOL_MINT } from "src/constants";
 
 export const loadKeypair = async (): Promise<KeyPairSigner> => {
   try {
@@ -61,19 +60,4 @@ export const getPythOraclePriceFeed = async (
 ): Promise<Address> => {
   const { data: lendingVaultData } = await fetchVault(rpc, lendingVaultAddress);
   return lendingVaultData.pythOraclePriceUpdate;
-};
-
-/**
- * Checks if a token or address corresponds to the Wrapped SOL (*WSOL*) mint account.
- * @param {Token|Address} token - A {@link Token token} object or {@link Address address} to check.
- * @returns {boolean} `true` if the token or address matches the {@link WSOL_MINT WSOL mint}, `false` otherwise.
- */
-export const isWSolMint = (token: Token | Address): boolean => {
-  const isMint = typeof token === "string";
-  if (isMint) {
-    return token === WSOL_MINT;
-  }
-
-  const mint = token.mint;
-  return mint === WSOL_MINT;
 };

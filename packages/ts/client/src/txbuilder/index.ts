@@ -4,6 +4,7 @@ export * from "./collectAndCompoundFeesOrca";
 export * from "./collectFeesOrca";
 export * from "./openLendingPosition.ts";
 export * from "./openLendingPositionAndDeposit.ts";
+export * from "./collectAndCompoundFeesOrca";
 export * from "./createMarket";
 export * from "./createTunaConfig";
 export * from "./createVault";
