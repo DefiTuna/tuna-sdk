@@ -21,15 +21,14 @@ pub enum LendingPositionFilter {
 impl From<LendingPositionFilter> for RpcFilterType {
     fn from(val: LendingPositionFilter) -> Self {
         match val {
-            LendingPositionFilter::Authority(address) => RpcFilterType::Memcmp(Memcmp::new_raw_bytes(11, address.to_bytes().to_vec())),
-            LendingPositionFilter::Mint(address) => RpcFilterType::Memcmp(Memcmp::new_raw_bytes(43, address.to_bytes().to_vec())),
+            LendingPositionFilter::Authority(address) => RpcFilterType::Memcmp(Memcmp::new_base58_encoded(11, &address.to_bytes())),
+            LendingPositionFilter::Mint(address) => RpcFilterType::Memcmp(Memcmp::new_base58_encoded(43, &address.to_bytes())),
         }
     }
 }
 
 pub fn fetch_all_lending_position_with_filter(rpc: &RpcClient, filters: Vec<LendingPositionFilter>) -> Result<Vec<DecodedAccount<LendingPosition>>, Box<dyn Error>> {
-    let discriminator = LENDING_POSITION_DISCRIMINATOR.to_vec();
     let mut filters: Vec<RpcFilterType> = filters.into_iter().map(|filter| filter.into()).collect();
-    filters.push(RpcFilterType::Memcmp(Memcmp::new_raw_bytes(0, discriminator)));
+    filters.push(RpcFilterType::Memcmp(Memcmp::new_base58_encoded(0, LENDING_POSITION_DISCRIMINATOR)));
     fetch_decoded_program_accounts(rpc, filters)
 }
