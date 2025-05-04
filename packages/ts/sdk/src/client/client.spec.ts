@@ -12,7 +12,23 @@ vi.stubGlobal("EventSource", NodeEventSource);
 const TEST_WALLET_ADDRESS = "CYCf8sBj4zLZheRovh37rWLe7pK8Yn5G7nb4SeBmgfMG";
 const SOL_USDC_POOL_ADDRESS = "Czfq3xZZDmsdGdUyrNLtRhGc47cXcZtLG4crryfu44zE";
 
-const client = new TunaApiClient(process.env.API_BASE_URL!);
+const baseURL = process.env.API_BASE_URL!;
+const client = new TunaApiClient(baseURL);
+
+describe("Config", async () => {
+  /*
+   * Restore baseURL back
+   * */
+  afterAll(() => {
+    client.setConfig({ baseURL });
+  });
+
+  it("Properly sets config", () => {
+    expect(client.baseURL).toBe(baseURL);
+    client.setConfig({ baseURL: "/test-endpoint" });
+    expect(client.baseURL).toBe("/test-endpoint");
+  });
+});
 
 describe("Mints", async () => {
   const rpcVaults = await testUtils.getVaults();
