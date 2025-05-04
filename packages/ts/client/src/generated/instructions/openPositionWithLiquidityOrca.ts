@@ -73,9 +73,9 @@ export type OpenPositionWithLiquidityOrcaInstruction<
   TAccountPythOraclePriceFeedB extends string | IAccountMeta<string> = string,
   TAccountWhirlpoolProgram extends string | IAccountMeta<string> = string,
   TAccountWhirlpool extends string | IAccountMeta<string> = string,
-  TAccountTokenProgram extends
-    | string
-    | IAccountMeta<string> = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+  TAccountTokenProgramA extends string | IAccountMeta<string> = string,
+  TAccountTokenProgramB extends string | IAccountMeta<string> = string,
+  TAccountMemoProgram extends string | IAccountMeta<string> = string,
   TAccountToken2022Program extends string | IAccountMeta<string> = string,
   TAccountSystemProgram extends
     | string
@@ -154,9 +154,15 @@ export type OpenPositionWithLiquidityOrcaInstruction<
       TAccountWhirlpool extends string
         ? WritableAccount<TAccountWhirlpool>
         : TAccountWhirlpool,
-      TAccountTokenProgram extends string
-        ? ReadonlyAccount<TAccountTokenProgram>
-        : TAccountTokenProgram,
+      TAccountTokenProgramA extends string
+        ? ReadonlyAccount<TAccountTokenProgramA>
+        : TAccountTokenProgramA,
+      TAccountTokenProgramB extends string
+        ? ReadonlyAccount<TAccountTokenProgramB>
+        : TAccountTokenProgramB,
+      TAccountMemoProgram extends string
+        ? ReadonlyAccount<TAccountMemoProgram>
+        : TAccountMemoProgram,
       TAccountToken2022Program extends string
         ? ReadonlyAccount<TAccountToken2022Program>
         : TAccountToken2022Program,
@@ -276,7 +282,9 @@ export type OpenPositionWithLiquidityOrcaInput<
   TAccountPythOraclePriceFeedB extends string = string,
   TAccountWhirlpoolProgram extends string = string,
   TAccountWhirlpool extends string = string,
-  TAccountTokenProgram extends string = string,
+  TAccountTokenProgramA extends string = string,
+  TAccountTokenProgramB extends string = string,
+  TAccountMemoProgram extends string = string,
   TAccountToken2022Program extends string = string,
   TAccountSystemProgram extends string = string,
   TAccountAssociatedTokenProgram extends string = string,
@@ -318,7 +326,9 @@ export type OpenPositionWithLiquidityOrcaInput<
    * Other accounts
    *
    */
-  tokenProgram?: Address<TAccountTokenProgram>;
+  tokenProgramA: Address<TAccountTokenProgramA>;
+  tokenProgramB: Address<TAccountTokenProgramB>;
+  memoProgram: Address<TAccountMemoProgram>;
   token2022Program: Address<TAccountToken2022Program>;
   systemProgram?: Address<TAccountSystemProgram>;
   associatedTokenProgram: Address<TAccountAssociatedTokenProgram>;
@@ -359,7 +369,9 @@ export function getOpenPositionWithLiquidityOrcaInstruction<
   TAccountPythOraclePriceFeedB extends string,
   TAccountWhirlpoolProgram extends string,
   TAccountWhirlpool extends string,
-  TAccountTokenProgram extends string,
+  TAccountTokenProgramA extends string,
+  TAccountTokenProgramB extends string,
+  TAccountMemoProgram extends string,
   TAccountToken2022Program extends string,
   TAccountSystemProgram extends string,
   TAccountAssociatedTokenProgram extends string,
@@ -388,7 +400,9 @@ export function getOpenPositionWithLiquidityOrcaInstruction<
     TAccountPythOraclePriceFeedB,
     TAccountWhirlpoolProgram,
     TAccountWhirlpool,
-    TAccountTokenProgram,
+    TAccountTokenProgramA,
+    TAccountTokenProgramB,
+    TAccountMemoProgram,
     TAccountToken2022Program,
     TAccountSystemProgram,
     TAccountAssociatedTokenProgram
@@ -418,7 +432,9 @@ export function getOpenPositionWithLiquidityOrcaInstruction<
   TAccountPythOraclePriceFeedB,
   TAccountWhirlpoolProgram,
   TAccountWhirlpool,
-  TAccountTokenProgram,
+  TAccountTokenProgramA,
+  TAccountTokenProgramB,
+  TAccountMemoProgram,
   TAccountToken2022Program,
   TAccountSystemProgram,
   TAccountAssociatedTokenProgram
@@ -480,7 +496,9 @@ export function getOpenPositionWithLiquidityOrcaInstruction<
       isWritable: false,
     },
     whirlpool: { value: input.whirlpool ?? null, isWritable: true },
-    tokenProgram: { value: input.tokenProgram ?? null, isWritable: false },
+    tokenProgramA: { value: input.tokenProgramA ?? null, isWritable: false },
+    tokenProgramB: { value: input.tokenProgramB ?? null, isWritable: false },
+    memoProgram: { value: input.memoProgram ?? null, isWritable: false },
     token2022Program: {
       value: input.token2022Program ?? null,
       isWritable: false,
@@ -500,10 +518,6 @@ export function getOpenPositionWithLiquidityOrcaInstruction<
   const args = { ...input };
 
   // Resolve default values.
-  if (!accounts.tokenProgram.value) {
-    accounts.tokenProgram.value =
-      'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' as Address<'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'>;
-  }
   if (!accounts.systemProgram.value) {
     accounts.systemProgram.value =
       '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
@@ -534,7 +548,9 @@ export function getOpenPositionWithLiquidityOrcaInstruction<
       getAccountMeta(accounts.pythOraclePriceFeedB),
       getAccountMeta(accounts.whirlpoolProgram),
       getAccountMeta(accounts.whirlpool),
-      getAccountMeta(accounts.tokenProgram),
+      getAccountMeta(accounts.tokenProgramA),
+      getAccountMeta(accounts.tokenProgramB),
+      getAccountMeta(accounts.memoProgram),
       getAccountMeta(accounts.token2022Program),
       getAccountMeta(accounts.systemProgram),
       getAccountMeta(accounts.associatedTokenProgram),
@@ -567,7 +583,9 @@ export function getOpenPositionWithLiquidityOrcaInstruction<
     TAccountPythOraclePriceFeedB,
     TAccountWhirlpoolProgram,
     TAccountWhirlpool,
-    TAccountTokenProgram,
+    TAccountTokenProgramA,
+    TAccountTokenProgramB,
+    TAccountMemoProgram,
     TAccountToken2022Program,
     TAccountSystemProgram,
     TAccountAssociatedTokenProgram
@@ -622,10 +640,12 @@ export type ParsedOpenPositionWithLiquidityOrcaInstruction<
      *
      */
 
-    tokenProgram: TAccountMetas[22];
-    token2022Program: TAccountMetas[23];
-    systemProgram: TAccountMetas[24];
-    associatedTokenProgram: TAccountMetas[25];
+    tokenProgramA: TAccountMetas[22];
+    tokenProgramB: TAccountMetas[23];
+    memoProgram: TAccountMetas[24];
+    token2022Program: TAccountMetas[25];
+    systemProgram: TAccountMetas[26];
+    associatedTokenProgram: TAccountMetas[27];
   };
   data: OpenPositionWithLiquidityOrcaInstructionData;
 };
@@ -638,7 +658,7 @@ export function parseOpenPositionWithLiquidityOrcaInstruction<
     IInstructionWithAccounts<TAccountMetas> &
     IInstructionWithData<Uint8Array>
 ): ParsedOpenPositionWithLiquidityOrcaInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 26) {
+  if (instruction.accounts.length < 28) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
   }
@@ -673,7 +693,9 @@ export function parseOpenPositionWithLiquidityOrcaInstruction<
       pythOraclePriceFeedB: getNextAccount(),
       whirlpoolProgram: getNextAccount(),
       whirlpool: getNextAccount(),
-      tokenProgram: getNextAccount(),
+      tokenProgramA: getNextAccount(),
+      tokenProgramB: getNextAccount(),
+      memoProgram: getNextAccount(),
       token2022Program: getNextAccount(),
       systemProgram: getNextAccount(),
       associatedTokenProgram: getNextAccount(),

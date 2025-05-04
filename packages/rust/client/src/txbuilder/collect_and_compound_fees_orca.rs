@@ -16,12 +16,14 @@ pub fn collect_and_compound_fees_orca_instructions(
     vault_a: &Vault,
     vault_b: &Vault,
     whirlpool: &Whirlpool,
+    token_program_a: &Pubkey,
+    token_program_b: &Pubkey,
     use_leverage: bool,
 ) -> Vec<Instruction> {
     vec![
-        create_associated_token_account_idempotent(authority, &tuna_config.fee_recipient, &vault_a.mint, &spl_token::ID),
-        create_associated_token_account_idempotent(authority, &tuna_config.fee_recipient, &vault_b.mint, &spl_token::ID),
-        collect_and_compound_fees_orca_instruction(authority, tuna_config, tuna_position, vault_a, vault_b, whirlpool, use_leverage),
+        create_associated_token_account_idempotent(authority, &tuna_config.fee_recipient, &vault_a.mint, token_program_a),
+        create_associated_token_account_idempotent(authority, &tuna_config.fee_recipient, &vault_b.mint, token_program_b),
+        collect_and_compound_fees_orca_instruction(authority, tuna_config, tuna_position, vault_a, vault_b, whirlpool, token_program_a, token_program_b, use_leverage),
     ]
 }
 
@@ -32,6 +34,8 @@ pub fn collect_and_compound_fees_orca_instruction(
     vault_a: &Vault,
     vault_b: &Vault,
     whirlpool: &Whirlpool,
+    token_program_a: &Pubkey,
+    token_program_b: &Pubkey,
     use_leverage: bool,
 ) -> Instruction {
     let mint_a = whirlpool.token_mint_a;
@@ -80,7 +84,9 @@ pub fn collect_and_compound_fees_orca_instruction(
         whirlpool_program: orca_whirlpools_client::ID,
         whirlpool: whirlpool_address,
         orca_position: orca_position_address,
-        token_program: spl_token::ID,
+        token_program_a: *token_program_a,
+        token_program_b: *token_program_b,
+        memo_program: spl_memo::ID,
     };
 
     ix_builder.instruction_with_remaining_accounts(

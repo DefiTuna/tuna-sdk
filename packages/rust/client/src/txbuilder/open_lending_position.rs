@@ -3,7 +3,6 @@ use crate::{get_lending_position_address, get_tuna_config_address, get_vault_add
 use solana_program::instruction::Instruction;
 use solana_program::pubkey::Pubkey;
 use solana_program::system_program;
-use solana_program::sysvar::rent;
 
 pub fn open_lending_position_instruction(authority: &Pubkey, mint: &Pubkey) -> Instruction {
     let tuna_config_address = get_tuna_config_address().0;
@@ -16,10 +15,7 @@ pub fn open_lending_position_instruction(authority: &Pubkey, mint: &Pubkey) -> I
         vault: vault_address,
         lending_position: lending_position_address,
         pool_mint: *mint,
-        token_program: spl_token::ID,
         system_program: system_program::ID,
-        rent: rent::ID,
-        associated_token_program: spl_associated_token_account::ID,
     };
 
     ix_builder.instruction()

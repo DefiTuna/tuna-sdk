@@ -50,16 +50,9 @@ export type OpenLendingPositionInstruction<
   TAccountVault extends string | IAccountMeta<string> = string,
   TAccountLendingPosition extends string | IAccountMeta<string> = string,
   TAccountPoolMint extends string | IAccountMeta<string> = string,
-  TAccountTokenProgram extends
-    | string
-    | IAccountMeta<string> = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
   TAccountSystemProgram extends
     | string
     | IAccountMeta<string> = '11111111111111111111111111111111',
-  TAccountRent extends
-    | string
-    | IAccountMeta<string> = 'SysvarRent111111111111111111111111111111111',
-  TAccountAssociatedTokenProgram extends string | IAccountMeta<string> = string,
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
   IInstructionWithData<Uint8Array> &
@@ -81,18 +74,9 @@ export type OpenLendingPositionInstruction<
       TAccountPoolMint extends string
         ? ReadonlyAccount<TAccountPoolMint>
         : TAccountPoolMint,
-      TAccountTokenProgram extends string
-        ? ReadonlyAccount<TAccountTokenProgram>
-        : TAccountTokenProgram,
       TAccountSystemProgram extends string
         ? ReadonlyAccount<TAccountSystemProgram>
         : TAccountSystemProgram,
-      TAccountRent extends string
-        ? ReadonlyAccount<TAccountRent>
-        : TAccountRent,
-      TAccountAssociatedTokenProgram extends string
-        ? ReadonlyAccount<TAccountAssociatedTokenProgram>
-        : TAccountAssociatedTokenProgram,
       ...TRemainingAccounts,
     ]
   >;
@@ -135,20 +119,14 @@ export type OpenLendingPositionInput<
   TAccountVault extends string = string,
   TAccountLendingPosition extends string = string,
   TAccountPoolMint extends string = string,
-  TAccountTokenProgram extends string = string,
   TAccountSystemProgram extends string = string,
-  TAccountRent extends string = string,
-  TAccountAssociatedTokenProgram extends string = string,
 > = {
   authority: TransactionSigner<TAccountAuthority>;
   tunaConfig: Address<TAccountTunaConfig>;
   vault: Address<TAccountVault>;
   lendingPosition: Address<TAccountLendingPosition>;
   poolMint: Address<TAccountPoolMint>;
-  tokenProgram?: Address<TAccountTokenProgram>;
   systemProgram?: Address<TAccountSystemProgram>;
-  rent?: Address<TAccountRent>;
-  associatedTokenProgram: Address<TAccountAssociatedTokenProgram>;
 };
 
 export function getOpenLendingPositionInstruction<
@@ -157,10 +135,7 @@ export function getOpenLendingPositionInstruction<
   TAccountVault extends string,
   TAccountLendingPosition extends string,
   TAccountPoolMint extends string,
-  TAccountTokenProgram extends string,
   TAccountSystemProgram extends string,
-  TAccountRent extends string,
-  TAccountAssociatedTokenProgram extends string,
   TProgramAddress extends Address = typeof TUNA_PROGRAM_ADDRESS,
 >(
   input: OpenLendingPositionInput<
@@ -169,10 +144,7 @@ export function getOpenLendingPositionInstruction<
     TAccountVault,
     TAccountLendingPosition,
     TAccountPoolMint,
-    TAccountTokenProgram,
-    TAccountSystemProgram,
-    TAccountRent,
-    TAccountAssociatedTokenProgram
+    TAccountSystemProgram
   >,
   config?: { programAddress?: TProgramAddress }
 ): OpenLendingPositionInstruction<
@@ -182,10 +154,7 @@ export function getOpenLendingPositionInstruction<
   TAccountVault,
   TAccountLendingPosition,
   TAccountPoolMint,
-  TAccountTokenProgram,
-  TAccountSystemProgram,
-  TAccountRent,
-  TAccountAssociatedTokenProgram
+  TAccountSystemProgram
 > {
   // Program address.
   const programAddress = config?.programAddress ?? TUNA_PROGRAM_ADDRESS;
@@ -197,13 +166,7 @@ export function getOpenLendingPositionInstruction<
     vault: { value: input.vault ?? null, isWritable: false },
     lendingPosition: { value: input.lendingPosition ?? null, isWritable: true },
     poolMint: { value: input.poolMint ?? null, isWritable: false },
-    tokenProgram: { value: input.tokenProgram ?? null, isWritable: false },
     systemProgram: { value: input.systemProgram ?? null, isWritable: false },
-    rent: { value: input.rent ?? null, isWritable: false },
-    associatedTokenProgram: {
-      value: input.associatedTokenProgram ?? null,
-      isWritable: false,
-    },
   };
   const accounts = originalAccounts as Record<
     keyof typeof originalAccounts,
@@ -211,17 +174,9 @@ export function getOpenLendingPositionInstruction<
   >;
 
   // Resolve default values.
-  if (!accounts.tokenProgram.value) {
-    accounts.tokenProgram.value =
-      'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' as Address<'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'>;
-  }
   if (!accounts.systemProgram.value) {
     accounts.systemProgram.value =
       '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
-  }
-  if (!accounts.rent.value) {
-    accounts.rent.value =
-      'SysvarRent111111111111111111111111111111111' as Address<'SysvarRent111111111111111111111111111111111'>;
   }
 
   const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
@@ -232,10 +187,7 @@ export function getOpenLendingPositionInstruction<
       getAccountMeta(accounts.vault),
       getAccountMeta(accounts.lendingPosition),
       getAccountMeta(accounts.poolMint),
-      getAccountMeta(accounts.tokenProgram),
       getAccountMeta(accounts.systemProgram),
-      getAccountMeta(accounts.rent),
-      getAccountMeta(accounts.associatedTokenProgram),
     ],
     programAddress,
     data: getOpenLendingPositionInstructionDataEncoder().encode({}),
@@ -246,10 +198,7 @@ export function getOpenLendingPositionInstruction<
     TAccountVault,
     TAccountLendingPosition,
     TAccountPoolMint,
-    TAccountTokenProgram,
-    TAccountSystemProgram,
-    TAccountRent,
-    TAccountAssociatedTokenProgram
+    TAccountSystemProgram
   >;
 
   return instruction;
@@ -266,10 +215,7 @@ export type ParsedOpenLendingPositionInstruction<
     vault: TAccountMetas[2];
     lendingPosition: TAccountMetas[3];
     poolMint: TAccountMetas[4];
-    tokenProgram: TAccountMetas[5];
-    systemProgram: TAccountMetas[6];
-    rent: TAccountMetas[7];
-    associatedTokenProgram: TAccountMetas[8];
+    systemProgram: TAccountMetas[5];
   };
   data: OpenLendingPositionInstructionData;
 };
@@ -282,7 +228,7 @@ export function parseOpenLendingPositionInstruction<
     IInstructionWithAccounts<TAccountMetas> &
     IInstructionWithData<Uint8Array>
 ): ParsedOpenLendingPositionInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 9) {
+  if (instruction.accounts.length < 6) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
   }
@@ -300,10 +246,7 @@ export function parseOpenLendingPositionInstruction<
       vault: getNextAccount(),
       lendingPosition: getNextAccount(),
       poolMint: getNextAccount(),
-      tokenProgram: getNextAccount(),
       systemProgram: getNextAccount(),
-      rent: getNextAccount(),
-      associatedTokenProgram: getNextAccount(),
     },
     data: getOpenLendingPositionInstructionDataDecoder().decode(
       instruction.data

@@ -1,7 +1,8 @@
 import BaseCommand, { addressArg, addressFlag, bigintFlag, percentFlag, pythFeedIdFlag } from "../base.ts";
-import { sendTransaction, signer } from "../rpc.ts";
-import { createVaultInstructions, CreateVaultInstructionDataArgs } from "@defituna/client";
+import { rpc, sendTransaction, signer } from "../rpc.ts";
+import { createVaultInstructions, CreateVaultInstructionDataArgs, getLendingVaultAddress, fetchMaybeVault } from "@defituna/client";
 import { address } from "@solana/kit";
+import { fetchMint } from "@solana-program/token-2022";
 
 export default class UpdateVault extends BaseCommand {
   static override args = {
@@ -33,6 +34,16 @@ export default class UpdateVault extends BaseCommand {
   public async run() {
     const { args, flags } = await this.parse(UpdateVault);
 
+    const vaultAddress = (await getLendingVaultAddress(args.mint))[0];
+    console.log("Fetching vault:", vaultAddress);
+    const vault = await fetchMaybeVault(rpc, vaultAddress);
+    if (vault.exists) {
+      console.log("Vault:", vault);
+      throw new Error(`The vault for mint ${args.mint} already exists`);
+    } else {
+      console.log("Vault not found. Creating a new one.");
+    }
+
     const INTEREST_RATE_100_PERCENT = (1n << 60n) / 31536000n; // 100% annually
 
     const ixArgs: CreateVaultInstructionDataArgs = {
@@ -42,7 +53,8 @@ export default class UpdateVault extends BaseCommand {
       pythOracleFeedId: flags.pythOracleFeedId,
     };
 
-    const instructions = await createVaultInstructions(signer, args.mint, ixArgs);
+    const mint = await fetchMint(rpc, args.mint);
+    const instructions = await createVaultInstructions(signer, mint, ixArgs);
 
     console.log("");
     console.log("Sending a transaction...");

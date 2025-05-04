@@ -1,6 +1,6 @@
-import { Address, IInstruction, TransactionSigner } from "@solana/kit";
-import { ASSOCIATED_TOKEN_PROGRAM_ADDRESS, findAssociatedTokenPda } from "@solana-program/token-2022";
-import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
+import { Account, IInstruction, TransactionSigner } from "@solana/kit";
+import { findAssociatedTokenPda, Mint } from "@solana-program/token-2022";
+import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
 import {
   getCreateAtaInstructions,
   getDepositInstruction,
@@ -11,7 +11,7 @@ import {
 
 export async function depositInstructions(
   authority: TransactionSigner,
-  mint: Address,
+  mint: Account<Mint>,
   amount: bigint,
 ): Promise<IInstruction[]> {
   const instructions: IInstruction[] = [];
@@ -19,9 +19,9 @@ export async function depositInstructions(
   // Add create user's token account instruction if needed.
   const createUserAtaInstructions = await getCreateAtaInstructions(
     authority,
-    mint,
+    mint.address,
     authority.address,
-    TOKEN_PROGRAM_ADDRESS,
+    mint.programAddress,
     amount,
   );
   instructions.push(...createUserAtaInstructions.init);
@@ -38,26 +38,26 @@ export async function depositInstructions(
 
 export async function depositInstruction(
   authority: TransactionSigner,
-  mint: Address,
+  mint: Account<Mint>,
   amount: bigint,
 ): Promise<IInstruction> {
   const tunaConfig = (await getTunaConfigAddress())[0];
-  const lendingPosition = (await getLendingPositionAddress(authority.address, mint))[0];
+  const lendingPosition = (await getLendingPositionAddress(authority.address, mint.address))[0];
 
-  const vault = (await getLendingVaultAddress(mint))[0];
+  const vault = (await getLendingVaultAddress(mint.address))[0];
   const vaultAta = (
     await findAssociatedTokenPda({
       owner: vault,
-      mint: mint,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+      mint: mint.address,
+      tokenProgram: mint.programAddress,
     })
   )[0];
 
   const authorityAta = (
     await findAssociatedTokenPda({
       owner: authority.address,
-      mint: mint,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+      mint: mint.address,
+      tokenProgram: mint.programAddress,
     })
   )[0];
 
@@ -65,11 +65,12 @@ export async function depositInstruction(
     authority,
     authorityAta,
     lendingPosition,
-    mint,
+    mint: mint.address,
     tunaConfig,
     vault,
     vaultAta,
-    associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
+    tokenProgram: mint.programAddress,
+    memoProgram: MEMO_PROGRAM_ADDRESS,
     amount,
   });
 }

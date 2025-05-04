@@ -37,7 +37,7 @@ pub struct Withdraw {
           pub token_program: solana_program::pubkey::Pubkey,
           
               
-          pub associated_token_program: solana_program::pubkey::Pubkey,
+          pub memo_program: solana_program::pubkey::Pubkey,
       }
 
 impl Withdraw {
@@ -52,7 +52,7 @@ impl Withdraw {
             self.authority,
             true
           ));
-                                          accounts.push(solana_program::instruction::AccountMeta::new(
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.mint,
             false
           ));
@@ -81,7 +81,7 @@ impl Withdraw {
             false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.associated_token_program,
+            self.memo_program,
             false
           ));
                       accounts.extend_from_slice(remaining_accounts);
@@ -130,14 +130,14 @@ impl Default for WithdrawInstructionData {
 /// ### Accounts:
 ///
                       ///   0. `[writable, signer]` authority
-                ///   1. `[writable]` mint
+          ///   1. `[]` mint
           ///   2. `[]` tuna_config
                 ///   3. `[writable]` lending_position
                 ///   4. `[writable]` vault
                 ///   5. `[writable]` vault_ata
                 ///   6. `[writable]` authority_ata
                 ///   7. `[optional]` token_program (default to `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
-          ///   8. `[]` associated_token_program
+          ///   8. `[]` memo_program
 #[derive(Clone, Debug, Default)]
 pub struct WithdrawBuilder {
             authority: Option<solana_program::pubkey::Pubkey>,
@@ -148,7 +148,7 @@ pub struct WithdrawBuilder {
                 vault_ata: Option<solana_program::pubkey::Pubkey>,
                 authority_ata: Option<solana_program::pubkey::Pubkey>,
                 token_program: Option<solana_program::pubkey::Pubkey>,
-                associated_token_program: Option<solana_program::pubkey::Pubkey>,
+                memo_program: Option<solana_program::pubkey::Pubkey>,
                         funds: Option<u64>,
                 shares: Option<u64>,
         __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
@@ -200,8 +200,8 @@ impl WithdrawBuilder {
                     self
     }
             #[inline(always)]
-    pub fn associated_token_program(&mut self, associated_token_program: solana_program::pubkey::Pubkey) -> &mut Self {
-                        self.associated_token_program = Some(associated_token_program);
+    pub fn memo_program(&mut self, memo_program: solana_program::pubkey::Pubkey) -> &mut Self {
+                        self.memo_program = Some(memo_program);
                     self
     }
                     #[inline(always)]
@@ -237,7 +237,7 @@ impl WithdrawBuilder {
                                         vault_ata: self.vault_ata.expect("vault_ata is not set"),
                                         authority_ata: self.authority_ata.expect("authority_ata is not set"),
                                         token_program: self.token_program.unwrap_or(solana_program::pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")),
-                                        associated_token_program: self.associated_token_program.expect("associated_token_program is not set"),
+                                        memo_program: self.memo_program.expect("memo_program is not set"),
                       };
           let args = WithdrawInstructionArgs {
                                                               funds: self.funds.clone().expect("funds is not set"),
@@ -276,7 +276,7 @@ impl WithdrawBuilder {
               pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
                 
                     
-              pub associated_token_program: &'b solana_program::account_info::AccountInfo<'a>,
+              pub memo_program: &'b solana_program::account_info::AccountInfo<'a>,
             }
 
 /// `withdraw` CPI instruction.
@@ -309,7 +309,7 @@ pub struct WithdrawCpi<'a, 'b> {
           pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
           
               
-          pub associated_token_program: &'b solana_program::account_info::AccountInfo<'a>,
+          pub memo_program: &'b solana_program::account_info::AccountInfo<'a>,
             /// The arguments for the instruction.
     pub __args: WithdrawInstructionArgs,
   }
@@ -330,7 +330,7 @@ impl<'a, 'b> WithdrawCpi<'a, 'b> {
               vault_ata: accounts.vault_ata,
               authority_ata: accounts.authority_ata,
               token_program: accounts.token_program,
-              associated_token_program: accounts.associated_token_program,
+              memo_program: accounts.memo_program,
                     __args: args,
           }
   }
@@ -359,7 +359,7 @@ impl<'a, 'b> WithdrawCpi<'a, 'b> {
             *self.authority.key,
             true
           ));
-                                          accounts.push(solana_program::instruction::AccountMeta::new(
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.mint.key,
             false
           ));
@@ -388,7 +388,7 @@ impl<'a, 'b> WithdrawCpi<'a, 'b> {
             false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.associated_token_program.key,
+            *self.memo_program.key,
             false
           ));
                       remaining_accounts.iter().for_each(|remaining_account| {
@@ -417,7 +417,7 @@ impl<'a, 'b> WithdrawCpi<'a, 'b> {
                         account_infos.push(self.vault_ata.clone());
                         account_infos.push(self.authority_ata.clone());
                         account_infos.push(self.token_program.clone());
-                        account_infos.push(self.associated_token_program.clone());
+                        account_infos.push(self.memo_program.clone());
               remaining_accounts.iter().for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
 
     if signers_seeds.is_empty() {
@@ -433,14 +433,14 @@ impl<'a, 'b> WithdrawCpi<'a, 'b> {
 /// ### Accounts:
 ///
                       ///   0. `[writable, signer]` authority
-                ///   1. `[writable]` mint
+          ///   1. `[]` mint
           ///   2. `[]` tuna_config
                 ///   3. `[writable]` lending_position
                 ///   4. `[writable]` vault
                 ///   5. `[writable]` vault_ata
                 ///   6. `[writable]` authority_ata
           ///   7. `[]` token_program
-          ///   8. `[]` associated_token_program
+          ///   8. `[]` memo_program
 #[derive(Clone, Debug)]
 pub struct WithdrawCpiBuilder<'a, 'b> {
   instruction: Box<WithdrawCpiBuilderInstruction<'a, 'b>>,
@@ -458,7 +458,7 @@ impl<'a, 'b> WithdrawCpiBuilder<'a, 'b> {
               vault_ata: None,
               authority_ata: None,
               token_program: None,
-              associated_token_program: None,
+              memo_program: None,
                                             funds: None,
                                 shares: None,
                     __remaining_accounts: Vec::new(),
@@ -506,8 +506,8 @@ impl<'a, 'b> WithdrawCpiBuilder<'a, 'b> {
                     self
     }
       #[inline(always)]
-    pub fn associated_token_program(&mut self, associated_token_program: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
-                        self.instruction.associated_token_program = Some(associated_token_program);
+    pub fn memo_program(&mut self, memo_program: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+                        self.instruction.memo_program = Some(memo_program);
                     self
     }
                     #[inline(always)]
@@ -565,7 +565,7 @@ impl<'a, 'b> WithdrawCpiBuilder<'a, 'b> {
                   
           token_program: self.instruction.token_program.expect("token_program is not set"),
                   
-          associated_token_program: self.instruction.associated_token_program.expect("associated_token_program is not set"),
+          memo_program: self.instruction.memo_program.expect("memo_program is not set"),
                           __args: args,
             };
     instruction.invoke_signed_with_remaining_accounts(signers_seeds, &self.instruction.__remaining_accounts)
@@ -583,7 +583,7 @@ struct WithdrawCpiBuilderInstruction<'a, 'b> {
                 vault_ata: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 authority_ata: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 token_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-                associated_token_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+                memo_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                         funds: Option<u64>,
                 shares: Option<u64>,
         /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.

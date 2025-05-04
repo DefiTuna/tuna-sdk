@@ -28,16 +28,7 @@ pub struct OpenLendingPosition {
           pub pool_mint: solana_program::pubkey::Pubkey,
           
               
-          pub token_program: solana_program::pubkey::Pubkey,
-          
-              
           pub system_program: solana_program::pubkey::Pubkey,
-          
-              
-          pub rent: solana_program::pubkey::Pubkey,
-          
-              
-          pub associated_token_program: solana_program::pubkey::Pubkey,
       }
 
 impl OpenLendingPosition {
@@ -47,7 +38,7 @@ impl OpenLendingPosition {
   #[allow(clippy::arithmetic_side_effects)]
   #[allow(clippy::vec_init_then_push)]
   pub fn instruction_with_remaining_accounts(&self, remaining_accounts: &[solana_program::instruction::AccountMeta]) -> solana_program::instruction::Instruction {
-    let mut accounts = Vec::with_capacity(9+ remaining_accounts.len());
+    let mut accounts = Vec::with_capacity(6+ remaining_accounts.len());
                             accounts.push(solana_program::instruction::AccountMeta::new(
             self.authority,
             true
@@ -69,19 +60,7 @@ impl OpenLendingPosition {
             false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.token_program,
-            false
-          ));
-                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.system_program,
-            false
-          ));
-                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.rent,
-            false
-          ));
-                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.associated_token_program,
             false
           ));
                       accounts.extend_from_slice(remaining_accounts);
@@ -126,10 +105,7 @@ impl Default for OpenLendingPositionInstructionData {
           ///   2. `[]` vault
                 ///   3. `[writable]` lending_position
           ///   4. `[]` pool_mint
-                ///   5. `[optional]` token_program (default to `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
-                ///   6. `[optional]` system_program (default to `11111111111111111111111111111111`)
-                ///   7. `[optional]` rent (default to `SysvarRent111111111111111111111111111111111`)
-          ///   8. `[]` associated_token_program
+                ///   5. `[optional]` system_program (default to `11111111111111111111111111111111`)
 #[derive(Clone, Debug, Default)]
 pub struct OpenLendingPositionBuilder {
             authority: Option<solana_program::pubkey::Pubkey>,
@@ -137,10 +113,7 @@ pub struct OpenLendingPositionBuilder {
                 vault: Option<solana_program::pubkey::Pubkey>,
                 lending_position: Option<solana_program::pubkey::Pubkey>,
                 pool_mint: Option<solana_program::pubkey::Pubkey>,
-                token_program: Option<solana_program::pubkey::Pubkey>,
                 system_program: Option<solana_program::pubkey::Pubkey>,
-                rent: Option<solana_program::pubkey::Pubkey>,
-                associated_token_program: Option<solana_program::pubkey::Pubkey>,
                 __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -173,27 +146,10 @@ impl OpenLendingPositionBuilder {
                         self.pool_mint = Some(pool_mint);
                     self
     }
-            /// `[optional account, default to 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA']`
-#[inline(always)]
-    pub fn token_program(&mut self, token_program: solana_program::pubkey::Pubkey) -> &mut Self {
-                        self.token_program = Some(token_program);
-                    self
-    }
             /// `[optional account, default to '11111111111111111111111111111111']`
 #[inline(always)]
     pub fn system_program(&mut self, system_program: solana_program::pubkey::Pubkey) -> &mut Self {
                         self.system_program = Some(system_program);
-                    self
-    }
-            /// `[optional account, default to 'SysvarRent111111111111111111111111111111111']`
-#[inline(always)]
-    pub fn rent(&mut self, rent: solana_program::pubkey::Pubkey) -> &mut Self {
-                        self.rent = Some(rent);
-                    self
-    }
-            #[inline(always)]
-    pub fn associated_token_program(&mut self, associated_token_program: solana_program::pubkey::Pubkey) -> &mut Self {
-                        self.associated_token_program = Some(associated_token_program);
                     self
     }
             /// Add an additional account to the instruction.
@@ -216,10 +172,7 @@ impl OpenLendingPositionBuilder {
                                         vault: self.vault.expect("vault is not set"),
                                         lending_position: self.lending_position.expect("lending_position is not set"),
                                         pool_mint: self.pool_mint.expect("pool_mint is not set"),
-                                        token_program: self.token_program.unwrap_or(solana_program::pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")),
                                         system_program: self.system_program.unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
-                                        rent: self.rent.unwrap_or(solana_program::pubkey!("SysvarRent111111111111111111111111111111111")),
-                                        associated_token_program: self.associated_token_program.expect("associated_token_program is not set"),
                       };
     
     accounts.instruction_with_remaining_accounts(&self.__remaining_accounts)
@@ -245,16 +198,7 @@ impl OpenLendingPositionBuilder {
               pub pool_mint: &'b solana_program::account_info::AccountInfo<'a>,
                 
                     
-              pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
-                
-                    
               pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
-                
-                    
-              pub rent: &'b solana_program::account_info::AccountInfo<'a>,
-                
-                    
-              pub associated_token_program: &'b solana_program::account_info::AccountInfo<'a>,
             }
 
 /// `open_lending_position` CPI instruction.
@@ -278,16 +222,7 @@ pub struct OpenLendingPositionCpi<'a, 'b> {
           pub pool_mint: &'b solana_program::account_info::AccountInfo<'a>,
           
               
-          pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
-          
-              
           pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
-          
-              
-          pub rent: &'b solana_program::account_info::AccountInfo<'a>,
-          
-              
-          pub associated_token_program: &'b solana_program::account_info::AccountInfo<'a>,
         }
 
 impl<'a, 'b> OpenLendingPositionCpi<'a, 'b> {
@@ -302,10 +237,7 @@ impl<'a, 'b> OpenLendingPositionCpi<'a, 'b> {
               vault: accounts.vault,
               lending_position: accounts.lending_position,
               pool_mint: accounts.pool_mint,
-              token_program: accounts.token_program,
               system_program: accounts.system_program,
-              rent: accounts.rent,
-              associated_token_program: accounts.associated_token_program,
                 }
   }
   #[inline(always)]
@@ -328,7 +260,7 @@ impl<'a, 'b> OpenLendingPositionCpi<'a, 'b> {
     signers_seeds: &[&[&[u8]]],
     remaining_accounts: &[(&'b solana_program::account_info::AccountInfo<'a>, bool, bool)]
   ) -> solana_program::entrypoint::ProgramResult {
-    let mut accounts = Vec::with_capacity(9+ remaining_accounts.len());
+    let mut accounts = Vec::with_capacity(6+ remaining_accounts.len());
                             accounts.push(solana_program::instruction::AccountMeta::new(
             *self.authority.key,
             true
@@ -350,19 +282,7 @@ impl<'a, 'b> OpenLendingPositionCpi<'a, 'b> {
             false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.token_program.key,
-            false
-          ));
-                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.system_program.key,
-            false
-          ));
-                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.rent.key,
-            false
-          ));
-                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.associated_token_program.key,
             false
           ));
                       remaining_accounts.iter().for_each(|remaining_account| {
@@ -379,17 +299,14 @@ impl<'a, 'b> OpenLendingPositionCpi<'a, 'b> {
       accounts,
       data,
     };
-    let mut account_infos = Vec::with_capacity(10 + remaining_accounts.len());
+    let mut account_infos = Vec::with_capacity(7 + remaining_accounts.len());
     account_infos.push(self.__program.clone());
                   account_infos.push(self.authority.clone());
                         account_infos.push(self.tuna_config.clone());
                         account_infos.push(self.vault.clone());
                         account_infos.push(self.lending_position.clone());
                         account_infos.push(self.pool_mint.clone());
-                        account_infos.push(self.token_program.clone());
                         account_infos.push(self.system_program.clone());
-                        account_infos.push(self.rent.clone());
-                        account_infos.push(self.associated_token_program.clone());
               remaining_accounts.iter().for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
 
     if signers_seeds.is_empty() {
@@ -409,10 +326,7 @@ impl<'a, 'b> OpenLendingPositionCpi<'a, 'b> {
           ///   2. `[]` vault
                 ///   3. `[writable]` lending_position
           ///   4. `[]` pool_mint
-          ///   5. `[]` token_program
-          ///   6. `[]` system_program
-          ///   7. `[]` rent
-          ///   8. `[]` associated_token_program
+          ///   5. `[]` system_program
 #[derive(Clone, Debug)]
 pub struct OpenLendingPositionCpiBuilder<'a, 'b> {
   instruction: Box<OpenLendingPositionCpiBuilderInstruction<'a, 'b>>,
@@ -427,10 +341,7 @@ impl<'a, 'b> OpenLendingPositionCpiBuilder<'a, 'b> {
               vault: None,
               lending_position: None,
               pool_mint: None,
-              token_program: None,
               system_program: None,
-              rent: None,
-              associated_token_program: None,
                                 __remaining_accounts: Vec::new(),
     });
     Self { instruction }
@@ -461,23 +372,8 @@ impl<'a, 'b> OpenLendingPositionCpiBuilder<'a, 'b> {
                     self
     }
       #[inline(always)]
-    pub fn token_program(&mut self, token_program: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
-                        self.instruction.token_program = Some(token_program);
-                    self
-    }
-      #[inline(always)]
     pub fn system_program(&mut self, system_program: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
                         self.instruction.system_program = Some(system_program);
-                    self
-    }
-      #[inline(always)]
-    pub fn rent(&mut self, rent: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
-                        self.instruction.rent = Some(rent);
-                    self
-    }
-      #[inline(always)]
-    pub fn associated_token_program(&mut self, associated_token_program: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
-                        self.instruction.associated_token_program = Some(associated_token_program);
                     self
     }
             /// Add an additional account to the instruction.
@@ -515,13 +411,7 @@ impl<'a, 'b> OpenLendingPositionCpiBuilder<'a, 'b> {
                   
           pool_mint: self.instruction.pool_mint.expect("pool_mint is not set"),
                   
-          token_program: self.instruction.token_program.expect("token_program is not set"),
-                  
           system_program: self.instruction.system_program.expect("system_program is not set"),
-                  
-          rent: self.instruction.rent.expect("rent is not set"),
-                  
-          associated_token_program: self.instruction.associated_token_program.expect("associated_token_program is not set"),
                     };
     instruction.invoke_signed_with_remaining_accounts(signers_seeds, &self.instruction.__remaining_accounts)
   }
@@ -535,10 +425,7 @@ struct OpenLendingPositionCpiBuilderInstruction<'a, 'b> {
                 vault: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 lending_position: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 pool_mint: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-                token_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-                rent: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-                associated_token_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
   __remaining_accounts: Vec<(&'b solana_program::account_info::AccountInfo<'a>, bool, bool)>,
 }

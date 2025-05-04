@@ -1,7 +1,6 @@
 import {
   type Account,
   AccountRole,
-  Address,
   GetAccountInfoApi,
   GetMultipleAccountsApi,
   IAccountMeta,
@@ -9,7 +8,7 @@ import {
   Rpc,
   TransactionSigner,
 } from "@solana/kit";
-import { findAssociatedTokenPda, TOKEN_2022_PROGRAM_ADDRESS } from "@solana-program/token-2022";
+import { findAssociatedTokenPda, Mint, TOKEN_2022_PROGRAM_ADDRESS } from "@solana-program/token-2022";
 import { getTickArrayStartTickIndex } from "@orca-so/whirlpools-core";
 import {
   fetchAllMaybeTickArray,
@@ -20,7 +19,6 @@ import {
   Whirlpool,
   WHIRLPOOL_PROGRAM_ADDRESS,
 } from "@orca-so/whirlpools-client";
-import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
 import {
   AddLiquidityOrcaInstructionDataArgs,
   getAddLiquidityOrcaInstruction,
@@ -33,21 +31,22 @@ import {
   getTunaPositionAddress,
   TunaPosition,
 } from "../index.ts";
+import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
 
 export async function addLiquidityOrcaInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
-  tunaPosition: Account<TunaPosition, Address>,
-  tunaConfig: Account<TunaConfig, Address>,
-  vaultA: Account<Vault, Address>,
-  vaultB: Account<Vault, Address>,
-  whirlpool: Account<Whirlpool, Address>,
+  tunaPosition: Account<TunaPosition>,
+  tunaConfig: Account<TunaConfig>,
+  mintA: Account<Mint>,
+  mintB: Account<Mint>,
+  vaultA: Account<Vault>,
+  vaultB: Account<Vault>,
+  whirlpool: Account<Whirlpool>,
   args: AddLiquidityOrcaInstructionDataArgs,
   createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
 ): Promise<IInstruction[]> {
-  const mintA = whirlpool.data.tokenMintA;
-  const mintB = whirlpool.data.tokenMintB;
   const instructions: IInstruction[] = [];
 
   if (!createInstructions) createInstructions = instructions;
@@ -59,18 +58,18 @@ export async function addLiquidityOrcaInstructions(
 
   const createUserAtaAInstructions = await getCreateAtaInstructions(
     authority,
-    mintA,
+    mintA.address,
     authority.address,
-    TOKEN_PROGRAM_ADDRESS,
+    mintA.programAddress,
     args.collateralA,
   );
   createInstructions.push(...createUserAtaAInstructions.init);
 
   const createUserAtaBInstructions = await getCreateAtaInstructions(
     authority,
-    mintB,
+    mintB.address,
     authority.address,
-    TOKEN_PROGRAM_ADDRESS,
+    mintB.programAddress,
     args.collateralB,
   );
   createInstructions.push(...createUserAtaBInstructions.init);
@@ -81,17 +80,17 @@ export async function addLiquidityOrcaInstructions(
 
   const createFeeRecipientAtaAInstructions = await getCreateAtaInstructions(
     authority,
-    mintA,
+    mintA.address,
     tunaConfig.data.feeRecipient,
-    TOKEN_PROGRAM_ADDRESS,
+    mintA.programAddress,
   );
   createInstructions.push(...createFeeRecipientAtaAInstructions.init);
 
   const createFeeRecipientAtaBInstructions = await getCreateAtaInstructions(
     authority,
-    mintB,
+    mintB.address,
     tunaConfig.data.feeRecipient,
-    TOKEN_PROGRAM_ADDRESS,
+    mintB.programAddress,
   );
   createInstructions.push(...createFeeRecipientAtaBInstructions.init);
 
@@ -137,7 +136,17 @@ export async function addLiquidityOrcaInstructions(
   // Finally add liquidity increase instruction.
   //
 
-  const ix = await addLiquidityOrcaInstruction(authority, tunaPosition, tunaConfig, vaultA, vaultB, whirlpool, args);
+  const ix = await addLiquidityOrcaInstruction(
+    authority,
+    tunaPosition,
+    tunaConfig,
+    mintA,
+    mintB,
+    vaultA,
+    vaultB,
+    whirlpool,
+    args,
+  );
   instructions.push(ix);
 
   //
@@ -154,16 +163,16 @@ export async function addLiquidityOrcaInstructions(
 
 export async function addLiquidityOrcaInstruction(
   authority: TransactionSigner,
-  tunaPosition: Account<TunaPosition, Address>,
-  tunaConfig: Account<TunaConfig, Address>,
-  vaultA: Account<Vault, Address>,
-  vaultB: Account<Vault, Address>,
-  whirlpool: Account<Whirlpool, Address>,
+  tunaPosition: Account<TunaPosition>,
+  tunaConfig: Account<TunaConfig>,
+  mintA: Account<Mint>,
+  mintB: Account<Mint>,
+  vaultA: Account<Vault>,
+  vaultB: Account<Vault>,
+  whirlpool: Account<Whirlpool>,
   args: AddLiquidityOrcaInstructionDataArgs,
 ): Promise<IInstruction> {
   const positionMint = tunaPosition.data.positionMint;
-  const mintA = whirlpool.data.tokenMintA;
-  const mintB = whirlpool.data.tokenMintB;
   const tunaPositionAddress = (await getTunaPositionAddress(positionMint))[0];
 
   const marketAddress = (await getMarketAddress(whirlpool.address))[0];
@@ -181,64 +190,64 @@ export async function addLiquidityOrcaInstruction(
   const tunaPositionOwnerAtaA = (
     await findAssociatedTokenPda({
       owner: authority.address,
-      mint: mintA,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+      mint: mintA.address,
+      tokenProgram: mintA.programAddress,
     })
   )[0];
 
   const tunaPositionOwnerAtaB = (
     await findAssociatedTokenPda({
       owner: authority.address,
-      mint: mintB,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+      mint: mintB.address,
+      tokenProgram: mintB.programAddress,
     })
   )[0];
 
   const tunaPositionAtaA = (
     await findAssociatedTokenPda({
       owner: tunaPositionAddress,
-      mint: mintA,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+      mint: mintA.address,
+      tokenProgram: mintA.programAddress,
     })
   )[0];
 
   const tunaPositionAtaB = (
     await findAssociatedTokenPda({
       owner: tunaPositionAddress,
-      mint: mintB,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+      mint: mintB.address,
+      tokenProgram: mintB.programAddress,
     })
   )[0];
 
   const vaultAAta = (
     await findAssociatedTokenPda({
       owner: vaultA.address,
-      mint: mintA,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+      mint: mintA.address,
+      tokenProgram: mintA.programAddress,
     })
   )[0];
 
   const vaultBAta = (
     await findAssociatedTokenPda({
       owner: vaultB.address,
-      mint: mintB,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+      mint: mintB.address,
+      tokenProgram: mintB.programAddress,
     })
   )[0];
 
   const feeRecipientAtaA = (
     await findAssociatedTokenPda({
       owner: tunaConfig.data.feeRecipient,
-      mint: mintA,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+      mint: mintA.address,
+      tokenProgram: mintA.programAddress,
     })
   )[0];
 
   const feeRecipientAtaB = (
     await findAssociatedTokenPda({
       owner: tunaConfig.data.feeRecipient,
-      mint: mintB,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+      mint: mintB.address,
+      tokenProgram: mintB.programAddress,
     })
   )[0];
 
@@ -262,8 +271,8 @@ export async function addLiquidityOrcaInstruction(
   const ix = getAddLiquidityOrcaInstruction({
     ...args,
     market: marketAddress,
-    mintA,
-    mintB,
+    mintA: mintA.address,
+    mintB: mintB.address,
     pythOraclePriceFeedA: vaultA.data.pythOraclePriceUpdate,
     pythOraclePriceFeedB: vaultB.data.pythOraclePriceUpdate,
     vaultA: vaultA.address,
@@ -282,6 +291,9 @@ export async function addLiquidityOrcaInstruction(
     feeRecipientAtaA,
     feeRecipientAtaB,
     whirlpool: whirlpool.address,
+    tokenProgramA: mintA.programAddress,
+    tokenProgramB: mintB.programAddress,
+    memoProgram: MEMO_PROGRAM_ADDRESS,
     whirlpoolProgram: WHIRLPOOL_PROGRAM_ADDRESS,
   });
 

@@ -55,7 +55,7 @@ export type WithdrawInstruction<
   TAccountTokenProgram extends
     | string
     | IAccountMeta<string> = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
-  TAccountAssociatedTokenProgram extends string | IAccountMeta<string> = string,
+  TAccountMemoProgram extends string | IAccountMeta<string> = string,
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
   IInstructionWithData<Uint8Array> &
@@ -66,7 +66,7 @@ export type WithdrawInstruction<
             IAccountSignerMeta<TAccountAuthority>
         : TAccountAuthority,
       TAccountMint extends string
-        ? WritableAccount<TAccountMint>
+        ? ReadonlyAccount<TAccountMint>
         : TAccountMint,
       TAccountTunaConfig extends string
         ? ReadonlyAccount<TAccountTunaConfig>
@@ -86,9 +86,9 @@ export type WithdrawInstruction<
       TAccountTokenProgram extends string
         ? ReadonlyAccount<TAccountTokenProgram>
         : TAccountTokenProgram,
-      TAccountAssociatedTokenProgram extends string
-        ? ReadonlyAccount<TAccountAssociatedTokenProgram>
-        : TAccountAssociatedTokenProgram,
+      TAccountMemoProgram extends string
+        ? ReadonlyAccount<TAccountMemoProgram>
+        : TAccountMemoProgram,
       ...TRemainingAccounts,
     ]
   >;
@@ -142,7 +142,7 @@ export type WithdrawInput<
   TAccountVaultAta extends string = string,
   TAccountAuthorityAta extends string = string,
   TAccountTokenProgram extends string = string,
-  TAccountAssociatedTokenProgram extends string = string,
+  TAccountMemoProgram extends string = string,
 > = {
   authority: TransactionSigner<TAccountAuthority>;
   mint: Address<TAccountMint>;
@@ -152,7 +152,7 @@ export type WithdrawInput<
   vaultAta: Address<TAccountVaultAta>;
   authorityAta: Address<TAccountAuthorityAta>;
   tokenProgram?: Address<TAccountTokenProgram>;
-  associatedTokenProgram: Address<TAccountAssociatedTokenProgram>;
+  memoProgram: Address<TAccountMemoProgram>;
   funds: WithdrawInstructionDataArgs['funds'];
   shares: WithdrawInstructionDataArgs['shares'];
 };
@@ -166,7 +166,7 @@ export function getWithdrawInstruction<
   TAccountVaultAta extends string,
   TAccountAuthorityAta extends string,
   TAccountTokenProgram extends string,
-  TAccountAssociatedTokenProgram extends string,
+  TAccountMemoProgram extends string,
   TProgramAddress extends Address = typeof TUNA_PROGRAM_ADDRESS,
 >(
   input: WithdrawInput<
@@ -178,7 +178,7 @@ export function getWithdrawInstruction<
     TAccountVaultAta,
     TAccountAuthorityAta,
     TAccountTokenProgram,
-    TAccountAssociatedTokenProgram
+    TAccountMemoProgram
   >,
   config?: { programAddress?: TProgramAddress }
 ): WithdrawInstruction<
@@ -191,7 +191,7 @@ export function getWithdrawInstruction<
   TAccountVaultAta,
   TAccountAuthorityAta,
   TAccountTokenProgram,
-  TAccountAssociatedTokenProgram
+  TAccountMemoProgram
 > {
   // Program address.
   const programAddress = config?.programAddress ?? TUNA_PROGRAM_ADDRESS;
@@ -199,17 +199,14 @@ export function getWithdrawInstruction<
   // Original accounts.
   const originalAccounts = {
     authority: { value: input.authority ?? null, isWritable: true },
-    mint: { value: input.mint ?? null, isWritable: true },
+    mint: { value: input.mint ?? null, isWritable: false },
     tunaConfig: { value: input.tunaConfig ?? null, isWritable: false },
     lendingPosition: { value: input.lendingPosition ?? null, isWritable: true },
     vault: { value: input.vault ?? null, isWritable: true },
     vaultAta: { value: input.vaultAta ?? null, isWritable: true },
     authorityAta: { value: input.authorityAta ?? null, isWritable: true },
     tokenProgram: { value: input.tokenProgram ?? null, isWritable: false },
-    associatedTokenProgram: {
-      value: input.associatedTokenProgram ?? null,
-      isWritable: false,
-    },
+    memoProgram: { value: input.memoProgram ?? null, isWritable: false },
   };
   const accounts = originalAccounts as Record<
     keyof typeof originalAccounts,
@@ -236,7 +233,7 @@ export function getWithdrawInstruction<
       getAccountMeta(accounts.vaultAta),
       getAccountMeta(accounts.authorityAta),
       getAccountMeta(accounts.tokenProgram),
-      getAccountMeta(accounts.associatedTokenProgram),
+      getAccountMeta(accounts.memoProgram),
     ],
     programAddress,
     data: getWithdrawInstructionDataEncoder().encode(
@@ -252,7 +249,7 @@ export function getWithdrawInstruction<
     TAccountVaultAta,
     TAccountAuthorityAta,
     TAccountTokenProgram,
-    TAccountAssociatedTokenProgram
+    TAccountMemoProgram
   >;
 
   return instruction;
@@ -272,7 +269,7 @@ export type ParsedWithdrawInstruction<
     vaultAta: TAccountMetas[5];
     authorityAta: TAccountMetas[6];
     tokenProgram: TAccountMetas[7];
-    associatedTokenProgram: TAccountMetas[8];
+    memoProgram: TAccountMetas[8];
   };
   data: WithdrawInstructionData;
 };
@@ -306,7 +303,7 @@ export function parseWithdrawInstruction<
       vaultAta: getNextAccount(),
       authorityAta: getNextAccount(),
       tokenProgram: getNextAccount(),
-      associatedTokenProgram: getNextAccount(),
+      memoProgram: getNextAccount(),
     },
     data: getWithdrawInstructionDataDecoder().decode(instruction.data),
   };

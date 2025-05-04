@@ -1,5 +1,4 @@
 import { Address, IInstruction, TransactionSigner } from "@solana/kit";
-import { ASSOCIATED_TOKEN_PROGRAM_ADDRESS } from "@solana-program/token-2022";
 import {
   getOpenLendingPositionInstruction,
   getLendingPositionAddress,
@@ -21,6 +20,5 @@ export async function openLendingPositionInstruction(
     vault,
     authority,
     tunaConfig,
-    associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
   });
 }

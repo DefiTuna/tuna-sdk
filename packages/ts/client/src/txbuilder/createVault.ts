@@ -1,6 +1,5 @@
-import { Address, IInstruction, TransactionSigner } from "@solana/kit";
-import { ASSOCIATED_TOKEN_PROGRAM_ADDRESS, findAssociatedTokenPda } from "@solana-program/token-2022";
-import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
+import { Account, IInstruction, TransactionSigner } from "@solana/kit";
+import { findAssociatedTokenPda, Mint } from "@solana-program/token-2022";
 import {
   getCreateAtaInstruction,
   CreateVaultInstructionDataArgs,
@@ -11,29 +10,29 @@ import {
 
 export async function createVaultInstructions(
   authority: TransactionSigner,
-  mint: Address,
+  mint: Account<Mint>,
   args: CreateVaultInstructionDataArgs,
 ): Promise<IInstruction[]> {
   const tunaConfig = (await getTunaConfigAddress())[0];
 
-  const vault = (await getLendingVaultAddress(mint))[0];
+  const vault = (await getLendingVaultAddress(mint.address))[0];
   const vaultAta = (
     await findAssociatedTokenPda({
       owner: vault,
-      mint: mint,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+      mint: mint.address,
+      tokenProgram: mint.programAddress,
     })
   )[0];
 
   return [
-    await getCreateAtaInstruction(mint, vault, authority, TOKEN_PROGRAM_ADDRESS),
+    await getCreateAtaInstruction(mint.address, vault, authority, mint.programAddress),
     getCreateVaultInstruction({
       authority,
-      mint,
+      mint: mint.address,
       tunaConfig,
       vault,
       vaultAta,
-      associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
+      tokenProgram: mint.programAddress,
       ...args,
     }),
   ];

@@ -22,6 +22,8 @@ pub fn open_position_with_liquidity_orca_instructions(
     vault_a: &Vault,
     vault_b: &Vault,
     whirlpool: &Whirlpool,
+    token_program_a: &Pubkey,
+    token_program_b: &Pubkey,
     args: OpenPositionWithLiquidityOrcaInstructionArgs,
 ) -> Vec<Instruction> {
     let mint_a = whirlpool.token_mint_a;
@@ -30,14 +32,14 @@ pub fn open_position_with_liquidity_orca_instructions(
 
     let whirlpool_address = get_whirlpool_address(&whirlpool.whirlpools_config, &mint_a, &mint_b, tick_spacing).unwrap().0;
 
-    let authority_ata_a_instructions = get_create_ata_instructions(&mint_a, authority, authority, &spl_token::ID, args.collateral_a);
-    let authority_ata_b_instructions = get_create_ata_instructions(&mint_b, authority, authority, &spl_token::ID, args.collateral_b);
+    let authority_ata_a_instructions = get_create_ata_instructions(&mint_a, authority, authority, token_program_a, args.collateral_a);
+    let authority_ata_b_instructions = get_create_ata_instructions(&mint_b, authority, authority, token_program_b, args.collateral_b);
 
     let mut instructions = vec![];
     instructions.extend(authority_ata_a_instructions.create);
     instructions.extend(authority_ata_b_instructions.create);
-    instructions.push(create_associated_token_account_idempotent(authority, &tuna_config.fee_recipient, &mint_a, &spl_token::ID));
-    instructions.push(create_associated_token_account_idempotent(authority, &tuna_config.fee_recipient, &mint_b, &spl_token::ID));
+    instructions.push(create_associated_token_account_idempotent(authority, &tuna_config.fee_recipient, &mint_a, token_program_a));
+    instructions.push(create_associated_token_account_idempotent(authority, &tuna_config.fee_recipient, &mint_b, token_program_b));
 
     let lower_tick_array_start_index = get_tick_array_start_tick_index(args.tick_lower_index, tick_spacing);
     let upper_tick_array_start_index = get_tick_array_start_tick_index(args.tick_upper_index, tick_spacing);
@@ -77,7 +79,17 @@ pub fn open_position_with_liquidity_orca_instructions(
         );
     }
 
-    instructions.push(open_position_with_liquidity_orca_instruction(authority, position_mint, tuna_config, vault_a, vault_b, whirlpool, args));
+    instructions.push(open_position_with_liquidity_orca_instruction(
+        authority,
+        position_mint,
+        tuna_config,
+        vault_a,
+        vault_b,
+        whirlpool,
+        token_program_a,
+        token_program_b,
+        args,
+    ));
     instructions.extend(authority_ata_a_instructions.cleanup);
     instructions.extend(authority_ata_b_instructions.cleanup);
 
@@ -91,6 +103,8 @@ pub fn open_position_with_liquidity_orca_instruction(
     vault_a: &Vault,
     vault_b: &Vault,
     whirlpool: &Whirlpool,
+    token_program_a: &Pubkey,
+    token_program_b: &Pubkey,
     args: OpenPositionWithLiquidityOrcaInstructionArgs,
 ) -> Instruction {
     let mint_a = whirlpool.token_mint_a;
@@ -143,7 +157,9 @@ pub fn open_position_with_liquidity_orca_instruction(
         pyth_oracle_price_feed_b: vault_b.pyth_oracle_price_update,
         whirlpool_program: orca_whirlpools_client::ID,
         whirlpool: whirlpool_address,
-        token_program: spl_token::ID,
+        token_program_a: *token_program_a,
+        token_program_b: *token_program_b,
+        memo_program: spl_memo::ID,
         token2022_program: spl_token_2022::ID,
         system_program: system_program::ID,
         associated_token_program: spl_associated_token_account::ID,

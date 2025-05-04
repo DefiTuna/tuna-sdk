@@ -1,7 +1,6 @@
-import { type Account, AccountRole, Address, IAccountMeta, IInstruction, TransactionSigner } from "@solana/kit";
-import { findAssociatedTokenPda, TOKEN_2022_PROGRAM_ADDRESS } from "@solana-program/token-2022";
+import { type Account, AccountRole, IAccountMeta, IInstruction, TransactionSigner } from "@solana/kit";
+import { findAssociatedTokenPda, Mint, TOKEN_2022_PROGRAM_ADDRESS } from "@solana-program/token-2022";
 import { getPositionAddress, Whirlpool, WHIRLPOOL_PROGRAM_ADDRESS } from "@orca-so/whirlpools-client";
-import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
 import {
   getCollectFeesOrcaInstruction,
   getCreateAtaInstructions,
@@ -10,16 +9,17 @@ import {
   getTunaPositionAddress,
   TunaPosition,
 } from "../index.ts";
+import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
 
 export async function collectFeesOrcaInstructions(
   authority: TransactionSigner,
-  tunaPosition: Account<TunaPosition, Address>,
-  whirlpool: Account<Whirlpool, Address>,
+  tunaPosition: Account<TunaPosition>,
+  mintA: Account<Mint>,
+  mintB: Account<Mint>,
+  whirlpool: Account<Whirlpool>,
   createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
 ): Promise<IInstruction[]> {
-  const mintA = whirlpool.data.tokenMintA;
-  const mintB = whirlpool.data.tokenMintB;
   const instructions: IInstruction[] = [];
 
   if (!createInstructions) createInstructions = instructions;
@@ -31,17 +31,17 @@ export async function collectFeesOrcaInstructions(
 
   const createUserAtaAInstructions = await getCreateAtaInstructions(
     authority,
-    mintA,
+    mintA.address,
     authority.address,
-    TOKEN_PROGRAM_ADDRESS,
+    mintA.programAddress,
   );
   createInstructions.push(...createUserAtaAInstructions.init);
 
   const createUserAtaBInstructions = await getCreateAtaInstructions(
     authority,
-    mintB,
+    mintB.address,
     authority.address,
-    TOKEN_PROGRAM_ADDRESS,
+    mintB.programAddress,
   );
   createInstructions.push(...createUserAtaBInstructions.init);
 
@@ -49,7 +49,7 @@ export async function collectFeesOrcaInstructions(
   // Add collect fees instruction.
   //
 
-  const ix = await collectFeesOrcaInstruction(authority, tunaPosition, whirlpool);
+  const ix = await collectFeesOrcaInstruction(authority, tunaPosition, mintA, mintB, whirlpool);
   instructions.push(ix);
 
   //
@@ -64,11 +64,11 @@ export async function collectFeesOrcaInstructions(
 
 export async function collectFeesOrcaInstruction(
   authority: TransactionSigner,
-  tunaPosition: Account<TunaPosition, Address>,
-  whirlpool: Account<Whirlpool, Address>,
+  tunaPosition: Account<TunaPosition>,
+  mintA: Account<Mint>,
+  mintB: Account<Mint>,
+  whirlpool: Account<Whirlpool>,
 ): Promise<IInstruction> {
-  const mintA = whirlpool.data.tokenMintA;
-  const mintB = whirlpool.data.tokenMintB;
   const positionMint = tunaPosition.data.positionMint;
 
   const tunaConfig = (await getTunaConfigAddress())[0];
@@ -86,32 +86,32 @@ export async function collectFeesOrcaInstruction(
   const tunaPositionOwnerAtaA = (
     await findAssociatedTokenPda({
       owner: authority.address,
-      mint: mintA,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+      mint: mintA.address,
+      tokenProgram: mintA.programAddress,
     })
   )[0];
 
   const tunaPositionOwnerAtaB = (
     await findAssociatedTokenPda({
       owner: authority.address,
-      mint: mintB,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+      mint: mintB.address,
+      tokenProgram: mintB.programAddress,
     })
   )[0];
 
   const tunaPositionAtaA = (
     await findAssociatedTokenPda({
       owner: tunaPositionAddress,
-      mint: mintA,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+      mint: mintA.address,
+      tokenProgram: mintA.programAddress,
     })
   )[0];
 
   const tunaPositionAtaB = (
     await findAssociatedTokenPda({
       owner: tunaPositionAddress,
-      mint: mintB,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+      mint: mintB.address,
+      tokenProgram: mintB.programAddress,
     })
   )[0];
 
@@ -127,6 +127,8 @@ export async function collectFeesOrcaInstruction(
 
   const ix = getCollectFeesOrcaInstruction({
     authority,
+    mintA: mintA.address,
+    mintB: mintB.address,
     tunaConfig,
     tunaPositionAta,
     tunaPositionAtaA,
@@ -137,6 +139,9 @@ export async function collectFeesOrcaInstruction(
     tunaPosition: tunaPositionAddress,
     whirlpool: whirlpool.address,
     whirlpoolProgram: WHIRLPOOL_PROGRAM_ADDRESS,
+    tokenProgramA: mintA.programAddress,
+    tokenProgramB: mintB.programAddress,
+    memoProgram: MEMO_PROGRAM_ADDRESS,
   });
 
   // @ts-expect-error don't worry about the error

@@ -2,7 +2,7 @@
   "address": "tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD",
   "metadata": {
     "name": "tuna",
-    "version": "1.0.64",
+    "version": "1.0.65",
     "spec": "0.1.0",
     "description": "DefiTuna"
   },
@@ -114,12 +114,18 @@
           "writable": true
         },
         {
-          "name": "token_program",
+          "name": "token_program_a",
           "docs": [
             "",
             "Other accounts",
             ""
           ]
+        },
+        {
+          "name": "token_program_b"
+        },
+        {
+          "name": "memo_program"
         }
       ],
       "args": [
@@ -177,6 +183,12 @@
           "signer": true
         },
         {
+          "name": "mint_a"
+        },
+        {
+          "name": "mint_b"
+        },
+        {
           "name": "tuna_position",
           "writable": true
         },
@@ -209,12 +221,15 @@
           "writable": true
         },
         {
-          "name": "token_program",
+          "name": "token_program_a",
           "docs": [
             "",
             "Other accounts",
             ""
           ]
+        },
+        {
+          "name": "token_program_b"
         },
         {
           "name": "token_2022_program"
@@ -320,12 +335,18 @@
           "writable": true
         },
         {
-          "name": "token_program",
+          "name": "token_program_a",
           "docs": [
             "",
             "Other accounts",
             ""
           ]
+        },
+        {
+          "name": "token_program_b"
+        },
+        {
+          "name": "memo_program"
         }
       ],
       "args": [
@@ -360,6 +381,12 @@
         },
         {
           "name": "tuna_config"
+        },
+        {
+          "name": "mint_a"
+        },
+        {
+          "name": "mint_b"
         },
         {
           "name": "tuna_position",
@@ -401,12 +428,18 @@
           "writable": true
         },
         {
-          "name": "token_program",
+          "name": "token_program_a",
           "docs": [
             "",
             "Other accounts",
             ""
           ]
+        },
+        {
+          "name": "token_program_b"
+        },
+        {
+          "name": "memo_program"
         }
       ],
       "args": []
@@ -436,6 +469,9 @@
         },
         {
           "name": "tuna_config"
+        },
+        {
+          "name": "reward_mint"
         },
         {
           "name": "tuna_position",
@@ -476,12 +512,15 @@
           "writable": true
         },
         {
-          "name": "token_program",
+          "name": "reward_token_program",
           "docs": [
             "",
             "Other accounts",
             ""
           ]
+        },
+        {
+          "name": "memo_program"
         }
       ],
       "args": [
@@ -645,6 +684,9 @@
           "signer": true
         },
         {
+          "name": "mint"
+        },
+        {
           "name": "tuna_config"
         },
         {
@@ -659,16 +701,7 @@
           "name": "token_program"
         },
         {
-          "name": "associated_token_program"
-        },
-        {
-          "name": "mint"
-        },
-        {
           "name": "system_program"
-        },
-        {
-          "name": "rent"
         }
       ],
       "args": [
@@ -734,7 +767,7 @@
           "name": "token_program"
         },
         {
-          "name": "associated_token_program"
+          "name": "memo_program"
         }
       ],
       "args": [
@@ -843,12 +876,18 @@
           "writable": true
         },
         {
-          "name": "token_program",
+          "name": "token_program_a",
           "docs": [
             "",
             "Other accounts",
             ""
           ]
+        },
+        {
+          "name": "token_program_b"
+        },
+        {
+          "name": "memo_program"
         }
       ],
       "args": [
@@ -890,16 +929,7 @@
           "name": "pool_mint"
         },
         {
-          "name": "token_program"
-        },
-        {
           "name": "system_program"
-        },
-        {
-          "name": "rent"
-        },
-        {
-          "name": "associated_token_program"
         }
       ],
       "args": []
@@ -976,12 +1006,15 @@
           "name": "metadata_update_auth"
         },
         {
-          "name": "token_program",
+          "name": "token_program_a",
           "docs": [
             "",
             "Other accounts",
             ""
           ]
+        },
+        {
+          "name": "token_program_b"
         },
         {
           "name": "token_2022_program"
@@ -1124,12 +1157,18 @@
           "writable": true
         },
         {
-          "name": "token_program",
+          "name": "token_program_a",
           "docs": [
             "",
             "Other accounts",
             ""
           ]
+        },
+        {
+          "name": "token_program_b"
+        },
+        {
+          "name": "memo_program"
         },
         {
           "name": "token_2022_program"
@@ -1291,12 +1330,18 @@
           "writable": true
         },
         {
-          "name": "token_program",
+          "name": "token_program_a",
           "docs": [
             "",
             "Other accounts",
             ""
           ]
+        },
+        {
+          "name": "token_program_b"
+        },
+        {
+          "name": "memo_program"
         }
       ],
       "args": [
@@ -1340,6 +1385,9 @@
           "signer": true
         },
         {
+          "name": "mint"
+        },
+        {
           "name": "tuna_config"
         },
         {
@@ -1356,6 +1404,9 @@
         },
         {
           "name": "token_program"
+        },
+        {
+          "name": "memo_program"
         }
       ],
       "args": [
@@ -1391,6 +1442,12 @@
           ],
           "writable": true,
           "signer": true
+        },
+        {
+          "name": "mint_a"
+        },
+        {
+          "name": "mint_b"
         },
         {
           "name": "market"
@@ -1432,12 +1489,18 @@
           "writable": true
         },
         {
-          "name": "token_program",
+          "name": "token_program_a",
           "docs": [
             "",
             "Other accounts",
             ""
           ]
+        },
+        {
+          "name": "token_program_b"
+        },
+        {
+          "name": "memo_program"
         }
       ],
       "args": [
@@ -1850,8 +1913,7 @@
           "signer": true
         },
         {
-          "name": "mint",
-          "writable": true
+          "name": "mint"
         },
         {
           "name": "tuna_config"
@@ -1876,7 +1938,7 @@
           "name": "token_program"
         },
         {
-          "name": "associated_token_program"
+          "name": "memo_program"
         }
       ],
       "args": [
@@ -2100,161 +2162,176 @@
     },
     {
       "code": 6020,
+      "name": "NoExtraAccountsForTransferHook",
+      "msg": "Unable to call transfer hook without extra accounts"
+    },
+    {
+      "code": 6021,
       "name": "OracleStalePrice",
       "msg": "OracleStalePrice"
     },
     {
-      "code": 6021,
+      "code": 6022,
       "name": "OraclePriceDeviationThresholdExceeded",
       "msg": "OraclePriceDeviationThresholdExceeded"
     },
     {
-      "code": 6022,
+      "code": 6023,
       "name": "OraclePriceDeviationThresholdOutOfRange",
       "msg": "OraclePriceDeviationThresholdOutOfRange"
     },
     {
-      "code": 6023,
+      "code": 6024,
       "name": "PartialFillError",
       "msg": "Trade resulted in partial fill"
     },
     {
-      "code": 6024,
+      "code": 6025,
       "name": "PositionIsHealthy",
       "msg": "PositionIsHealthy"
     },
     {
-      "code": 6025,
+      "code": 6026,
       "name": "PositionIsLiquidated",
       "msg": "PositionIsLiquidated"
     },
     {
-      "code": 6026,
+      "code": 6027,
       "name": "PositionIsUnhealthy",
       "msg": "PositionIsUnhealthy"
     },
     {
-      "code": 6027,
+      "code": 6028,
       "name": "PositionNotEmpty",
       "msg": "PositionNotEmpty"
     },
     {
-      "code": 6028,
+      "code": 6029,
       "name": "ProtocolFeeIsOutOfRange",
       "msg": "ProtocolFeeIsOutOfRange"
     },
     {
-      "code": 6029,
+      "code": 6030,
       "name": "SolverFailedToFindRoot",
       "msg": "SolverFailedToFindRoot"
     },
     {
-      "code": 6030,
+      "code": 6031,
       "name": "SqrtPriceOutOfBounds",
       "msg": "SqrtPriceOutOfBounds"
     },
     {
-      "code": 6031,
+      "code": 6032,
       "name": "SupplyLimitExceeded",
       "msg": "SupplyLimitExceeded"
     },
     {
-      "code": 6032,
+      "code": 6033,
       "name": "Suspended",
       "msg": "Suspended"
     },
     {
-      "code": 6033,
+      "code": 6034,
       "name": "SwapSlippageExceeded",
       "msg": "SwapSlippageExceeded"
     },
     {
-      "code": 6034,
+      "code": 6035,
       "name": "SwapSlippageIsOutOfRange",
       "msg": "SwapSlippageIsOutOfRange"
     },
     {
-      "code": 6035,
+      "code": 6036,
       "name": "TickIndexOfBounds",
       "msg": "TickIndexOfBounds"
     },
     {
-      "code": 6036,
+      "code": 6037,
+      "name": "TransferFeeCalculationError",
+      "msg": "Transfer fee calculation failed"
+    },
+    {
+      "code": 6038,
       "name": "TypeCastOverflow",
       "msg": "TypeCastOverflow"
     },
     {
-      "code": 6037,
+      "code": 6039,
       "name": "UnexpectedValue",
       "msg": "UnexpectedValue"
     },
     {
-      "code": 6038,
+      "code": 6040,
+      "name": "UnsupportedTokenMint",
+      "msg": "Token mint has unsupported attributes"
+    },
+    {
+      "code": 6041,
       "name": "VaultNotInitialized",
       "msg": "VaultNotInitialized"
     },
     {
-      "code": 6039,
+      "code": 6042,
       "name": "WithdrawRequestExceedsUserBalance",
       "msg": "WithdrawRequestExceedsUserBalance"
     },
     {
-      "code": 6040,
+      "code": 6043,
       "name": "ZeroPriceRange",
       "msg": "ZeroPriceRange"
     },
     {
-      "code": 6041,
+      "code": 6044,
       "name": "ZeroTradableAmount",
       "msg": "There are no tradable amount to swap."
     },
     {
-      "code": 6042,
+      "code": 6045,
       "name": "ZeroYield",
       "msg": "ZeroYield"
     },
     {
-      "code": 6043,
+      "code": 6046,
       "name": "RaydiumInvalidFirstTickArrayAccount",
       "msg": "RaydiumInvalidFirstTickArrayAccount"
     },
     {
-      "code": 6044,
+      "code": 6047,
       "name": "RaydiumInvalidTickArray",
       "msg": "RaydiumInvalidTickArray"
     },
     {
-      "code": 6045,
+      "code": 6048,
       "name": "RaydiumInvaildTickIndex",
       "msg": "RaydiumInvaildTickIndex"
     },
     {
-      "code": 6046,
+      "code": 6049,
       "name": "RaydiumMaxTokenOverflow",
       "msg": "RaydiumMaxTokenOverflow"
     },
     {
-      "code": 6047,
+      "code": 6050,
       "name": "RaydiumNotEnoughTickArrayAccount",
       "msg": "RaydiumNotEnoughTickArrayAccount"
     },
     {
-      "code": 6048,
+      "code": 6051,
       "name": "RaydiumSqrtPriceLimitOverflow",
       "msg": "RaydiumSqrtPriceLimitOverflow"
     },
     {
-      "code": 6049,
+      "code": 6052,
       "name": "RaydiumZeroAmountSpecified",
       "msg": "RaydiumZeroAmountSpecified"
     },
     {
-      "code": 6050,
+      "code": 6053,
       "name": "UnableToLoadAccountData",
       "msg": "UnableToLoadAccountData"
     },
     {
-      "code": 6051,
+      "code": 6054,
       "name": "UnableToDeserializeAccountData",
       "msg": "UnableToDeserializeAccountData"
     }
@@ -3174,27 +3251,49 @@
     },
     {
       "name": "WhirlpoolRewardInfo",
+      "docs": [
+        "Stores the state relevant for tracking liquidity mining rewards at the `Whirlpool` level.",
+        "These values are used in conjunction with `PositionRewardInfo`, `Tick.reward_growths_outside`,",
+        "and `Whirlpool.reward_last_updated_timestamp` to determine how many rewards are earned by open",
+        "positions."
+      ],
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "mint",
+            "docs": [
+              "Reward token mint."
+            ],
             "type": "pubkey"
           },
           {
             "name": "vault",
+            "docs": [
+              "Reward vault token account."
+            ],
             "type": "pubkey"
           },
           {
             "name": "authority",
+            "docs": [
+              "Authority account that has permission to initialize the reward and set emissions."
+            ],
             "type": "pubkey"
           },
           {
             "name": "emissions_per_second_x64",
+            "docs": [
+              "Q64.64 number that indicates how many tokens per second are earned per unit of liquidity."
+            ],
             "type": "u128"
           },
           {
             "name": "growth_global_x64",
+            "docs": [
+              "Q64.64 number that tracks the total tokens earned per unit of liquidity since the reward",
+              "emissions were turned on."
+            ],
             "type": "u128"
           }
         ]

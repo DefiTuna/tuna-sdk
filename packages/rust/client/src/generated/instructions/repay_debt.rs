@@ -20,6 +20,12 @@ pub struct RepayDebt {
           pub authority: solana_program::pubkey::Pubkey,
           
               
+          pub mint_a: solana_program::pubkey::Pubkey,
+          
+              
+          pub mint_b: solana_program::pubkey::Pubkey,
+          
+              
           pub market: solana_program::pubkey::Pubkey,
           
               
@@ -54,7 +60,13 @@ pub struct RepayDebt {
 
     
               
-          pub token_program: solana_program::pubkey::Pubkey,
+          pub token_program_a: solana_program::pubkey::Pubkey,
+          
+              
+          pub token_program_b: solana_program::pubkey::Pubkey,
+          
+              
+          pub memo_program: solana_program::pubkey::Pubkey,
       }
 
 impl RepayDebt {
@@ -64,10 +76,18 @@ impl RepayDebt {
   #[allow(clippy::arithmetic_side_effects)]
   #[allow(clippy::vec_init_then_push)]
   pub fn instruction_with_remaining_accounts(&self, args: RepayDebtInstructionArgs, remaining_accounts: &[solana_program::instruction::AccountMeta]) -> solana_program::instruction::Instruction {
-    let mut accounts = Vec::with_capacity(12+ remaining_accounts.len());
+    let mut accounts = Vec::with_capacity(16+ remaining_accounts.len());
                             accounts.push(solana_program::instruction::AccountMeta::new(
             self.authority,
             true
+          ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.mint_a,
+            false
+          ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.mint_b,
+            false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.market,
@@ -110,7 +130,15 @@ impl RepayDebt {
             false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.token_program,
+            self.token_program_a,
+            false
+          ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.token_program_b,
+            false
+          ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.memo_program,
             false
           ));
                       accounts.extend_from_slice(remaining_accounts);
@@ -159,20 +187,26 @@ impl Default for RepayDebtInstructionData {
 /// ### Accounts:
 ///
                       ///   0. `[writable, signer]` authority
-          ///   1. `[]` market
-                ///   2. `[writable]` vault_a
-                ///   3. `[writable]` vault_b
-                ///   4. `[writable]` vault_a_ata
-                ///   5. `[writable]` vault_b_ata
-                ///   6. `[writable]` tuna_position
-                ///   7. `[writable]` tuna_position_ata_a
-                ///   8. `[writable]` tuna_position_ata_b
-                ///   9. `[writable]` tuna_position_owner_ata_a
-                ///   10. `[writable]` tuna_position_owner_ata_b
-                ///   11. `[optional]` token_program (default to `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
+          ///   1. `[]` mint_a
+          ///   2. `[]` mint_b
+          ///   3. `[]` market
+                ///   4. `[writable]` vault_a
+                ///   5. `[writable]` vault_b
+                ///   6. `[writable]` vault_a_ata
+                ///   7. `[writable]` vault_b_ata
+                ///   8. `[writable]` tuna_position
+                ///   9. `[writable]` tuna_position_ata_a
+                ///   10. `[writable]` tuna_position_ata_b
+                ///   11. `[writable]` tuna_position_owner_ata_a
+                ///   12. `[writable]` tuna_position_owner_ata_b
+          ///   13. `[]` token_program_a
+          ///   14. `[]` token_program_b
+          ///   15. `[]` memo_program
 #[derive(Clone, Debug, Default)]
 pub struct RepayDebtBuilder {
             authority: Option<solana_program::pubkey::Pubkey>,
+                mint_a: Option<solana_program::pubkey::Pubkey>,
+                mint_b: Option<solana_program::pubkey::Pubkey>,
                 market: Option<solana_program::pubkey::Pubkey>,
                 vault_a: Option<solana_program::pubkey::Pubkey>,
                 vault_b: Option<solana_program::pubkey::Pubkey>,
@@ -183,7 +217,9 @@ pub struct RepayDebtBuilder {
                 tuna_position_ata_b: Option<solana_program::pubkey::Pubkey>,
                 tuna_position_owner_ata_a: Option<solana_program::pubkey::Pubkey>,
                 tuna_position_owner_ata_b: Option<solana_program::pubkey::Pubkey>,
-                token_program: Option<solana_program::pubkey::Pubkey>,
+                token_program_a: Option<solana_program::pubkey::Pubkey>,
+                token_program_b: Option<solana_program::pubkey::Pubkey>,
+                memo_program: Option<solana_program::pubkey::Pubkey>,
                         collateral_funds_a: Option<u64>,
                 collateral_funds_b: Option<u64>,
         __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
@@ -199,6 +235,16 @@ impl RepayDebtBuilder {
 #[inline(always)]
     pub fn authority(&mut self, authority: solana_program::pubkey::Pubkey) -> &mut Self {
                         self.authority = Some(authority);
+                    self
+    }
+            #[inline(always)]
+    pub fn mint_a(&mut self, mint_a: solana_program::pubkey::Pubkey) -> &mut Self {
+                        self.mint_a = Some(mint_a);
+                    self
+    }
+            #[inline(always)]
+    pub fn mint_b(&mut self, mint_b: solana_program::pubkey::Pubkey) -> &mut Self {
+                        self.mint_b = Some(mint_b);
                     self
     }
             #[inline(always)]
@@ -251,13 +297,22 @@ impl RepayDebtBuilder {
                         self.tuna_position_owner_ata_b = Some(tuna_position_owner_ata_b);
                     self
     }
-            /// `[optional account, default to 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA']`
-/// 
+            /// 
 /// Other accounts
 /// 
 #[inline(always)]
-    pub fn token_program(&mut self, token_program: solana_program::pubkey::Pubkey) -> &mut Self {
-                        self.token_program = Some(token_program);
+    pub fn token_program_a(&mut self, token_program_a: solana_program::pubkey::Pubkey) -> &mut Self {
+                        self.token_program_a = Some(token_program_a);
+                    self
+    }
+            #[inline(always)]
+    pub fn token_program_b(&mut self, token_program_b: solana_program::pubkey::Pubkey) -> &mut Self {
+                        self.token_program_b = Some(token_program_b);
+                    self
+    }
+            #[inline(always)]
+    pub fn memo_program(&mut self, memo_program: solana_program::pubkey::Pubkey) -> &mut Self {
+                        self.memo_program = Some(memo_program);
                     self
     }
                     #[inline(always)]
@@ -286,6 +341,8 @@ impl RepayDebtBuilder {
   pub fn instruction(&self) -> solana_program::instruction::Instruction {
     let accounts = RepayDebt {
                               authority: self.authority.expect("authority is not set"),
+                                        mint_a: self.mint_a.expect("mint_a is not set"),
+                                        mint_b: self.mint_b.expect("mint_b is not set"),
                                         market: self.market.expect("market is not set"),
                                         vault_a: self.vault_a.expect("vault_a is not set"),
                                         vault_b: self.vault_b.expect("vault_b is not set"),
@@ -296,7 +353,9 @@ impl RepayDebtBuilder {
                                         tuna_position_ata_b: self.tuna_position_ata_b.expect("tuna_position_ata_b is not set"),
                                         tuna_position_owner_ata_a: self.tuna_position_owner_ata_a.expect("tuna_position_owner_ata_a is not set"),
                                         tuna_position_owner_ata_b: self.tuna_position_owner_ata_b.expect("tuna_position_owner_ata_b is not set"),
-                                        token_program: self.token_program.unwrap_or(solana_program::pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")),
+                                        token_program_a: self.token_program_a.expect("token_program_a is not set"),
+                                        token_program_b: self.token_program_b.expect("token_program_b is not set"),
+                                        memo_program: self.memo_program.expect("memo_program is not set"),
                       };
           let args = RepayDebtInstructionArgs {
                                                               collateral_funds_a: self.collateral_funds_a.clone().expect("collateral_funds_a is not set"),
@@ -316,6 +375,12 @@ impl RepayDebtBuilder {
       
                     
               pub authority: &'b solana_program::account_info::AccountInfo<'a>,
+                
+                    
+              pub mint_a: &'b solana_program::account_info::AccountInfo<'a>,
+                
+                    
+              pub mint_b: &'b solana_program::account_info::AccountInfo<'a>,
                 
                     
               pub market: &'b solana_program::account_info::AccountInfo<'a>,
@@ -352,7 +417,13 @@ impl RepayDebtBuilder {
 
       
                     
-              pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
+              pub token_program_a: &'b solana_program::account_info::AccountInfo<'a>,
+                
+                    
+              pub token_program_b: &'b solana_program::account_info::AccountInfo<'a>,
+                
+                    
+              pub memo_program: &'b solana_program::account_info::AccountInfo<'a>,
             }
 
 /// `repay_debt` CPI instruction.
@@ -366,6 +437,12 @@ pub struct RepayDebtCpi<'a, 'b> {
     
               
           pub authority: &'b solana_program::account_info::AccountInfo<'a>,
+          
+              
+          pub mint_a: &'b solana_program::account_info::AccountInfo<'a>,
+          
+              
+          pub mint_b: &'b solana_program::account_info::AccountInfo<'a>,
           
               
           pub market: &'b solana_program::account_info::AccountInfo<'a>,
@@ -402,7 +479,13 @@ pub struct RepayDebtCpi<'a, 'b> {
 
     
               
-          pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
+          pub token_program_a: &'b solana_program::account_info::AccountInfo<'a>,
+          
+              
+          pub token_program_b: &'b solana_program::account_info::AccountInfo<'a>,
+          
+              
+          pub memo_program: &'b solana_program::account_info::AccountInfo<'a>,
             /// The arguments for the instruction.
     pub __args: RepayDebtInstructionArgs,
   }
@@ -416,6 +499,8 @@ impl<'a, 'b> RepayDebtCpi<'a, 'b> {
     Self {
       __program: program,
               authority: accounts.authority,
+              mint_a: accounts.mint_a,
+              mint_b: accounts.mint_b,
               market: accounts.market,
               vault_a: accounts.vault_a,
               vault_b: accounts.vault_b,
@@ -426,7 +511,9 @@ impl<'a, 'b> RepayDebtCpi<'a, 'b> {
               tuna_position_ata_b: accounts.tuna_position_ata_b,
               tuna_position_owner_ata_a: accounts.tuna_position_owner_ata_a,
               tuna_position_owner_ata_b: accounts.tuna_position_owner_ata_b,
-              token_program: accounts.token_program,
+              token_program_a: accounts.token_program_a,
+              token_program_b: accounts.token_program_b,
+              memo_program: accounts.memo_program,
                     __args: args,
           }
   }
@@ -450,10 +537,18 @@ impl<'a, 'b> RepayDebtCpi<'a, 'b> {
     signers_seeds: &[&[&[u8]]],
     remaining_accounts: &[(&'b solana_program::account_info::AccountInfo<'a>, bool, bool)]
   ) -> solana_program::entrypoint::ProgramResult {
-    let mut accounts = Vec::with_capacity(12+ remaining_accounts.len());
+    let mut accounts = Vec::with_capacity(16+ remaining_accounts.len());
                             accounts.push(solana_program::instruction::AccountMeta::new(
             *self.authority.key,
             true
+          ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.mint_a.key,
+            false
+          ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.mint_b.key,
+            false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.market.key,
@@ -496,7 +591,15 @@ impl<'a, 'b> RepayDebtCpi<'a, 'b> {
             false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.token_program.key,
+            *self.token_program_a.key,
+            false
+          ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.token_program_b.key,
+            false
+          ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.memo_program.key,
             false
           ));
                       remaining_accounts.iter().for_each(|remaining_account| {
@@ -515,9 +618,11 @@ impl<'a, 'b> RepayDebtCpi<'a, 'b> {
       accounts,
       data,
     };
-    let mut account_infos = Vec::with_capacity(13 + remaining_accounts.len());
+    let mut account_infos = Vec::with_capacity(17 + remaining_accounts.len());
     account_infos.push(self.__program.clone());
                   account_infos.push(self.authority.clone());
+                        account_infos.push(self.mint_a.clone());
+                        account_infos.push(self.mint_b.clone());
                         account_infos.push(self.market.clone());
                         account_infos.push(self.vault_a.clone());
                         account_infos.push(self.vault_b.clone());
@@ -528,7 +633,9 @@ impl<'a, 'b> RepayDebtCpi<'a, 'b> {
                         account_infos.push(self.tuna_position_ata_b.clone());
                         account_infos.push(self.tuna_position_owner_ata_a.clone());
                         account_infos.push(self.tuna_position_owner_ata_b.clone());
-                        account_infos.push(self.token_program.clone());
+                        account_infos.push(self.token_program_a.clone());
+                        account_infos.push(self.token_program_b.clone());
+                        account_infos.push(self.memo_program.clone());
               remaining_accounts.iter().for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
 
     if signers_seeds.is_empty() {
@@ -544,17 +651,21 @@ impl<'a, 'b> RepayDebtCpi<'a, 'b> {
 /// ### Accounts:
 ///
                       ///   0. `[writable, signer]` authority
-          ///   1. `[]` market
-                ///   2. `[writable]` vault_a
-                ///   3. `[writable]` vault_b
-                ///   4. `[writable]` vault_a_ata
-                ///   5. `[writable]` vault_b_ata
-                ///   6. `[writable]` tuna_position
-                ///   7. `[writable]` tuna_position_ata_a
-                ///   8. `[writable]` tuna_position_ata_b
-                ///   9. `[writable]` tuna_position_owner_ata_a
-                ///   10. `[writable]` tuna_position_owner_ata_b
-          ///   11. `[]` token_program
+          ///   1. `[]` mint_a
+          ///   2. `[]` mint_b
+          ///   3. `[]` market
+                ///   4. `[writable]` vault_a
+                ///   5. `[writable]` vault_b
+                ///   6. `[writable]` vault_a_ata
+                ///   7. `[writable]` vault_b_ata
+                ///   8. `[writable]` tuna_position
+                ///   9. `[writable]` tuna_position_ata_a
+                ///   10. `[writable]` tuna_position_ata_b
+                ///   11. `[writable]` tuna_position_owner_ata_a
+                ///   12. `[writable]` tuna_position_owner_ata_b
+          ///   13. `[]` token_program_a
+          ///   14. `[]` token_program_b
+          ///   15. `[]` memo_program
 #[derive(Clone, Debug)]
 pub struct RepayDebtCpiBuilder<'a, 'b> {
   instruction: Box<RepayDebtCpiBuilderInstruction<'a, 'b>>,
@@ -565,6 +676,8 @@ impl<'a, 'b> RepayDebtCpiBuilder<'a, 'b> {
     let instruction = Box::new(RepayDebtCpiBuilderInstruction {
       __program: program,
               authority: None,
+              mint_a: None,
+              mint_b: None,
               market: None,
               vault_a: None,
               vault_b: None,
@@ -575,7 +688,9 @@ impl<'a, 'b> RepayDebtCpiBuilder<'a, 'b> {
               tuna_position_ata_b: None,
               tuna_position_owner_ata_a: None,
               tuna_position_owner_ata_b: None,
-              token_program: None,
+              token_program_a: None,
+              token_program_b: None,
+              memo_program: None,
                                             collateral_funds_a: None,
                                 collateral_funds_b: None,
                     __remaining_accounts: Vec::new(),
@@ -588,6 +703,16 @@ impl<'a, 'b> RepayDebtCpiBuilder<'a, 'b> {
 #[inline(always)]
     pub fn authority(&mut self, authority: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
                         self.instruction.authority = Some(authority);
+                    self
+    }
+      #[inline(always)]
+    pub fn mint_a(&mut self, mint_a: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+                        self.instruction.mint_a = Some(mint_a);
+                    self
+    }
+      #[inline(always)]
+    pub fn mint_b(&mut self, mint_b: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+                        self.instruction.mint_b = Some(mint_b);
                     self
     }
       #[inline(always)]
@@ -644,8 +769,18 @@ impl<'a, 'b> RepayDebtCpiBuilder<'a, 'b> {
 /// Other accounts
 /// 
 #[inline(always)]
-    pub fn token_program(&mut self, token_program: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
-                        self.instruction.token_program = Some(token_program);
+    pub fn token_program_a(&mut self, token_program_a: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+                        self.instruction.token_program_a = Some(token_program_a);
+                    self
+    }
+      #[inline(always)]
+    pub fn token_program_b(&mut self, token_program_b: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+                        self.instruction.token_program_b = Some(token_program_b);
+                    self
+    }
+      #[inline(always)]
+    pub fn memo_program(&mut self, memo_program: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+                        self.instruction.memo_program = Some(memo_program);
                     self
     }
                     #[inline(always)]
@@ -689,6 +824,10 @@ impl<'a, 'b> RepayDebtCpiBuilder<'a, 'b> {
                   
           authority: self.instruction.authority.expect("authority is not set"),
                   
+          mint_a: self.instruction.mint_a.expect("mint_a is not set"),
+                  
+          mint_b: self.instruction.mint_b.expect("mint_b is not set"),
+                  
           market: self.instruction.market.expect("market is not set"),
                   
           vault_a: self.instruction.vault_a.expect("vault_a is not set"),
@@ -709,7 +848,11 @@ impl<'a, 'b> RepayDebtCpiBuilder<'a, 'b> {
                   
           tuna_position_owner_ata_b: self.instruction.tuna_position_owner_ata_b.expect("tuna_position_owner_ata_b is not set"),
                   
-          token_program: self.instruction.token_program.expect("token_program is not set"),
+          token_program_a: self.instruction.token_program_a.expect("token_program_a is not set"),
+                  
+          token_program_b: self.instruction.token_program_b.expect("token_program_b is not set"),
+                  
+          memo_program: self.instruction.memo_program.expect("memo_program is not set"),
                           __args: args,
             };
     instruction.invoke_signed_with_remaining_accounts(signers_seeds, &self.instruction.__remaining_accounts)
@@ -720,6 +863,8 @@ impl<'a, 'b> RepayDebtCpiBuilder<'a, 'b> {
 struct RepayDebtCpiBuilderInstruction<'a, 'b> {
   __program: &'b solana_program::account_info::AccountInfo<'a>,
             authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+                mint_a: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+                mint_b: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 market: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 vault_a: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 vault_b: Option<&'b solana_program::account_info::AccountInfo<'a>>,
@@ -730,7 +875,9 @@ struct RepayDebtCpiBuilderInstruction<'a, 'b> {
                 tuna_position_ata_b: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 tuna_position_owner_ata_a: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 tuna_position_owner_ata_b: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-                token_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+                token_program_a: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+                token_program_b: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+                memo_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                         collateral_funds_a: Option<u64>,
                 collateral_funds_b: Option<u64>,
         /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.

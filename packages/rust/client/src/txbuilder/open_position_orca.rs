@@ -6,7 +6,14 @@ use solana_program::pubkey::Pubkey;
 use solana_program::system_program;
 use spl_associated_token_account::{get_associated_token_address, get_associated_token_address_with_program_id};
 
-pub fn open_position_orca_instruction(authority: &Pubkey, position_mint: &Pubkey, whirlpool: &Whirlpool, args: OpenPositionOrcaInstructionArgs) -> Instruction {
+pub fn open_position_orca_instruction(
+    authority: &Pubkey,
+    position_mint: &Pubkey,
+    whirlpool: &Whirlpool,
+    token_program_a: &Pubkey,
+    token_program_b: &Pubkey,
+    args: OpenPositionOrcaInstructionArgs,
+) -> Instruction {
     let mint_a = whirlpool.token_mint_a;
     let mint_b = whirlpool.token_mint_b;
     let tick_spacing = whirlpool.tick_spacing;
@@ -30,7 +37,8 @@ pub fn open_position_orca_instruction(authority: &Pubkey, position_mint: &Pubkey
         whirlpool: whirlpool_address,
         orca_position: get_position_address(&position_mint).unwrap().0,
         metadata_update_auth: WP_NFT_UPDATE_AUTH,
-        token_program: spl_token::ID,
+        token_program_a: *token_program_a,
+        token_program_b: *token_program_b,
         token2022_program: spl_token_2022::ID,
         system_program: system_program::ID,
         associated_token_program: spl_associated_token_account::ID,
