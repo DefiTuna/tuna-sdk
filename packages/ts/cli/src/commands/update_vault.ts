@@ -53,8 +53,7 @@ export default class UpdateVault extends BaseCommand {
     const vaultAddress = (await getLendingVaultAddress(args.mint))[0];
     console.log("Fetching vault:", vaultAddress);
     const vault = await fetchVault(rpc, vaultAddress);
-    console.log("Vault fetched:");
-    console.log(vault);
+    console.log("Vault:", vault);
     console.log("interestRate:", Number((vault.data.interestRate * 1000000n) / INTEREST_RATE_100_PERCENT) / 10000);
     console.log("pythOracleFeedId:", this.uint8ArrayToHex(getBase58Codec().encode(vault.data.pythOracleFeedId)));
 

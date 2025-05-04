@@ -1,7 +1,6 @@
-import { type Account, AccountRole, Address, IAccountMeta, IInstruction, TransactionSigner } from "@solana/kit";
-import { findAssociatedTokenPda, TOKEN_2022_PROGRAM_ADDRESS } from "@solana-program/token-2022";
+import { type Account, AccountRole, IAccountMeta, IInstruction, TransactionSigner } from "@solana/kit";
+import { findAssociatedTokenPda, Mint, TOKEN_2022_PROGRAM_ADDRESS } from "@solana-program/token-2022";
 import { getOracleAddress, getPositionAddress, Whirlpool, WHIRLPOOL_PROGRAM_ADDRESS } from "@orca-so/whirlpools-client";
-import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
 import {
   getCreateAtaInstructions,
   getLiquidatePositionOrcaInstruction,
@@ -9,21 +8,21 @@ import {
   getSwapTickArrayAddresses,
   getTickArrayAddressFromTickIndex,
   getTunaConfigAddress,
-  TunaConfig,
   TunaPosition,
   Vault,
 } from "../index.ts";
+import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
 
 export async function liquidatePositionOrcaInstructions(
   authority: TransactionSigner,
-  tunaPosition: Account<TunaPosition, Address>,
-  vaultA: Account<Vault, Address>,
-  vaultB: Account<Vault, Address>,
-  whirlpool: Account<Whirlpool, Address>,
+  tunaPosition: Account<TunaPosition>,
+  mintA: Account<Mint>,
+  mintB: Account<Mint>,
+  vaultA: Account<Vault>,
+  vaultB: Account<Vault>,
+  whirlpool: Account<Whirlpool>,
   withdrawPercent: number,
 ): Promise<IInstruction[]> {
-  const mintA = whirlpool.data.tokenMintA;
-  const mintB = whirlpool.data.tokenMintB;
   const instructions: IInstruction[] = [];
 
   //
@@ -32,17 +31,17 @@ export async function liquidatePositionOrcaInstructions(
 
   const createLiquidatorAtaAInstructions = await getCreateAtaInstructions(
     authority,
-    mintA,
+    mintA.address,
     authority.address,
-    TOKEN_PROGRAM_ADDRESS,
+    mintA.programAddress,
   );
   instructions.push(...createLiquidatorAtaAInstructions.init);
 
   const createLiquidatorAtaBInstructions = await getCreateAtaInstructions(
     authority,
-    mintB,
+    mintB.address,
     authority.address,
-    TOKEN_PROGRAM_ADDRESS,
+    mintB.programAddress,
   );
   instructions.push(...createLiquidatorAtaBInstructions.init);
 
@@ -53,6 +52,8 @@ export async function liquidatePositionOrcaInstructions(
   const ix = await liquidatePositionOrcaInstruction(
     authority,
     tunaPosition,
+    mintA,
+    mintB,
     vaultA,
     vaultB,
     whirlpool,
@@ -72,15 +73,15 @@ export async function liquidatePositionOrcaInstructions(
 
 export async function liquidatePositionOrcaInstruction(
   authority: TransactionSigner,
-  tunaPosition: Account<TunaPosition, Address>,
-  vaultA: Account<Vault, Address>,
-  vaultB: Account<Vault, Address>,
-  whirlpool: Account<Whirlpool, Address>,
+  tunaPosition: Account<TunaPosition>,
+  mintA: Account<Mint>,
+  mintB: Account<Mint>,
+  vaultA: Account<Vault>,
+  vaultB: Account<Vault>,
+  whirlpool: Account<Whirlpool>,
   withdrawPercent: number,
 ): Promise<IInstruction> {
   const tunaConfigAddress = (await getTunaConfigAddress())[0];
-  const mintA = whirlpool.data.tokenMintA;
-  const mintB = whirlpool.data.tokenMintB;
   const positionMint = tunaPosition.data.positionMint;
 
   const marketAddress = (await getMarketAddress(whirlpool.address))[0];
@@ -98,48 +99,48 @@ export async function liquidatePositionOrcaInstruction(
   const tunaPositionAtaA = (
     await findAssociatedTokenPda({
       owner: tunaPosition.address,
-      mint: mintA,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+      mint: mintA.address,
+      tokenProgram: mintA.programAddress,
     })
   )[0];
 
   const tunaPositionAtaB = (
     await findAssociatedTokenPda({
       owner: tunaPosition.address,
-      mint: mintB,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+      mint: mintB.address,
+      tokenProgram: mintB.programAddress,
     })
   )[0];
 
   const vaultAAta = (
     await findAssociatedTokenPda({
       owner: vaultA.address,
-      mint: mintA,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+      mint: mintA.address,
+      tokenProgram: mintA.programAddress,
     })
   )[0];
 
   const vaultBAta = (
     await findAssociatedTokenPda({
       owner: vaultB.address,
-      mint: mintB,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+      mint: mintB.address,
+      tokenProgram: mintB.programAddress,
     })
   )[0];
 
   const liquidationFeeRecipientAtaA = (
     await findAssociatedTokenPda({
       owner: authority.address,
-      mint: mintA,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+      mint: mintA.address,
+      tokenProgram: mintA.programAddress,
     })
   )[0];
 
   const liquidationFeeRecipientAtaB = (
     await findAssociatedTokenPda({
       owner: authority.address,
-      mint: mintB,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+      mint: mintB.address,
+      tokenProgram: mintB.programAddress,
     })
   )[0];
 
@@ -163,8 +164,8 @@ export async function liquidatePositionOrcaInstruction(
 
   const ix = getLiquidatePositionOrcaInstruction({
     market: marketAddress,
-    mintA,
-    mintB,
+    mintA: mintA.address,
+    mintB: mintB.address,
     pythOraclePriceFeedA: vaultA.data.pythOraclePriceUpdate,
     pythOraclePriceFeedB: vaultB.data.pythOraclePriceUpdate,
     vaultA: vaultA.address,
@@ -182,6 +183,9 @@ export async function liquidatePositionOrcaInstruction(
     liquidationFeeRecipientAtaB,
     whirlpool: whirlpool.address,
     whirlpoolProgram: WHIRLPOOL_PROGRAM_ADDRESS,
+    tokenProgramA: mintA.programAddress,
+    tokenProgramB: mintB.programAddress,
+    memoProgram: MEMO_PROGRAM_ADDRESS,
     withdrawPercent,
   });
 

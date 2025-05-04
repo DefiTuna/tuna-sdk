@@ -48,6 +48,7 @@ export function getRepayBadDebtDiscriminatorBytes() {
 export type RepayBadDebtInstruction<
   TProgram extends string = typeof TUNA_PROGRAM_ADDRESS,
   TAccountAuthority extends string | IAccountMeta<string> = string,
+  TAccountMint extends string | IAccountMeta<string> = string,
   TAccountTunaConfig extends string | IAccountMeta<string> = string,
   TAccountVault extends string | IAccountMeta<string> = string,
   TAccountVaultAta extends string | IAccountMeta<string> = string,
@@ -55,6 +56,7 @@ export type RepayBadDebtInstruction<
   TAccountTokenProgram extends
     | string
     | IAccountMeta<string> = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+  TAccountMemoProgram extends string | IAccountMeta<string> = string,
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
   IInstructionWithData<Uint8Array> &
@@ -64,6 +66,9 @@ export type RepayBadDebtInstruction<
         ? ReadonlySignerAccount<TAccountAuthority> &
             IAccountSignerMeta<TAccountAuthority>
         : TAccountAuthority,
+      TAccountMint extends string
+        ? ReadonlyAccount<TAccountMint>
+        : TAccountMint,
       TAccountTunaConfig extends string
         ? ReadonlyAccount<TAccountTunaConfig>
         : TAccountTunaConfig,
@@ -79,6 +84,9 @@ export type RepayBadDebtInstruction<
       TAccountTokenProgram extends string
         ? ReadonlyAccount<TAccountTokenProgram>
         : TAccountTokenProgram,
+      TAccountMemoProgram extends string
+        ? ReadonlyAccount<TAccountMemoProgram>
+        : TAccountMemoProgram,
       ...TRemainingAccounts,
     ]
   >;
@@ -125,48 +133,58 @@ export function getRepayBadDebtInstructionDataCodec(): Codec<
 
 export type RepayBadDebtInput<
   TAccountAuthority extends string = string,
+  TAccountMint extends string = string,
   TAccountTunaConfig extends string = string,
   TAccountVault extends string = string,
   TAccountVaultAta extends string = string,
   TAccountAuthorityAta extends string = string,
   TAccountTokenProgram extends string = string,
+  TAccountMemoProgram extends string = string,
 > = {
   authority: TransactionSigner<TAccountAuthority>;
+  mint: Address<TAccountMint>;
   tunaConfig: Address<TAccountTunaConfig>;
   vault: Address<TAccountVault>;
   vaultAta: Address<TAccountVaultAta>;
   authorityAta: Address<TAccountAuthorityAta>;
   tokenProgram?: Address<TAccountTokenProgram>;
+  memoProgram: Address<TAccountMemoProgram>;
   funds: RepayBadDebtInstructionDataArgs['funds'];
   shares: RepayBadDebtInstructionDataArgs['shares'];
 };
 
 export function getRepayBadDebtInstruction<
   TAccountAuthority extends string,
+  TAccountMint extends string,
   TAccountTunaConfig extends string,
   TAccountVault extends string,
   TAccountVaultAta extends string,
   TAccountAuthorityAta extends string,
   TAccountTokenProgram extends string,
+  TAccountMemoProgram extends string,
   TProgramAddress extends Address = typeof TUNA_PROGRAM_ADDRESS,
 >(
   input: RepayBadDebtInput<
     TAccountAuthority,
+    TAccountMint,
     TAccountTunaConfig,
     TAccountVault,
     TAccountVaultAta,
     TAccountAuthorityAta,
-    TAccountTokenProgram
+    TAccountTokenProgram,
+    TAccountMemoProgram
   >,
   config?: { programAddress?: TProgramAddress }
 ): RepayBadDebtInstruction<
   TProgramAddress,
   TAccountAuthority,
+  TAccountMint,
   TAccountTunaConfig,
   TAccountVault,
   TAccountVaultAta,
   TAccountAuthorityAta,
-  TAccountTokenProgram
+  TAccountTokenProgram,
+  TAccountMemoProgram
 > {
   // Program address.
   const programAddress = config?.programAddress ?? TUNA_PROGRAM_ADDRESS;
@@ -174,11 +192,13 @@ export function getRepayBadDebtInstruction<
   // Original accounts.
   const originalAccounts = {
     authority: { value: input.authority ?? null, isWritable: false },
+    mint: { value: input.mint ?? null, isWritable: false },
     tunaConfig: { value: input.tunaConfig ?? null, isWritable: false },
     vault: { value: input.vault ?? null, isWritable: true },
     vaultAta: { value: input.vaultAta ?? null, isWritable: true },
     authorityAta: { value: input.authorityAta ?? null, isWritable: true },
     tokenProgram: { value: input.tokenProgram ?? null, isWritable: false },
+    memoProgram: { value: input.memoProgram ?? null, isWritable: false },
   };
   const accounts = originalAccounts as Record<
     keyof typeof originalAccounts,
@@ -198,11 +218,13 @@ export function getRepayBadDebtInstruction<
   const instruction = {
     accounts: [
       getAccountMeta(accounts.authority),
+      getAccountMeta(accounts.mint),
       getAccountMeta(accounts.tunaConfig),
       getAccountMeta(accounts.vault),
       getAccountMeta(accounts.vaultAta),
       getAccountMeta(accounts.authorityAta),
       getAccountMeta(accounts.tokenProgram),
+      getAccountMeta(accounts.memoProgram),
     ],
     programAddress,
     data: getRepayBadDebtInstructionDataEncoder().encode(
@@ -211,11 +233,13 @@ export function getRepayBadDebtInstruction<
   } as RepayBadDebtInstruction<
     TProgramAddress,
     TAccountAuthority,
+    TAccountMint,
     TAccountTunaConfig,
     TAccountVault,
     TAccountVaultAta,
     TAccountAuthorityAta,
-    TAccountTokenProgram
+    TAccountTokenProgram,
+    TAccountMemoProgram
   >;
 
   return instruction;
@@ -228,11 +252,13 @@ export type ParsedRepayBadDebtInstruction<
   programAddress: Address<TProgram>;
   accounts: {
     authority: TAccountMetas[0];
-    tunaConfig: TAccountMetas[1];
-    vault: TAccountMetas[2];
-    vaultAta: TAccountMetas[3];
-    authorityAta: TAccountMetas[4];
-    tokenProgram: TAccountMetas[5];
+    mint: TAccountMetas[1];
+    tunaConfig: TAccountMetas[2];
+    vault: TAccountMetas[3];
+    vaultAta: TAccountMetas[4];
+    authorityAta: TAccountMetas[5];
+    tokenProgram: TAccountMetas[6];
+    memoProgram: TAccountMetas[7];
   };
   data: RepayBadDebtInstructionData;
 };
@@ -245,7 +271,7 @@ export function parseRepayBadDebtInstruction<
     IInstructionWithAccounts<TAccountMetas> &
     IInstructionWithData<Uint8Array>
 ): ParsedRepayBadDebtInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 6) {
+  if (instruction.accounts.length < 8) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
   }
@@ -259,11 +285,13 @@ export function parseRepayBadDebtInstruction<
     programAddress: instruction.programAddress,
     accounts: {
       authority: getNextAccount(),
+      mint: getNextAccount(),
       tunaConfig: getNextAccount(),
       vault: getNextAccount(),
       vaultAta: getNextAccount(),
       authorityAta: getNextAccount(),
       tokenProgram: getNextAccount(),
+      memoProgram: getNextAccount(),
     },
     data: getRepayBadDebtInstructionDataDecoder().decode(instruction.data),
   };

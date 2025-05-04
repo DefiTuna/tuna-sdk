@@ -46,6 +46,8 @@ export function getRepayDebtDiscriminatorBytes() {
 export type RepayDebtInstruction<
   TProgram extends string = typeof TUNA_PROGRAM_ADDRESS,
   TAccountAuthority extends string | IAccountMeta<string> = string,
+  TAccountMintA extends string | IAccountMeta<string> = string,
+  TAccountMintB extends string | IAccountMeta<string> = string,
   TAccountMarket extends string | IAccountMeta<string> = string,
   TAccountVaultA extends string | IAccountMeta<string> = string,
   TAccountVaultB extends string | IAccountMeta<string> = string,
@@ -56,9 +58,9 @@ export type RepayDebtInstruction<
   TAccountTunaPositionAtaB extends string | IAccountMeta<string> = string,
   TAccountTunaPositionOwnerAtaA extends string | IAccountMeta<string> = string,
   TAccountTunaPositionOwnerAtaB extends string | IAccountMeta<string> = string,
-  TAccountTokenProgram extends
-    | string
-    | IAccountMeta<string> = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+  TAccountTokenProgramA extends string | IAccountMeta<string> = string,
+  TAccountTokenProgramB extends string | IAccountMeta<string> = string,
+  TAccountMemoProgram extends string | IAccountMeta<string> = string,
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
   IInstructionWithData<Uint8Array> &
@@ -68,6 +70,12 @@ export type RepayDebtInstruction<
         ? WritableSignerAccount<TAccountAuthority> &
             IAccountSignerMeta<TAccountAuthority>
         : TAccountAuthority,
+      TAccountMintA extends string
+        ? ReadonlyAccount<TAccountMintA>
+        : TAccountMintA,
+      TAccountMintB extends string
+        ? ReadonlyAccount<TAccountMintB>
+        : TAccountMintB,
       TAccountMarket extends string
         ? ReadonlyAccount<TAccountMarket>
         : TAccountMarket,
@@ -98,9 +106,15 @@ export type RepayDebtInstruction<
       TAccountTunaPositionOwnerAtaB extends string
         ? WritableAccount<TAccountTunaPositionOwnerAtaB>
         : TAccountTunaPositionOwnerAtaB,
-      TAccountTokenProgram extends string
-        ? ReadonlyAccount<TAccountTokenProgram>
-        : TAccountTokenProgram,
+      TAccountTokenProgramA extends string
+        ? ReadonlyAccount<TAccountTokenProgramA>
+        : TAccountTokenProgramA,
+      TAccountTokenProgramB extends string
+        ? ReadonlyAccount<TAccountTokenProgramB>
+        : TAccountTokenProgramB,
+      TAccountMemoProgram extends string
+        ? ReadonlyAccount<TAccountMemoProgram>
+        : TAccountMemoProgram,
       ...TRemainingAccounts,
     ]
   >;
@@ -147,6 +161,8 @@ export function getRepayDebtInstructionDataCodec(): Codec<
 
 export type RepayDebtInput<
   TAccountAuthority extends string = string,
+  TAccountMintA extends string = string,
+  TAccountMintB extends string = string,
   TAccountMarket extends string = string,
   TAccountVaultA extends string = string,
   TAccountVaultB extends string = string,
@@ -157,7 +173,9 @@ export type RepayDebtInput<
   TAccountTunaPositionAtaB extends string = string,
   TAccountTunaPositionOwnerAtaA extends string = string,
   TAccountTunaPositionOwnerAtaB extends string = string,
-  TAccountTokenProgram extends string = string,
+  TAccountTokenProgramA extends string = string,
+  TAccountTokenProgramB extends string = string,
+  TAccountMemoProgram extends string = string,
 > = {
   /**
    *
@@ -165,6 +183,8 @@ export type RepayDebtInput<
    *
    */
   authority: TransactionSigner<TAccountAuthority>;
+  mintA: Address<TAccountMintA>;
+  mintB: Address<TAccountMintB>;
   market: Address<TAccountMarket>;
   vaultA: Address<TAccountVaultA>;
   vaultB: Address<TAccountVaultB>;
@@ -180,13 +200,17 @@ export type RepayDebtInput<
    * Other accounts
    *
    */
-  tokenProgram?: Address<TAccountTokenProgram>;
+  tokenProgramA: Address<TAccountTokenProgramA>;
+  tokenProgramB: Address<TAccountTokenProgramB>;
+  memoProgram: Address<TAccountMemoProgram>;
   collateralFundsA: RepayDebtInstructionDataArgs['collateralFundsA'];
   collateralFundsB: RepayDebtInstructionDataArgs['collateralFundsB'];
 };
 
 export function getRepayDebtInstruction<
   TAccountAuthority extends string,
+  TAccountMintA extends string,
+  TAccountMintB extends string,
   TAccountMarket extends string,
   TAccountVaultA extends string,
   TAccountVaultB extends string,
@@ -197,11 +221,15 @@ export function getRepayDebtInstruction<
   TAccountTunaPositionAtaB extends string,
   TAccountTunaPositionOwnerAtaA extends string,
   TAccountTunaPositionOwnerAtaB extends string,
-  TAccountTokenProgram extends string,
+  TAccountTokenProgramA extends string,
+  TAccountTokenProgramB extends string,
+  TAccountMemoProgram extends string,
   TProgramAddress extends Address = typeof TUNA_PROGRAM_ADDRESS,
 >(
   input: RepayDebtInput<
     TAccountAuthority,
+    TAccountMintA,
+    TAccountMintB,
     TAccountMarket,
     TAccountVaultA,
     TAccountVaultB,
@@ -212,12 +240,16 @@ export function getRepayDebtInstruction<
     TAccountTunaPositionAtaB,
     TAccountTunaPositionOwnerAtaA,
     TAccountTunaPositionOwnerAtaB,
-    TAccountTokenProgram
+    TAccountTokenProgramA,
+    TAccountTokenProgramB,
+    TAccountMemoProgram
   >,
   config?: { programAddress?: TProgramAddress }
 ): RepayDebtInstruction<
   TProgramAddress,
   TAccountAuthority,
+  TAccountMintA,
+  TAccountMintB,
   TAccountMarket,
   TAccountVaultA,
   TAccountVaultB,
@@ -228,7 +260,9 @@ export function getRepayDebtInstruction<
   TAccountTunaPositionAtaB,
   TAccountTunaPositionOwnerAtaA,
   TAccountTunaPositionOwnerAtaB,
-  TAccountTokenProgram
+  TAccountTokenProgramA,
+  TAccountTokenProgramB,
+  TAccountMemoProgram
 > {
   // Program address.
   const programAddress = config?.programAddress ?? TUNA_PROGRAM_ADDRESS;
@@ -236,6 +270,8 @@ export function getRepayDebtInstruction<
   // Original accounts.
   const originalAccounts = {
     authority: { value: input.authority ?? null, isWritable: true },
+    mintA: { value: input.mintA ?? null, isWritable: false },
+    mintB: { value: input.mintB ?? null, isWritable: false },
     market: { value: input.market ?? null, isWritable: false },
     vaultA: { value: input.vaultA ?? null, isWritable: true },
     vaultB: { value: input.vaultB ?? null, isWritable: true },
@@ -258,7 +294,9 @@ export function getRepayDebtInstruction<
       value: input.tunaPositionOwnerAtaB ?? null,
       isWritable: true,
     },
-    tokenProgram: { value: input.tokenProgram ?? null, isWritable: false },
+    tokenProgramA: { value: input.tokenProgramA ?? null, isWritable: false },
+    tokenProgramB: { value: input.tokenProgramB ?? null, isWritable: false },
+    memoProgram: { value: input.memoProgram ?? null, isWritable: false },
   };
   const accounts = originalAccounts as Record<
     keyof typeof originalAccounts,
@@ -268,16 +306,12 @@ export function getRepayDebtInstruction<
   // Original args.
   const args = { ...input };
 
-  // Resolve default values.
-  if (!accounts.tokenProgram.value) {
-    accounts.tokenProgram.value =
-      'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' as Address<'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'>;
-  }
-
   const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
   const instruction = {
     accounts: [
       getAccountMeta(accounts.authority),
+      getAccountMeta(accounts.mintA),
+      getAccountMeta(accounts.mintB),
       getAccountMeta(accounts.market),
       getAccountMeta(accounts.vaultA),
       getAccountMeta(accounts.vaultB),
@@ -288,7 +322,9 @@ export function getRepayDebtInstruction<
       getAccountMeta(accounts.tunaPositionAtaB),
       getAccountMeta(accounts.tunaPositionOwnerAtaA),
       getAccountMeta(accounts.tunaPositionOwnerAtaB),
-      getAccountMeta(accounts.tokenProgram),
+      getAccountMeta(accounts.tokenProgramA),
+      getAccountMeta(accounts.tokenProgramB),
+      getAccountMeta(accounts.memoProgram),
     ],
     programAddress,
     data: getRepayDebtInstructionDataEncoder().encode(
@@ -297,6 +333,8 @@ export function getRepayDebtInstruction<
   } as RepayDebtInstruction<
     TProgramAddress,
     TAccountAuthority,
+    TAccountMintA,
+    TAccountMintB,
     TAccountMarket,
     TAccountVaultA,
     TAccountVaultB,
@@ -307,7 +345,9 @@ export function getRepayDebtInstruction<
     TAccountTunaPositionAtaB,
     TAccountTunaPositionOwnerAtaA,
     TAccountTunaPositionOwnerAtaB,
-    TAccountTokenProgram
+    TAccountTokenProgramA,
+    TAccountTokenProgramB,
+    TAccountMemoProgram
   >;
 
   return instruction;
@@ -326,23 +366,27 @@ export type ParsedRepayDebtInstruction<
      */
 
     authority: TAccountMetas[0];
-    market: TAccountMetas[1];
-    vaultA: TAccountMetas[2];
-    vaultB: TAccountMetas[3];
-    vaultAAta: TAccountMetas[4];
-    vaultBAta: TAccountMetas[5];
-    tunaPosition: TAccountMetas[6];
-    tunaPositionAtaA: TAccountMetas[7];
-    tunaPositionAtaB: TAccountMetas[8];
-    tunaPositionOwnerAtaA: TAccountMetas[9];
-    tunaPositionOwnerAtaB: TAccountMetas[10];
+    mintA: TAccountMetas[1];
+    mintB: TAccountMetas[2];
+    market: TAccountMetas[3];
+    vaultA: TAccountMetas[4];
+    vaultB: TAccountMetas[5];
+    vaultAAta: TAccountMetas[6];
+    vaultBAta: TAccountMetas[7];
+    tunaPosition: TAccountMetas[8];
+    tunaPositionAtaA: TAccountMetas[9];
+    tunaPositionAtaB: TAccountMetas[10];
+    tunaPositionOwnerAtaA: TAccountMetas[11];
+    tunaPositionOwnerAtaB: TAccountMetas[12];
     /**
      *
      * Other accounts
      *
      */
 
-    tokenProgram: TAccountMetas[11];
+    tokenProgramA: TAccountMetas[13];
+    tokenProgramB: TAccountMetas[14];
+    memoProgram: TAccountMetas[15];
   };
   data: RepayDebtInstructionData;
 };
@@ -355,7 +399,7 @@ export function parseRepayDebtInstruction<
     IInstructionWithAccounts<TAccountMetas> &
     IInstructionWithData<Uint8Array>
 ): ParsedRepayDebtInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 12) {
+  if (instruction.accounts.length < 16) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
   }
@@ -369,6 +413,8 @@ export function parseRepayDebtInstruction<
     programAddress: instruction.programAddress,
     accounts: {
       authority: getNextAccount(),
+      mintA: getNextAccount(),
+      mintB: getNextAccount(),
       market: getNextAccount(),
       vaultA: getNextAccount(),
       vaultB: getNextAccount(),
@@ -379,7 +425,9 @@ export function parseRepayDebtInstruction<
       tunaPositionAtaB: getNextAccount(),
       tunaPositionOwnerAtaA: getNextAccount(),
       tunaPositionOwnerAtaB: getNextAccount(),
-      tokenProgram: getNextAccount(),
+      tokenProgramA: getNextAccount(),
+      tokenProgramB: getNextAccount(),
+      memoProgram: getNextAccount(),
     },
     data: getRepayDebtInstructionDataDecoder().decode(instruction.data),
   };

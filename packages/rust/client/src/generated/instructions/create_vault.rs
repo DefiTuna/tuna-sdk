@@ -17,6 +17,9 @@ pub struct CreateVault {
           pub authority: solana_program::pubkey::Pubkey,
           
               
+          pub mint: solana_program::pubkey::Pubkey,
+          
+              
           pub tuna_config: solana_program::pubkey::Pubkey,
           
               
@@ -29,16 +32,7 @@ pub struct CreateVault {
           pub token_program: solana_program::pubkey::Pubkey,
           
               
-          pub associated_token_program: solana_program::pubkey::Pubkey,
-          
-              
-          pub mint: solana_program::pubkey::Pubkey,
-          
-              
           pub system_program: solana_program::pubkey::Pubkey,
-          
-              
-          pub rent: solana_program::pubkey::Pubkey,
       }
 
 impl CreateVault {
@@ -48,10 +42,14 @@ impl CreateVault {
   #[allow(clippy::arithmetic_side_effects)]
   #[allow(clippy::vec_init_then_push)]
   pub fn instruction_with_remaining_accounts(&self, args: CreateVaultInstructionArgs, remaining_accounts: &[solana_program::instruction::AccountMeta]) -> solana_program::instruction::Instruction {
-    let mut accounts = Vec::with_capacity(9+ remaining_accounts.len());
+    let mut accounts = Vec::with_capacity(7+ remaining_accounts.len());
                             accounts.push(solana_program::instruction::AccountMeta::new(
             self.authority,
             true
+          ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.mint,
+            false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.tuna_config,
@@ -70,19 +68,7 @@ impl CreateVault {
             false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.associated_token_program,
-            false
-          ));
-                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.mint,
-            false
-          ));
-                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.system_program,
-            false
-          ));
-                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.rent,
             false
           ));
                       accounts.extend_from_slice(remaining_accounts);
@@ -133,25 +119,21 @@ impl Default for CreateVaultInstructionData {
 /// ### Accounts:
 ///
                       ///   0. `[writable, signer]` authority
-          ///   1. `[]` tuna_config
-                ///   2. `[writable]` vault
-                ///   3. `[writable]` vault_ata
-                ///   4. `[optional]` token_program (default to `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
-          ///   5. `[]` associated_token_program
-          ///   6. `[]` mint
-                ///   7. `[optional]` system_program (default to `11111111111111111111111111111111`)
-                ///   8. `[optional]` rent (default to `SysvarRent111111111111111111111111111111111`)
+          ///   1. `[]` mint
+          ///   2. `[]` tuna_config
+                ///   3. `[writable]` vault
+                ///   4. `[writable]` vault_ata
+                ///   5. `[optional]` token_program (default to `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
+                ///   6. `[optional]` system_program (default to `11111111111111111111111111111111`)
 #[derive(Clone, Debug, Default)]
 pub struct CreateVaultBuilder {
             authority: Option<solana_program::pubkey::Pubkey>,
+                mint: Option<solana_program::pubkey::Pubkey>,
                 tuna_config: Option<solana_program::pubkey::Pubkey>,
                 vault: Option<solana_program::pubkey::Pubkey>,
                 vault_ata: Option<solana_program::pubkey::Pubkey>,
                 token_program: Option<solana_program::pubkey::Pubkey>,
-                associated_token_program: Option<solana_program::pubkey::Pubkey>,
-                mint: Option<solana_program::pubkey::Pubkey>,
                 system_program: Option<solana_program::pubkey::Pubkey>,
-                rent: Option<solana_program::pubkey::Pubkey>,
                         interest_rate: Option<u64>,
                 supply_limit: Option<u64>,
                 pyth_oracle_price_update: Option<Pubkey>,
@@ -166,6 +148,11 @@ impl CreateVaultBuilder {
             #[inline(always)]
     pub fn authority(&mut self, authority: solana_program::pubkey::Pubkey) -> &mut Self {
                         self.authority = Some(authority);
+                    self
+    }
+            #[inline(always)]
+    pub fn mint(&mut self, mint: solana_program::pubkey::Pubkey) -> &mut Self {
+                        self.mint = Some(mint);
                     self
     }
             #[inline(always)]
@@ -189,26 +176,10 @@ impl CreateVaultBuilder {
                         self.token_program = Some(token_program);
                     self
     }
-            #[inline(always)]
-    pub fn associated_token_program(&mut self, associated_token_program: solana_program::pubkey::Pubkey) -> &mut Self {
-                        self.associated_token_program = Some(associated_token_program);
-                    self
-    }
-            #[inline(always)]
-    pub fn mint(&mut self, mint: solana_program::pubkey::Pubkey) -> &mut Self {
-                        self.mint = Some(mint);
-                    self
-    }
             /// `[optional account, default to '11111111111111111111111111111111']`
 #[inline(always)]
     pub fn system_program(&mut self, system_program: solana_program::pubkey::Pubkey) -> &mut Self {
                         self.system_program = Some(system_program);
-                    self
-    }
-            /// `[optional account, default to 'SysvarRent111111111111111111111111111111111']`
-#[inline(always)]
-    pub fn rent(&mut self, rent: solana_program::pubkey::Pubkey) -> &mut Self {
-                        self.rent = Some(rent);
                     self
     }
                     #[inline(always)]
@@ -247,14 +218,12 @@ impl CreateVaultBuilder {
   pub fn instruction(&self) -> solana_program::instruction::Instruction {
     let accounts = CreateVault {
                               authority: self.authority.expect("authority is not set"),
+                                        mint: self.mint.expect("mint is not set"),
                                         tuna_config: self.tuna_config.expect("tuna_config is not set"),
                                         vault: self.vault.expect("vault is not set"),
                                         vault_ata: self.vault_ata.expect("vault_ata is not set"),
                                         token_program: self.token_program.unwrap_or(solana_program::pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")),
-                                        associated_token_program: self.associated_token_program.expect("associated_token_program is not set"),
-                                        mint: self.mint.expect("mint is not set"),
                                         system_program: self.system_program.unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
-                                        rent: self.rent.unwrap_or(solana_program::pubkey!("SysvarRent111111111111111111111111111111111")),
                       };
           let args = CreateVaultInstructionArgs {
                                                               interest_rate: self.interest_rate.clone().expect("interest_rate is not set"),
@@ -274,6 +243,9 @@ impl CreateVaultBuilder {
               pub authority: &'b solana_program::account_info::AccountInfo<'a>,
                 
                     
+              pub mint: &'b solana_program::account_info::AccountInfo<'a>,
+                
+                    
               pub tuna_config: &'b solana_program::account_info::AccountInfo<'a>,
                 
                     
@@ -286,16 +258,7 @@ impl CreateVaultBuilder {
               pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
                 
                     
-              pub associated_token_program: &'b solana_program::account_info::AccountInfo<'a>,
-                
-                    
-              pub mint: &'b solana_program::account_info::AccountInfo<'a>,
-                
-                    
               pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
-                
-                    
-              pub rent: &'b solana_program::account_info::AccountInfo<'a>,
             }
 
 /// `create_vault` CPI instruction.
@@ -305,6 +268,9 @@ pub struct CreateVaultCpi<'a, 'b> {
       
               
           pub authority: &'b solana_program::account_info::AccountInfo<'a>,
+          
+              
+          pub mint: &'b solana_program::account_info::AccountInfo<'a>,
           
               
           pub tuna_config: &'b solana_program::account_info::AccountInfo<'a>,
@@ -319,16 +285,7 @@ pub struct CreateVaultCpi<'a, 'b> {
           pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
           
               
-          pub associated_token_program: &'b solana_program::account_info::AccountInfo<'a>,
-          
-              
-          pub mint: &'b solana_program::account_info::AccountInfo<'a>,
-          
-              
           pub system_program: &'b solana_program::account_info::AccountInfo<'a>,
-          
-              
-          pub rent: &'b solana_program::account_info::AccountInfo<'a>,
             /// The arguments for the instruction.
     pub __args: CreateVaultInstructionArgs,
   }
@@ -342,14 +299,12 @@ impl<'a, 'b> CreateVaultCpi<'a, 'b> {
     Self {
       __program: program,
               authority: accounts.authority,
+              mint: accounts.mint,
               tuna_config: accounts.tuna_config,
               vault: accounts.vault,
               vault_ata: accounts.vault_ata,
               token_program: accounts.token_program,
-              associated_token_program: accounts.associated_token_program,
-              mint: accounts.mint,
               system_program: accounts.system_program,
-              rent: accounts.rent,
                     __args: args,
           }
   }
@@ -373,10 +328,14 @@ impl<'a, 'b> CreateVaultCpi<'a, 'b> {
     signers_seeds: &[&[&[u8]]],
     remaining_accounts: &[(&'b solana_program::account_info::AccountInfo<'a>, bool, bool)]
   ) -> solana_program::entrypoint::ProgramResult {
-    let mut accounts = Vec::with_capacity(9+ remaining_accounts.len());
+    let mut accounts = Vec::with_capacity(7+ remaining_accounts.len());
                             accounts.push(solana_program::instruction::AccountMeta::new(
             *self.authority.key,
             true
+          ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.mint.key,
+            false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.tuna_config.key,
@@ -395,19 +354,7 @@ impl<'a, 'b> CreateVaultCpi<'a, 'b> {
             false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.associated_token_program.key,
-            false
-          ));
-                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.mint.key,
-            false
-          ));
-                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.system_program.key,
-            false
-          ));
-                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.rent.key,
             false
           ));
                       remaining_accounts.iter().for_each(|remaining_account| {
@@ -426,17 +373,15 @@ impl<'a, 'b> CreateVaultCpi<'a, 'b> {
       accounts,
       data,
     };
-    let mut account_infos = Vec::with_capacity(10 + remaining_accounts.len());
+    let mut account_infos = Vec::with_capacity(8 + remaining_accounts.len());
     account_infos.push(self.__program.clone());
                   account_infos.push(self.authority.clone());
+                        account_infos.push(self.mint.clone());
                         account_infos.push(self.tuna_config.clone());
                         account_infos.push(self.vault.clone());
                         account_infos.push(self.vault_ata.clone());
                         account_infos.push(self.token_program.clone());
-                        account_infos.push(self.associated_token_program.clone());
-                        account_infos.push(self.mint.clone());
                         account_infos.push(self.system_program.clone());
-                        account_infos.push(self.rent.clone());
               remaining_accounts.iter().for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
 
     if signers_seeds.is_empty() {
@@ -452,14 +397,12 @@ impl<'a, 'b> CreateVaultCpi<'a, 'b> {
 /// ### Accounts:
 ///
                       ///   0. `[writable, signer]` authority
-          ///   1. `[]` tuna_config
-                ///   2. `[writable]` vault
-                ///   3. `[writable]` vault_ata
-          ///   4. `[]` token_program
-          ///   5. `[]` associated_token_program
-          ///   6. `[]` mint
-          ///   7. `[]` system_program
-          ///   8. `[]` rent
+          ///   1. `[]` mint
+          ///   2. `[]` tuna_config
+                ///   3. `[writable]` vault
+                ///   4. `[writable]` vault_ata
+          ///   5. `[]` token_program
+          ///   6. `[]` system_program
 #[derive(Clone, Debug)]
 pub struct CreateVaultCpiBuilder<'a, 'b> {
   instruction: Box<CreateVaultCpiBuilderInstruction<'a, 'b>>,
@@ -470,14 +413,12 @@ impl<'a, 'b> CreateVaultCpiBuilder<'a, 'b> {
     let instruction = Box::new(CreateVaultCpiBuilderInstruction {
       __program: program,
               authority: None,
+              mint: None,
               tuna_config: None,
               vault: None,
               vault_ata: None,
               token_program: None,
-              associated_token_program: None,
-              mint: None,
               system_program: None,
-              rent: None,
                                             interest_rate: None,
                                 supply_limit: None,
                                 pyth_oracle_price_update: None,
@@ -489,6 +430,11 @@ impl<'a, 'b> CreateVaultCpiBuilder<'a, 'b> {
       #[inline(always)]
     pub fn authority(&mut self, authority: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
                         self.instruction.authority = Some(authority);
+                    self
+    }
+      #[inline(always)]
+    pub fn mint(&mut self, mint: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+                        self.instruction.mint = Some(mint);
                     self
     }
       #[inline(always)]
@@ -512,23 +458,8 @@ impl<'a, 'b> CreateVaultCpiBuilder<'a, 'b> {
                     self
     }
       #[inline(always)]
-    pub fn associated_token_program(&mut self, associated_token_program: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
-                        self.instruction.associated_token_program = Some(associated_token_program);
-                    self
-    }
-      #[inline(always)]
-    pub fn mint(&mut self, mint: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
-                        self.instruction.mint = Some(mint);
-                    self
-    }
-      #[inline(always)]
     pub fn system_program(&mut self, system_program: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
                         self.instruction.system_program = Some(system_program);
-                    self
-    }
-      #[inline(always)]
-    pub fn rent(&mut self, rent: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
-                        self.instruction.rent = Some(rent);
                     self
     }
                     #[inline(always)]
@@ -584,6 +515,8 @@ impl<'a, 'b> CreateVaultCpiBuilder<'a, 'b> {
                   
           authority: self.instruction.authority.expect("authority is not set"),
                   
+          mint: self.instruction.mint.expect("mint is not set"),
+                  
           tuna_config: self.instruction.tuna_config.expect("tuna_config is not set"),
                   
           vault: self.instruction.vault.expect("vault is not set"),
@@ -592,13 +525,7 @@ impl<'a, 'b> CreateVaultCpiBuilder<'a, 'b> {
                   
           token_program: self.instruction.token_program.expect("token_program is not set"),
                   
-          associated_token_program: self.instruction.associated_token_program.expect("associated_token_program is not set"),
-                  
-          mint: self.instruction.mint.expect("mint is not set"),
-                  
           system_program: self.instruction.system_program.expect("system_program is not set"),
-                  
-          rent: self.instruction.rent.expect("rent is not set"),
                           __args: args,
             };
     instruction.invoke_signed_with_remaining_accounts(signers_seeds, &self.instruction.__remaining_accounts)
@@ -609,14 +536,12 @@ impl<'a, 'b> CreateVaultCpiBuilder<'a, 'b> {
 struct CreateVaultCpiBuilderInstruction<'a, 'b> {
   __program: &'b solana_program::account_info::AccountInfo<'a>,
             authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+                mint: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 tuna_config: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 vault: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 vault_ata: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 token_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-                associated_token_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-                mint: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-                rent: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                         interest_rate: Option<u64>,
                 supply_limit: Option<u64>,
                 pyth_oracle_price_update: Option<Pubkey>,

@@ -3,7 +3,6 @@ use std::str::FromStr;
 
 use crate::constants::SOL_USDC_WHIRLPOOL;
 use crate::types::Amounts;
-use crate::utils::common::get_mint_decimals;
 use crate::utils::rpc::create_and_send_transaction;
 use anyhow::{bail, Result};
 use defituna_client::accounts::{fetch_market, fetch_tuna_config, fetch_vault};
@@ -15,7 +14,9 @@ use defituna_client::{open_position_with_liquidity_orca_instructions, NO_TAKE_PR
 use orca_whirlpools_client::{self, fetch_maybe_whirlpool, MaybeAccount};
 use orca_whirlpools_core::sqrt_price_to_price;
 use solana_client::rpc_client::RpcClient;
+use solana_sdk::program_pack::Pack;
 use solana_sdk::{pubkey::Pubkey, signature::Keypair, signer::Signer};
+use spl_token::state::Mint;
 
 /// Opens a position in an Orca Liquidity Pool and adds liquidity using borrowed funds from Tuna Lending Pools.
 /// Uses the SOL/USDC Whirlpool with preset amounts and leverage for this example; these can be adjusted or passed through the function’s input.
@@ -33,11 +34,11 @@ pub fn open_position_with_liquidity(rpc: RpcClient, authority: Box<dyn Signer>) 
 
   // The nominal amounts of Token A (SOL in this example) and Token B (USDC in this example) to deposit for liquidity,
   // as a flat value (e.g., 1 SOL) excluding decimals.
-  let nominal_collateral: Amounts<f64> = Amounts { a: 0.01, b: 0.1 };
+  let nominal_collateral = Amounts { a: 0.01, b: 0.1 };
   // Multiplier for borrowed funds applied to the total provided amount (min 1, max 5; e.g., 2 doubles the borrowed amount).
   let leverage: u8 = 2;
   // Ratio for borrowing funds, freely chosen by the user, unbound by the Position’s liquidity range.
-  let borrow_ratio: Amounts<f64> = Amounts { a: 0.6, b: 0.4 };
+  let borrow_ratio = Amounts { a: 0.6, b: 0.4 };
   // The Program Derived Address of the pool from Orca's Whirlpools to create the position in.
   // For this example we use the SOL/USDC Pool.
   let whirlpool_pda = Pubkey::from_str(SOL_USDC_WHIRLPOOL)?;
@@ -52,26 +53,28 @@ pub fn open_position_with_liquidity(rpc: RpcClient, authority: Box<dyn Signer>) 
     MaybeAccount::Exists(data) => data,
     MaybeAccount::NotFound(_) => unreachable!(),
   };
+  // Token Mint A
+  let token_mint_a_account = rpc.get_account(&whirlpool_account.data.token_mint_a)?;
+  let token_mint_a = Mint::unpack(&token_mint_a_account.data)?;
+  // Token Mint B
+  let token_mint_b_account = rpc.get_account(&whirlpool_account.data.token_mint_b)?;
+  let token_mint_b = Mint::unpack(&token_mint_b_account.data)?;
 
-  // Deriving collateral and borrow amounts for adding liquidity
-
-  // Fetches token decimals for Tokens A and B, using Orca's Whirlpool Client.
-  let decimals: Amounts<u8> = Amounts {
-    a: get_mint_decimals(&rpc, &whirlpool_account.data.token_mint_a)?,
-    b: get_mint_decimals(&rpc, &whirlpool_account.data.token_mint_b)?,
-  };
-  // The decimal scale to adjust nominal amounts for Tokens A and B based on their decimals.
-  let decimals_scale: Amounts<u32> = Amounts {
-    a: 10u32.pow(decimals.a as u32),
-    b: 10u32.pow(decimals.b as u32),
-  };
   // The collateral amounts of tokens A and B (adjusted for decimals) provided by the user to use for increasing liquidity.
-  let collateral: Amounts<u64> = Amounts {
-    a: nominal_collateral.a.mul(f64::try_from(decimals_scale.a)?).round().abs() as u64,
-    b: nominal_collateral.b.mul(f64::try_from(decimals_scale.b)?).round().abs() as u64,
+  let collateral = Amounts {
+    a: nominal_collateral
+      .a
+      .mul(10_u64.pow(token_mint_a.decimals as u32) as f64) as u64,
+    b: nominal_collateral
+      .b
+      .mul(10_u64.pow(token_mint_b.decimals as u32) as f64) as u64,
   };
   // The current Whirlpool price, derived from the sqrtPrice using Orca's Whirlpool Client.
-  let price = sqrt_price_to_price(whirlpool_account.data.sqrt_price, decimals.a, decimals.b);
+  let price = sqrt_price_to_price(
+    whirlpool_account.data.sqrt_price,
+    token_mint_a.decimals,
+    token_mint_b.decimals,
+  );
   // The total nominal collateral amount (excluding decimals) represented in Token B units.
   let total_nominal_collateral_amount = nominal_collateral.a.mul(price).add(nominal_collateral.b);
   // Safety checks
@@ -98,8 +101,8 @@ pub fn open_position_with_liquidity(rpc: RpcClient, authority: Box<dyn Signer>) 
   };
   // The amounts of tokens A and B (adjusted for decimals) borrowed from Tuna's Lending Pools to use for increasing liquidity.
   let borrow = Amounts {
-    a: nominal_borrow.a.mul(f64::try_from(decimals_scale.a)?).round().abs() as u64,
-    b: nominal_borrow.b.mul(f64::try_from(decimals_scale.b)?).round().abs() as u64,
+    a: nominal_borrow.a.mul(10_u64.pow(token_mint_a.decimals as u32) as f64) as u64,
+    b: nominal_borrow.b.mul(10_u64.pow(token_mint_b.decimals as u32) as f64) as u64,
   };
 
   // Program Derived Addresses and Accounts, fetched from their respective Client (Tuna or Orca);
@@ -200,6 +203,8 @@ pub fn open_position_with_liquidity(rpc: RpcClient, authority: Box<dyn Signer>) 
     &vault_a_account.data,
     &vault_b_account.data,
     &whirlpool_account.data,
+    &token_mint_a_account.owner,
+    &token_mint_b_account.owner,
     args,
   );
 

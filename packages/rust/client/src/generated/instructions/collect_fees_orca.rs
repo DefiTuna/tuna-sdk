@@ -23,6 +23,12 @@ pub struct CollectFeesOrca {
           pub tuna_config: solana_program::pubkey::Pubkey,
           
               
+          pub mint_a: solana_program::pubkey::Pubkey,
+          
+              
+          pub mint_b: solana_program::pubkey::Pubkey,
+          
+              
           pub tuna_position: solana_program::pubkey::Pubkey,
           
               
@@ -58,7 +64,13 @@ pub struct CollectFeesOrca {
 
     
               
-          pub token_program: solana_program::pubkey::Pubkey,
+          pub token_program_a: solana_program::pubkey::Pubkey,
+          
+              
+          pub token_program_b: solana_program::pubkey::Pubkey,
+          
+              
+          pub memo_program: solana_program::pubkey::Pubkey,
       }
 
 impl CollectFeesOrca {
@@ -68,13 +80,21 @@ impl CollectFeesOrca {
   #[allow(clippy::arithmetic_side_effects)]
   #[allow(clippy::vec_init_then_push)]
   pub fn instruction_with_remaining_accounts(&self, remaining_accounts: &[solana_program::instruction::AccountMeta]) -> solana_program::instruction::Instruction {
-    let mut accounts = Vec::with_capacity(12+ remaining_accounts.len());
+    let mut accounts = Vec::with_capacity(16+ remaining_accounts.len());
                             accounts.push(solana_program::instruction::AccountMeta::new(
             self.authority,
             true
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.tuna_config,
+            false
+          ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.mint_a,
+            false
+          ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.mint_b,
             false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new(
@@ -114,7 +134,15 @@ impl CollectFeesOrca {
             false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.token_program,
+            self.token_program_a,
+            false
+          ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.token_program_b,
+            false
+          ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.memo_program,
             false
           ));
                       accounts.extend_from_slice(remaining_accounts);
@@ -156,20 +184,26 @@ impl Default for CollectFeesOrcaInstructionData {
 ///
                       ///   0. `[writable, signer]` authority
           ///   1. `[]` tuna_config
-                ///   2. `[writable]` tuna_position
-          ///   3. `[]` tuna_position_ata
-                ///   4. `[writable]` tuna_position_ata_a
-                ///   5. `[writable]` tuna_position_ata_b
-                ///   6. `[writable]` tuna_position_owner_ata_a
-                ///   7. `[writable]` tuna_position_owner_ata_b
-          ///   8. `[]` whirlpool_program
-                ///   9. `[writable]` whirlpool
-                ///   10. `[writable]` orca_position
-                ///   11. `[optional]` token_program (default to `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
+          ///   2. `[]` mint_a
+          ///   3. `[]` mint_b
+                ///   4. `[writable]` tuna_position
+          ///   5. `[]` tuna_position_ata
+                ///   6. `[writable]` tuna_position_ata_a
+                ///   7. `[writable]` tuna_position_ata_b
+                ///   8. `[writable]` tuna_position_owner_ata_a
+                ///   9. `[writable]` tuna_position_owner_ata_b
+          ///   10. `[]` whirlpool_program
+                ///   11. `[writable]` whirlpool
+                ///   12. `[writable]` orca_position
+          ///   13. `[]` token_program_a
+          ///   14. `[]` token_program_b
+          ///   15. `[]` memo_program
 #[derive(Clone, Debug, Default)]
 pub struct CollectFeesOrcaBuilder {
             authority: Option<solana_program::pubkey::Pubkey>,
                 tuna_config: Option<solana_program::pubkey::Pubkey>,
+                mint_a: Option<solana_program::pubkey::Pubkey>,
+                mint_b: Option<solana_program::pubkey::Pubkey>,
                 tuna_position: Option<solana_program::pubkey::Pubkey>,
                 tuna_position_ata: Option<solana_program::pubkey::Pubkey>,
                 tuna_position_ata_a: Option<solana_program::pubkey::Pubkey>,
@@ -179,7 +213,9 @@ pub struct CollectFeesOrcaBuilder {
                 whirlpool_program: Option<solana_program::pubkey::Pubkey>,
                 whirlpool: Option<solana_program::pubkey::Pubkey>,
                 orca_position: Option<solana_program::pubkey::Pubkey>,
-                token_program: Option<solana_program::pubkey::Pubkey>,
+                token_program_a: Option<solana_program::pubkey::Pubkey>,
+                token_program_b: Option<solana_program::pubkey::Pubkey>,
+                memo_program: Option<solana_program::pubkey::Pubkey>,
                 __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -198,6 +234,16 @@ impl CollectFeesOrcaBuilder {
             #[inline(always)]
     pub fn tuna_config(&mut self, tuna_config: solana_program::pubkey::Pubkey) -> &mut Self {
                         self.tuna_config = Some(tuna_config);
+                    self
+    }
+            #[inline(always)]
+    pub fn mint_a(&mut self, mint_a: solana_program::pubkey::Pubkey) -> &mut Self {
+                        self.mint_a = Some(mint_a);
+                    self
+    }
+            #[inline(always)]
+    pub fn mint_b(&mut self, mint_b: solana_program::pubkey::Pubkey) -> &mut Self {
+                        self.mint_b = Some(mint_b);
                     self
     }
             #[inline(always)]
@@ -248,13 +294,22 @@ impl CollectFeesOrcaBuilder {
                         self.orca_position = Some(orca_position);
                     self
     }
-            /// `[optional account, default to 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA']`
-/// 
+            /// 
 /// Other accounts
 /// 
 #[inline(always)]
-    pub fn token_program(&mut self, token_program: solana_program::pubkey::Pubkey) -> &mut Self {
-                        self.token_program = Some(token_program);
+    pub fn token_program_a(&mut self, token_program_a: solana_program::pubkey::Pubkey) -> &mut Self {
+                        self.token_program_a = Some(token_program_a);
+                    self
+    }
+            #[inline(always)]
+    pub fn token_program_b(&mut self, token_program_b: solana_program::pubkey::Pubkey) -> &mut Self {
+                        self.token_program_b = Some(token_program_b);
+                    self
+    }
+            #[inline(always)]
+    pub fn memo_program(&mut self, memo_program: solana_program::pubkey::Pubkey) -> &mut Self {
+                        self.memo_program = Some(memo_program);
                     self
     }
             /// Add an additional account to the instruction.
@@ -274,6 +329,8 @@ impl CollectFeesOrcaBuilder {
     let accounts = CollectFeesOrca {
                               authority: self.authority.expect("authority is not set"),
                                         tuna_config: self.tuna_config.expect("tuna_config is not set"),
+                                        mint_a: self.mint_a.expect("mint_a is not set"),
+                                        mint_b: self.mint_b.expect("mint_b is not set"),
                                         tuna_position: self.tuna_position.expect("tuna_position is not set"),
                                         tuna_position_ata: self.tuna_position_ata.expect("tuna_position_ata is not set"),
                                         tuna_position_ata_a: self.tuna_position_ata_a.expect("tuna_position_ata_a is not set"),
@@ -283,7 +340,9 @@ impl CollectFeesOrcaBuilder {
                                         whirlpool_program: self.whirlpool_program.expect("whirlpool_program is not set"),
                                         whirlpool: self.whirlpool.expect("whirlpool is not set"),
                                         orca_position: self.orca_position.expect("orca_position is not set"),
-                                        token_program: self.token_program.unwrap_or(solana_program::pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")),
+                                        token_program_a: self.token_program_a.expect("token_program_a is not set"),
+                                        token_program_b: self.token_program_b.expect("token_program_b is not set"),
+                                        memo_program: self.memo_program.expect("memo_program is not set"),
                       };
     
     accounts.instruction_with_remaining_accounts(&self.__remaining_accounts)
@@ -302,6 +361,12 @@ impl CollectFeesOrcaBuilder {
                 
                     
               pub tuna_config: &'b solana_program::account_info::AccountInfo<'a>,
+                
+                    
+              pub mint_a: &'b solana_program::account_info::AccountInfo<'a>,
+                
+                    
+              pub mint_b: &'b solana_program::account_info::AccountInfo<'a>,
                 
                     
               pub tuna_position: &'b solana_program::account_info::AccountInfo<'a>,
@@ -339,7 +404,13 @@ impl CollectFeesOrcaBuilder {
 
       
                     
-              pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
+              pub token_program_a: &'b solana_program::account_info::AccountInfo<'a>,
+                
+                    
+              pub token_program_b: &'b solana_program::account_info::AccountInfo<'a>,
+                
+                    
+              pub memo_program: &'b solana_program::account_info::AccountInfo<'a>,
             }
 
 /// `collect_fees_orca` CPI instruction.
@@ -356,6 +427,12 @@ pub struct CollectFeesOrcaCpi<'a, 'b> {
           
               
           pub tuna_config: &'b solana_program::account_info::AccountInfo<'a>,
+          
+              
+          pub mint_a: &'b solana_program::account_info::AccountInfo<'a>,
+          
+              
+          pub mint_b: &'b solana_program::account_info::AccountInfo<'a>,
           
               
           pub tuna_position: &'b solana_program::account_info::AccountInfo<'a>,
@@ -393,7 +470,13 @@ pub struct CollectFeesOrcaCpi<'a, 'b> {
 
     
               
-          pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
+          pub token_program_a: &'b solana_program::account_info::AccountInfo<'a>,
+          
+              
+          pub token_program_b: &'b solana_program::account_info::AccountInfo<'a>,
+          
+              
+          pub memo_program: &'b solana_program::account_info::AccountInfo<'a>,
         }
 
 impl<'a, 'b> CollectFeesOrcaCpi<'a, 'b> {
@@ -405,6 +488,8 @@ impl<'a, 'b> CollectFeesOrcaCpi<'a, 'b> {
       __program: program,
               authority: accounts.authority,
               tuna_config: accounts.tuna_config,
+              mint_a: accounts.mint_a,
+              mint_b: accounts.mint_b,
               tuna_position: accounts.tuna_position,
               tuna_position_ata: accounts.tuna_position_ata,
               tuna_position_ata_a: accounts.tuna_position_ata_a,
@@ -414,7 +499,9 @@ impl<'a, 'b> CollectFeesOrcaCpi<'a, 'b> {
               whirlpool_program: accounts.whirlpool_program,
               whirlpool: accounts.whirlpool,
               orca_position: accounts.orca_position,
-              token_program: accounts.token_program,
+              token_program_a: accounts.token_program_a,
+              token_program_b: accounts.token_program_b,
+              memo_program: accounts.memo_program,
                 }
   }
   #[inline(always)]
@@ -437,13 +524,21 @@ impl<'a, 'b> CollectFeesOrcaCpi<'a, 'b> {
     signers_seeds: &[&[&[u8]]],
     remaining_accounts: &[(&'b solana_program::account_info::AccountInfo<'a>, bool, bool)]
   ) -> solana_program::entrypoint::ProgramResult {
-    let mut accounts = Vec::with_capacity(12+ remaining_accounts.len());
+    let mut accounts = Vec::with_capacity(16+ remaining_accounts.len());
                             accounts.push(solana_program::instruction::AccountMeta::new(
             *self.authority.key,
             true
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.tuna_config.key,
+            false
+          ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.mint_a.key,
+            false
+          ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.mint_b.key,
             false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new(
@@ -483,7 +578,15 @@ impl<'a, 'b> CollectFeesOrcaCpi<'a, 'b> {
             false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.token_program.key,
+            *self.token_program_a.key,
+            false
+          ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.token_program_b.key,
+            false
+          ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.memo_program.key,
             false
           ));
                       remaining_accounts.iter().for_each(|remaining_account| {
@@ -500,10 +603,12 @@ impl<'a, 'b> CollectFeesOrcaCpi<'a, 'b> {
       accounts,
       data,
     };
-    let mut account_infos = Vec::with_capacity(13 + remaining_accounts.len());
+    let mut account_infos = Vec::with_capacity(17 + remaining_accounts.len());
     account_infos.push(self.__program.clone());
                   account_infos.push(self.authority.clone());
                         account_infos.push(self.tuna_config.clone());
+                        account_infos.push(self.mint_a.clone());
+                        account_infos.push(self.mint_b.clone());
                         account_infos.push(self.tuna_position.clone());
                         account_infos.push(self.tuna_position_ata.clone());
                         account_infos.push(self.tuna_position_ata_a.clone());
@@ -513,7 +618,9 @@ impl<'a, 'b> CollectFeesOrcaCpi<'a, 'b> {
                         account_infos.push(self.whirlpool_program.clone());
                         account_infos.push(self.whirlpool.clone());
                         account_infos.push(self.orca_position.clone());
-                        account_infos.push(self.token_program.clone());
+                        account_infos.push(self.token_program_a.clone());
+                        account_infos.push(self.token_program_b.clone());
+                        account_infos.push(self.memo_program.clone());
               remaining_accounts.iter().for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
 
     if signers_seeds.is_empty() {
@@ -530,16 +637,20 @@ impl<'a, 'b> CollectFeesOrcaCpi<'a, 'b> {
 ///
                       ///   0. `[writable, signer]` authority
           ///   1. `[]` tuna_config
-                ///   2. `[writable]` tuna_position
-          ///   3. `[]` tuna_position_ata
-                ///   4. `[writable]` tuna_position_ata_a
-                ///   5. `[writable]` tuna_position_ata_b
-                ///   6. `[writable]` tuna_position_owner_ata_a
-                ///   7. `[writable]` tuna_position_owner_ata_b
-          ///   8. `[]` whirlpool_program
-                ///   9. `[writable]` whirlpool
-                ///   10. `[writable]` orca_position
-          ///   11. `[]` token_program
+          ///   2. `[]` mint_a
+          ///   3. `[]` mint_b
+                ///   4. `[writable]` tuna_position
+          ///   5. `[]` tuna_position_ata
+                ///   6. `[writable]` tuna_position_ata_a
+                ///   7. `[writable]` tuna_position_ata_b
+                ///   8. `[writable]` tuna_position_owner_ata_a
+                ///   9. `[writable]` tuna_position_owner_ata_b
+          ///   10. `[]` whirlpool_program
+                ///   11. `[writable]` whirlpool
+                ///   12. `[writable]` orca_position
+          ///   13. `[]` token_program_a
+          ///   14. `[]` token_program_b
+          ///   15. `[]` memo_program
 #[derive(Clone, Debug)]
 pub struct CollectFeesOrcaCpiBuilder<'a, 'b> {
   instruction: Box<CollectFeesOrcaCpiBuilderInstruction<'a, 'b>>,
@@ -551,6 +662,8 @@ impl<'a, 'b> CollectFeesOrcaCpiBuilder<'a, 'b> {
       __program: program,
               authority: None,
               tuna_config: None,
+              mint_a: None,
+              mint_b: None,
               tuna_position: None,
               tuna_position_ata: None,
               tuna_position_ata_a: None,
@@ -560,7 +673,9 @@ impl<'a, 'b> CollectFeesOrcaCpiBuilder<'a, 'b> {
               whirlpool_program: None,
               whirlpool: None,
               orca_position: None,
-              token_program: None,
+              token_program_a: None,
+              token_program_b: None,
+              memo_program: None,
                                 __remaining_accounts: Vec::new(),
     });
     Self { instruction }
@@ -576,6 +691,16 @@ impl<'a, 'b> CollectFeesOrcaCpiBuilder<'a, 'b> {
       #[inline(always)]
     pub fn tuna_config(&mut self, tuna_config: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
                         self.instruction.tuna_config = Some(tuna_config);
+                    self
+    }
+      #[inline(always)]
+    pub fn mint_a(&mut self, mint_a: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+                        self.instruction.mint_a = Some(mint_a);
+                    self
+    }
+      #[inline(always)]
+    pub fn mint_b(&mut self, mint_b: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+                        self.instruction.mint_b = Some(mint_b);
                     self
     }
       #[inline(always)]
@@ -630,8 +755,18 @@ impl<'a, 'b> CollectFeesOrcaCpiBuilder<'a, 'b> {
 /// Other accounts
 /// 
 #[inline(always)]
-    pub fn token_program(&mut self, token_program: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
-                        self.instruction.token_program = Some(token_program);
+    pub fn token_program_a(&mut self, token_program_a: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+                        self.instruction.token_program_a = Some(token_program_a);
+                    self
+    }
+      #[inline(always)]
+    pub fn token_program_b(&mut self, token_program_b: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+                        self.instruction.token_program_b = Some(token_program_b);
+                    self
+    }
+      #[inline(always)]
+    pub fn memo_program(&mut self, memo_program: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+                        self.instruction.memo_program = Some(memo_program);
                     self
     }
             /// Add an additional account to the instruction.
@@ -663,6 +798,10 @@ impl<'a, 'b> CollectFeesOrcaCpiBuilder<'a, 'b> {
                   
           tuna_config: self.instruction.tuna_config.expect("tuna_config is not set"),
                   
+          mint_a: self.instruction.mint_a.expect("mint_a is not set"),
+                  
+          mint_b: self.instruction.mint_b.expect("mint_b is not set"),
+                  
           tuna_position: self.instruction.tuna_position.expect("tuna_position is not set"),
                   
           tuna_position_ata: self.instruction.tuna_position_ata.expect("tuna_position_ata is not set"),
@@ -681,7 +820,11 @@ impl<'a, 'b> CollectFeesOrcaCpiBuilder<'a, 'b> {
                   
           orca_position: self.instruction.orca_position.expect("orca_position is not set"),
                   
-          token_program: self.instruction.token_program.expect("token_program is not set"),
+          token_program_a: self.instruction.token_program_a.expect("token_program_a is not set"),
+                  
+          token_program_b: self.instruction.token_program_b.expect("token_program_b is not set"),
+                  
+          memo_program: self.instruction.memo_program.expect("memo_program is not set"),
                     };
     instruction.invoke_signed_with_remaining_accounts(signers_seeds, &self.instruction.__remaining_accounts)
   }
@@ -692,6 +835,8 @@ struct CollectFeesOrcaCpiBuilderInstruction<'a, 'b> {
   __program: &'b solana_program::account_info::AccountInfo<'a>,
             authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 tuna_config: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+                mint_a: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+                mint_b: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 tuna_position: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 tuna_position_ata: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 tuna_position_ata_a: Option<&'b solana_program::account_info::AccountInfo<'a>>,
@@ -701,7 +846,9 @@ struct CollectFeesOrcaCpiBuilderInstruction<'a, 'b> {
                 whirlpool_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 whirlpool: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 orca_position: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-                token_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+                token_program_a: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+                token_program_b: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+                memo_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
   __remaining_accounts: Vec<(&'b solana_program::account_info::AccountInfo<'a>, bool, bool)>,
 }

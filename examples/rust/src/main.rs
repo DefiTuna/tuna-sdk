@@ -23,7 +23,7 @@ fn main() -> Result<()> {
   let rpc_url = var("RPC_URL").map_err(|e| anyhow!("Error occurred when getting RPC_URL env var: {}", e))?;
   let rpc = RpcClient::new(rpc_url.to_string());
 
-  let wallet = utils::common::load_wallet()?;
+  let wallet = utils::wallet::load_wallet()?;
 
   let env_args: Vec<String> = std::env::args().collect();
   let args = Args::parse(&env_args)?;

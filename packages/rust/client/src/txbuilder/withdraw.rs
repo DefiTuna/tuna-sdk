@@ -5,18 +5,18 @@ use solana_program::instruction::Instruction;
 use solana_program::pubkey::Pubkey;
 use spl_associated_token_account::get_associated_token_address;
 
-pub fn withdraw_instructions(authority: &Pubkey, mint: &Pubkey, funds: u64, shares: u64) -> Vec<Instruction> {
-    let authority_ata_instructions = get_create_ata_instructions(&mint, authority, authority, &spl_token::ID, 0);
+pub fn withdraw_instructions(authority: &Pubkey, mint: &Pubkey, token_program: &Pubkey, funds: u64, shares: u64) -> Vec<Instruction> {
+    let authority_ata_instructions = get_create_ata_instructions(&mint, authority, authority, token_program, 0);
 
     let mut instructions = vec![];
     instructions.extend(authority_ata_instructions.create);
-    instructions.push(withdraw_instruction(authority, mint, funds, shares));
+    instructions.push(withdraw_instruction(authority, mint, token_program, funds, shares));
     instructions.extend(authority_ata_instructions.cleanup);
 
     instructions
 }
 
-pub fn withdraw_instruction(authority: &Pubkey, mint: &Pubkey, funds: u64, shares: u64) -> Instruction {
+pub fn withdraw_instruction(authority: &Pubkey, mint: &Pubkey, token_program: &Pubkey, funds: u64, shares: u64) -> Instruction {
     let tuna_config_address = get_tuna_config_address().0;
     let vault_address = get_vault_address(&mint).0;
     let lending_position_address = get_lending_position_address(&authority, &mint).0;
@@ -32,8 +32,8 @@ pub fn withdraw_instruction(authority: &Pubkey, mint: &Pubkey, funds: u64, share
         vault: vault_address,
         vault_ata,
         lending_position: lending_position_address,
-        token_program: spl_token::ID,
-        associated_token_program: spl_associated_token_account::ID,
+        token_program: *token_program,
+        memo_program: spl_memo::ID,
     };
 
     ix_builder.instruction(WithdrawInstructionArgs { funds, shares })

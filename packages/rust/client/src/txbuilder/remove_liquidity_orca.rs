@@ -15,19 +15,30 @@ pub fn remove_liquidity_orca_instructions(
     vault_a: &Vault,
     vault_b: &Vault,
     whirlpool: &Whirlpool,
+    token_program_a: &Pubkey,
+    token_program_b: &Pubkey,
     args: RemoveLiquidityOrcaInstructionArgs,
 ) -> Vec<Instruction> {
     let mint_a = whirlpool.token_mint_a;
     let mint_b = whirlpool.token_mint_b;
 
-    let authority_ata_a_instructions = get_create_ata_instructions(&mint_a, authority, authority, &spl_token::ID, 0);
-    let authority_ata_b_instructions = get_create_ata_instructions(&mint_b, authority, authority, &spl_token::ID, 0);
+    let authority_ata_a_instructions = get_create_ata_instructions(&mint_a, authority, authority, token_program_a, 0);
+    let authority_ata_b_instructions = get_create_ata_instructions(&mint_b, authority, authority, token_program_b, 0);
 
     let mut instructions = vec![];
     instructions.extend(authority_ata_a_instructions.create);
     instructions.extend(authority_ata_b_instructions.create);
 
-    instructions.push(remove_liquidity_orca_instruction(authority, tuna_position, vault_a, vault_b, whirlpool, args));
+    instructions.push(remove_liquidity_orca_instruction(
+        authority,
+        tuna_position,
+        vault_a,
+        vault_b,
+        whirlpool,
+        token_program_a,
+        token_program_b,
+        args,
+    ));
 
     instructions.extend(authority_ata_a_instructions.cleanup);
     instructions.extend(authority_ata_b_instructions.cleanup);
@@ -41,6 +52,8 @@ pub fn remove_liquidity_orca_instruction(
     vault_a: &Vault,
     vault_b: &Vault,
     whirlpool: &Whirlpool,
+    token_program_a: &Pubkey,
+    token_program_b: &Pubkey,
     args: RemoveLiquidityOrcaInstructionArgs,
 ) -> Instruction {
     let mint_a = whirlpool.token_mint_a;
@@ -91,7 +104,9 @@ pub fn remove_liquidity_orca_instruction(
         whirlpool_program: orca_whirlpools_client::ID,
         whirlpool: whirlpool_address,
         orca_position: get_position_address(&tuna_position.position_mint).unwrap().0,
-        token_program: spl_token::ID,
+        token_program_a: *token_program_a,
+        token_program_b: *token_program_b,
+        memo_program: spl_memo::ID,
     };
 
     ix_builder.instruction_with_remaining_accounts(

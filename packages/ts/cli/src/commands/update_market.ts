@@ -1,11 +1,25 @@
 import BaseCommand, { addressArg, addressFlag, bigintFlag } from "../base.ts";
 import { rpc, sendTransaction, signer } from "../rpc.ts";
-import { fetchMarket, getMarketAddress, updateMarketInstruction } from "@defituna/client";
+import {
+  fetchMarket,
+  getMarketAddress,
+  updateMarketInstruction,
+  MAX_LIMIT_ORDER_EXECUTION_FEE,
+  MAX_LIQUIDATION_FEE,
+  LEVERAGE_ONE,
+  MAX_LEVERAGE,
+  MAX_PROTOCOL_FEE,
+  HUNDRED_PERCENT,
+  MAX_LIQUIDATION_THRESHOLD,
+} from "@defituna/client";
 import _ from "lodash";
 import { Flags } from "@oclif/core";
 
 // A devnet pool
 // ORCA_POOL_DFT3_DFT4 = "5PbqRqB7erZQywntUq1LaJn7PpXFW1yvEjAUFNotDGbw"
+// ORCA_POOL_USDC_DFT5 = "FKH7TTE7PgPPSb9SaaMRKVTGA7xTbiJjeTujXY2xTdxp"
+// FUSION_POOL_USDC_DFT5 = "ETZYid24F5uMow6qmtCZkpANZCayPStF9VKdZW78FTe3"
+
 // A mainnet pool
 // ORCA_POOL_SOL_USDC_004 = "Czfq3xZZDmsdGdUyrNLtRhGc47cXcZtLG4crryfu44zE"
 
@@ -25,21 +39,33 @@ export default class UpdateMarket extends BaseCommand {
     }),
     maxLeverage: Flags.integer({
       description: "Maximum allowed leverage for the market",
+      min: LEVERAGE_ONE,
+      max: MAX_LEVERAGE,
     }),
     protocolFeeOnCollateral: Flags.integer({
       description: "Protocol fee on collateral",
+      min: 0,
+      max: MAX_PROTOCOL_FEE,
     }),
     protocolFee: Flags.integer({
       description: "Protocol fee on borrowed funds",
+      min: 0,
+      max: MAX_PROTOCOL_FEE,
     }),
     limitOrderExecutionFee: Flags.integer({
       description: "Limit order execution fee",
+      min: 0,
+      max: MAX_LIMIT_ORDER_EXECUTION_FEE,
     }),
     liquidationFee: Flags.integer({
       description: "Position liquidation fee",
+      min: 0,
+      max: MAX_LIQUIDATION_FEE,
     }),
     liquidationThreshold: Flags.integer({
       description: "Liquidation threshold",
+      min: 0,
+      max: MAX_LIQUIDATION_THRESHOLD,
     }),
     borrowLimitA: bigintFlag({
       description: "Borrow limit A. Set to zero for unlimited borrowing",
@@ -47,16 +73,20 @@ export default class UpdateMarket extends BaseCommand {
     borrowLimitB: bigintFlag({
       description: "Borrow limit B. Set to zero for unlimited borrowing",
     }),
-    oraclePriceDeviationThreshold: bigintFlag({
+    oraclePriceDeviationThreshold: Flags.integer({
       description: "Oracle price deviation threshold from the spot price",
+      min: 0,
+      max: HUNDRED_PERCENT,
     }),
-    maxSwapSlippage: bigintFlag({
+    maxSwapSlippage: Flags.integer({
       description: "Maximum allowed swap slippage for the market",
+      min: 0,
+      max: HUNDRED_PERCENT,
     }),
   };
   static override description = "Update a tuna market";
   static override examples = [
-    "<%= config.bin %> <%= command.id %> Czfq3xZZDmsdGdUyrNLtRhGc47cXcZtLG4crryfu44zE --maxLeverage 5090000 --protocolFee 500 --liquidationFee 50000 --liquidationThreshold 810000",
+    "<%= config.bin %> <%= command.id %> Czfq3xZZDmsdGdUyrNLtRhGc47cXcZtLG4crryfu44zE --maxLeverage 5090000 --protocolFee 500 --liquidationFee 50000 --liquidationThreshold 830000",
   ];
 
   public async run() {
@@ -65,8 +95,7 @@ export default class UpdateMarket extends BaseCommand {
     const marketAddress = (await getMarketAddress(args.pool))[0];
     console.log("Fetching market:", marketAddress);
     const market = await fetchMarket(rpc, marketAddress);
-    console.log("Market fetched:");
-    console.log(market);
+    console.log("Market:", market);
 
     const newData = _.clone(market.data);
 

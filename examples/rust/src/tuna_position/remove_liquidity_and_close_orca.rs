@@ -1,5 +1,6 @@
 use std::str::FromStr;
 
+use crate::{constants::SOL_USDC_WHIRLPOOL, types::Amounts, utils::rpc::create_and_send_transaction};
 use anyhow::{bail, Result};
 use defituna_client::{
   accounts::{fetch_market, fetch_tuna_position, fetch_vault},
@@ -11,8 +12,6 @@ use defituna_client::{
 use orca_whirlpools_client::{fetch_maybe_whirlpool, MaybeAccount};
 use solana_client::rpc_client::RpcClient;
 use solana_sdk::{pubkey::Pubkey, signer::Signer};
-
-use crate::{constants::SOL_USDC_WHIRLPOOL, types::Amounts, utils::rpc::create_and_send_transaction};
 
 /// Removes liquidity from a position in an Orca liquidity pool and closes it, managing funds via Tuna's smart contract.
 ///
@@ -63,6 +62,10 @@ pub fn remove_liquidity_and_close(
   let (lending_vault_pda_b, _) = get_vault_address(&whirlpool_account.data.token_mint_b);
   // The Vault Account for token B containing deserialized data, fetched using Tuna's Client.
   let vault_b_account = fetch_vault(&rpc, &lending_vault_pda_b)?;
+  // Token Mint A
+  let token_mint_a_account = rpc.get_account(&whirlpool_account.data.token_mint_a)?;
+  // Token Mint B
+  let token_mint_b_account = rpc.get_account(&whirlpool_account.data.token_mint_b)?;
 
   // Defining additional input variables;
 
@@ -106,6 +109,8 @@ pub fn remove_liquidity_and_close(
       &vault_a_account.data,
       &vault_b_account.data,
       &whirlpool_account.data,
+      &token_mint_a_account.owner,
+      &token_mint_b_account.owner,
       args,
     )
   } else {
@@ -116,7 +121,12 @@ pub fn remove_liquidity_and_close(
   // - Closing the Tuna Position account in the Tuna smart contract.
   // - Closing the Orca Position account via CPI to the Whirlpools smart contract.
   // - Closing Tuna Position ATA accounts and burning of the Position Mint NFT.
-  let close_position_orca_ix = close_position_orca_instruction(&authority.pubkey(), &tuna_position_account.data);
+  let close_position_orca_ix = close_position_orca_instruction(
+    &authority.pubkey(),
+    &tuna_position_account.data,
+    &token_mint_a_account.owner,
+    &token_mint_b_account.owner,
+  );
 
   instructions.push(close_position_orca_ix);
 

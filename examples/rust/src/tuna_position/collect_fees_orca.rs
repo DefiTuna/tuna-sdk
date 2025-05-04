@@ -39,6 +39,10 @@ pub fn collect_fees(rpc: RpcClient, authority: Box<dyn Signer>, tuna_position_mi
   let (tuna_position_pda, _) = get_tuna_position_address(&tuna_position_mint);
   // The Tuna Position Account containing deserialized data, fetched using Tuna's Client.
   let tuna_position_account = fetch_tuna_position(&rpc, &tuna_position_pda)?;
+  // Token Mint A
+  let token_mint_a_account = rpc.get_account(&whirlpool_account.data.token_mint_a)?;
+  // Token Mint B
+  let token_mint_b_account = rpc.get_account(&whirlpool_account.data.token_mint_b)?;
 
   // Creation of instructions for collecting fees;
 
@@ -48,6 +52,8 @@ pub fn collect_fees(rpc: RpcClient, authority: Box<dyn Signer>, tuna_position_mi
     &authority.pubkey(),
     &tuna_position_account.data,
     &whirlpool_account.data,
+    &token_mint_a_account.owner,
+    &token_mint_b_account.owner,
   );
 
   // Signing and sending the transaction with all the instructions to the Solana network.

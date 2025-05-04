@@ -50,20 +50,16 @@ export function getCreateVaultDiscriminatorBytes() {
 export type CreateVaultInstruction<
   TProgram extends string = typeof TUNA_PROGRAM_ADDRESS,
   TAccountAuthority extends string | IAccountMeta<string> = string,
+  TAccountMint extends string | IAccountMeta<string> = string,
   TAccountTunaConfig extends string | IAccountMeta<string> = string,
   TAccountVault extends string | IAccountMeta<string> = string,
   TAccountVaultAta extends string | IAccountMeta<string> = string,
   TAccountTokenProgram extends
     | string
     | IAccountMeta<string> = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
-  TAccountAssociatedTokenProgram extends string | IAccountMeta<string> = string,
-  TAccountMint extends string | IAccountMeta<string> = string,
   TAccountSystemProgram extends
     | string
     | IAccountMeta<string> = '11111111111111111111111111111111',
-  TAccountRent extends
-    | string
-    | IAccountMeta<string> = 'SysvarRent111111111111111111111111111111111',
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
   IInstructionWithData<Uint8Array> &
@@ -73,6 +69,9 @@ export type CreateVaultInstruction<
         ? WritableSignerAccount<TAccountAuthority> &
             IAccountSignerMeta<TAccountAuthority>
         : TAccountAuthority,
+      TAccountMint extends string
+        ? ReadonlyAccount<TAccountMint>
+        : TAccountMint,
       TAccountTunaConfig extends string
         ? ReadonlyAccount<TAccountTunaConfig>
         : TAccountTunaConfig,
@@ -85,18 +84,9 @@ export type CreateVaultInstruction<
       TAccountTokenProgram extends string
         ? ReadonlyAccount<TAccountTokenProgram>
         : TAccountTokenProgram,
-      TAccountAssociatedTokenProgram extends string
-        ? ReadonlyAccount<TAccountAssociatedTokenProgram>
-        : TAccountAssociatedTokenProgram,
-      TAccountMint extends string
-        ? ReadonlyAccount<TAccountMint>
-        : TAccountMint,
       TAccountSystemProgram extends string
         ? ReadonlyAccount<TAccountSystemProgram>
         : TAccountSystemProgram,
-      TAccountRent extends string
-        ? ReadonlyAccount<TAccountRent>
-        : TAccountRent,
       ...TRemainingAccounts,
     ]
   >;
@@ -151,24 +141,20 @@ export function getCreateVaultInstructionDataCodec(): Codec<
 
 export type CreateVaultInput<
   TAccountAuthority extends string = string,
+  TAccountMint extends string = string,
   TAccountTunaConfig extends string = string,
   TAccountVault extends string = string,
   TAccountVaultAta extends string = string,
   TAccountTokenProgram extends string = string,
-  TAccountAssociatedTokenProgram extends string = string,
-  TAccountMint extends string = string,
   TAccountSystemProgram extends string = string,
-  TAccountRent extends string = string,
 > = {
   authority: TransactionSigner<TAccountAuthority>;
+  mint: Address<TAccountMint>;
   tunaConfig: Address<TAccountTunaConfig>;
   vault: Address<TAccountVault>;
   vaultAta: Address<TAccountVaultAta>;
   tokenProgram?: Address<TAccountTokenProgram>;
-  associatedTokenProgram: Address<TAccountAssociatedTokenProgram>;
-  mint: Address<TAccountMint>;
   systemProgram?: Address<TAccountSystemProgram>;
-  rent?: Address<TAccountRent>;
   interestRate: CreateVaultInstructionDataArgs['interestRate'];
   supplyLimit: CreateVaultInstructionDataArgs['supplyLimit'];
   pythOraclePriceUpdate: CreateVaultInstructionDataArgs['pythOraclePriceUpdate'];
@@ -177,39 +163,33 @@ export type CreateVaultInput<
 
 export function getCreateVaultInstruction<
   TAccountAuthority extends string,
+  TAccountMint extends string,
   TAccountTunaConfig extends string,
   TAccountVault extends string,
   TAccountVaultAta extends string,
   TAccountTokenProgram extends string,
-  TAccountAssociatedTokenProgram extends string,
-  TAccountMint extends string,
   TAccountSystemProgram extends string,
-  TAccountRent extends string,
   TProgramAddress extends Address = typeof TUNA_PROGRAM_ADDRESS,
 >(
   input: CreateVaultInput<
     TAccountAuthority,
+    TAccountMint,
     TAccountTunaConfig,
     TAccountVault,
     TAccountVaultAta,
     TAccountTokenProgram,
-    TAccountAssociatedTokenProgram,
-    TAccountMint,
-    TAccountSystemProgram,
-    TAccountRent
+    TAccountSystemProgram
   >,
   config?: { programAddress?: TProgramAddress }
 ): CreateVaultInstruction<
   TProgramAddress,
   TAccountAuthority,
+  TAccountMint,
   TAccountTunaConfig,
   TAccountVault,
   TAccountVaultAta,
   TAccountTokenProgram,
-  TAccountAssociatedTokenProgram,
-  TAccountMint,
-  TAccountSystemProgram,
-  TAccountRent
+  TAccountSystemProgram
 > {
   // Program address.
   const programAddress = config?.programAddress ?? TUNA_PROGRAM_ADDRESS;
@@ -217,17 +197,12 @@ export function getCreateVaultInstruction<
   // Original accounts.
   const originalAccounts = {
     authority: { value: input.authority ?? null, isWritable: true },
+    mint: { value: input.mint ?? null, isWritable: false },
     tunaConfig: { value: input.tunaConfig ?? null, isWritable: false },
     vault: { value: input.vault ?? null, isWritable: true },
     vaultAta: { value: input.vaultAta ?? null, isWritable: true },
     tokenProgram: { value: input.tokenProgram ?? null, isWritable: false },
-    associatedTokenProgram: {
-      value: input.associatedTokenProgram ?? null,
-      isWritable: false,
-    },
-    mint: { value: input.mint ?? null, isWritable: false },
     systemProgram: { value: input.systemProgram ?? null, isWritable: false },
-    rent: { value: input.rent ?? null, isWritable: false },
   };
   const accounts = originalAccounts as Record<
     keyof typeof originalAccounts,
@@ -246,23 +221,17 @@ export function getCreateVaultInstruction<
     accounts.systemProgram.value =
       '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
   }
-  if (!accounts.rent.value) {
-    accounts.rent.value =
-      'SysvarRent111111111111111111111111111111111' as Address<'SysvarRent111111111111111111111111111111111'>;
-  }
 
   const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
   const instruction = {
     accounts: [
       getAccountMeta(accounts.authority),
+      getAccountMeta(accounts.mint),
       getAccountMeta(accounts.tunaConfig),
       getAccountMeta(accounts.vault),
       getAccountMeta(accounts.vaultAta),
       getAccountMeta(accounts.tokenProgram),
-      getAccountMeta(accounts.associatedTokenProgram),
-      getAccountMeta(accounts.mint),
       getAccountMeta(accounts.systemProgram),
-      getAccountMeta(accounts.rent),
     ],
     programAddress,
     data: getCreateVaultInstructionDataEncoder().encode(
@@ -271,14 +240,12 @@ export function getCreateVaultInstruction<
   } as CreateVaultInstruction<
     TProgramAddress,
     TAccountAuthority,
+    TAccountMint,
     TAccountTunaConfig,
     TAccountVault,
     TAccountVaultAta,
     TAccountTokenProgram,
-    TAccountAssociatedTokenProgram,
-    TAccountMint,
-    TAccountSystemProgram,
-    TAccountRent
+    TAccountSystemProgram
   >;
 
   return instruction;
@@ -291,14 +258,12 @@ export type ParsedCreateVaultInstruction<
   programAddress: Address<TProgram>;
   accounts: {
     authority: TAccountMetas[0];
-    tunaConfig: TAccountMetas[1];
-    vault: TAccountMetas[2];
-    vaultAta: TAccountMetas[3];
-    tokenProgram: TAccountMetas[4];
-    associatedTokenProgram: TAccountMetas[5];
-    mint: TAccountMetas[6];
-    systemProgram: TAccountMetas[7];
-    rent: TAccountMetas[8];
+    mint: TAccountMetas[1];
+    tunaConfig: TAccountMetas[2];
+    vault: TAccountMetas[3];
+    vaultAta: TAccountMetas[4];
+    tokenProgram: TAccountMetas[5];
+    systemProgram: TAccountMetas[6];
   };
   data: CreateVaultInstructionData;
 };
@@ -311,7 +276,7 @@ export function parseCreateVaultInstruction<
     IInstructionWithAccounts<TAccountMetas> &
     IInstructionWithData<Uint8Array>
 ): ParsedCreateVaultInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 9) {
+  if (instruction.accounts.length < 7) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
   }
@@ -325,14 +290,12 @@ export function parseCreateVaultInstruction<
     programAddress: instruction.programAddress,
     accounts: {
       authority: getNextAccount(),
+      mint: getNextAccount(),
       tunaConfig: getNextAccount(),
       vault: getNextAccount(),
       vaultAta: getNextAccount(),
       tokenProgram: getNextAccount(),
-      associatedTokenProgram: getNextAccount(),
-      mint: getNextAccount(),
       systemProgram: getNextAccount(),
-      rent: getNextAccount(),
     },
     data: getCreateVaultInstructionDataDecoder().decode(instruction.data),
   };

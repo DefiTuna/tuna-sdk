@@ -16,6 +16,9 @@ pub struct RepayBadDebt {
           pub authority: solana_program::pubkey::Pubkey,
           
               
+          pub mint: solana_program::pubkey::Pubkey,
+          
+              
           pub tuna_config: solana_program::pubkey::Pubkey,
           
               
@@ -29,6 +32,9 @@ pub struct RepayBadDebt {
           
               
           pub token_program: solana_program::pubkey::Pubkey,
+          
+              
+          pub memo_program: solana_program::pubkey::Pubkey,
       }
 
 impl RepayBadDebt {
@@ -38,10 +44,14 @@ impl RepayBadDebt {
   #[allow(clippy::arithmetic_side_effects)]
   #[allow(clippy::vec_init_then_push)]
   pub fn instruction_with_remaining_accounts(&self, args: RepayBadDebtInstructionArgs, remaining_accounts: &[solana_program::instruction::AccountMeta]) -> solana_program::instruction::Instruction {
-    let mut accounts = Vec::with_capacity(6+ remaining_accounts.len());
+    let mut accounts = Vec::with_capacity(8+ remaining_accounts.len());
                             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.authority,
             true
+          ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.mint,
+            false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.tuna_config,
@@ -61,6 +71,10 @@ impl RepayBadDebt {
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.token_program,
+            false
+          ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.memo_program,
             false
           ));
                       accounts.extend_from_slice(remaining_accounts);
@@ -109,19 +123,23 @@ impl Default for RepayBadDebtInstructionData {
 /// ### Accounts:
 ///
                 ///   0. `[signer]` authority
-          ///   1. `[]` tuna_config
-                ///   2. `[writable]` vault
-                ///   3. `[writable]` vault_ata
-                ///   4. `[writable]` authority_ata
-                ///   5. `[optional]` token_program (default to `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
+          ///   1. `[]` mint
+          ///   2. `[]` tuna_config
+                ///   3. `[writable]` vault
+                ///   4. `[writable]` vault_ata
+                ///   5. `[writable]` authority_ata
+                ///   6. `[optional]` token_program (default to `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
+          ///   7. `[]` memo_program
 #[derive(Clone, Debug, Default)]
 pub struct RepayBadDebtBuilder {
             authority: Option<solana_program::pubkey::Pubkey>,
+                mint: Option<solana_program::pubkey::Pubkey>,
                 tuna_config: Option<solana_program::pubkey::Pubkey>,
                 vault: Option<solana_program::pubkey::Pubkey>,
                 vault_ata: Option<solana_program::pubkey::Pubkey>,
                 authority_ata: Option<solana_program::pubkey::Pubkey>,
                 token_program: Option<solana_program::pubkey::Pubkey>,
+                memo_program: Option<solana_program::pubkey::Pubkey>,
                         funds: Option<u64>,
                 shares: Option<u64>,
         __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
@@ -134,6 +152,11 @@ impl RepayBadDebtBuilder {
             #[inline(always)]
     pub fn authority(&mut self, authority: solana_program::pubkey::Pubkey) -> &mut Self {
                         self.authority = Some(authority);
+                    self
+    }
+            #[inline(always)]
+    pub fn mint(&mut self, mint: solana_program::pubkey::Pubkey) -> &mut Self {
+                        self.mint = Some(mint);
                     self
     }
             #[inline(always)]
@@ -162,6 +185,11 @@ impl RepayBadDebtBuilder {
                         self.token_program = Some(token_program);
                     self
     }
+            #[inline(always)]
+    pub fn memo_program(&mut self, memo_program: solana_program::pubkey::Pubkey) -> &mut Self {
+                        self.memo_program = Some(memo_program);
+                    self
+    }
                     #[inline(always)]
       pub fn funds(&mut self, funds: u64) -> &mut Self {
         self.funds = Some(funds);
@@ -188,11 +216,13 @@ impl RepayBadDebtBuilder {
   pub fn instruction(&self) -> solana_program::instruction::Instruction {
     let accounts = RepayBadDebt {
                               authority: self.authority.expect("authority is not set"),
+                                        mint: self.mint.expect("mint is not set"),
                                         tuna_config: self.tuna_config.expect("tuna_config is not set"),
                                         vault: self.vault.expect("vault is not set"),
                                         vault_ata: self.vault_ata.expect("vault_ata is not set"),
                                         authority_ata: self.authority_ata.expect("authority_ata is not set"),
                                         token_program: self.token_program.unwrap_or(solana_program::pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")),
+                                        memo_program: self.memo_program.expect("memo_program is not set"),
                       };
           let args = RepayBadDebtInstructionArgs {
                                                               funds: self.funds.clone().expect("funds is not set"),
@@ -210,6 +240,9 @@ impl RepayBadDebtBuilder {
               pub authority: &'b solana_program::account_info::AccountInfo<'a>,
                 
                     
+              pub mint: &'b solana_program::account_info::AccountInfo<'a>,
+                
+                    
               pub tuna_config: &'b solana_program::account_info::AccountInfo<'a>,
                 
                     
@@ -223,6 +256,9 @@ impl RepayBadDebtBuilder {
                 
                     
               pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
+                
+                    
+              pub memo_program: &'b solana_program::account_info::AccountInfo<'a>,
             }
 
 /// `repay_bad_debt` CPI instruction.
@@ -232,6 +268,9 @@ pub struct RepayBadDebtCpi<'a, 'b> {
       
               
           pub authority: &'b solana_program::account_info::AccountInfo<'a>,
+          
+              
+          pub mint: &'b solana_program::account_info::AccountInfo<'a>,
           
               
           pub tuna_config: &'b solana_program::account_info::AccountInfo<'a>,
@@ -247,6 +286,9 @@ pub struct RepayBadDebtCpi<'a, 'b> {
           
               
           pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
+          
+              
+          pub memo_program: &'b solana_program::account_info::AccountInfo<'a>,
             /// The arguments for the instruction.
     pub __args: RepayBadDebtInstructionArgs,
   }
@@ -260,11 +302,13 @@ impl<'a, 'b> RepayBadDebtCpi<'a, 'b> {
     Self {
       __program: program,
               authority: accounts.authority,
+              mint: accounts.mint,
               tuna_config: accounts.tuna_config,
               vault: accounts.vault,
               vault_ata: accounts.vault_ata,
               authority_ata: accounts.authority_ata,
               token_program: accounts.token_program,
+              memo_program: accounts.memo_program,
                     __args: args,
           }
   }
@@ -288,10 +332,14 @@ impl<'a, 'b> RepayBadDebtCpi<'a, 'b> {
     signers_seeds: &[&[&[u8]]],
     remaining_accounts: &[(&'b solana_program::account_info::AccountInfo<'a>, bool, bool)]
   ) -> solana_program::entrypoint::ProgramResult {
-    let mut accounts = Vec::with_capacity(6+ remaining_accounts.len());
+    let mut accounts = Vec::with_capacity(8+ remaining_accounts.len());
                             accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.authority.key,
             true
+          ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.mint.key,
+            false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.tuna_config.key,
@@ -313,6 +361,10 @@ impl<'a, 'b> RepayBadDebtCpi<'a, 'b> {
             *self.token_program.key,
             false
           ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.memo_program.key,
+            false
+          ));
                       remaining_accounts.iter().for_each(|remaining_account| {
       accounts.push(solana_program::instruction::AccountMeta {
           pubkey: *remaining_account.0.key,
@@ -329,14 +381,16 @@ impl<'a, 'b> RepayBadDebtCpi<'a, 'b> {
       accounts,
       data,
     };
-    let mut account_infos = Vec::with_capacity(7 + remaining_accounts.len());
+    let mut account_infos = Vec::with_capacity(9 + remaining_accounts.len());
     account_infos.push(self.__program.clone());
                   account_infos.push(self.authority.clone());
+                        account_infos.push(self.mint.clone());
                         account_infos.push(self.tuna_config.clone());
                         account_infos.push(self.vault.clone());
                         account_infos.push(self.vault_ata.clone());
                         account_infos.push(self.authority_ata.clone());
                         account_infos.push(self.token_program.clone());
+                        account_infos.push(self.memo_program.clone());
               remaining_accounts.iter().for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
 
     if signers_seeds.is_empty() {
@@ -352,11 +406,13 @@ impl<'a, 'b> RepayBadDebtCpi<'a, 'b> {
 /// ### Accounts:
 ///
                 ///   0. `[signer]` authority
-          ///   1. `[]` tuna_config
-                ///   2. `[writable]` vault
-                ///   3. `[writable]` vault_ata
-                ///   4. `[writable]` authority_ata
-          ///   5. `[]` token_program
+          ///   1. `[]` mint
+          ///   2. `[]` tuna_config
+                ///   3. `[writable]` vault
+                ///   4. `[writable]` vault_ata
+                ///   5. `[writable]` authority_ata
+          ///   6. `[]` token_program
+          ///   7. `[]` memo_program
 #[derive(Clone, Debug)]
 pub struct RepayBadDebtCpiBuilder<'a, 'b> {
   instruction: Box<RepayBadDebtCpiBuilderInstruction<'a, 'b>>,
@@ -367,11 +423,13 @@ impl<'a, 'b> RepayBadDebtCpiBuilder<'a, 'b> {
     let instruction = Box::new(RepayBadDebtCpiBuilderInstruction {
       __program: program,
               authority: None,
+              mint: None,
               tuna_config: None,
               vault: None,
               vault_ata: None,
               authority_ata: None,
               token_program: None,
+              memo_program: None,
                                             funds: None,
                                 shares: None,
                     __remaining_accounts: Vec::new(),
@@ -381,6 +439,11 @@ impl<'a, 'b> RepayBadDebtCpiBuilder<'a, 'b> {
       #[inline(always)]
     pub fn authority(&mut self, authority: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
                         self.instruction.authority = Some(authority);
+                    self
+    }
+      #[inline(always)]
+    pub fn mint(&mut self, mint: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+                        self.instruction.mint = Some(mint);
                     self
     }
       #[inline(always)]
@@ -406,6 +469,11 @@ impl<'a, 'b> RepayBadDebtCpiBuilder<'a, 'b> {
       #[inline(always)]
     pub fn token_program(&mut self, token_program: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
                         self.instruction.token_program = Some(token_program);
+                    self
+    }
+      #[inline(always)]
+    pub fn memo_program(&mut self, memo_program: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+                        self.instruction.memo_program = Some(memo_program);
                     self
     }
                     #[inline(always)]
@@ -449,6 +517,8 @@ impl<'a, 'b> RepayBadDebtCpiBuilder<'a, 'b> {
                   
           authority: self.instruction.authority.expect("authority is not set"),
                   
+          mint: self.instruction.mint.expect("mint is not set"),
+                  
           tuna_config: self.instruction.tuna_config.expect("tuna_config is not set"),
                   
           vault: self.instruction.vault.expect("vault is not set"),
@@ -458,6 +528,8 @@ impl<'a, 'b> RepayBadDebtCpiBuilder<'a, 'b> {
           authority_ata: self.instruction.authority_ata.expect("authority_ata is not set"),
                   
           token_program: self.instruction.token_program.expect("token_program is not set"),
+                  
+          memo_program: self.instruction.memo_program.expect("memo_program is not set"),
                           __args: args,
             };
     instruction.invoke_signed_with_remaining_accounts(signers_seeds, &self.instruction.__remaining_accounts)
@@ -468,11 +540,13 @@ impl<'a, 'b> RepayBadDebtCpiBuilder<'a, 'b> {
 struct RepayBadDebtCpiBuilderInstruction<'a, 'b> {
   __program: &'b solana_program::account_info::AccountInfo<'a>,
             authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+                mint: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 tuna_config: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 vault: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 vault_ata: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 authority_ata: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 token_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+                memo_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                         funds: Option<u64>,
                 shares: Option<u64>,
         /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.

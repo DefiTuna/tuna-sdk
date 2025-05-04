@@ -59,6 +59,10 @@ pub fn collect_and_compound_fees(rpc: RpcClient, authority: Box<dyn Signer>, tun
   let (lending_vault_pda_b, _) = get_vault_address(&whirlpool_account.data.token_mint_b);
   // The Vault Account for token B containing deserialized data, fetched using Tuna's Client.
   let vault_b_account = fetch_vault(&rpc, &lending_vault_pda_b)?;
+  // Token Mint A
+  let token_mint_a_account = rpc.get_account(&whirlpool_account.data.token_mint_a)?;
+  // Token Mint B
+  let token_mint_b_account = rpc.get_account(&whirlpool_account.data.token_mint_b)?;
 
   // Defining input variables;
 
@@ -79,6 +83,8 @@ pub fn collect_and_compound_fees(rpc: RpcClient, authority: Box<dyn Signer>, tun
     &vault_a_account.data,
     &vault_b_account.data,
     &whirlpool_account.data,
+    &token_mint_a_account.owner,
+    &token_mint_b_account.owner,
     use_leverage,
   );
 

@@ -71,9 +71,9 @@ export type AddLiquidityOrcaInstruction<
   TAccountWhirlpoolProgram extends string | IAccountMeta<string> = string,
   TAccountWhirlpool extends string | IAccountMeta<string> = string,
   TAccountOrcaPosition extends string | IAccountMeta<string> = string,
-  TAccountTokenProgram extends
-    | string
-    | IAccountMeta<string> = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+  TAccountTokenProgramA extends string | IAccountMeta<string> = string,
+  TAccountTokenProgramB extends string | IAccountMeta<string> = string,
+  TAccountMemoProgram extends string | IAccountMeta<string> = string,
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
   IInstructionWithData<Uint8Array> &
@@ -146,9 +146,15 @@ export type AddLiquidityOrcaInstruction<
       TAccountOrcaPosition extends string
         ? WritableAccount<TAccountOrcaPosition>
         : TAccountOrcaPosition,
-      TAccountTokenProgram extends string
-        ? ReadonlyAccount<TAccountTokenProgram>
-        : TAccountTokenProgram,
+      TAccountTokenProgramA extends string
+        ? ReadonlyAccount<TAccountTokenProgramA>
+        : TAccountTokenProgramA,
+      TAccountTokenProgramB extends string
+        ? ReadonlyAccount<TAccountTokenProgramB>
+        : TAccountTokenProgramB,
+      TAccountMemoProgram extends string
+        ? ReadonlyAccount<TAccountMemoProgram>
+        : TAccountMemoProgram,
       ...TRemainingAccounts,
     ]
   >;
@@ -236,7 +242,9 @@ export type AddLiquidityOrcaInput<
   TAccountWhirlpoolProgram extends string = string,
   TAccountWhirlpool extends string = string,
   TAccountOrcaPosition extends string = string,
-  TAccountTokenProgram extends string = string,
+  TAccountTokenProgramA extends string = string,
+  TAccountTokenProgramB extends string = string,
+  TAccountMemoProgram extends string = string,
 > = {
   /**
    *
@@ -275,7 +283,9 @@ export type AddLiquidityOrcaInput<
    * Other accounts
    *
    */
-  tokenProgram?: Address<TAccountTokenProgram>;
+  tokenProgramA: Address<TAccountTokenProgramA>;
+  tokenProgramB: Address<TAccountTokenProgramB>;
+  memoProgram: Address<TAccountMemoProgram>;
   collateralA: AddLiquidityOrcaInstructionDataArgs['collateralA'];
   collateralB: AddLiquidityOrcaInstructionDataArgs['collateralB'];
   borrowA: AddLiquidityOrcaInstructionDataArgs['borrowA'];
@@ -308,7 +318,9 @@ export function getAddLiquidityOrcaInstruction<
   TAccountWhirlpoolProgram extends string,
   TAccountWhirlpool extends string,
   TAccountOrcaPosition extends string,
-  TAccountTokenProgram extends string,
+  TAccountTokenProgramA extends string,
+  TAccountTokenProgramB extends string,
+  TAccountMemoProgram extends string,
   TProgramAddress extends Address = typeof TUNA_PROGRAM_ADDRESS,
 >(
   input: AddLiquidityOrcaInput<
@@ -334,7 +346,9 @@ export function getAddLiquidityOrcaInstruction<
     TAccountWhirlpoolProgram,
     TAccountWhirlpool,
     TAccountOrcaPosition,
-    TAccountTokenProgram
+    TAccountTokenProgramA,
+    TAccountTokenProgramB,
+    TAccountMemoProgram
   >,
   config?: { programAddress?: TProgramAddress }
 ): AddLiquidityOrcaInstruction<
@@ -361,7 +375,9 @@ export function getAddLiquidityOrcaInstruction<
   TAccountWhirlpoolProgram,
   TAccountWhirlpool,
   TAccountOrcaPosition,
-  TAccountTokenProgram
+  TAccountTokenProgramA,
+  TAccountTokenProgramB,
+  TAccountMemoProgram
 > {
   // Program address.
   const programAddress = config?.programAddress ?? TUNA_PROGRAM_ADDRESS;
@@ -417,7 +433,9 @@ export function getAddLiquidityOrcaInstruction<
     },
     whirlpool: { value: input.whirlpool ?? null, isWritable: true },
     orcaPosition: { value: input.orcaPosition ?? null, isWritable: true },
-    tokenProgram: { value: input.tokenProgram ?? null, isWritable: false },
+    tokenProgramA: { value: input.tokenProgramA ?? null, isWritable: false },
+    tokenProgramB: { value: input.tokenProgramB ?? null, isWritable: false },
+    memoProgram: { value: input.memoProgram ?? null, isWritable: false },
   };
   const accounts = originalAccounts as Record<
     keyof typeof originalAccounts,
@@ -426,12 +444,6 @@ export function getAddLiquidityOrcaInstruction<
 
   // Original args.
   const args = { ...input };
-
-  // Resolve default values.
-  if (!accounts.tokenProgram.value) {
-    accounts.tokenProgram.value =
-      'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' as Address<'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'>;
-  }
 
   const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
   const instruction = {
@@ -458,7 +470,9 @@ export function getAddLiquidityOrcaInstruction<
       getAccountMeta(accounts.whirlpoolProgram),
       getAccountMeta(accounts.whirlpool),
       getAccountMeta(accounts.orcaPosition),
-      getAccountMeta(accounts.tokenProgram),
+      getAccountMeta(accounts.tokenProgramA),
+      getAccountMeta(accounts.tokenProgramB),
+      getAccountMeta(accounts.memoProgram),
     ],
     programAddress,
     data: getAddLiquidityOrcaInstructionDataEncoder().encode(
@@ -488,7 +502,9 @@ export function getAddLiquidityOrcaInstruction<
     TAccountWhirlpoolProgram,
     TAccountWhirlpool,
     TAccountOrcaPosition,
-    TAccountTokenProgram
+    TAccountTokenProgramA,
+    TAccountTokenProgramB,
+    TAccountMemoProgram
   >;
 
   return instruction;
@@ -540,7 +556,9 @@ export type ParsedAddLiquidityOrcaInstruction<
      *
      */
 
-    tokenProgram: TAccountMetas[22];
+    tokenProgramA: TAccountMetas[22];
+    tokenProgramB: TAccountMetas[23];
+    memoProgram: TAccountMetas[24];
   };
   data: AddLiquidityOrcaInstructionData;
 };
@@ -553,7 +571,7 @@ export function parseAddLiquidityOrcaInstruction<
     IInstructionWithAccounts<TAccountMetas> &
     IInstructionWithData<Uint8Array>
 ): ParsedAddLiquidityOrcaInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 23) {
+  if (instruction.accounts.length < 25) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
   }
@@ -588,7 +606,9 @@ export function parseAddLiquidityOrcaInstruction<
       whirlpoolProgram: getNextAccount(),
       whirlpool: getNextAccount(),
       orcaPosition: getNextAccount(),
-      tokenProgram: getNextAccount(),
+      tokenProgramA: getNextAccount(),
+      tokenProgramB: getNextAccount(),
+      memoProgram: getNextAccount(),
     },
     data: getAddLiquidityOrcaInstructionDataDecoder().decode(instruction.data),
   };

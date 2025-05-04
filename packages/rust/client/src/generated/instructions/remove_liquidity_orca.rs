@@ -85,7 +85,13 @@ pub struct RemoveLiquidityOrca {
 
     
               
-          pub token_program: solana_program::pubkey::Pubkey,
+          pub token_program_a: solana_program::pubkey::Pubkey,
+          
+              
+          pub token_program_b: solana_program::pubkey::Pubkey,
+          
+              
+          pub memo_program: solana_program::pubkey::Pubkey,
       }
 
 impl RemoveLiquidityOrca {
@@ -95,7 +101,7 @@ impl RemoveLiquidityOrca {
   #[allow(clippy::arithmetic_side_effects)]
   #[allow(clippy::vec_init_then_push)]
   pub fn instruction_with_remaining_accounts(&self, args: RemoveLiquidityOrcaInstructionArgs, remaining_accounts: &[solana_program::instruction::AccountMeta]) -> solana_program::instruction::Instruction {
-    let mut accounts = Vec::with_capacity(21+ remaining_accounts.len());
+    let mut accounts = Vec::with_capacity(23+ remaining_accounts.len());
                             accounts.push(solana_program::instruction::AccountMeta::new(
             self.authority,
             true
@@ -177,7 +183,15 @@ impl RemoveLiquidityOrca {
             false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.token_program,
+            self.token_program_a,
+            false
+          ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.token_program_b,
+            false
+          ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.memo_program,
             false
           ));
                       accounts.extend_from_slice(remaining_accounts);
@@ -248,7 +262,9 @@ impl Default for RemoveLiquidityOrcaInstructionData {
           ///   17. `[]` whirlpool_program
                 ///   18. `[writable]` whirlpool
                 ///   19. `[writable]` orca_position
-                ///   20. `[optional]` token_program (default to `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
+          ///   20. `[]` token_program_a
+          ///   21. `[]` token_program_b
+          ///   22. `[]` memo_program
 #[derive(Clone, Debug, Default)]
 pub struct RemoveLiquidityOrcaBuilder {
             authority: Option<solana_program::pubkey::Pubkey>,
@@ -271,7 +287,9 @@ pub struct RemoveLiquidityOrcaBuilder {
                 whirlpool_program: Option<solana_program::pubkey::Pubkey>,
                 whirlpool: Option<solana_program::pubkey::Pubkey>,
                 orca_position: Option<solana_program::pubkey::Pubkey>,
-                token_program: Option<solana_program::pubkey::Pubkey>,
+                token_program_a: Option<solana_program::pubkey::Pubkey>,
+                token_program_b: Option<solana_program::pubkey::Pubkey>,
+                memo_program: Option<solana_program::pubkey::Pubkey>,
                         withdraw_percent: Option<u32>,
                 swap_to_token: Option<u8>,
                 min_removed_amount_a: Option<u64>,
@@ -390,13 +408,22 @@ impl RemoveLiquidityOrcaBuilder {
                         self.orca_position = Some(orca_position);
                     self
     }
-            /// `[optional account, default to 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA']`
-/// 
+            /// 
 /// Other accounts
 /// 
 #[inline(always)]
-    pub fn token_program(&mut self, token_program: solana_program::pubkey::Pubkey) -> &mut Self {
-                        self.token_program = Some(token_program);
+    pub fn token_program_a(&mut self, token_program_a: solana_program::pubkey::Pubkey) -> &mut Self {
+                        self.token_program_a = Some(token_program_a);
+                    self
+    }
+            #[inline(always)]
+    pub fn token_program_b(&mut self, token_program_b: solana_program::pubkey::Pubkey) -> &mut Self {
+                        self.token_program_b = Some(token_program_b);
+                    self
+    }
+            #[inline(always)]
+    pub fn memo_program(&mut self, memo_program: solana_program::pubkey::Pubkey) -> &mut Self {
+                        self.memo_program = Some(memo_program);
                     self
     }
                     #[inline(always)]
@@ -459,7 +486,9 @@ impl RemoveLiquidityOrcaBuilder {
                                         whirlpool_program: self.whirlpool_program.expect("whirlpool_program is not set"),
                                         whirlpool: self.whirlpool.expect("whirlpool is not set"),
                                         orca_position: self.orca_position.expect("orca_position is not set"),
-                                        token_program: self.token_program.unwrap_or(solana_program::pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")),
+                                        token_program_a: self.token_program_a.expect("token_program_a is not set"),
+                                        token_program_b: self.token_program_b.expect("token_program_b is not set"),
+                                        memo_program: self.memo_program.expect("memo_program is not set"),
                       };
           let args = RemoveLiquidityOrcaInstructionArgs {
                                                               withdraw_percent: self.withdraw_percent.clone().expect("withdraw_percent is not set"),
@@ -549,7 +578,13 @@ impl RemoveLiquidityOrcaBuilder {
 
       
                     
-              pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
+              pub token_program_a: &'b solana_program::account_info::AccountInfo<'a>,
+                
+                    
+              pub token_program_b: &'b solana_program::account_info::AccountInfo<'a>,
+                
+                    
+              pub memo_program: &'b solana_program::account_info::AccountInfo<'a>,
             }
 
 /// `remove_liquidity_orca` CPI instruction.
@@ -630,7 +665,13 @@ pub struct RemoveLiquidityOrcaCpi<'a, 'b> {
 
     
               
-          pub token_program: &'b solana_program::account_info::AccountInfo<'a>,
+          pub token_program_a: &'b solana_program::account_info::AccountInfo<'a>,
+          
+              
+          pub token_program_b: &'b solana_program::account_info::AccountInfo<'a>,
+          
+              
+          pub memo_program: &'b solana_program::account_info::AccountInfo<'a>,
             /// The arguments for the instruction.
     pub __args: RemoveLiquidityOrcaInstructionArgs,
   }
@@ -663,7 +704,9 @@ impl<'a, 'b> RemoveLiquidityOrcaCpi<'a, 'b> {
               whirlpool_program: accounts.whirlpool_program,
               whirlpool: accounts.whirlpool,
               orca_position: accounts.orca_position,
-              token_program: accounts.token_program,
+              token_program_a: accounts.token_program_a,
+              token_program_b: accounts.token_program_b,
+              memo_program: accounts.memo_program,
                     __args: args,
           }
   }
@@ -687,7 +730,7 @@ impl<'a, 'b> RemoveLiquidityOrcaCpi<'a, 'b> {
     signers_seeds: &[&[&[u8]]],
     remaining_accounts: &[(&'b solana_program::account_info::AccountInfo<'a>, bool, bool)]
   ) -> solana_program::entrypoint::ProgramResult {
-    let mut accounts = Vec::with_capacity(21+ remaining_accounts.len());
+    let mut accounts = Vec::with_capacity(23+ remaining_accounts.len());
                             accounts.push(solana_program::instruction::AccountMeta::new(
             *self.authority.key,
             true
@@ -769,7 +812,15 @@ impl<'a, 'b> RemoveLiquidityOrcaCpi<'a, 'b> {
             false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.token_program.key,
+            *self.token_program_a.key,
+            false
+          ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.token_program_b.key,
+            false
+          ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.memo_program.key,
             false
           ));
                       remaining_accounts.iter().for_each(|remaining_account| {
@@ -788,7 +839,7 @@ impl<'a, 'b> RemoveLiquidityOrcaCpi<'a, 'b> {
       accounts,
       data,
     };
-    let mut account_infos = Vec::with_capacity(22 + remaining_accounts.len());
+    let mut account_infos = Vec::with_capacity(24 + remaining_accounts.len());
     account_infos.push(self.__program.clone());
                   account_infos.push(self.authority.clone());
                         account_infos.push(self.tuna_config.clone());
@@ -810,7 +861,9 @@ impl<'a, 'b> RemoveLiquidityOrcaCpi<'a, 'b> {
                         account_infos.push(self.whirlpool_program.clone());
                         account_infos.push(self.whirlpool.clone());
                         account_infos.push(self.orca_position.clone());
-                        account_infos.push(self.token_program.clone());
+                        account_infos.push(self.token_program_a.clone());
+                        account_infos.push(self.token_program_b.clone());
+                        account_infos.push(self.memo_program.clone());
               remaining_accounts.iter().for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
 
     if signers_seeds.is_empty() {
@@ -845,7 +898,9 @@ impl<'a, 'b> RemoveLiquidityOrcaCpi<'a, 'b> {
           ///   17. `[]` whirlpool_program
                 ///   18. `[writable]` whirlpool
                 ///   19. `[writable]` orca_position
-          ///   20. `[]` token_program
+          ///   20. `[]` token_program_a
+          ///   21. `[]` token_program_b
+          ///   22. `[]` memo_program
 #[derive(Clone, Debug)]
 pub struct RemoveLiquidityOrcaCpiBuilder<'a, 'b> {
   instruction: Box<RemoveLiquidityOrcaCpiBuilderInstruction<'a, 'b>>,
@@ -875,7 +930,9 @@ impl<'a, 'b> RemoveLiquidityOrcaCpiBuilder<'a, 'b> {
               whirlpool_program: None,
               whirlpool: None,
               orca_position: None,
-              token_program: None,
+              token_program_a: None,
+              token_program_b: None,
+              memo_program: None,
                                             withdraw_percent: None,
                                 swap_to_token: None,
                                 min_removed_amount_a: None,
@@ -995,8 +1052,18 @@ impl<'a, 'b> RemoveLiquidityOrcaCpiBuilder<'a, 'b> {
 /// Other accounts
 /// 
 #[inline(always)]
-    pub fn token_program(&mut self, token_program: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
-                        self.instruction.token_program = Some(token_program);
+    pub fn token_program_a(&mut self, token_program_a: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+                        self.instruction.token_program_a = Some(token_program_a);
+                    self
+    }
+      #[inline(always)]
+    pub fn token_program_b(&mut self, token_program_b: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+                        self.instruction.token_program_b = Some(token_program_b);
+                    self
+    }
+      #[inline(always)]
+    pub fn memo_program(&mut self, memo_program: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+                        self.instruction.memo_program = Some(memo_program);
                     self
     }
                     #[inline(always)]
@@ -1096,7 +1163,11 @@ impl<'a, 'b> RemoveLiquidityOrcaCpiBuilder<'a, 'b> {
                   
           orca_position: self.instruction.orca_position.expect("orca_position is not set"),
                   
-          token_program: self.instruction.token_program.expect("token_program is not set"),
+          token_program_a: self.instruction.token_program_a.expect("token_program_a is not set"),
+                  
+          token_program_b: self.instruction.token_program_b.expect("token_program_b is not set"),
+                  
+          memo_program: self.instruction.memo_program.expect("memo_program is not set"),
                           __args: args,
             };
     instruction.invoke_signed_with_remaining_accounts(signers_seeds, &self.instruction.__remaining_accounts)
@@ -1126,7 +1197,9 @@ struct RemoveLiquidityOrcaCpiBuilderInstruction<'a, 'b> {
                 whirlpool_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 whirlpool: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 orca_position: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-                token_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+                token_program_a: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+                token_program_b: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+                memo_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                         withdraw_percent: Option<u32>,
                 swap_to_token: Option<u8>,
                 min_removed_amount_a: Option<u64>,

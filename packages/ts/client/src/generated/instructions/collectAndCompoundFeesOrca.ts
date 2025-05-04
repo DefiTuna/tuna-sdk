@@ -67,9 +67,9 @@ export type CollectAndCompoundFeesOrcaInstruction<
   TAccountWhirlpoolProgram extends string | IAccountMeta<string> = string,
   TAccountWhirlpool extends string | IAccountMeta<string> = string,
   TAccountOrcaPosition extends string | IAccountMeta<string> = string,
-  TAccountTokenProgram extends
-    | string
-    | IAccountMeta<string> = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+  TAccountTokenProgramA extends string | IAccountMeta<string> = string,
+  TAccountTokenProgramB extends string | IAccountMeta<string> = string,
+  TAccountMemoProgram extends string | IAccountMeta<string> = string,
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
   IInstructionWithData<Uint8Array> &
@@ -136,9 +136,15 @@ export type CollectAndCompoundFeesOrcaInstruction<
       TAccountOrcaPosition extends string
         ? WritableAccount<TAccountOrcaPosition>
         : TAccountOrcaPosition,
-      TAccountTokenProgram extends string
-        ? ReadonlyAccount<TAccountTokenProgram>
-        : TAccountTokenProgram,
+      TAccountTokenProgramA extends string
+        ? ReadonlyAccount<TAccountTokenProgramA>
+        : TAccountTokenProgramA,
+      TAccountTokenProgramB extends string
+        ? ReadonlyAccount<TAccountTokenProgramB>
+        : TAccountTokenProgramB,
+      TAccountMemoProgram extends string
+        ? ReadonlyAccount<TAccountMemoProgram>
+        : TAccountMemoProgram,
       ...TRemainingAccounts,
     ]
   >;
@@ -203,7 +209,9 @@ export type CollectAndCompoundFeesOrcaInput<
   TAccountWhirlpoolProgram extends string = string,
   TAccountWhirlpool extends string = string,
   TAccountOrcaPosition extends string = string,
-  TAccountTokenProgram extends string = string,
+  TAccountTokenProgramA extends string = string,
+  TAccountTokenProgramB extends string = string,
+  TAccountMemoProgram extends string = string,
 > = {
   /**
    *
@@ -240,7 +248,9 @@ export type CollectAndCompoundFeesOrcaInput<
    * Other accounts
    *
    */
-  tokenProgram?: Address<TAccountTokenProgram>;
+  tokenProgramA: Address<TAccountTokenProgramA>;
+  tokenProgramB: Address<TAccountTokenProgramB>;
+  memoProgram: Address<TAccountMemoProgram>;
   useLeverage: CollectAndCompoundFeesOrcaInstructionDataArgs['useLeverage'];
 };
 
@@ -265,7 +275,9 @@ export function getCollectAndCompoundFeesOrcaInstruction<
   TAccountWhirlpoolProgram extends string,
   TAccountWhirlpool extends string,
   TAccountOrcaPosition extends string,
-  TAccountTokenProgram extends string,
+  TAccountTokenProgramA extends string,
+  TAccountTokenProgramB extends string,
+  TAccountMemoProgram extends string,
   TProgramAddress extends Address = typeof TUNA_PROGRAM_ADDRESS,
 >(
   input: CollectAndCompoundFeesOrcaInput<
@@ -289,7 +301,9 @@ export function getCollectAndCompoundFeesOrcaInstruction<
     TAccountWhirlpoolProgram,
     TAccountWhirlpool,
     TAccountOrcaPosition,
-    TAccountTokenProgram
+    TAccountTokenProgramA,
+    TAccountTokenProgramB,
+    TAccountMemoProgram
   >,
   config?: { programAddress?: TProgramAddress }
 ): CollectAndCompoundFeesOrcaInstruction<
@@ -314,7 +328,9 @@ export function getCollectAndCompoundFeesOrcaInstruction<
   TAccountWhirlpoolProgram,
   TAccountWhirlpool,
   TAccountOrcaPosition,
-  TAccountTokenProgram
+  TAccountTokenProgramA,
+  TAccountTokenProgramB,
+  TAccountMemoProgram
 > {
   // Program address.
   const programAddress = config?.programAddress ?? TUNA_PROGRAM_ADDRESS;
@@ -365,7 +381,9 @@ export function getCollectAndCompoundFeesOrcaInstruction<
     },
     whirlpool: { value: input.whirlpool ?? null, isWritable: true },
     orcaPosition: { value: input.orcaPosition ?? null, isWritable: true },
-    tokenProgram: { value: input.tokenProgram ?? null, isWritable: false },
+    tokenProgramA: { value: input.tokenProgramA ?? null, isWritable: false },
+    tokenProgramB: { value: input.tokenProgramB ?? null, isWritable: false },
+    memoProgram: { value: input.memoProgram ?? null, isWritable: false },
   };
   const accounts = originalAccounts as Record<
     keyof typeof originalAccounts,
@@ -374,12 +392,6 @@ export function getCollectAndCompoundFeesOrcaInstruction<
 
   // Original args.
   const args = { ...input };
-
-  // Resolve default values.
-  if (!accounts.tokenProgram.value) {
-    accounts.tokenProgram.value =
-      'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' as Address<'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'>;
-  }
 
   const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
   const instruction = {
@@ -404,7 +416,9 @@ export function getCollectAndCompoundFeesOrcaInstruction<
       getAccountMeta(accounts.whirlpoolProgram),
       getAccountMeta(accounts.whirlpool),
       getAccountMeta(accounts.orcaPosition),
-      getAccountMeta(accounts.tokenProgram),
+      getAccountMeta(accounts.tokenProgramA),
+      getAccountMeta(accounts.tokenProgramB),
+      getAccountMeta(accounts.memoProgram),
     ],
     programAddress,
     data: getCollectAndCompoundFeesOrcaInstructionDataEncoder().encode(
@@ -432,7 +446,9 @@ export function getCollectAndCompoundFeesOrcaInstruction<
     TAccountWhirlpoolProgram,
     TAccountWhirlpool,
     TAccountOrcaPosition,
-    TAccountTokenProgram
+    TAccountTokenProgramA,
+    TAccountTokenProgramB,
+    TAccountMemoProgram
   >;
 
   return instruction;
@@ -482,7 +498,9 @@ export type ParsedCollectAndCompoundFeesOrcaInstruction<
      *
      */
 
-    tokenProgram: TAccountMetas[20];
+    tokenProgramA: TAccountMetas[20];
+    tokenProgramB: TAccountMetas[21];
+    memoProgram: TAccountMetas[22];
   };
   data: CollectAndCompoundFeesOrcaInstructionData;
 };
@@ -495,7 +513,7 @@ export function parseCollectAndCompoundFeesOrcaInstruction<
     IInstructionWithAccounts<TAccountMetas> &
     IInstructionWithData<Uint8Array>
 ): ParsedCollectAndCompoundFeesOrcaInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 21) {
+  if (instruction.accounts.length < 23) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
   }
@@ -528,7 +546,9 @@ export function parseCollectAndCompoundFeesOrcaInstruction<
       whirlpoolProgram: getNextAccount(),
       whirlpool: getNextAccount(),
       orcaPosition: getNextAccount(),
-      tokenProgram: getNextAccount(),
+      tokenProgramA: getNextAccount(),
+      tokenProgramB: getNextAccount(),
+      memoProgram: getNextAccount(),
     },
     data: getCollectAndCompoundFeesOrcaInstructionDataDecoder().decode(
       instruction.data

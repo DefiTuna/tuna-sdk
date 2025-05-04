@@ -58,6 +58,36 @@ export const pythFeedIdFlag = Flags.custom<Address>({
   },
 });
 
+export const priceArg = Args.custom<number>({
+  parse: async (input) => {
+    let price = 0;
+    try {
+      price = Number(input);
+    } catch {
+      throw new Error("Failed to parse the the price");
+    }
+    if (price <= 0) {
+      throw new Error("The price is equal or less than zero.");
+    }
+    return price;
+  },
+});
+
+export const priceFlag = Flags.custom<number>({
+  parse: async (input) => {
+    let price = 0;
+    try {
+      price = Number(input);
+    } catch {
+      throw new Error("Failed to parse the the price");
+    }
+    if (price <= 0) {
+      throw new Error("The price is equal or less than zero.");
+    }
+    return price;
+  },
+});
+
 export default abstract class BaseCommand extends Command {
   async catch(err: Error & { exitCode?: number }) {
     console.log("");

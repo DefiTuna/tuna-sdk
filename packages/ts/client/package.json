@@ -31,7 +31,9 @@
     "@solana-program/compute-budget": "^0.7.0",
     "@solana-program/system": "^0.7.0",
     "@solana-program/token": "^0.5.1",
-    "@solana-program/token-2022": "^0.4.0"
+    "@solana-program/token-2022": "^0.4.0",
+    "@solana-program/memo": "^0.7.0",
+    "@solana-program/address-lookup-table": "^0.7.0"
   },
   "devDependencies": {
     "@defituna/typescript-config": "^0.2.0",

@@ -55,7 +55,7 @@ export type DepositInstruction<
   TAccountTokenProgram extends
     | string
     | IAccountMeta<string> = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
-  TAccountAssociatedTokenProgram extends string | IAccountMeta<string> = string,
+  TAccountMemoProgram extends string | IAccountMeta<string> = string,
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
   IInstructionWithData<Uint8Array> &
@@ -86,9 +86,9 @@ export type DepositInstruction<
       TAccountTokenProgram extends string
         ? ReadonlyAccount<TAccountTokenProgram>
         : TAccountTokenProgram,
-      TAccountAssociatedTokenProgram extends string
-        ? ReadonlyAccount<TAccountAssociatedTokenProgram>
-        : TAccountAssociatedTokenProgram,
+      TAccountMemoProgram extends string
+        ? ReadonlyAccount<TAccountMemoProgram>
+        : TAccountMemoProgram,
       ...TRemainingAccounts,
     ]
   >;
@@ -136,7 +136,7 @@ export type DepositInput<
   TAccountVaultAta extends string = string,
   TAccountAuthorityAta extends string = string,
   TAccountTokenProgram extends string = string,
-  TAccountAssociatedTokenProgram extends string = string,
+  TAccountMemoProgram extends string = string,
 > = {
   authority: TransactionSigner<TAccountAuthority>;
   mint: Address<TAccountMint>;
@@ -146,7 +146,7 @@ export type DepositInput<
   vaultAta: Address<TAccountVaultAta>;
   authorityAta: Address<TAccountAuthorityAta>;
   tokenProgram?: Address<TAccountTokenProgram>;
-  associatedTokenProgram: Address<TAccountAssociatedTokenProgram>;
+  memoProgram: Address<TAccountMemoProgram>;
   amount: DepositInstructionDataArgs['amount'];
 };
 
@@ -159,7 +159,7 @@ export function getDepositInstruction<
   TAccountVaultAta extends string,
   TAccountAuthorityAta extends string,
   TAccountTokenProgram extends string,
-  TAccountAssociatedTokenProgram extends string,
+  TAccountMemoProgram extends string,
   TProgramAddress extends Address = typeof TUNA_PROGRAM_ADDRESS,
 >(
   input: DepositInput<
@@ -171,7 +171,7 @@ export function getDepositInstruction<
     TAccountVaultAta,
     TAccountAuthorityAta,
     TAccountTokenProgram,
-    TAccountAssociatedTokenProgram
+    TAccountMemoProgram
   >,
   config?: { programAddress?: TProgramAddress }
 ): DepositInstruction<
@@ -184,7 +184,7 @@ export function getDepositInstruction<
   TAccountVaultAta,
   TAccountAuthorityAta,
   TAccountTokenProgram,
-  TAccountAssociatedTokenProgram
+  TAccountMemoProgram
 > {
   // Program address.
   const programAddress = config?.programAddress ?? TUNA_PROGRAM_ADDRESS;
@@ -199,10 +199,7 @@ export function getDepositInstruction<
     vaultAta: { value: input.vaultAta ?? null, isWritable: true },
     authorityAta: { value: input.authorityAta ?? null, isWritable: true },
     tokenProgram: { value: input.tokenProgram ?? null, isWritable: false },
-    associatedTokenProgram: {
-      value: input.associatedTokenProgram ?? null,
-      isWritable: false,
-    },
+    memoProgram: { value: input.memoProgram ?? null, isWritable: false },
   };
   const accounts = originalAccounts as Record<
     keyof typeof originalAccounts,
@@ -229,7 +226,7 @@ export function getDepositInstruction<
       getAccountMeta(accounts.vaultAta),
       getAccountMeta(accounts.authorityAta),
       getAccountMeta(accounts.tokenProgram),
-      getAccountMeta(accounts.associatedTokenProgram),
+      getAccountMeta(accounts.memoProgram),
     ],
     programAddress,
     data: getDepositInstructionDataEncoder().encode(
@@ -245,7 +242,7 @@ export function getDepositInstruction<
     TAccountVaultAta,
     TAccountAuthorityAta,
     TAccountTokenProgram,
-    TAccountAssociatedTokenProgram
+    TAccountMemoProgram
   >;
 
   return instruction;
@@ -265,7 +262,7 @@ export type ParsedDepositInstruction<
     vaultAta: TAccountMetas[5];
     authorityAta: TAccountMetas[6];
     tokenProgram: TAccountMetas[7];
-    associatedTokenProgram: TAccountMetas[8];
+    memoProgram: TAccountMetas[8];
   };
   data: DepositInstructionData;
 };
@@ -299,7 +296,7 @@ export function parseDepositInstruction<
       vaultAta: getNextAccount(),
       authorityAta: getNextAccount(),
       tokenProgram: getNextAccount(),
-      associatedTokenProgram: getNextAccount(),
+      memoProgram: getNextAccount(),
     },
     data: getDepositInstructionDataDecoder().decode(instruction.data),
   };

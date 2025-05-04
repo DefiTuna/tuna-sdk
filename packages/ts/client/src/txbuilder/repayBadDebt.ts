@@ -1,37 +1,40 @@
-import { Address, IInstruction, TransactionSigner } from "@solana/kit";
-import { findAssociatedTokenPda } from "@solana-program/token-2022";
-import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
+import { Account, IInstruction, TransactionSigner } from "@solana/kit";
+import { findAssociatedTokenPda, Mint } from "@solana-program/token-2022";
 import { getLendingVaultAddress, getRepayBadDebtInstruction, getTunaConfigAddress } from "../index.ts";
+import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
 
 export async function repayBadDebtInstruction(
   authority: TransactionSigner,
-  mint: Address,
+  mint: Account<Mint>,
   funds: bigint,
   shares: bigint,
 ): Promise<IInstruction> {
   const tunaConfig = (await getTunaConfigAddress())[0];
-  const vault = (await getLendingVaultAddress(mint))[0];
+  const vault = (await getLendingVaultAddress(mint.address))[0];
   const vaultAta = (
     await findAssociatedTokenPda({
       owner: vault,
-      mint: mint,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+      mint: mint.address,
+      tokenProgram: mint.programAddress,
     })
   )[0];
   const authorityAta = (
     await findAssociatedTokenPda({
       owner: authority.address,
-      mint: mint,
-      tokenProgram: TOKEN_PROGRAM_ADDRESS,
+      mint: mint.address,
+      tokenProgram: mint.programAddress,
     })
   )[0];
 
   return getRepayBadDebtInstruction({
     authorityAta,
+    mint: mint.address,
     vaultAta,
     authority,
     tunaConfig,
     vault,
+    tokenProgram: mint.programAddress,
+    memoProgram: MEMO_PROGRAM_ADDRESS,
     funds,
     shares,
   });
