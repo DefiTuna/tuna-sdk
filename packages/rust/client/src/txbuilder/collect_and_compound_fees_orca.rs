@@ -6,8 +6,8 @@ use orca_whirlpools_client::{get_oracle_address, get_position_address, get_tick_
 use orca_whirlpools_core::get_tick_array_start_tick_index;
 use solana_program::instruction::{AccountMeta, Instruction};
 use solana_program::pubkey::Pubkey;
+use spl_associated_token_account::get_associated_token_address_with_program_id;
 use spl_associated_token_account::instruction::create_associated_token_account_idempotent;
-use spl_associated_token_account::{get_associated_token_address, get_associated_token_address_with_program_id};
 
 pub fn collect_and_compound_fees_orca_instructions(
     authority: &Pubkey,
@@ -71,14 +71,14 @@ pub fn collect_and_compound_fees_orca_instruction(
         market: market_address,
         vault_a: vault_a_address,
         vault_b: vault_b_address,
-        vault_a_ata: get_associated_token_address(&vault_a_address, &mint_a),
-        vault_b_ata: get_associated_token_address(&vault_b_address, &mint_b),
+        vault_a_ata: get_associated_token_address_with_program_id(&vault_a_address, &mint_a, token_program_a),
+        vault_b_ata: get_associated_token_address_with_program_id(&vault_b_address, &mint_b, token_program_b),
         tuna_position: tuna_position_address,
         tuna_position_ata: get_associated_token_address_with_program_id(&tuna_position_address, &tuna_position.position_mint, &spl_token_2022::ID),
-        tuna_position_ata_a: get_associated_token_address(&tuna_position_address, &mint_a),
-        tuna_position_ata_b: get_associated_token_address(&tuna_position_address, &mint_b),
-        fee_recipient_ata_a: get_associated_token_address(&tuna_config.fee_recipient, &mint_a),
-        fee_recipient_ata_b: get_associated_token_address(&tuna_config.fee_recipient, &mint_b),
+        tuna_position_ata_a: get_associated_token_address_with_program_id(&tuna_position_address, &mint_a, token_program_a),
+        tuna_position_ata_b: get_associated_token_address_with_program_id(&tuna_position_address, &mint_b, token_program_b),
+        fee_recipient_ata_a: get_associated_token_address_with_program_id(&tuna_config.fee_recipient, &mint_a, token_program_a),
+        fee_recipient_ata_b: get_associated_token_address_with_program_id(&tuna_config.fee_recipient, &mint_b, token_program_b),
         pyth_oracle_price_feed_a: vault_a.pyth_oracle_price_update,
         pyth_oracle_price_feed_b: vault_b.pyth_oracle_price_update,
         whirlpool_program: orca_whirlpools_client::ID,
