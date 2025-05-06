@@ -1,5 +1,11 @@
 # @defituna/rust-client
 
+## 1.0.14
+
+### Patch Changes
+
+- 8a28c80: bugfix: instruction helpers don't work with token-2022
+
 ## 1.0.13
 
 ### Patch Changes
