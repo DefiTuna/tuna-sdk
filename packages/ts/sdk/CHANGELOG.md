@@ -1,5 +1,11 @@
 # @defituna/sdk
 
+## 1.1.25
+
+### Patch Changes
+
+- 7d879e7f: Adds setConfig method to TunaApiClient & fixes config references
+
 ## 1.1.24
 
 ### Patch Changes

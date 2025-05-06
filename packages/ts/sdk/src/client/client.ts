@@ -31,7 +31,9 @@ const DEFAULT_TIMEOUT: DurationInMs = 5000;
 const DEFAULT_HTTP_RETRIES = 3;
 
 export type TunaApiClientConfig = {
-  /* Timeout of each request (for all of retries). Default: 5000ms */
+  /** Backend API URL */
+  baseURL: string;
+  /** Timeout of each request (for all of retries). Default: 5000ms */
   timeout?: DurationInMs;
   /**
    * Number of times a HTTP request will be retried before the API returns a failure. Default: 3.
@@ -48,16 +50,41 @@ export type TunaApiClientConfig = {
 
 /* API Client */
 export class TunaApiClient {
-  private baseURL: string;
-  private timeout: DurationInMs;
-  private httpRetries: number;
-  private headers: HeadersInit;
+  private _baseURL: string;
+  get baseURL(): string {
+    return this._baseURL;
+  }
 
-  constructor(endpoint: string, config?: TunaApiClient) {
-    this.baseURL = endpoint;
-    this.timeout = config?.timeout ?? DEFAULT_TIMEOUT;
-    this.httpRetries = config?.httpRetries ?? DEFAULT_HTTP_RETRIES;
-    this.headers = config?.headers ?? {};
+  private _timeout: DurationInMs;
+  get timeout(): DurationInMs {
+    return this._timeout;
+  }
+
+  private _httpRetries: number;
+  get httpRetries(): number {
+    return this._httpRetries;
+  }
+
+  private _headers: HeadersInit;
+  get headers(): HeadersInit {
+    return this._headers;
+  }
+
+  constructor(baseURL: string, config?: Partial<Omit<TunaApiClientConfig, "baseURL">>) {
+    this._baseURL = baseURL;
+    this._timeout = config?.timeout ?? DEFAULT_TIMEOUT;
+    this._httpRetries = config?.httpRetries ?? DEFAULT_HTTP_RETRIES;
+    this._headers = config?.headers ?? {};
+  }
+
+  setConfig(config: Partial<TunaApiClientConfig>) {
+    if (config.baseURL) {
+      this._baseURL = config.baseURL;
+    }
+
+    this._timeout = config?.timeout ?? DEFAULT_TIMEOUT;
+    this._httpRetries = config?.httpRetries ?? DEFAULT_HTTP_RETRIES;
+    this._headers = config?.headers ?? {};
   }
 
   private async httpRequest<ResponseData>(
