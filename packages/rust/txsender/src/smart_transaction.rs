@@ -33,6 +33,7 @@ pub struct SmartTxConfig {
     pub jito: Option<SmartTxJitoConfig>,
     /// This value is only used if estimation fails.
     pub default_compute_unit_limit: u32,
+    pub ingore_simulation_error: bool,
     /// The default timeout is 60 seconds.
     pub transaction_timeout: Option<Duration>,
 }
@@ -119,8 +120,12 @@ pub async fn send_smart_transaction(
                     match err.clone() {
                         TransactionError::BlockhashNotFound => continue,
                         err => {
-                            //warn!(target: "log", "Simulation failed with error: {:?}", err);
-                            return Err(err.into());
+                            if !tx_config.ingore_simulation_error {
+                                return Err(err.into());
+                            } else {
+                                warn!(target: "log", "Simulation failed with error: {:?}", err);
+                                break;
+                            }
                         }
                     }
                 }
