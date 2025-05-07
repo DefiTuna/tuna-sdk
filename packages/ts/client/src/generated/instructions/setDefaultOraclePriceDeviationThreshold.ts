@@ -34,17 +34,16 @@ import {
 import { TUNA_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
-export const SET_MAX_PERCENTAGE_OF_LEFTOVERS_DISCRIMINATOR = new Uint8Array([
-  85, 205, 61, 112, 36, 79, 60, 1,
-]);
+export const SET_DEFAULT_ORACLE_PRICE_DEVIATION_THRESHOLD_DISCRIMINATOR =
+  new Uint8Array([142, 158, 143, 67, 206, 91, 139, 120]);
 
-export function getSetMaxPercentageOfLeftoversDiscriminatorBytes() {
+export function getSetDefaultOraclePriceDeviationThresholdDiscriminatorBytes() {
   return fixEncoderSize(getBytesEncoder(), 8).encode(
-    SET_MAX_PERCENTAGE_OF_LEFTOVERS_DISCRIMINATOR
+    SET_DEFAULT_ORACLE_PRICE_DEVIATION_THRESHOLD_DISCRIMINATOR
   );
 }
 
-export type SetMaxPercentageOfLeftoversInstruction<
+export type SetDefaultOraclePriceDeviationThresholdInstruction<
   TProgram extends string = typeof TUNA_PROGRAM_ADDRESS,
   TAccountAuthority extends string | IAccountMeta<string> = string,
   TAccountTunaConfig extends string | IAccountMeta<string> = string,
@@ -64,65 +63,65 @@ export type SetMaxPercentageOfLeftoversInstruction<
     ]
   >;
 
-export type SetMaxPercentageOfLeftoversInstructionData = {
+export type SetDefaultOraclePriceDeviationThresholdInstructionData = {
   discriminator: ReadonlyUint8Array;
-  maxPercentageOfLeftovers: number;
+  oraclePriceDeviationThreshold: number;
 };
 
-export type SetMaxPercentageOfLeftoversInstructionDataArgs = {
-  maxPercentageOfLeftovers: number;
+export type SetDefaultOraclePriceDeviationThresholdInstructionDataArgs = {
+  oraclePriceDeviationThreshold: number;
 };
 
-export function getSetMaxPercentageOfLeftoversInstructionDataEncoder(): Encoder<SetMaxPercentageOfLeftoversInstructionDataArgs> {
+export function getSetDefaultOraclePriceDeviationThresholdInstructionDataEncoder(): Encoder<SetDefaultOraclePriceDeviationThresholdInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['maxPercentageOfLeftovers', getU32Encoder()],
+      ['oraclePriceDeviationThreshold', getU32Encoder()],
     ]),
     (value) => ({
       ...value,
-      discriminator: SET_MAX_PERCENTAGE_OF_LEFTOVERS_DISCRIMINATOR,
+      discriminator: SET_DEFAULT_ORACLE_PRICE_DEVIATION_THRESHOLD_DISCRIMINATOR,
     })
   );
 }
 
-export function getSetMaxPercentageOfLeftoversInstructionDataDecoder(): Decoder<SetMaxPercentageOfLeftoversInstructionData> {
+export function getSetDefaultOraclePriceDeviationThresholdInstructionDataDecoder(): Decoder<SetDefaultOraclePriceDeviationThresholdInstructionData> {
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['maxPercentageOfLeftovers', getU32Decoder()],
+    ['oraclePriceDeviationThreshold', getU32Decoder()],
   ]);
 }
 
-export function getSetMaxPercentageOfLeftoversInstructionDataCodec(): Codec<
-  SetMaxPercentageOfLeftoversInstructionDataArgs,
-  SetMaxPercentageOfLeftoversInstructionData
+export function getSetDefaultOraclePriceDeviationThresholdInstructionDataCodec(): Codec<
+  SetDefaultOraclePriceDeviationThresholdInstructionDataArgs,
+  SetDefaultOraclePriceDeviationThresholdInstructionData
 > {
   return combineCodec(
-    getSetMaxPercentageOfLeftoversInstructionDataEncoder(),
-    getSetMaxPercentageOfLeftoversInstructionDataDecoder()
+    getSetDefaultOraclePriceDeviationThresholdInstructionDataEncoder(),
+    getSetDefaultOraclePriceDeviationThresholdInstructionDataDecoder()
   );
 }
 
-export type SetMaxPercentageOfLeftoversInput<
+export type SetDefaultOraclePriceDeviationThresholdInput<
   TAccountAuthority extends string = string,
   TAccountTunaConfig extends string = string,
 > = {
   authority: TransactionSigner<TAccountAuthority>;
   tunaConfig: Address<TAccountTunaConfig>;
-  maxPercentageOfLeftovers: SetMaxPercentageOfLeftoversInstructionDataArgs['maxPercentageOfLeftovers'];
+  oraclePriceDeviationThreshold: SetDefaultOraclePriceDeviationThresholdInstructionDataArgs['oraclePriceDeviationThreshold'];
 };
 
-export function getSetMaxPercentageOfLeftoversInstruction<
+export function getSetDefaultOraclePriceDeviationThresholdInstruction<
   TAccountAuthority extends string,
   TAccountTunaConfig extends string,
   TProgramAddress extends Address = typeof TUNA_PROGRAM_ADDRESS,
 >(
-  input: SetMaxPercentageOfLeftoversInput<
+  input: SetDefaultOraclePriceDeviationThresholdInput<
     TAccountAuthority,
     TAccountTunaConfig
   >,
   config?: { programAddress?: TProgramAddress }
-): SetMaxPercentageOfLeftoversInstruction<
+): SetDefaultOraclePriceDeviationThresholdInstruction<
   TProgramAddress,
   TAccountAuthority,
   TAccountTunaConfig
@@ -150,10 +149,10 @@ export function getSetMaxPercentageOfLeftoversInstruction<
       getAccountMeta(accounts.tunaConfig),
     ],
     programAddress,
-    data: getSetMaxPercentageOfLeftoversInstructionDataEncoder().encode(
-      args as SetMaxPercentageOfLeftoversInstructionDataArgs
+    data: getSetDefaultOraclePriceDeviationThresholdInstructionDataEncoder().encode(
+      args as SetDefaultOraclePriceDeviationThresholdInstructionDataArgs
     ),
-  } as SetMaxPercentageOfLeftoversInstruction<
+  } as SetDefaultOraclePriceDeviationThresholdInstruction<
     TProgramAddress,
     TAccountAuthority,
     TAccountTunaConfig
@@ -162,7 +161,7 @@ export function getSetMaxPercentageOfLeftoversInstruction<
   return instruction;
 }
 
-export type ParsedSetMaxPercentageOfLeftoversInstruction<
+export type ParsedSetDefaultOraclePriceDeviationThresholdInstruction<
   TProgram extends string = typeof TUNA_PROGRAM_ADDRESS,
   TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
 > = {
@@ -171,17 +170,20 @@ export type ParsedSetMaxPercentageOfLeftoversInstruction<
     authority: TAccountMetas[0];
     tunaConfig: TAccountMetas[1];
   };
-  data: SetMaxPercentageOfLeftoversInstructionData;
+  data: SetDefaultOraclePriceDeviationThresholdInstructionData;
 };
 
-export function parseSetMaxPercentageOfLeftoversInstruction<
+export function parseSetDefaultOraclePriceDeviationThresholdInstruction<
   TProgram extends string,
   TAccountMetas extends readonly IAccountMeta[],
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
     IInstructionWithData<Uint8Array>
-): ParsedSetMaxPercentageOfLeftoversInstruction<TProgram, TAccountMetas> {
+): ParsedSetDefaultOraclePriceDeviationThresholdInstruction<
+  TProgram,
+  TAccountMetas
+> {
   if (instruction.accounts.length < 2) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
@@ -198,7 +200,7 @@ export function parseSetMaxPercentageOfLeftoversInstruction<
       authority: getNextAccount(),
       tunaConfig: getNextAccount(),
     },
-    data: getSetMaxPercentageOfLeftoversInstructionDataDecoder().decode(
+    data: getSetDefaultOraclePriceDeviationThresholdInstructionDataDecoder().decode(
       instruction.data
     ),
   };

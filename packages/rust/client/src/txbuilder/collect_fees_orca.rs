@@ -6,7 +6,7 @@ use orca_whirlpools_client::{get_position_address, get_tick_array_address, Whirl
 use orca_whirlpools_core::get_tick_array_start_tick_index;
 use solana_program::instruction::{AccountMeta, Instruction};
 use solana_program::pubkey::Pubkey;
-use spl_associated_token_account::{get_associated_token_address, get_associated_token_address_with_program_id};
+use spl_associated_token_account::get_associated_token_address_with_program_id;
 
 pub fn collect_fees_orca_instructions(
     authority: &Pubkey,
@@ -49,8 +49,8 @@ pub fn collect_fees_orca_instruction(
 
     let tuna_config_address = get_tuna_config_address().0;
     let tuna_position_address = get_tuna_position_address(&tuna_position.position_mint).0;
-    let tuna_position_owner_ata_a = get_associated_token_address(&authority, &mint_a);
-    let tuna_position_owner_ata_b = get_associated_token_address(&authority, &mint_b);
+    let tuna_position_owner_ata_a = get_associated_token_address_with_program_id(&authority, &mint_a, token_program_a);
+    let tuna_position_owner_ata_b = get_associated_token_address_with_program_id(&authority, &mint_b, token_program_b);
 
     let tick_array_lower_start_tick_index = get_tick_array_start_tick_index(tuna_position.tick_lower_index, whirlpool.tick_spacing);
     let tick_array_lower_address = get_tick_array_address(&whirlpool_address, tick_array_lower_start_tick_index).unwrap().0;
@@ -65,8 +65,8 @@ pub fn collect_fees_orca_instruction(
         mint_b,
         tuna_position: tuna_position_address,
         tuna_position_ata: get_associated_token_address_with_program_id(&tuna_position_address, &tuna_position.position_mint, &spl_token_2022::ID),
-        tuna_position_ata_a: get_associated_token_address(&tuna_position_address, &tuna_position.mint_a),
-        tuna_position_ata_b: get_associated_token_address(&tuna_position_address, &tuna_position.mint_b),
+        tuna_position_ata_a: get_associated_token_address_with_program_id(&tuna_position_address, &tuna_position.mint_a, token_program_a),
+        tuna_position_ata_b: get_associated_token_address_with_program_id(&tuna_position_address, &tuna_position.mint_b, token_program_b),
         tuna_position_owner_ata_a,
         tuna_position_owner_ata_b,
         whirlpool_program: orca_whirlpools_client::ID,

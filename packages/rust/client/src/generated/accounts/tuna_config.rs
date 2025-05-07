@@ -27,9 +27,9 @@ pub fee_recipient: Pubkey,
 /// Owner of the program. Can change ownership and set the admin of the program.
 #[cfg_attr(feature = "serde", serde(with = "serde_with::As::<serde_with::DisplayFromStr>"))]
 pub owner_authority: Pubkey,
-/// OBSOLETE: Maximum allowed swap slippage percentage.
+/// Maximum allowed swap slippage percentage.
 pub max_swap_slippage: u32,
-/// Maximum allowed percentage of leftovers. If it's set to zero, the DEFAULT_MAX_LEFTOVERS is used.
+/// Maximum allowed percentage of leftovers.
 pub max_percentage_of_leftovers: u32,
 /// Suspends lending deposits in case of emergency.
 pub suspend_lending_deposits: bool,
@@ -42,9 +42,11 @@ pub suspend_remove_liquidity: bool,
 /// Liquidation bot wallet.
 #[cfg_attr(feature = "serde", serde(with = "serde_with::As::<serde_with::DisplayFromStr>"))]
 pub liquidator_authority: Pubkey,
+/// Maximum allowed oracle price deviation in percent.
+pub oracle_price_deviation_threshold: u32,
 /// Reserved
 #[cfg_attr(feature = "serde", serde(with = "serde_with::As::<serde_with::Bytes>"))]
-pub reserved: [u8; 180],
+pub reserved: [u8; 176],
 }
 
 

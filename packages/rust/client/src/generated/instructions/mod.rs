@@ -22,10 +22,12 @@
   pub(crate) mod r#repay_bad_debt;
   pub(crate) mod r#repay_debt;
   pub(crate) mod r#set_admin_authority;
+  pub(crate) mod r#set_default_max_percentage_of_leftovers;
+  pub(crate) mod r#set_default_max_swap_slippage;
+  pub(crate) mod r#set_default_oracle_price_deviation_threshold;
   pub(crate) mod r#set_fee_recipient;
   pub(crate) mod r#set_limit_orders;
   pub(crate) mod r#set_liquidator_authority;
-  pub(crate) mod r#set_max_percentage_of_leftovers;
   pub(crate) mod r#set_owner_authority;
   pub(crate) mod r#set_suspended_state;
   pub(crate) mod r#set_tuna_position_flags;
@@ -50,10 +52,12 @@
   pub use self::r#repay_bad_debt::*;
   pub use self::r#repay_debt::*;
   pub use self::r#set_admin_authority::*;
+  pub use self::r#set_default_max_percentage_of_leftovers::*;
+  pub use self::r#set_default_max_swap_slippage::*;
+  pub use self::r#set_default_oracle_price_deviation_threshold::*;
   pub use self::r#set_fee_recipient::*;
   pub use self::r#set_limit_orders::*;
   pub use self::r#set_liquidator_authority::*;
-  pub use self::r#set_max_percentage_of_leftovers::*;
   pub use self::r#set_owner_authority::*;
   pub use self::r#set_suspended_state::*;
   pub use self::r#set_tuna_position_flags::*;

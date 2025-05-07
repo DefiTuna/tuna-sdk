@@ -27,6 +27,24 @@ export const percentFlag = Flags.custom<number>({
   },
 });
 
+export const normalizedNumberArg = Args.custom<number>({
+  parse: async (input) => {
+    const value = Number(input);
+    if (value > 1) throw "Value must be less or equal than 1.0";
+    if (value < 0) throw "Value can't be negative";
+    return value;
+  },
+});
+
+export const normalizedNumberFlag = Flags.custom<number>({
+  parse: async (input) => {
+    const value = Number(input);
+    if (value > 1) throw "Value must be less or equal than 1.0";
+    if (value < 0) throw "Value can't be negative";
+    return value;
+  },
+});
+
 export const addressArg = Args.custom<Address>({
   parse: async (input) => {
     try {

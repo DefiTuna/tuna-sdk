@@ -63,9 +63,9 @@ export type TunaConfig = {
   feeRecipient: Address;
   /** Owner of the program. Can change ownership and set the admin of the program. */
   ownerAuthority: Address;
-  /** OBSOLETE: Maximum allowed swap slippage percentage. */
+  /** Maximum allowed swap slippage percentage. */
   maxSwapSlippage: number;
-  /** Maximum allowed percentage of leftovers. If it's set to zero, the DEFAULT_MAX_LEFTOVERS is used. */
+  /** Maximum allowed percentage of leftovers. */
   maxPercentageOfLeftovers: number;
   /** Suspends lending deposits in case of emergency. */
   suspendLendingDeposits: boolean;
@@ -77,6 +77,8 @@ export type TunaConfig = {
   suspendRemoveLiquidity: boolean;
   /** Liquidation bot wallet. */
   liquidatorAuthority: Address;
+  /** Maximum allowed oracle price deviation in percent. */
+  oraclePriceDeviationThreshold: number;
   /** Reserved */
   reserved: ReadonlyUint8Array;
 };
@@ -92,9 +94,9 @@ export type TunaConfigArgs = {
   feeRecipient: Address;
   /** Owner of the program. Can change ownership and set the admin of the program. */
   ownerAuthority: Address;
-  /** OBSOLETE: Maximum allowed swap slippage percentage. */
+  /** Maximum allowed swap slippage percentage. */
   maxSwapSlippage: number;
-  /** Maximum allowed percentage of leftovers. If it's set to zero, the DEFAULT_MAX_LEFTOVERS is used. */
+  /** Maximum allowed percentage of leftovers. */
   maxPercentageOfLeftovers: number;
   /** Suspends lending deposits in case of emergency. */
   suspendLendingDeposits: boolean;
@@ -106,6 +108,8 @@ export type TunaConfigArgs = {
   suspendRemoveLiquidity: boolean;
   /** Liquidation bot wallet. */
   liquidatorAuthority: Address;
+  /** Maximum allowed oracle price deviation in percent. */
+  oraclePriceDeviationThreshold: number;
   /** Reserved */
   reserved: ReadonlyUint8Array;
 };
@@ -126,7 +130,8 @@ export function getTunaConfigEncoder(): Encoder<TunaConfigArgs> {
       ['suspendAddLiquidity', getBooleanEncoder()],
       ['suspendRemoveLiquidity', getBooleanEncoder()],
       ['liquidatorAuthority', getAddressEncoder()],
-      ['reserved', fixEncoderSize(getBytesEncoder(), 180)],
+      ['oraclePriceDeviationThreshold', getU32Encoder()],
+      ['reserved', fixEncoderSize(getBytesEncoder(), 176)],
     ]),
     (value) => ({ ...value, discriminator: TUNA_CONFIG_DISCRIMINATOR })
   );
@@ -147,7 +152,8 @@ export function getTunaConfigDecoder(): Decoder<TunaConfig> {
     ['suspendAddLiquidity', getBooleanDecoder()],
     ['suspendRemoveLiquidity', getBooleanDecoder()],
     ['liquidatorAuthority', getAddressDecoder()],
-    ['reserved', fixDecoderSize(getBytesDecoder(), 180)],
+    ['oraclePriceDeviationThreshold', getU32Decoder()],
+    ['reserved', fixDecoderSize(getBytesDecoder(), 176)],
   ]);
 }
 

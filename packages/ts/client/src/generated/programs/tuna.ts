@@ -31,10 +31,12 @@ import {
   type ParsedRepayBadDebtInstruction,
   type ParsedRepayDebtInstruction,
   type ParsedSetAdminAuthorityInstruction,
+  type ParsedSetDefaultMaxPercentageOfLeftoversInstruction,
+  type ParsedSetDefaultMaxSwapSlippageInstruction,
+  type ParsedSetDefaultOraclePriceDeviationThresholdInstruction,
   type ParsedSetFeeRecipientInstruction,
   type ParsedSetLimitOrdersInstruction,
   type ParsedSetLiquidatorAuthorityInstruction,
-  type ParsedSetMaxPercentageOfLeftoversInstruction,
   type ParsedSetOwnerAuthorityInstruction,
   type ParsedSetSuspendedStateInstruction,
   type ParsedSetTunaPositionFlagsInstruction,
@@ -136,10 +138,12 @@ export enum TunaInstruction {
   RepayBadDebt,
   RepayDebt,
   SetAdminAuthority,
+  SetDefaultMaxPercentageOfLeftovers,
+  SetDefaultMaxSwapSlippage,
+  SetDefaultOraclePriceDeviationThreshold,
   SetFeeRecipient,
   SetLimitOrders,
   SetLiquidatorAuthority,
-  SetMaxPercentageOfLeftovers,
   SetOwnerAuthority,
   SetSuspendedState,
   SetTunaPositionFlags,
@@ -343,6 +347,39 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
+        new Uint8Array([37, 179, 107, 65, 203, 141, 183, 27])
+      ),
+      0
+    )
+  ) {
+    return TunaInstruction.SetDefaultMaxPercentageOfLeftovers;
+  }
+  if (
+    containsBytes(
+      data,
+      fixEncoderSize(getBytesEncoder(), 8).encode(
+        new Uint8Array([122, 22, 122, 128, 248, 196, 227, 181])
+      ),
+      0
+    )
+  ) {
+    return TunaInstruction.SetDefaultMaxSwapSlippage;
+  }
+  if (
+    containsBytes(
+      data,
+      fixEncoderSize(getBytesEncoder(), 8).encode(
+        new Uint8Array([142, 158, 143, 67, 206, 91, 139, 120])
+      ),
+      0
+    )
+  ) {
+    return TunaInstruction.SetDefaultOraclePriceDeviationThreshold;
+  }
+  if (
+    containsBytes(
+      data,
+      fixEncoderSize(getBytesEncoder(), 8).encode(
         new Uint8Array([227, 18, 215, 42, 237, 246, 151, 66])
       ),
       0
@@ -371,17 +408,6 @@ export function identifyTunaInstruction(
     )
   ) {
     return TunaInstruction.SetLiquidatorAuthority;
-  }
-  if (
-    containsBytes(
-      data,
-      fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([85, 205, 61, 112, 36, 79, 60, 1])
-      ),
-      0
-    )
-  ) {
-    return TunaInstruction.SetMaxPercentageOfLeftovers;
   }
   if (
     containsBytes(
@@ -509,6 +535,15 @@ export type ParsedTunaInstruction<
       instructionType: TunaInstruction.SetAdminAuthority;
     } & ParsedSetAdminAuthorityInstruction<TProgram>)
   | ({
+      instructionType: TunaInstruction.SetDefaultMaxPercentageOfLeftovers;
+    } & ParsedSetDefaultMaxPercentageOfLeftoversInstruction<TProgram>)
+  | ({
+      instructionType: TunaInstruction.SetDefaultMaxSwapSlippage;
+    } & ParsedSetDefaultMaxSwapSlippageInstruction<TProgram>)
+  | ({
+      instructionType: TunaInstruction.SetDefaultOraclePriceDeviationThreshold;
+    } & ParsedSetDefaultOraclePriceDeviationThresholdInstruction<TProgram>)
+  | ({
       instructionType: TunaInstruction.SetFeeRecipient;
     } & ParsedSetFeeRecipientInstruction<TProgram>)
   | ({
@@ -517,9 +552,6 @@ export type ParsedTunaInstruction<
   | ({
       instructionType: TunaInstruction.SetLiquidatorAuthority;
     } & ParsedSetLiquidatorAuthorityInstruction<TProgram>)
-  | ({
-      instructionType: TunaInstruction.SetMaxPercentageOfLeftovers;
-    } & ParsedSetMaxPercentageOfLeftoversInstruction<TProgram>)
   | ({
       instructionType: TunaInstruction.SetOwnerAuthority;
     } & ParsedSetOwnerAuthorityInstruction<TProgram>)

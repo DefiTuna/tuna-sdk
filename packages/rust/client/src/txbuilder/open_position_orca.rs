@@ -4,7 +4,7 @@ use orca_whirlpools_client::{get_position_address, get_whirlpool_address, Whirlp
 use solana_program::instruction::Instruction;
 use solana_program::pubkey::Pubkey;
 use solana_program::system_program;
-use spl_associated_token_account::{get_associated_token_address, get_associated_token_address_with_program_id};
+use spl_associated_token_account::get_associated_token_address_with_program_id;
 
 pub fn open_position_orca_instruction(
     authority: &Pubkey,
@@ -31,8 +31,8 @@ pub fn open_position_orca_instruction(
         tuna_position: tuna_position_address,
         tuna_position_mint: *position_mint,
         tuna_position_ata: get_associated_token_address_with_program_id(&tuna_position_address, &position_mint, &spl_token_2022::ID),
-        tuna_position_ata_a: get_associated_token_address(&tuna_position_address, &mint_a),
-        tuna_position_ata_b: get_associated_token_address(&tuna_position_address, &mint_b),
+        tuna_position_ata_a: get_associated_token_address_with_program_id(&tuna_position_address, &mint_a, token_program_a),
+        tuna_position_ata_b: get_associated_token_address_with_program_id(&tuna_position_address, &mint_b, token_program_b),
         whirlpool_program: orca_whirlpools_client::ID,
         whirlpool: whirlpool_address,
         orca_position: get_position_address(&position_mint).unwrap().0,

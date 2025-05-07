@@ -38,7 +38,7 @@ pub liquidation_fee: u32,
 pub liquidation_threshold: u32,
 /// Limit order execution fee denominated in hundredths of a bip. (Value of 100 is equal to 0.01%)
 pub limit_order_execution_fee: u32,
-/// Oracle price deviation threshold in percent.
+/// Oracle price deviation threshold in percent. If it's set to zero, the default value from the global config is used.
 pub oracle_price_deviation_threshold: u32,
 /// True if the market is disabled (no more position can be opened).
 pub disabled: bool,
@@ -50,7 +50,7 @@ pub borrowed_shares_b: u64,
 pub borrow_limit_a: u64,
 /// Total borrow limit for this market in token B.
 pub borrow_limit_b: u64,
-/// Maximum allowed swap slippage percentage. If it's set to zero, the DEFAULT_MAX_SWAP_SLIPPAGE is used.
+/// Maximum allowed swap slippage percentage. If it's set to zero, the default value from the global config is used.
 pub max_swap_slippage: u32,
 /// Reserved
 #[cfg_attr(feature = "serde", serde(with = "serde_with::As::<serde_with::Bytes>"))]

@@ -77,7 +77,7 @@ export type Market = {
   liquidationThreshold: number;
   /** Limit order execution fee denominated in hundredths of a bip. (Value of 100 is equal to 0.01%) */
   limitOrderExecutionFee: number;
-  /** Oracle price deviation threshold in percent. */
+  /** Oracle price deviation threshold in percent. If it's set to zero, the default value from the global config is used. */
   oraclePriceDeviationThreshold: number;
   /** True if the market is disabled (no more position can be opened). */
   disabled: boolean;
@@ -89,7 +89,7 @@ export type Market = {
   borrowLimitA: bigint;
   /** Total borrow limit for this market in token B. */
   borrowLimitB: bigint;
-  /** Maximum allowed swap slippage percentage. If it's set to zero, the DEFAULT_MAX_SWAP_SLIPPAGE is used. */
+  /** Maximum allowed swap slippage percentage. If it's set to zero, the default value from the global config is used. */
   maxSwapSlippage: number;
   /** Reserved */
   reserved: ReadonlyUint8Array;
@@ -118,7 +118,7 @@ export type MarketArgs = {
   liquidationThreshold: number;
   /** Limit order execution fee denominated in hundredths of a bip. (Value of 100 is equal to 0.01%) */
   limitOrderExecutionFee: number;
-  /** Oracle price deviation threshold in percent. */
+  /** Oracle price deviation threshold in percent. If it's set to zero, the default value from the global config is used. */
   oraclePriceDeviationThreshold: number;
   /** True if the market is disabled (no more position can be opened). */
   disabled: boolean;
@@ -130,7 +130,7 @@ export type MarketArgs = {
   borrowLimitA: number | bigint;
   /** Total borrow limit for this market in token B. */
   borrowLimitB: number | bigint;
-  /** Maximum allowed swap slippage percentage. If it's set to zero, the DEFAULT_MAX_SWAP_SLIPPAGE is used. */
+  /** Maximum allowed swap slippage percentage. If it's set to zero, the default value from the global config is used. */
   maxSwapSlippage: number;
   /** Reserved */
   reserved: ReadonlyUint8Array;

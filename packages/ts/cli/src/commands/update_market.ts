@@ -139,8 +139,7 @@ export default class UpdateMarket extends BaseCommand {
     }
 
     if (flags.oraclePriceDeviationThreshold !== undefined) {
-      newData.oraclePriceDeviationThreshold =
-        flags.oraclePriceDeviationThreshold;
+      newData.oraclePriceDeviationThreshold = flags.oraclePriceDeviationThreshold;
     }
 
     if (flags.maxSwapSlippage !== undefined) {
