@@ -1,5 +1,11 @@
 # @defituna/client
 
+## 1.0.25
+
+### Patch Changes
+
+- 6c7ad44: Tuna program update to 1.0.66
+
 ## 1.0.24
 
 ### Patch Changes
