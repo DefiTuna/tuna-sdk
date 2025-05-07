@@ -2,7 +2,7 @@
   "address": "tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD",
   "metadata": {
     "name": "tuna",
-    "version": "1.0.65",
+    "version": "1.0.66",
     "spec": "0.1.0",
     "description": "DefiTuna"
   },
@@ -1545,6 +1545,96 @@
       ]
     },
     {
+      "name": "set_default_max_percentage_of_leftovers",
+      "discriminator": [
+        37,
+        179,
+        107,
+        65,
+        203,
+        141,
+        183,
+        27
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tuna_config",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "max_percentage_of_leftovers",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "set_default_max_swap_slippage",
+      "discriminator": [
+        122,
+        22,
+        122,
+        128,
+        248,
+        196,
+        227,
+        181
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tuna_config",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "max_swap_slippage",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "set_default_oracle_price_deviation_threshold",
+      "discriminator": [
+        142,
+        158,
+        143,
+        67,
+        206,
+        91,
+        139,
+        120
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tuna_config",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "oracle_price_deviation_threshold",
+          "type": "u32"
+        }
+      ]
+    },
+    {
       "name": "set_fee_recipient",
       "discriminator": [
         227,
@@ -1638,36 +1728,6 @@
         {
           "name": "liquidator_authority",
           "type": "pubkey"
-        }
-      ]
-    },
-    {
-      "name": "set_max_percentage_of_leftovers",
-      "discriminator": [
-        85,
-        205,
-        61,
-        112,
-        36,
-        79,
-        60,
-        1
-      ],
-      "accounts": [
-        {
-          "name": "authority",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "tuna_config",
-          "writable": true
-        }
-      ],
-      "args": [
-        {
-          "name": "max_percentage_of_leftovers",
-          "type": "u32"
         }
       ]
     },
@@ -2494,7 +2554,7 @@
           {
             "name": "oracle_price_deviation_threshold",
             "docs": [
-              "Oracle price deviation threshold in percent."
+              "Oracle price deviation threshold in percent. If it's set to zero, the default value from the global config is used."
             ],
             "type": "u32"
           },
@@ -2536,7 +2596,7 @@
           {
             "name": "max_swap_slippage",
             "docs": [
-              "Maximum allowed swap slippage percentage. If it's set to zero, the DEFAULT_MAX_SWAP_SLIPPAGE is used."
+              "Maximum allowed swap slippage percentage. If it's set to zero, the default value from the global config is used."
             ],
             "type": "u32"
           },
@@ -2745,16 +2805,16 @@
             "type": "pubkey"
           },
           {
-            "name": "_max_swap_slippage",
+            "name": "max_swap_slippage",
             "docs": [
-              "OBSOLETE: Maximum allowed swap slippage percentage."
+              "Maximum allowed swap slippage percentage."
             ],
             "type": "u32"
           },
           {
             "name": "max_percentage_of_leftovers",
             "docs": [
-              "Maximum allowed percentage of leftovers. If it's set to zero, the DEFAULT_MAX_LEFTOVERS is used."
+              "Maximum allowed percentage of leftovers."
             ],
             "type": "u32"
           },
@@ -2794,6 +2854,13 @@
             "type": "pubkey"
           },
           {
+            "name": "oracle_price_deviation_threshold",
+            "docs": [
+              "Maximum allowed oracle price deviation in percent."
+            ],
+            "type": "u32"
+          },
+          {
             "name": "reserved",
             "docs": [
               "Reserved"
@@ -2801,7 +2868,7 @@
             "type": {
               "array": [
                 "u8",
-                180
+                176
               ]
             }
           }
