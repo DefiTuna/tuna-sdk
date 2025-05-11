@@ -1,5 +1,11 @@
 # @defituna/rust-client
 
+## 1.0.17
+
+### Patch Changes
+
+- 9477f09: Rust client refactoring
+
 ## 1.0.16
 
 ### Patch Changes
