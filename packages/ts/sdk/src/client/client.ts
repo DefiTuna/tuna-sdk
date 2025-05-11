@@ -95,11 +95,19 @@ export class TunaApiClient {
     backoff = 100 + Math.floor(Math.random() * 100), // Adding randomness to the initial backoff to avoid "thundering herd" scenario where a lot of clients that get kicked off all at the same time (say some script or something) and fail to connect all retry at exactly the same time too
   ): Promise<ResponseData> {
     try {
+      const controller = new AbortController();
+
+      const abort = setTimeout(() => {
+        controller.abort();
+      }, this.timeout);
+      const signal: AbortSignal = options?.signal || controller.signal;
+
       const response = await fetch(url, {
         ...options,
-        signal: AbortSignal.any([...(options?.signal ? [options.signal] : []), AbortSignal.timeout(this.timeout)]),
+        signal,
         headers: { ...this.headers, ...options?.headers },
       });
+      clearTimeout(abort);
       if (!response.ok) {
         const errorBody = await response.json();
         throw errorBody;
