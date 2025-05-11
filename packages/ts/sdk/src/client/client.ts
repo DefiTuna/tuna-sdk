@@ -100,10 +100,11 @@ export class TunaApiClient {
       const abort = setTimeout(() => {
         controller.abort();
       }, this.timeout);
+      const signal: AbortSignal = options?.signal || controller.signal;
 
       const response = await fetch(url, {
         ...options,
-        signal: AbortSignal.any([...(options?.signal ? [options.signal] : []), controller.signal]),
+        signal,
         headers: { ...this.headers, ...options?.headers },
       });
       clearTimeout(abort);
