@@ -1,5 +1,6 @@
 use crate::accounts::{TunaPosition, Vault};
 use crate::instructions::{LiquidatePositionOrca, LiquidatePositionOrcaInstructionArgs};
+use crate::types::{AccountsType, RemainingAccountsInfo, RemainingAccountsSlice};
 use crate::utils::orca::get_swap_tick_arrays;
 use crate::{get_market_address, get_tuna_config_address, get_tuna_position_address, get_vault_address};
 use orca_whirlpools_client::{get_oracle_address, get_position_address, get_tick_array_address, Whirlpool};
@@ -86,7 +87,37 @@ pub fn liquidate_position_orca_instruction(
     };
 
     ix_builder.instruction_with_remaining_accounts(
-        LiquidatePositionOrcaInstructionArgs { withdraw_percent },
+        LiquidatePositionOrcaInstructionArgs {
+            withdraw_percent,
+            remaining_accounts_info: RemainingAccountsInfo {
+                slices: vec![
+                    RemainingAccountsSlice {
+                        accounts_type: AccountsType::SwapTickArrays,
+                        length: 5,
+                    },
+                    RemainingAccountsSlice {
+                        accounts_type: AccountsType::TickArrayLower,
+                        length: 1,
+                    },
+                    RemainingAccountsSlice {
+                        accounts_type: AccountsType::TickArrayUpper,
+                        length: 1,
+                    },
+                    RemainingAccountsSlice {
+                        accounts_type: AccountsType::PoolVaultTokenA,
+                        length: 1,
+                    },
+                    RemainingAccountsSlice {
+                        accounts_type: AccountsType::PoolVaultTokenB,
+                        length: 1,
+                    },
+                    RemainingAccountsSlice {
+                        accounts_type: AccountsType::WhirlpoolOracle,
+                        length: 1,
+                    },
+                ],
+            },
+        },
         &[
             AccountMeta::new(swap_ticks_arrays[0], false),
             AccountMeta::new(swap_ticks_arrays[1], false),

@@ -6,4 +6,7 @@
  * @see https://github.com/codama-idl/codama
  */
 
+export * from './accountsType';
+export * from './remainingAccountsInfo';
+export * from './remainingAccountsSlice';
 export * from './tunaPositionState';

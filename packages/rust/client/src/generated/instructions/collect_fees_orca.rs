@@ -5,6 +5,7 @@
 //! <https://github.com/codama-idl/codama>
 //!
 
+use crate::generated::types::RemainingAccountsInfo;
 use borsh::BorshSerialize;
 use borsh::BorshDeserialize;
 
@@ -58,11 +59,7 @@ pub struct CollectFeesOrca {
           
               
           pub orca_position: solana_program::pubkey::Pubkey,
-                /// 
-/// Other accounts
-/// 
-
-    
+          
               
           pub token_program_a: solana_program::pubkey::Pubkey,
           
@@ -74,12 +71,12 @@ pub struct CollectFeesOrca {
       }
 
 impl CollectFeesOrca {
-  pub fn instruction(&self) -> solana_program::instruction::Instruction {
-    self.instruction_with_remaining_accounts(&[])
+  pub fn instruction(&self, args: CollectFeesOrcaInstructionArgs) -> solana_program::instruction::Instruction {
+    self.instruction_with_remaining_accounts(args, &[])
   }
   #[allow(clippy::arithmetic_side_effects)]
   #[allow(clippy::vec_init_then_push)]
-  pub fn instruction_with_remaining_accounts(&self, remaining_accounts: &[solana_program::instruction::AccountMeta]) -> solana_program::instruction::Instruction {
+  pub fn instruction_with_remaining_accounts(&self, args: CollectFeesOrcaInstructionArgs, remaining_accounts: &[solana_program::instruction::AccountMeta]) -> solana_program::instruction::Instruction {
     let mut accounts = Vec::with_capacity(16+ remaining_accounts.len());
                             accounts.push(solana_program::instruction::AccountMeta::new(
             self.authority,
@@ -146,7 +143,9 @@ impl CollectFeesOrca {
             false
           ));
                       accounts.extend_from_slice(remaining_accounts);
-    let data = borsh::to_vec(&CollectFeesOrcaInstructionData::new()).unwrap();
+    let mut data = borsh::to_vec(&CollectFeesOrcaInstructionData::new()).unwrap();
+          let mut args = borsh::to_vec(&args).unwrap();
+      data.append(&mut args);
     
     solana_program::instruction::Instruction {
       program_id: crate::TUNA_ID,
@@ -160,13 +159,13 @@ impl CollectFeesOrca {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
  pub struct CollectFeesOrcaInstructionData {
             discriminator: [u8; 8],
-      }
+            }
 
 impl CollectFeesOrcaInstructionData {
   pub fn new() -> Self {
     Self {
                         discriminator: [147, 188, 191, 37, 255, 10, 239, 76],
-                  }
+                                }
   }
 }
 
@@ -176,6 +175,11 @@ impl Default for CollectFeesOrcaInstructionData {
   }
 }
 
+#[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+ pub struct CollectFeesOrcaInstructionArgs {
+                  pub remaining_accounts_info: RemainingAccountsInfo,
+      }
 
 
 /// Instruction builder for `CollectFeesOrca`.
@@ -216,7 +220,8 @@ pub struct CollectFeesOrcaBuilder {
                 token_program_a: Option<solana_program::pubkey::Pubkey>,
                 token_program_b: Option<solana_program::pubkey::Pubkey>,
                 memo_program: Option<solana_program::pubkey::Pubkey>,
-                __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
+                        remaining_accounts_info: Option<RemainingAccountsInfo>,
+        __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
 impl CollectFeesOrcaBuilder {
@@ -294,10 +299,7 @@ impl CollectFeesOrcaBuilder {
                         self.orca_position = Some(orca_position);
                     self
     }
-            /// 
-/// Other accounts
-/// 
-#[inline(always)]
+            #[inline(always)]
     pub fn token_program_a(&mut self, token_program_a: solana_program::pubkey::Pubkey) -> &mut Self {
                         self.token_program_a = Some(token_program_a);
                     self
@@ -312,7 +314,12 @@ impl CollectFeesOrcaBuilder {
                         self.memo_program = Some(memo_program);
                     self
     }
-            /// Add an additional account to the instruction.
+                    #[inline(always)]
+      pub fn remaining_accounts_info(&mut self, remaining_accounts_info: RemainingAccountsInfo) -> &mut Self {
+        self.remaining_accounts_info = Some(remaining_accounts_info);
+        self
+      }
+        /// Add an additional account to the instruction.
   #[inline(always)]
   pub fn add_remaining_account(&mut self, account: solana_program::instruction::AccountMeta) -> &mut Self {
     self.__remaining_accounts.push(account);
@@ -344,8 +351,11 @@ impl CollectFeesOrcaBuilder {
                                         token_program_b: self.token_program_b.expect("token_program_b is not set"),
                                         memo_program: self.memo_program.expect("memo_program is not set"),
                       };
+          let args = CollectFeesOrcaInstructionArgs {
+                                                              remaining_accounts_info: self.remaining_accounts_info.clone().expect("remaining_accounts_info is not set"),
+                                    };
     
-    accounts.instruction_with_remaining_accounts(&self.__remaining_accounts)
+    accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
   }
 }
 
@@ -398,11 +408,7 @@ impl CollectFeesOrcaBuilder {
                 
                     
               pub orca_position: &'b solana_program::account_info::AccountInfo<'a>,
-                        /// 
-/// Other accounts
-/// 
-
-      
+                
                     
               pub token_program_a: &'b solana_program::account_info::AccountInfo<'a>,
                 
@@ -464,11 +470,7 @@ pub struct CollectFeesOrcaCpi<'a, 'b> {
           
               
           pub orca_position: &'b solana_program::account_info::AccountInfo<'a>,
-                /// 
-/// Other accounts
-/// 
-
-    
+          
               
           pub token_program_a: &'b solana_program::account_info::AccountInfo<'a>,
           
@@ -477,13 +479,16 @@ pub struct CollectFeesOrcaCpi<'a, 'b> {
           
               
           pub memo_program: &'b solana_program::account_info::AccountInfo<'a>,
-        }
+            /// The arguments for the instruction.
+    pub __args: CollectFeesOrcaInstructionArgs,
+  }
 
 impl<'a, 'b> CollectFeesOrcaCpi<'a, 'b> {
   pub fn new(
     program: &'b solana_program::account_info::AccountInfo<'a>,
           accounts: CollectFeesOrcaCpiAccounts<'a, 'b>,
-          ) -> Self {
+              args: CollectFeesOrcaInstructionArgs,
+      ) -> Self {
     Self {
       __program: program,
               authority: accounts.authority,
@@ -502,7 +507,8 @@ impl<'a, 'b> CollectFeesOrcaCpi<'a, 'b> {
               token_program_a: accounts.token_program_a,
               token_program_b: accounts.token_program_b,
               memo_program: accounts.memo_program,
-                }
+                    __args: args,
+          }
   }
   #[inline(always)]
   pub fn invoke(&self) -> solana_program::entrypoint::ProgramResult {
@@ -596,7 +602,9 @@ impl<'a, 'b> CollectFeesOrcaCpi<'a, 'b> {
           is_writable: remaining_account.2,
       })
     });
-    let data = borsh::to_vec(&CollectFeesOrcaInstructionData::new()).unwrap();
+    let mut data = borsh::to_vec(&CollectFeesOrcaInstructionData::new()).unwrap();
+          let mut args = borsh::to_vec(&self.__args).unwrap();
+      data.append(&mut args);
     
     let instruction = solana_program::instruction::Instruction {
       program_id: crate::TUNA_ID,
@@ -676,7 +684,8 @@ impl<'a, 'b> CollectFeesOrcaCpiBuilder<'a, 'b> {
               token_program_a: None,
               token_program_b: None,
               memo_program: None,
-                                __remaining_accounts: Vec::new(),
+                                            remaining_accounts_info: None,
+                    __remaining_accounts: Vec::new(),
     });
     Self { instruction }
   }
@@ -751,10 +760,7 @@ impl<'a, 'b> CollectFeesOrcaCpiBuilder<'a, 'b> {
                         self.instruction.orca_position = Some(orca_position);
                     self
     }
-      /// 
-/// Other accounts
-/// 
-#[inline(always)]
+      #[inline(always)]
     pub fn token_program_a(&mut self, token_program_a: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
                         self.instruction.token_program_a = Some(token_program_a);
                     self
@@ -769,7 +775,12 @@ impl<'a, 'b> CollectFeesOrcaCpiBuilder<'a, 'b> {
                         self.instruction.memo_program = Some(memo_program);
                     self
     }
-            /// Add an additional account to the instruction.
+                    #[inline(always)]
+      pub fn remaining_accounts_info(&mut self, remaining_accounts_info: RemainingAccountsInfo) -> &mut Self {
+        self.instruction.remaining_accounts_info = Some(remaining_accounts_info);
+        self
+      }
+        /// Add an additional account to the instruction.
   #[inline(always)]
   pub fn add_remaining_account(&mut self, account: &'b solana_program::account_info::AccountInfo<'a>, is_writable: bool, is_signer: bool) -> &mut Self {
     self.instruction.__remaining_accounts.push((account, is_writable, is_signer));
@@ -791,6 +802,9 @@ impl<'a, 'b> CollectFeesOrcaCpiBuilder<'a, 'b> {
   #[allow(clippy::clone_on_copy)]
   #[allow(clippy::vec_init_then_push)]
   pub fn invoke_signed(&self, signers_seeds: &[&[&[u8]]]) -> solana_program::entrypoint::ProgramResult {
+          let args = CollectFeesOrcaInstructionArgs {
+                                                              remaining_accounts_info: self.instruction.remaining_accounts_info.clone().expect("remaining_accounts_info is not set"),
+                                    };
         let instruction = CollectFeesOrcaCpi {
         __program: self.instruction.__program,
                   
@@ -825,7 +839,8 @@ impl<'a, 'b> CollectFeesOrcaCpiBuilder<'a, 'b> {
           token_program_b: self.instruction.token_program_b.expect("token_program_b is not set"),
                   
           memo_program: self.instruction.memo_program.expect("memo_program is not set"),
-                    };
+                          __args: args,
+            };
     instruction.invoke_signed_with_remaining_accounts(signers_seeds, &self.instruction.__remaining_accounts)
   }
 }
@@ -849,7 +864,8 @@ struct CollectFeesOrcaCpiBuilderInstruction<'a, 'b> {
                 token_program_a: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 token_program_b: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 memo_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-                /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
+                        remaining_accounts_info: Option<RemainingAccountsInfo>,
+        /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
   __remaining_accounts: Vec<(&'b solana_program::account_info::AccountInfo<'a>, bool, bool)>,
 }
 

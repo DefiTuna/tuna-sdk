@@ -50,16 +50,18 @@ export type CollectRewardOrcaInstruction<
   TAccountAuthority extends string | IAccountMeta<string> = string,
   TAccountTunaConfig extends string | IAccountMeta<string> = string,
   TAccountRewardMint extends string | IAccountMeta<string> = string,
+  TAccountRewardTokenProgram extends string | IAccountMeta<string> = string,
   TAccountTunaPosition extends string | IAccountMeta<string> = string,
   TAccountTunaPositionAta extends string | IAccountMeta<string> = string,
+  TAccountTunaPositionOwnerRewardAta extends
+    | string
+    | IAccountMeta<string> = string,
   TAccountWhirlpoolProgram extends string | IAccountMeta<string> = string,
   TAccountWhirlpool extends string | IAccountMeta<string> = string,
   TAccountOrcaPosition extends string | IAccountMeta<string> = string,
   TAccountRewardVault extends string | IAccountMeta<string> = string,
   TAccountTickArrayLower extends string | IAccountMeta<string> = string,
   TAccountTickArrayUpper extends string | IAccountMeta<string> = string,
-  TAccountRewardOwnerAta extends string | IAccountMeta<string> = string,
-  TAccountRewardTokenProgram extends string | IAccountMeta<string> = string,
   TAccountMemoProgram extends string | IAccountMeta<string> = string,
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
@@ -76,12 +78,18 @@ export type CollectRewardOrcaInstruction<
       TAccountRewardMint extends string
         ? ReadonlyAccount<TAccountRewardMint>
         : TAccountRewardMint,
+      TAccountRewardTokenProgram extends string
+        ? ReadonlyAccount<TAccountRewardTokenProgram>
+        : TAccountRewardTokenProgram,
       TAccountTunaPosition extends string
         ? WritableAccount<TAccountTunaPosition>
         : TAccountTunaPosition,
       TAccountTunaPositionAta extends string
         ? ReadonlyAccount<TAccountTunaPositionAta>
         : TAccountTunaPositionAta,
+      TAccountTunaPositionOwnerRewardAta extends string
+        ? WritableAccount<TAccountTunaPositionOwnerRewardAta>
+        : TAccountTunaPositionOwnerRewardAta,
       TAccountWhirlpoolProgram extends string
         ? ReadonlyAccount<TAccountWhirlpoolProgram>
         : TAccountWhirlpoolProgram,
@@ -100,12 +108,6 @@ export type CollectRewardOrcaInstruction<
       TAccountTickArrayUpper extends string
         ? WritableAccount<TAccountTickArrayUpper>
         : TAccountTickArrayUpper,
-      TAccountRewardOwnerAta extends string
-        ? WritableAccount<TAccountRewardOwnerAta>
-        : TAccountRewardOwnerAta,
-      TAccountRewardTokenProgram extends string
-        ? ReadonlyAccount<TAccountRewardTokenProgram>
-        : TAccountRewardTokenProgram,
       TAccountMemoProgram extends string
         ? ReadonlyAccount<TAccountMemoProgram>
         : TAccountMemoProgram,
@@ -151,16 +153,16 @@ export type CollectRewardOrcaInput<
   TAccountAuthority extends string = string,
   TAccountTunaConfig extends string = string,
   TAccountRewardMint extends string = string,
+  TAccountRewardTokenProgram extends string = string,
   TAccountTunaPosition extends string = string,
   TAccountTunaPositionAta extends string = string,
+  TAccountTunaPositionOwnerRewardAta extends string = string,
   TAccountWhirlpoolProgram extends string = string,
   TAccountWhirlpool extends string = string,
   TAccountOrcaPosition extends string = string,
   TAccountRewardVault extends string = string,
   TAccountTickArrayLower extends string = string,
   TAccountTickArrayUpper extends string = string,
-  TAccountRewardOwnerAta extends string = string,
-  TAccountRewardTokenProgram extends string = string,
   TAccountMemoProgram extends string = string,
 > = {
   /**
@@ -171,8 +173,10 @@ export type CollectRewardOrcaInput<
   authority: TransactionSigner<TAccountAuthority>;
   tunaConfig: Address<TAccountTunaConfig>;
   rewardMint: Address<TAccountRewardMint>;
+  rewardTokenProgram: Address<TAccountRewardTokenProgram>;
   tunaPosition: Address<TAccountTunaPosition>;
   tunaPositionAta: Address<TAccountTunaPositionAta>;
+  tunaPositionOwnerRewardAta: Address<TAccountTunaPositionOwnerRewardAta>;
   /**
    *
    * ORCA accounts
@@ -184,13 +188,6 @@ export type CollectRewardOrcaInput<
   rewardVault: Address<TAccountRewardVault>;
   tickArrayLower: Address<TAccountTickArrayLower>;
   tickArrayUpper: Address<TAccountTickArrayUpper>;
-  rewardOwnerAta: Address<TAccountRewardOwnerAta>;
-  /**
-   *
-   * Other accounts
-   *
-   */
-  rewardTokenProgram: Address<TAccountRewardTokenProgram>;
   memoProgram: Address<TAccountMemoProgram>;
   rewardIndex: CollectRewardOrcaInstructionDataArgs['rewardIndex'];
 };
@@ -199,16 +196,16 @@ export function getCollectRewardOrcaInstruction<
   TAccountAuthority extends string,
   TAccountTunaConfig extends string,
   TAccountRewardMint extends string,
+  TAccountRewardTokenProgram extends string,
   TAccountTunaPosition extends string,
   TAccountTunaPositionAta extends string,
+  TAccountTunaPositionOwnerRewardAta extends string,
   TAccountWhirlpoolProgram extends string,
   TAccountWhirlpool extends string,
   TAccountOrcaPosition extends string,
   TAccountRewardVault extends string,
   TAccountTickArrayLower extends string,
   TAccountTickArrayUpper extends string,
-  TAccountRewardOwnerAta extends string,
-  TAccountRewardTokenProgram extends string,
   TAccountMemoProgram extends string,
   TProgramAddress extends Address = typeof TUNA_PROGRAM_ADDRESS,
 >(
@@ -216,16 +213,16 @@ export function getCollectRewardOrcaInstruction<
     TAccountAuthority,
     TAccountTunaConfig,
     TAccountRewardMint,
+    TAccountRewardTokenProgram,
     TAccountTunaPosition,
     TAccountTunaPositionAta,
+    TAccountTunaPositionOwnerRewardAta,
     TAccountWhirlpoolProgram,
     TAccountWhirlpool,
     TAccountOrcaPosition,
     TAccountRewardVault,
     TAccountTickArrayLower,
     TAccountTickArrayUpper,
-    TAccountRewardOwnerAta,
-    TAccountRewardTokenProgram,
     TAccountMemoProgram
   >,
   config?: { programAddress?: TProgramAddress }
@@ -234,16 +231,16 @@ export function getCollectRewardOrcaInstruction<
   TAccountAuthority,
   TAccountTunaConfig,
   TAccountRewardMint,
+  TAccountRewardTokenProgram,
   TAccountTunaPosition,
   TAccountTunaPositionAta,
+  TAccountTunaPositionOwnerRewardAta,
   TAccountWhirlpoolProgram,
   TAccountWhirlpool,
   TAccountOrcaPosition,
   TAccountRewardVault,
   TAccountTickArrayLower,
   TAccountTickArrayUpper,
-  TAccountRewardOwnerAta,
-  TAccountRewardTokenProgram,
   TAccountMemoProgram
 > {
   // Program address.
@@ -254,10 +251,18 @@ export function getCollectRewardOrcaInstruction<
     authority: { value: input.authority ?? null, isWritable: true },
     tunaConfig: { value: input.tunaConfig ?? null, isWritable: false },
     rewardMint: { value: input.rewardMint ?? null, isWritable: false },
+    rewardTokenProgram: {
+      value: input.rewardTokenProgram ?? null,
+      isWritable: false,
+    },
     tunaPosition: { value: input.tunaPosition ?? null, isWritable: true },
     tunaPositionAta: {
       value: input.tunaPositionAta ?? null,
       isWritable: false,
+    },
+    tunaPositionOwnerRewardAta: {
+      value: input.tunaPositionOwnerRewardAta ?? null,
+      isWritable: true,
     },
     whirlpoolProgram: {
       value: input.whirlpoolProgram ?? null,
@@ -268,11 +273,6 @@ export function getCollectRewardOrcaInstruction<
     rewardVault: { value: input.rewardVault ?? null, isWritable: true },
     tickArrayLower: { value: input.tickArrayLower ?? null, isWritable: true },
     tickArrayUpper: { value: input.tickArrayUpper ?? null, isWritable: true },
-    rewardOwnerAta: { value: input.rewardOwnerAta ?? null, isWritable: true },
-    rewardTokenProgram: {
-      value: input.rewardTokenProgram ?? null,
-      isWritable: false,
-    },
     memoProgram: { value: input.memoProgram ?? null, isWritable: false },
   };
   const accounts = originalAccounts as Record<
@@ -289,16 +289,16 @@ export function getCollectRewardOrcaInstruction<
       getAccountMeta(accounts.authority),
       getAccountMeta(accounts.tunaConfig),
       getAccountMeta(accounts.rewardMint),
+      getAccountMeta(accounts.rewardTokenProgram),
       getAccountMeta(accounts.tunaPosition),
       getAccountMeta(accounts.tunaPositionAta),
+      getAccountMeta(accounts.tunaPositionOwnerRewardAta),
       getAccountMeta(accounts.whirlpoolProgram),
       getAccountMeta(accounts.whirlpool),
       getAccountMeta(accounts.orcaPosition),
       getAccountMeta(accounts.rewardVault),
       getAccountMeta(accounts.tickArrayLower),
       getAccountMeta(accounts.tickArrayUpper),
-      getAccountMeta(accounts.rewardOwnerAta),
-      getAccountMeta(accounts.rewardTokenProgram),
       getAccountMeta(accounts.memoProgram),
     ],
     programAddress,
@@ -310,16 +310,16 @@ export function getCollectRewardOrcaInstruction<
     TAccountAuthority,
     TAccountTunaConfig,
     TAccountRewardMint,
+    TAccountRewardTokenProgram,
     TAccountTunaPosition,
     TAccountTunaPositionAta,
+    TAccountTunaPositionOwnerRewardAta,
     TAccountWhirlpoolProgram,
     TAccountWhirlpool,
     TAccountOrcaPosition,
     TAccountRewardVault,
     TAccountTickArrayLower,
     TAccountTickArrayUpper,
-    TAccountRewardOwnerAta,
-    TAccountRewardTokenProgram,
     TAccountMemoProgram
   >;
 
@@ -341,28 +341,22 @@ export type ParsedCollectRewardOrcaInstruction<
     authority: TAccountMetas[0];
     tunaConfig: TAccountMetas[1];
     rewardMint: TAccountMetas[2];
-    tunaPosition: TAccountMetas[3];
-    tunaPositionAta: TAccountMetas[4];
+    rewardTokenProgram: TAccountMetas[3];
+    tunaPosition: TAccountMetas[4];
+    tunaPositionAta: TAccountMetas[5];
+    tunaPositionOwnerRewardAta: TAccountMetas[6];
     /**
      *
      * ORCA accounts
      *
      */
 
-    whirlpoolProgram: TAccountMetas[5];
-    whirlpool: TAccountMetas[6];
-    orcaPosition: TAccountMetas[7];
-    rewardVault: TAccountMetas[8];
-    tickArrayLower: TAccountMetas[9];
-    tickArrayUpper: TAccountMetas[10];
-    rewardOwnerAta: TAccountMetas[11];
-    /**
-     *
-     * Other accounts
-     *
-     */
-
-    rewardTokenProgram: TAccountMetas[12];
+    whirlpoolProgram: TAccountMetas[7];
+    whirlpool: TAccountMetas[8];
+    orcaPosition: TAccountMetas[9];
+    rewardVault: TAccountMetas[10];
+    tickArrayLower: TAccountMetas[11];
+    tickArrayUpper: TAccountMetas[12];
     memoProgram: TAccountMetas[13];
   };
   data: CollectRewardOrcaInstructionData;
@@ -392,16 +386,16 @@ export function parseCollectRewardOrcaInstruction<
       authority: getNextAccount(),
       tunaConfig: getNextAccount(),
       rewardMint: getNextAccount(),
+      rewardTokenProgram: getNextAccount(),
       tunaPosition: getNextAccount(),
       tunaPositionAta: getNextAccount(),
+      tunaPositionOwnerRewardAta: getNextAccount(),
       whirlpoolProgram: getNextAccount(),
       whirlpool: getNextAccount(),
       orcaPosition: getNextAccount(),
       rewardVault: getNextAccount(),
       tickArrayLower: getNextAccount(),
       tickArrayUpper: getNextAccount(),
-      rewardOwnerAta: getNextAccount(),
-      rewardTokenProgram: getNextAccount(),
       memoProgram: getNextAccount(),
     },
     data: getCollectRewardOrcaInstructionDataDecoder().decode(instruction.data),

@@ -34,6 +34,12 @@ import {
 } from '@solana/kit';
 import { TUNA_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+import {
+  getRemainingAccountsInfoDecoder,
+  getRemainingAccountsInfoEncoder,
+  type RemainingAccountsInfo,
+  type RemainingAccountsInfoArgs,
+} from '../types';
 
 export const LIQUIDATE_POSITION_ORCA_DISCRIMINATOR = new Uint8Array([
   62, 92, 176, 35, 164, 100, 46, 141,
@@ -156,10 +162,12 @@ export type LiquidatePositionOrcaInstruction<
 export type LiquidatePositionOrcaInstructionData = {
   discriminator: ReadonlyUint8Array;
   withdrawPercent: number;
+  remainingAccountsInfo: RemainingAccountsInfo;
 };
 
 export type LiquidatePositionOrcaInstructionDataArgs = {
   withdrawPercent: number;
+  remainingAccountsInfo: RemainingAccountsInfoArgs;
 };
 
 export function getLiquidatePositionOrcaInstructionDataEncoder(): Encoder<LiquidatePositionOrcaInstructionDataArgs> {
@@ -167,6 +175,7 @@ export function getLiquidatePositionOrcaInstructionDataEncoder(): Encoder<Liquid
     getStructEncoder([
       ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
       ['withdrawPercent', getU32Encoder()],
+      ['remainingAccountsInfo', getRemainingAccountsInfoEncoder()],
     ]),
     (value) => ({
       ...value,
@@ -179,6 +188,7 @@ export function getLiquidatePositionOrcaInstructionDataDecoder(): Decoder<Liquid
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
     ['withdrawPercent', getU32Decoder()],
+    ['remainingAccountsInfo', getRemainingAccountsInfoDecoder()],
   ]);
 }
 
@@ -247,15 +257,11 @@ export type LiquidatePositionOrcaInput<
   whirlpoolProgram: Address<TAccountWhirlpoolProgram>;
   whirlpool: Address<TAccountWhirlpool>;
   orcaPosition: Address<TAccountOrcaPosition>;
-  /**
-   *
-   * Other accounts
-   *
-   */
   tokenProgramA: Address<TAccountTokenProgramA>;
   tokenProgramB: Address<TAccountTokenProgramB>;
   memoProgram: Address<TAccountMemoProgram>;
   withdrawPercent: LiquidatePositionOrcaInstructionDataArgs['withdrawPercent'];
+  remainingAccountsInfo: LiquidatePositionOrcaInstructionDataArgs['remainingAccountsInfo'];
 };
 
 export function getLiquidatePositionOrcaInstruction<
@@ -493,12 +499,6 @@ export type ParsedLiquidatePositionOrcaInstruction<
     whirlpoolProgram: TAccountMetas[17];
     whirlpool: TAccountMetas[18];
     orcaPosition: TAccountMetas[19];
-    /**
-     *
-     * Other accounts
-     *
-     */
-
     tokenProgramA: TAccountMetas[20];
     tokenProgramB: TAccountMetas[21];
     memoProgram: TAccountMetas[22];

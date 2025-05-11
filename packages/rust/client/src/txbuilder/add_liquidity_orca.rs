@@ -1,8 +1,10 @@
 use crate::accounts::{TunaConfig, TunaPosition, Vault};
 use crate::instructions::{AddLiquidityOrca, AddLiquidityOrcaInstructionArgs};
+use crate::types::{AccountsType, RemainingAccountsInfo, RemainingAccountsSlice};
 use crate::utils::get_create_ata_instructions;
 use crate::utils::orca::get_swap_tick_arrays;
 use crate::{get_market_address, get_tuna_config_address, get_tuna_position_address, get_vault_address};
+use anyhow::{anyhow, Result};
 use orca_whirlpools_client::{
     get_oracle_address, get_position_address, get_tick_array_address, get_whirlpool_address, InitializeTickArray, InitializeTickArrayInstructionArgs, Whirlpool,
 };
@@ -14,6 +16,16 @@ use solana_program::system_program;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 use spl_associated_token_account::instruction::create_associated_token_account_idempotent;
 
+pub struct AddLiquidityOrcaArgs {
+    pub collateral_a: u64,
+    pub collateral_b: u64,
+    pub borrow_a: u64,
+    pub borrow_b: u64,
+    pub min_added_amount_a: u64,
+    pub min_added_amount_b: u64,
+    pub max_swap_slippage: u32,
+}
+
 pub fn add_liquidity_orca_instructions(
     rpc: &RpcClient,
     authority: &Pubkey,
@@ -22,34 +34,44 @@ pub fn add_liquidity_orca_instructions(
     vault_a: &Vault,
     vault_b: &Vault,
     whirlpool: &Whirlpool,
-    token_program_a: &Pubkey,
-    token_program_b: &Pubkey,
-    args: AddLiquidityOrcaInstructionArgs,
-) -> Vec<Instruction> {
-    let mint_a = whirlpool.token_mint_a;
-    let mint_b = whirlpool.token_mint_b;
+    args: AddLiquidityOrcaArgs,
+) -> Result<Vec<Instruction>> {
+    let mint_a_address = whirlpool.token_mint_a;
+    let mint_b_address = whirlpool.token_mint_b;
+
+    let mint_accounts = rpc.get_multiple_accounts(&[mint_a_address.into(), mint_b_address.into()])?;
+    let mint_a_account = mint_accounts[0].as_ref().ok_or(anyhow!("Token A mint account not found"))?;
+    let mint_b_account = mint_accounts[1].as_ref().ok_or(anyhow!("Token B mint account not found"))?;
+
     let tick_spacing = whirlpool.tick_spacing;
+    let whirlpool_address = get_whirlpool_address(&whirlpool.whirlpools_config, &mint_a_address, &mint_b_address, tick_spacing)?.0;
 
-    let whirlpool_address = get_whirlpool_address(&whirlpool.whirlpools_config, &mint_a, &mint_b, tick_spacing).unwrap().0;
-
-    let authority_ata_a_instructions = get_create_ata_instructions(&mint_a, authority, authority, token_program_a, args.collateral_a);
-    let authority_ata_b_instructions = get_create_ata_instructions(&mint_b, authority, authority, token_program_b, args.collateral_b);
+    let authority_ata_a_instructions = get_create_ata_instructions(&mint_a_address, authority, authority, &mint_a_account.owner, args.collateral_a);
+    let authority_ata_b_instructions = get_create_ata_instructions(&mint_b_address, authority, authority, &mint_b_account.owner, args.collateral_b);
 
     let mut instructions = vec![];
     instructions.extend(authority_ata_a_instructions.create);
     instructions.extend(authority_ata_b_instructions.create);
-    instructions.push(create_associated_token_account_idempotent(authority, &tuna_config.fee_recipient, &mint_a, token_program_a));
-    instructions.push(create_associated_token_account_idempotent(authority, &tuna_config.fee_recipient, &mint_b, token_program_b));
+    instructions.push(create_associated_token_account_idempotent(
+        authority,
+        &tuna_config.fee_recipient,
+        &mint_a_address,
+        &mint_a_account.owner,
+    ));
+    instructions.push(create_associated_token_account_idempotent(
+        authority,
+        &tuna_config.fee_recipient,
+        &mint_b_address,
+        &mint_b_account.owner,
+    ));
 
     let lower_tick_array_start_index = get_tick_array_start_tick_index(tuna_position.tick_lower_index, tick_spacing);
     let upper_tick_array_start_index = get_tick_array_start_tick_index(tuna_position.tick_upper_index, tick_spacing);
 
-    let lower_tick_array_address = get_tick_array_address(&whirlpool_address, lower_tick_array_start_index).unwrap().0;
-    let upper_tick_array_address = get_tick_array_address(&whirlpool_address, upper_tick_array_start_index).unwrap().0;
+    let lower_tick_array_address = get_tick_array_address(&whirlpool_address, lower_tick_array_start_index)?.0;
+    let upper_tick_array_address = get_tick_array_address(&whirlpool_address, upper_tick_array_start_index)?.0;
 
-    let tick_array_infos = rpc
-        .get_multiple_accounts(&[lower_tick_array_address.into(), upper_tick_array_address.into()])
-        .unwrap();
+    let tick_array_infos = rpc.get_multiple_accounts(&[lower_tick_array_address.into(), upper_tick_array_address.into()])?;
 
     if tick_array_infos[0].is_none() {
         instructions.push(
@@ -86,14 +108,14 @@ pub fn add_liquidity_orca_instructions(
         vault_a,
         vault_b,
         whirlpool,
-        token_program_a,
-        token_program_b,
+        &mint_a_account.owner,
+        &mint_b_account.owner,
         args,
     ));
     instructions.extend(authority_ata_a_instructions.cleanup);
     instructions.extend(authority_ata_b_instructions.cleanup);
 
-    instructions
+    Ok(instructions)
 }
 
 pub fn add_liquidity_orca_instruction(
@@ -105,7 +127,7 @@ pub fn add_liquidity_orca_instruction(
     whirlpool: &Whirlpool,
     token_program_a: &Pubkey,
     token_program_b: &Pubkey,
-    args: AddLiquidityOrcaInstructionArgs,
+    args: AddLiquidityOrcaArgs,
 ) -> Instruction {
     let mint_a = whirlpool.token_mint_a;
     let mint_b = whirlpool.token_mint_b;
@@ -164,7 +186,43 @@ pub fn add_liquidity_orca_instruction(
     };
 
     ix_builder.instruction_with_remaining_accounts(
-        args,
+        AddLiquidityOrcaInstructionArgs {
+            collateral_a: args.collateral_a,
+            collateral_b: args.collateral_b,
+            borrow_a: args.borrow_a,
+            borrow_b: args.borrow_b,
+            min_added_amount_a: args.min_added_amount_a,
+            min_added_amount_b: args.min_added_amount_b,
+            max_swap_slippage: args.max_swap_slippage,
+            remaining_accounts_info: RemainingAccountsInfo {
+                slices: vec![
+                    RemainingAccountsSlice {
+                        accounts_type: AccountsType::SwapTickArrays,
+                        length: 5,
+                    },
+                    RemainingAccountsSlice {
+                        accounts_type: AccountsType::TickArrayLower,
+                        length: 1,
+                    },
+                    RemainingAccountsSlice {
+                        accounts_type: AccountsType::TickArrayUpper,
+                        length: 1,
+                    },
+                    RemainingAccountsSlice {
+                        accounts_type: AccountsType::PoolVaultTokenA,
+                        length: 1,
+                    },
+                    RemainingAccountsSlice {
+                        accounts_type: AccountsType::PoolVaultTokenB,
+                        length: 1,
+                    },
+                    RemainingAccountsSlice {
+                        accounts_type: AccountsType::WhirlpoolOracle,
+                        length: 1,
+                    },
+                ],
+            },
+        },
         &[
             AccountMeta::new(swap_ticks_arrays[0], false),
             AccountMeta::new(swap_ticks_arrays[1], false),

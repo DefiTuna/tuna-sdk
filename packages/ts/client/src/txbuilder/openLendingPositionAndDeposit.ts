@@ -1,9 +1,11 @@
 import { Account, GetAccountInfoApi, IInstruction, Rpc, TransactionSigner } from "@solana/kit";
-import { depositInstructions } from "./deposit.ts";
+import { Mint } from "@solana-program/token-2022";
+
 import { fetchMaybeLendingPosition } from "../generated";
 import { getLendingPositionAddress } from "../pda.ts";
+
+import { depositInstructions } from "./deposit.ts";
 import { openLendingPositionInstruction } from "./openLendingPosition.ts";
-import { Mint } from "@solana-program/token-2022";
 
 export async function openLendingPositionAndDepositInstructions(
   rpc: Rpc<GetAccountInfoApi>,

@@ -1,29 +1,51 @@
 use crate::accounts::{TunaPosition, Vault};
 use crate::instructions::{RemoveLiquidityOrca, RemoveLiquidityOrcaInstructionArgs};
+use crate::types::{AccountsType, RemainingAccountsInfo, RemainingAccountsSlice};
 use crate::utils::get_create_ata_instructions;
 use crate::utils::orca::get_swap_tick_arrays;
 use crate::{get_market_address, get_tuna_config_address, get_tuna_position_address, get_vault_address};
+use anyhow::{anyhow, Result};
 use orca_whirlpools_client::{get_oracle_address, get_position_address, get_tick_array_address, Whirlpool};
 use orca_whirlpools_core::get_tick_array_start_tick_index;
+use solana_client::rpc_client::RpcClient;
 use solana_program::instruction::{AccountMeta, Instruction};
 use solana_program::pubkey::Pubkey;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 
+pub struct RemoveLiquidityOrcaArgs {
+    pub withdraw_percent: u32,
+    pub swap_to_token: u8,
+    pub min_removed_amount_a: u64,
+    pub min_removed_amount_b: u64,
+    pub max_swap_slippage: u32,
+}
+
+// TODO: rewards support
 pub fn remove_liquidity_orca_instructions(
+    rpc: &RpcClient,
     authority: &Pubkey,
     tuna_position: &TunaPosition,
     vault_a: &Vault,
     vault_b: &Vault,
     whirlpool: &Whirlpool,
-    token_program_a: &Pubkey,
-    token_program_b: &Pubkey,
-    args: RemoveLiquidityOrcaInstructionArgs,
-) -> Vec<Instruction> {
-    let mint_a = whirlpool.token_mint_a;
-    let mint_b = whirlpool.token_mint_b;
+    args: RemoveLiquidityOrcaArgs,
+) -> Result<Vec<Instruction>> {
+    let mint_a_address = whirlpool.token_mint_a;
+    let mint_b_address = whirlpool.token_mint_b;
 
-    let authority_ata_a_instructions = get_create_ata_instructions(&mint_a, authority, authority, token_program_a, 0);
-    let authority_ata_b_instructions = get_create_ata_instructions(&mint_b, authority, authority, token_program_b, 0);
+    let mut all_mint_addresses = vec![mint_a_address, mint_b_address];
+    for reward_info in &whirlpool.reward_infos {
+        if reward_info.mint != Pubkey::default() {
+            all_mint_addresses.push(reward_info.mint);
+        }
+    }
+
+    let mint_accounts = rpc.get_multiple_accounts(all_mint_addresses[0..all_mint_addresses.len()].into())?;
+    let mint_a_account = mint_accounts[0].as_ref().ok_or(anyhow!("Token A mint account not found"))?;
+    let mint_b_account = mint_accounts[1].as_ref().ok_or(anyhow!("Token B mint account not found"))?;
+
+    let authority_ata_a_instructions = get_create_ata_instructions(&mint_a_address, authority, authority, &mint_a_account.owner, 0);
+    let authority_ata_b_instructions = get_create_ata_instructions(&mint_b_address, authority, authority, &mint_b_account.owner, 0);
 
     let mut instructions = vec![];
     instructions.extend(authority_ata_a_instructions.create);
@@ -35,17 +57,18 @@ pub fn remove_liquidity_orca_instructions(
         vault_a,
         vault_b,
         whirlpool,
-        token_program_a,
-        token_program_b,
+        &mint_a_account.owner,
+        &mint_b_account.owner,
         args,
     ));
 
     instructions.extend(authority_ata_a_instructions.cleanup);
     instructions.extend(authority_ata_b_instructions.cleanup);
 
-    instructions
+    Ok(instructions)
 }
 
+// TODO: rewards support
 pub fn remove_liquidity_orca_instruction(
     authority: &Pubkey,
     tuna_position: &TunaPosition,
@@ -54,7 +77,7 @@ pub fn remove_liquidity_orca_instruction(
     whirlpool: &Whirlpool,
     token_program_a: &Pubkey,
     token_program_b: &Pubkey,
-    args: RemoveLiquidityOrcaInstructionArgs,
+    args: RemoveLiquidityOrcaArgs,
 ) -> Instruction {
     let mint_a = whirlpool.token_mint_a;
     let mint_b = whirlpool.token_mint_b;
@@ -110,7 +133,41 @@ pub fn remove_liquidity_orca_instruction(
     };
 
     ix_builder.instruction_with_remaining_accounts(
-        args,
+        RemoveLiquidityOrcaInstructionArgs {
+            withdraw_percent: args.withdraw_percent,
+            swap_to_token: args.swap_to_token,
+            min_removed_amount_a: args.min_removed_amount_a,
+            min_removed_amount_b: args.min_removed_amount_b,
+            max_swap_slippage: args.max_swap_slippage,
+            remaining_accounts_info: RemainingAccountsInfo {
+                slices: vec![
+                    RemainingAccountsSlice {
+                        accounts_type: AccountsType::SwapTickArrays,
+                        length: 5,
+                    },
+                    RemainingAccountsSlice {
+                        accounts_type: AccountsType::TickArrayLower,
+                        length: 1,
+                    },
+                    RemainingAccountsSlice {
+                        accounts_type: AccountsType::TickArrayUpper,
+                        length: 1,
+                    },
+                    RemainingAccountsSlice {
+                        accounts_type: AccountsType::PoolVaultTokenA,
+                        length: 1,
+                    },
+                    RemainingAccountsSlice {
+                        accounts_type: AccountsType::PoolVaultTokenB,
+                        length: 1,
+                    },
+                    RemainingAccountsSlice {
+                        accounts_type: AccountsType::WhirlpoolOracle,
+                        length: 1,
+                    },
+                ],
+            },
+        },
         &[
             AccountMeta::new(swap_ticks_arrays[0], false),
             AccountMeta::new(swap_ticks_arrays[1], false),

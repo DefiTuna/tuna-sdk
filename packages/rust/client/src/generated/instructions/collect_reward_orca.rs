@@ -26,10 +26,16 @@ pub struct CollectRewardOrca {
           pub reward_mint: solana_program::pubkey::Pubkey,
           
               
+          pub reward_token_program: solana_program::pubkey::Pubkey,
+          
+              
           pub tuna_position: solana_program::pubkey::Pubkey,
           
               
           pub tuna_position_ata: solana_program::pubkey::Pubkey,
+          
+              
+          pub tuna_position_owner_reward_ata: solana_program::pubkey::Pubkey,
                 /// 
 /// ORCA accounts
 /// 
@@ -52,16 +58,6 @@ pub struct CollectRewardOrca {
           
               
           pub tick_array_upper: solana_program::pubkey::Pubkey,
-          
-              
-          pub reward_owner_ata: solana_program::pubkey::Pubkey,
-                /// 
-/// Other accounts
-/// 
-
-    
-              
-          pub reward_token_program: solana_program::pubkey::Pubkey,
           
               
           pub memo_program: solana_program::pubkey::Pubkey,
@@ -87,12 +83,20 @@ impl CollectRewardOrca {
             self.reward_mint,
             false
           ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.reward_token_program,
+            false
+          ));
                                           accounts.push(solana_program::instruction::AccountMeta::new(
             self.tuna_position,
             false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.tuna_position_ata,
+            false
+          ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new(
+            self.tuna_position_owner_reward_ata,
             false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -117,14 +121,6 @@ impl CollectRewardOrca {
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new(
             self.tick_array_upper,
-            false
-          ));
-                                          accounts.push(solana_program::instruction::AccountMeta::new(
-            self.reward_owner_ata,
-            false
-          ));
-                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            self.reward_token_program,
             false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -178,32 +174,32 @@ impl Default for CollectRewardOrcaInstructionData {
                       ///   0. `[writable, signer]` authority
           ///   1. `[]` tuna_config
           ///   2. `[]` reward_mint
-                ///   3. `[writable]` tuna_position
-          ///   4. `[]` tuna_position_ata
-          ///   5. `[]` whirlpool_program
-          ///   6. `[]` whirlpool
-                ///   7. `[writable]` orca_position
-                ///   8. `[writable]` reward_vault
-                ///   9. `[writable]` tick_array_lower
-                ///   10. `[writable]` tick_array_upper
-                ///   11. `[writable]` reward_owner_ata
-          ///   12. `[]` reward_token_program
+          ///   3. `[]` reward_token_program
+                ///   4. `[writable]` tuna_position
+          ///   5. `[]` tuna_position_ata
+                ///   6. `[writable]` tuna_position_owner_reward_ata
+          ///   7. `[]` whirlpool_program
+          ///   8. `[]` whirlpool
+                ///   9. `[writable]` orca_position
+                ///   10. `[writable]` reward_vault
+                ///   11. `[writable]` tick_array_lower
+                ///   12. `[writable]` tick_array_upper
           ///   13. `[]` memo_program
 #[derive(Clone, Debug, Default)]
 pub struct CollectRewardOrcaBuilder {
             authority: Option<solana_program::pubkey::Pubkey>,
                 tuna_config: Option<solana_program::pubkey::Pubkey>,
                 reward_mint: Option<solana_program::pubkey::Pubkey>,
+                reward_token_program: Option<solana_program::pubkey::Pubkey>,
                 tuna_position: Option<solana_program::pubkey::Pubkey>,
                 tuna_position_ata: Option<solana_program::pubkey::Pubkey>,
+                tuna_position_owner_reward_ata: Option<solana_program::pubkey::Pubkey>,
                 whirlpool_program: Option<solana_program::pubkey::Pubkey>,
                 whirlpool: Option<solana_program::pubkey::Pubkey>,
                 orca_position: Option<solana_program::pubkey::Pubkey>,
                 reward_vault: Option<solana_program::pubkey::Pubkey>,
                 tick_array_lower: Option<solana_program::pubkey::Pubkey>,
                 tick_array_upper: Option<solana_program::pubkey::Pubkey>,
-                reward_owner_ata: Option<solana_program::pubkey::Pubkey>,
-                reward_token_program: Option<solana_program::pubkey::Pubkey>,
                 memo_program: Option<solana_program::pubkey::Pubkey>,
                         reward_index: Option<u8>,
         __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
@@ -232,6 +228,11 @@ impl CollectRewardOrcaBuilder {
                     self
     }
             #[inline(always)]
+    pub fn reward_token_program(&mut self, reward_token_program: solana_program::pubkey::Pubkey) -> &mut Self {
+                        self.reward_token_program = Some(reward_token_program);
+                    self
+    }
+            #[inline(always)]
     pub fn tuna_position(&mut self, tuna_position: solana_program::pubkey::Pubkey) -> &mut Self {
                         self.tuna_position = Some(tuna_position);
                     self
@@ -239,6 +240,11 @@ impl CollectRewardOrcaBuilder {
             #[inline(always)]
     pub fn tuna_position_ata(&mut self, tuna_position_ata: solana_program::pubkey::Pubkey) -> &mut Self {
                         self.tuna_position_ata = Some(tuna_position_ata);
+                    self
+    }
+            #[inline(always)]
+    pub fn tuna_position_owner_reward_ata(&mut self, tuna_position_owner_reward_ata: solana_program::pubkey::Pubkey) -> &mut Self {
+                        self.tuna_position_owner_reward_ata = Some(tuna_position_owner_reward_ata);
                     self
     }
             /// 
@@ -275,19 +281,6 @@ impl CollectRewardOrcaBuilder {
                     self
     }
             #[inline(always)]
-    pub fn reward_owner_ata(&mut self, reward_owner_ata: solana_program::pubkey::Pubkey) -> &mut Self {
-                        self.reward_owner_ata = Some(reward_owner_ata);
-                    self
-    }
-            /// 
-/// Other accounts
-/// 
-#[inline(always)]
-    pub fn reward_token_program(&mut self, reward_token_program: solana_program::pubkey::Pubkey) -> &mut Self {
-                        self.reward_token_program = Some(reward_token_program);
-                    self
-    }
-            #[inline(always)]
     pub fn memo_program(&mut self, memo_program: solana_program::pubkey::Pubkey) -> &mut Self {
                         self.memo_program = Some(memo_program);
                     self
@@ -315,16 +308,16 @@ impl CollectRewardOrcaBuilder {
                               authority: self.authority.expect("authority is not set"),
                                         tuna_config: self.tuna_config.expect("tuna_config is not set"),
                                         reward_mint: self.reward_mint.expect("reward_mint is not set"),
+                                        reward_token_program: self.reward_token_program.expect("reward_token_program is not set"),
                                         tuna_position: self.tuna_position.expect("tuna_position is not set"),
                                         tuna_position_ata: self.tuna_position_ata.expect("tuna_position_ata is not set"),
+                                        tuna_position_owner_reward_ata: self.tuna_position_owner_reward_ata.expect("tuna_position_owner_reward_ata is not set"),
                                         whirlpool_program: self.whirlpool_program.expect("whirlpool_program is not set"),
                                         whirlpool: self.whirlpool.expect("whirlpool is not set"),
                                         orca_position: self.orca_position.expect("orca_position is not set"),
                                         reward_vault: self.reward_vault.expect("reward_vault is not set"),
                                         tick_array_lower: self.tick_array_lower.expect("tick_array_lower is not set"),
                                         tick_array_upper: self.tick_array_upper.expect("tick_array_upper is not set"),
-                                        reward_owner_ata: self.reward_owner_ata.expect("reward_owner_ata is not set"),
-                                        reward_token_program: self.reward_token_program.expect("reward_token_program is not set"),
                                         memo_program: self.memo_program.expect("memo_program is not set"),
                       };
           let args = CollectRewardOrcaInstructionArgs {
@@ -352,10 +345,16 @@ impl CollectRewardOrcaBuilder {
               pub reward_mint: &'b solana_program::account_info::AccountInfo<'a>,
                 
                     
+              pub reward_token_program: &'b solana_program::account_info::AccountInfo<'a>,
+                
+                    
               pub tuna_position: &'b solana_program::account_info::AccountInfo<'a>,
                 
                     
               pub tuna_position_ata: &'b solana_program::account_info::AccountInfo<'a>,
+                
+                    
+              pub tuna_position_owner_reward_ata: &'b solana_program::account_info::AccountInfo<'a>,
                         /// 
 /// ORCA accounts
 /// 
@@ -380,16 +379,6 @@ impl CollectRewardOrcaBuilder {
               pub tick_array_upper: &'b solana_program::account_info::AccountInfo<'a>,
                 
                     
-              pub reward_owner_ata: &'b solana_program::account_info::AccountInfo<'a>,
-                        /// 
-/// Other accounts
-/// 
-
-      
-                    
-              pub reward_token_program: &'b solana_program::account_info::AccountInfo<'a>,
-                
-                    
               pub memo_program: &'b solana_program::account_info::AccountInfo<'a>,
             }
 
@@ -412,10 +401,16 @@ pub struct CollectRewardOrcaCpi<'a, 'b> {
           pub reward_mint: &'b solana_program::account_info::AccountInfo<'a>,
           
               
+          pub reward_token_program: &'b solana_program::account_info::AccountInfo<'a>,
+          
+              
           pub tuna_position: &'b solana_program::account_info::AccountInfo<'a>,
           
               
           pub tuna_position_ata: &'b solana_program::account_info::AccountInfo<'a>,
+          
+              
+          pub tuna_position_owner_reward_ata: &'b solana_program::account_info::AccountInfo<'a>,
                 /// 
 /// ORCA accounts
 /// 
@@ -440,16 +435,6 @@ pub struct CollectRewardOrcaCpi<'a, 'b> {
           pub tick_array_upper: &'b solana_program::account_info::AccountInfo<'a>,
           
               
-          pub reward_owner_ata: &'b solana_program::account_info::AccountInfo<'a>,
-                /// 
-/// Other accounts
-/// 
-
-    
-              
-          pub reward_token_program: &'b solana_program::account_info::AccountInfo<'a>,
-          
-              
           pub memo_program: &'b solana_program::account_info::AccountInfo<'a>,
             /// The arguments for the instruction.
     pub __args: CollectRewardOrcaInstructionArgs,
@@ -466,16 +451,16 @@ impl<'a, 'b> CollectRewardOrcaCpi<'a, 'b> {
               authority: accounts.authority,
               tuna_config: accounts.tuna_config,
               reward_mint: accounts.reward_mint,
+              reward_token_program: accounts.reward_token_program,
               tuna_position: accounts.tuna_position,
               tuna_position_ata: accounts.tuna_position_ata,
+              tuna_position_owner_reward_ata: accounts.tuna_position_owner_reward_ata,
               whirlpool_program: accounts.whirlpool_program,
               whirlpool: accounts.whirlpool,
               orca_position: accounts.orca_position,
               reward_vault: accounts.reward_vault,
               tick_array_lower: accounts.tick_array_lower,
               tick_array_upper: accounts.tick_array_upper,
-              reward_owner_ata: accounts.reward_owner_ata,
-              reward_token_program: accounts.reward_token_program,
               memo_program: accounts.memo_program,
                     __args: args,
           }
@@ -513,12 +498,20 @@ impl<'a, 'b> CollectRewardOrcaCpi<'a, 'b> {
             *self.reward_mint.key,
             false
           ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.reward_token_program.key,
+            false
+          ));
                                           accounts.push(solana_program::instruction::AccountMeta::new(
             *self.tuna_position.key,
             false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.tuna_position_ata.key,
+            false
+          ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new(
+            *self.tuna_position_owner_reward_ata.key,
             false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -543,14 +536,6 @@ impl<'a, 'b> CollectRewardOrcaCpi<'a, 'b> {
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new(
             *self.tick_array_upper.key,
-            false
-          ));
-                                          accounts.push(solana_program::instruction::AccountMeta::new(
-            *self.reward_owner_ata.key,
-            false
-          ));
-                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
-            *self.reward_token_program.key,
             false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -578,16 +563,16 @@ impl<'a, 'b> CollectRewardOrcaCpi<'a, 'b> {
                   account_infos.push(self.authority.clone());
                         account_infos.push(self.tuna_config.clone());
                         account_infos.push(self.reward_mint.clone());
+                        account_infos.push(self.reward_token_program.clone());
                         account_infos.push(self.tuna_position.clone());
                         account_infos.push(self.tuna_position_ata.clone());
+                        account_infos.push(self.tuna_position_owner_reward_ata.clone());
                         account_infos.push(self.whirlpool_program.clone());
                         account_infos.push(self.whirlpool.clone());
                         account_infos.push(self.orca_position.clone());
                         account_infos.push(self.reward_vault.clone());
                         account_infos.push(self.tick_array_lower.clone());
                         account_infos.push(self.tick_array_upper.clone());
-                        account_infos.push(self.reward_owner_ata.clone());
-                        account_infos.push(self.reward_token_program.clone());
                         account_infos.push(self.memo_program.clone());
               remaining_accounts.iter().for_each(|remaining_account| account_infos.push(remaining_account.0.clone()));
 
@@ -606,16 +591,16 @@ impl<'a, 'b> CollectRewardOrcaCpi<'a, 'b> {
                       ///   0. `[writable, signer]` authority
           ///   1. `[]` tuna_config
           ///   2. `[]` reward_mint
-                ///   3. `[writable]` tuna_position
-          ///   4. `[]` tuna_position_ata
-          ///   5. `[]` whirlpool_program
-          ///   6. `[]` whirlpool
-                ///   7. `[writable]` orca_position
-                ///   8. `[writable]` reward_vault
-                ///   9. `[writable]` tick_array_lower
-                ///   10. `[writable]` tick_array_upper
-                ///   11. `[writable]` reward_owner_ata
-          ///   12. `[]` reward_token_program
+          ///   3. `[]` reward_token_program
+                ///   4. `[writable]` tuna_position
+          ///   5. `[]` tuna_position_ata
+                ///   6. `[writable]` tuna_position_owner_reward_ata
+          ///   7. `[]` whirlpool_program
+          ///   8. `[]` whirlpool
+                ///   9. `[writable]` orca_position
+                ///   10. `[writable]` reward_vault
+                ///   11. `[writable]` tick_array_lower
+                ///   12. `[writable]` tick_array_upper
           ///   13. `[]` memo_program
 #[derive(Clone, Debug)]
 pub struct CollectRewardOrcaCpiBuilder<'a, 'b> {
@@ -629,16 +614,16 @@ impl<'a, 'b> CollectRewardOrcaCpiBuilder<'a, 'b> {
               authority: None,
               tuna_config: None,
               reward_mint: None,
+              reward_token_program: None,
               tuna_position: None,
               tuna_position_ata: None,
+              tuna_position_owner_reward_ata: None,
               whirlpool_program: None,
               whirlpool: None,
               orca_position: None,
               reward_vault: None,
               tick_array_lower: None,
               tick_array_upper: None,
-              reward_owner_ata: None,
-              reward_token_program: None,
               memo_program: None,
                                             reward_index: None,
                     __remaining_accounts: Vec::new(),
@@ -664,6 +649,11 @@ impl<'a, 'b> CollectRewardOrcaCpiBuilder<'a, 'b> {
                     self
     }
       #[inline(always)]
+    pub fn reward_token_program(&mut self, reward_token_program: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+                        self.instruction.reward_token_program = Some(reward_token_program);
+                    self
+    }
+      #[inline(always)]
     pub fn tuna_position(&mut self, tuna_position: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
                         self.instruction.tuna_position = Some(tuna_position);
                     self
@@ -671,6 +661,11 @@ impl<'a, 'b> CollectRewardOrcaCpiBuilder<'a, 'b> {
       #[inline(always)]
     pub fn tuna_position_ata(&mut self, tuna_position_ata: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
                         self.instruction.tuna_position_ata = Some(tuna_position_ata);
+                    self
+    }
+      #[inline(always)]
+    pub fn tuna_position_owner_reward_ata(&mut self, tuna_position_owner_reward_ata: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+                        self.instruction.tuna_position_owner_reward_ata = Some(tuna_position_owner_reward_ata);
                     self
     }
       /// 
@@ -704,19 +699,6 @@ impl<'a, 'b> CollectRewardOrcaCpiBuilder<'a, 'b> {
       #[inline(always)]
     pub fn tick_array_upper(&mut self, tick_array_upper: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
                         self.instruction.tick_array_upper = Some(tick_array_upper);
-                    self
-    }
-      #[inline(always)]
-    pub fn reward_owner_ata(&mut self, reward_owner_ata: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
-                        self.instruction.reward_owner_ata = Some(reward_owner_ata);
-                    self
-    }
-      /// 
-/// Other accounts
-/// 
-#[inline(always)]
-    pub fn reward_token_program(&mut self, reward_token_program: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
-                        self.instruction.reward_token_program = Some(reward_token_program);
                     self
     }
       #[inline(always)]
@@ -763,9 +745,13 @@ impl<'a, 'b> CollectRewardOrcaCpiBuilder<'a, 'b> {
                   
           reward_mint: self.instruction.reward_mint.expect("reward_mint is not set"),
                   
+          reward_token_program: self.instruction.reward_token_program.expect("reward_token_program is not set"),
+                  
           tuna_position: self.instruction.tuna_position.expect("tuna_position is not set"),
                   
           tuna_position_ata: self.instruction.tuna_position_ata.expect("tuna_position_ata is not set"),
+                  
+          tuna_position_owner_reward_ata: self.instruction.tuna_position_owner_reward_ata.expect("tuna_position_owner_reward_ata is not set"),
                   
           whirlpool_program: self.instruction.whirlpool_program.expect("whirlpool_program is not set"),
                   
@@ -778,10 +764,6 @@ impl<'a, 'b> CollectRewardOrcaCpiBuilder<'a, 'b> {
           tick_array_lower: self.instruction.tick_array_lower.expect("tick_array_lower is not set"),
                   
           tick_array_upper: self.instruction.tick_array_upper.expect("tick_array_upper is not set"),
-                  
-          reward_owner_ata: self.instruction.reward_owner_ata.expect("reward_owner_ata is not set"),
-                  
-          reward_token_program: self.instruction.reward_token_program.expect("reward_token_program is not set"),
                   
           memo_program: self.instruction.memo_program.expect("memo_program is not set"),
                           __args: args,
@@ -796,16 +778,16 @@ struct CollectRewardOrcaCpiBuilderInstruction<'a, 'b> {
             authority: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 tuna_config: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 reward_mint: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+                reward_token_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 tuna_position: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 tuna_position_ata: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+                tuna_position_owner_reward_ata: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 whirlpool_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 whirlpool: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 orca_position: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 reward_vault: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 tick_array_lower: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 tick_array_upper: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-                reward_owner_ata: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-                reward_token_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 memo_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                         reward_index: Option<u8>,
         /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.

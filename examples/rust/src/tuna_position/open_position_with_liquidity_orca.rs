@@ -6,9 +6,9 @@ use crate::types::Amounts;
 use crate::utils::rpc::create_and_send_transaction;
 use anyhow::{bail, Result};
 use defituna_client::accounts::{fetch_market, fetch_tuna_config, fetch_vault};
-use defituna_client::instructions::OpenPositionWithLiquidityOrcaInstructionArgs;
 use defituna_client::{
-  get_market_address, get_tuna_config_address, get_vault_address, TUNA_POSITION_FLAGS_STOP_LOSS_SWAP_TO_TOKEN_B,
+  get_market_address, get_tuna_config_address, get_vault_address, OpenPositionWithLiquidityOrcaArgs,
+  TUNA_POSITION_FLAGS_STOP_LOSS_SWAP_TO_TOKEN_B,
 };
 use defituna_client::{open_position_with_liquidity_orca_instructions, NO_TAKE_PROFIT};
 use orca_whirlpools_client::{self, fetch_maybe_whirlpool, MaybeAccount};
@@ -171,7 +171,7 @@ pub fn open_position_with_liquidity(rpc: RpcClient, authority: Box<dyn Signer>) 
   // Computed by bitwise OR-ing the options: `stopLossSwapToToken | takeProfitSwapToToken | autoCompoundYield`.
   let flags = stop_loss_swap_to_token | take_profit_swap_to_token | auto_compound_yield;
 
-  let args = OpenPositionWithLiquidityOrcaInstructionArgs {
+  let args = OpenPositionWithLiquidityOrcaArgs {
     tick_lower_index,
     tick_upper_index,
     tick_stop_loss_index,
@@ -203,10 +203,8 @@ pub fn open_position_with_liquidity(rpc: RpcClient, authority: Box<dyn Signer>) 
     &vault_a_account.data,
     &vault_b_account.data,
     &whirlpool_account.data,
-    &token_mint_a_account.owner,
-    &token_mint_b_account.owner,
     args,
-  );
+  )?;
 
   // Signing and sending the transaction with all the instructions to the Solana network.
   create_and_send_transaction(

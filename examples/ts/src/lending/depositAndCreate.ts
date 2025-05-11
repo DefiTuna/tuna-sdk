@@ -1,7 +1,8 @@
 import { openLendingPositionAndDepositInstructions } from "@defituna/client";
-import { Address, address } from "@solana/kit";
+import { address } from "@solana/kit";
+import { fetchMint } from "@solana-program/token-2022";
 import { USDC_MINT } from "src/constants";
-import { getMintDecimals, loadKeypair } from "src/utils/common";
+import { loadKeypair } from "src/utils/common";
 import { createAndSendTransaction, rpc } from "src/utils/rpc";
 
 /**
@@ -10,6 +11,9 @@ import { createAndSendTransaction, rpc } from "src/utils/rpc";
  * @throws {Error} If the transaction fails to send or confirm.
  */
 export async function depositAndCreateLendingPosition(): Promise<void> {
+  const tokenMintAddress = address(USDC_MINT);
+  const mint = await fetchMint(rpc, tokenMintAddress);
+
   /**
    * Define variables and accounts for Open Lending Position and Deposit operation;
    */
@@ -19,33 +23,24 @@ export async function depositAndCreateLendingPosition(): Promise<void> {
    */
   const authority = await loadKeypair();
   /**
-   * The {@link Address address} of the token mint to deposit/withdraw, identifying the target Tuna *Lending Vault*.
-   * Set to the USDC token address in our examples;
-   * There are methods in our sdk to fetch all available lending vaults and their respective mint addresses.
-   */
-  const tokenMintAddress: Address = address(USDC_MINT);
-  /**
    * The nominal amount to deposit, excluding *Token* decimals (e.g., 1 SOL as a flat value).
    * Note For deai
    */
   const nominalAmount = 1n;
   /**
-   * Fetches token decimals for the Token, using {@link https://github.com/orca-so/whirlpools/tree/main/ts-sdk/client Orca's Whirlpool Client}.
-   */
-  const decimals = await getMintDecimals(rpc, tokenMintAddress);
-  /**
    * The decimal scale to adjust nominal amounts for the Token based on its decimals.
    */
-  const decimalsScale = BigInt(Math.pow(10, decimals));
+  const decimalsScale = BigInt(Math.pow(10, mint.data.decimals));
 
   /**
-   * The instructions that interact with the Tuna program to open a Leding Position, if still not opened,
+   * The instructions that interact with the Tuna program to open a Lending Position, if still not opened,
    * and deposit the funds into the lending position.
    */
+
   const instructions = await openLendingPositionAndDepositInstructions(
     rpc,
     authority,
-    tokenMintAddress,
+    mint,
     nominalAmount * decimalsScale,
   );
 

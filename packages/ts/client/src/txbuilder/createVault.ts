@@ -1,8 +1,9 @@
 import { Account, IInstruction, TransactionSigner } from "@solana/kit";
 import { findAssociatedTokenPda, Mint } from "@solana-program/token-2022";
+
 import {
-  getCreateAtaInstruction,
   CreateVaultInstructionDataArgs,
+  getCreateAtaInstruction,
   getCreateVaultInstruction,
   getLendingVaultAddress,
   getTunaConfigAddress,

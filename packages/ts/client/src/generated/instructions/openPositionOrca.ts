@@ -229,13 +229,13 @@ export type OpenPositionOrcaInput<
   whirlpool: Address<TAccountWhirlpool>;
   orcaPosition: Address<TAccountOrcaPosition>;
   metadataUpdateAuth: Address<TAccountMetadataUpdateAuth>;
+  tokenProgramA: Address<TAccountTokenProgramA>;
+  tokenProgramB: Address<TAccountTokenProgramB>;
   /**
    *
    * Other accounts
    *
    */
-  tokenProgramA: Address<TAccountTokenProgramA>;
-  tokenProgramB: Address<TAccountTokenProgramB>;
   token2022Program: Address<TAccountToken2022Program>;
   systemProgram?: Address<TAccountSystemProgram>;
   associatedTokenProgram: Address<TAccountAssociatedTokenProgram>;
@@ -450,14 +450,14 @@ export type ParsedOpenPositionOrcaInstruction<
     whirlpool: TAccountMetas[10];
     orcaPosition: TAccountMetas[11];
     metadataUpdateAuth: TAccountMetas[12];
+    tokenProgramA: TAccountMetas[13];
+    tokenProgramB: TAccountMetas[14];
     /**
      *
      * Other accounts
      *
      */
 
-    tokenProgramA: TAccountMetas[13];
-    tokenProgramB: TAccountMetas[14];
     token2022Program: TAccountMetas[15];
     systemProgram: TAccountMetas[16];
     associatedTokenProgram: TAccountMetas[17];

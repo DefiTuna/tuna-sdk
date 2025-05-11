@@ -1,7 +1,10 @@
-import { type Account, AccountRole, IAccountMeta, IInstruction, TransactionSigner } from "@solana/kit";
-import { findAssociatedTokenPda, Mint, TOKEN_2022_PROGRAM_ADDRESS } from "@solana-program/token-2022";
 import { getPositionAddress, Whirlpool, WHIRLPOOL_PROGRAM_ADDRESS } from "@orca-so/whirlpools-client";
+import { type Account, AccountRole, IAccountMeta, IInstruction, TransactionSigner } from "@solana/kit";
+import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
+import { findAssociatedTokenPda, Mint, TOKEN_2022_PROGRAM_ADDRESS } from "@solana-program/token-2022";
+
 import {
+  AccountsType,
   getCollectFeesOrcaInstruction,
   getCreateAtaInstructions,
   getTickArrayAddressFromTickIndex,
@@ -9,7 +12,6 @@ import {
   getTunaPositionAddress,
   TunaPosition,
 } from "../index.ts";
-import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
 
 export async function collectFeesOrcaInstructions(
   authority: TransactionSigner,
@@ -125,6 +127,15 @@ export async function collectFeesOrcaInstruction(
     { address: whirlpool.data.tokenVaultB, role: AccountRole.WRITABLE },
   ];
 
+  const remainingAccountsInfo = {
+    slices: [
+      { accountsType: AccountsType.TickArrayLower, length: 1 },
+      { accountsType: AccountsType.TickArrayUpper, length: 1 },
+      { accountsType: AccountsType.PoolVaultTokenA, length: 1 },
+      { accountsType: AccountsType.PoolVaultTokenB, length: 1 },
+    ],
+  };
+
   const ix = getCollectFeesOrcaInstruction({
     authority,
     mintA: mintA.address,
@@ -142,6 +153,7 @@ export async function collectFeesOrcaInstruction(
     tokenProgramA: mintA.programAddress,
     tokenProgramB: mintB.programAddress,
     memoProgram: MEMO_PROGRAM_ADDRESS,
+    remainingAccountsInfo,
   });
 
   // @ts-expect-error don't worry about the error

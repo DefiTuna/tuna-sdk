@@ -23,13 +23,8 @@ pub fn deposit_and_create(rpc: RpcClient, authority: Box<dyn Signer>) -> Result<
 
   // The deposit instruction interacts with the Tuna program to deposit the funds into the Lending Position.
   // If the Lending Position doesn't exist, we need to create it. We rely on the create instruction from the Tuna program.
-  let mut instructions = open_lending_position_and_deposit_instructions(
-    &rpc,
-    &authority.pubkey(),
-    &token_mint_address,
-    &token_mint_account.owner,
-    amount,
-  );
+  let mut instructions =
+    open_lending_position_and_deposit_instructions(&rpc, &authority.pubkey(), &token_mint_address, amount)?;
 
   // We sign and send the transaction to the network, which will create (if necessary) and deposit into the Lending Position.
   create_and_send_transaction(&rpc, &authority, &mut instructions, None, None, None)

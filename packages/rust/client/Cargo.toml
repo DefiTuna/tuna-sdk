@@ -39,3 +39,4 @@ thiserror = { version = "2.0" }
 uint = { version = "0.9", default-features = false }
 orca_whirlpools_client = "2.0"
 orca_whirlpools_core = "1.0"
+anyhow = "1.0.98"

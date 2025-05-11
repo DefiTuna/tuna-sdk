@@ -1,8 +1,9 @@
 import { Address, IInstruction, TransactionSigner } from "@solana/kit";
+
 import {
-  getOpenLendingPositionInstruction,
   getLendingPositionAddress,
   getLendingVaultAddress,
+  getOpenLendingPositionInstruction,
   getTunaConfigAddress,
 } from "../index.ts";
 

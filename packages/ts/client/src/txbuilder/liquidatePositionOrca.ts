@@ -1,7 +1,10 @@
-import { type Account, AccountRole, IAccountMeta, IInstruction, TransactionSigner } from "@solana/kit";
-import { findAssociatedTokenPda, Mint, TOKEN_2022_PROGRAM_ADDRESS } from "@solana-program/token-2022";
 import { getOracleAddress, getPositionAddress, Whirlpool, WHIRLPOOL_PROGRAM_ADDRESS } from "@orca-so/whirlpools-client";
+import { type Account, AccountRole, IAccountMeta, IInstruction, TransactionSigner } from "@solana/kit";
+import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
+import { findAssociatedTokenPda, Mint, TOKEN_2022_PROGRAM_ADDRESS } from "@solana-program/token-2022";
+
 import {
+  AccountsType,
   getCreateAtaInstructions,
   getLiquidatePositionOrcaInstruction,
   getMarketAddress,
@@ -11,7 +14,6 @@ import {
   TunaPosition,
   Vault,
 } from "../index.ts";
-import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
 
 export async function liquidatePositionOrcaInstructions(
   authority: TransactionSigner,
@@ -162,6 +164,17 @@ export async function liquidatePositionOrcaInstruction(
     { address: orcaOracleAddress, role: AccountRole.WRITABLE },
   ];
 
+  const remainingAccountsInfo = {
+    slices: [
+      { accountsType: AccountsType.SwapTickArrays, length: 5 },
+      { accountsType: AccountsType.TickArrayLower, length: 1 },
+      { accountsType: AccountsType.TickArrayUpper, length: 1 },
+      { accountsType: AccountsType.PoolVaultTokenA, length: 1 },
+      { accountsType: AccountsType.PoolVaultTokenB, length: 1 },
+      { accountsType: AccountsType.WhirlpoolOracle, length: 1 },
+    ],
+  };
+
   const ix = getLiquidatePositionOrcaInstruction({
     market: marketAddress,
     mintA: mintA.address,
@@ -187,6 +200,7 @@ export async function liquidatePositionOrcaInstruction(
     tokenProgramB: mintB.programAddress,
     memoProgram: MEMO_PROGRAM_ADDRESS,
     withdrawPercent,
+    remainingAccountsInfo,
   });
 
   // @ts-expect-error don't worry about the error

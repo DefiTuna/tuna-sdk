@@ -5,9 +5,9 @@ use anyhow::{bail, Result};
 use defituna_client::{
   accounts::{fetch_market, fetch_tuna_position, fetch_vault},
   close_position_orca_instruction, get_market_address, get_tuna_position_address, get_vault_address,
-  instructions::RemoveLiquidityOrcaInstructionArgs,
   remove_liquidity_orca_instructions,
   types::TunaPositionState,
+  RemoveLiquidityOrcaArgs,
 };
 use orca_whirlpools_client::{fetch_maybe_whirlpool, MaybeAccount};
 use solana_client::rpc_client::RpcClient;
@@ -85,7 +85,7 @@ pub fn remove_liquidity_and_close(
 
   // Creation of instructions for removing liquidity and closing positions;
 
-  let args = RemoveLiquidityOrcaInstructionArgs {
+  let args = RemoveLiquidityOrcaArgs {
     withdraw_percent,
     swap_to_token,
     min_removed_amount_a: min_removed_amount.a,
@@ -104,15 +104,15 @@ pub fn remove_liquidity_and_close(
     // - Repays any potential borrowed funds from *Tuna* Lending Vaults ATAs, proportionally to the withdraw percentage.
     // - Potential swap of tokens if user opts for it, in order to receive all in one token.
     remove_liquidity_orca_instructions(
+      &rpc,
       &authority.pubkey(),
       &tuna_position_account.data,
       &vault_a_account.data,
       &vault_b_account.data,
       &whirlpool_account.data,
-      &token_mint_a_account.owner,
-      &token_mint_b_account.owner,
       args,
     )
+    .unwrap()
   } else {
     vec![]
   };

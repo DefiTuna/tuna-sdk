@@ -1,17 +1,18 @@
-import { address, Address, GetAccountInfoApi, Rpc, Slot, TransactionSigner } from "@solana/kit";
+import { fetchWhirlpool, getOracleAddress, WHIRLPOOL_PROGRAM_ADDRESS } from "@orca-so/whirlpools-client";
+import { Address, address, GetAccountInfoApi, Rpc, Slot, TransactionSigner } from "@solana/kit";
 import { SYSTEM_PROGRAM_ADDRESS } from "@solana-program/system";
+import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
   fetchMint,
   findAssociatedTokenPda,
   TOKEN_2022_PROGRAM_ADDRESS,
 } from "@solana-program/token-2022";
-import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
-import { createAddressLookupTableInstructions, CreateAddressLookupTableResult, NATIVE_MINT } from "../utils";
-import { WP_NFT_UPDATE_AUTH } from "../consts.ts";
-import { getLendingVaultAddress, getMarketAddress, getTunaConfigAddress } from "../pda.ts";
-import { fetchWhirlpool, getOracleAddress, WHIRLPOOL_PROGRAM_ADDRESS } from "@orca-so/whirlpools-client";
+
+import { DEFAULT_ADDRESS, WP_NFT_UPDATE_AUTH } from "../consts.ts";
 import { fetchTunaConfig } from "../generated";
+import { getLendingVaultAddress, getMarketAddress, getTunaConfigAddress } from "../pda.ts";
+import { createAddressLookupTableInstructions, CreateAddressLookupTableResult, NATIVE_MINT } from "../utils";
 
 async function getAddressesForMarketLookupTable(rpc: Rpc<GetAccountInfoApi>, poolAddress: Address) {
   const tunaConfigAddress = (await getTunaConfigAddress())[0];
@@ -57,7 +58,7 @@ async function getAddressesForMarketLookupTable(rpc: Rpc<GetAccountInfoApi>, poo
     })
   )[0];
 
-  return [
+  const addresses: Address[] = [
     SYSTEM_PROGRAM_ADDRESS,
     WHIRLPOOL_PROGRAM_ADDRESS,
     address("SysvarRent111111111111111111111111111111111"),
@@ -81,6 +82,16 @@ async function getAddressesForMarketLookupTable(rpc: Rpc<GetAccountInfoApi>, poo
     feeRecipientAtaA,
     feeRecipientAtaB,
   ];
+
+  for (let i = 0; i < whirlpool.data.rewardInfos.length; i++) {
+    const rewardInfo = whirlpool.data.rewardInfos[i];
+    if (rewardInfo.mint !== DEFAULT_ADDRESS) {
+      if (!addresses.includes(rewardInfo.mint)) addresses.push(rewardInfo.mint);
+      addresses.push(rewardInfo.vault);
+    }
+  }
+
+  return addresses;
 }
 
 export async function createAddressLookupTableForMarketInstructions(

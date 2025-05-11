@@ -1,12 +1,11 @@
 import BaseCommand, { addressArg, addressFlag, bigintFlag, percentFlag, pythFeedIdFlag } from "../base.ts";
 import { rpc, sendTransaction, signer } from "../rpc.ts";
-import { fetchVault, getLendingVaultAddress, updateVaultInstruction } from "@defituna/client";
+import { fetchVault, getLendingVaultAddress, updateVaultInstruction, HUNDRED_PERCENT } from "@defituna/client";
 import { getBase58Codec, ReadonlyUint8Array } from "@solana/kit";
 import _ from "lodash";
 
 // Some devnet Mints
-// DFT3_MINT = 2LpceYtTz7N9NxRA3GHzJQKjjHDwrXoeayKX5pQnwiCF
-// DFT4_MINT = ExcYMRdoUrCSSuxf5pPySv91GJ65Wy3o42EA7GRJbm7p
+// DFT5_MINT = DFT5QXLcpH3S9J2cpkaUorP7uPJCqdS5tYvyY1skq6TK
 
 // Some mainnet mints
 //export const W_SOL_MINT = new PublicKey("So11111111111111111111111111111111111111112");
@@ -24,7 +23,7 @@ export default class UpdateVault extends BaseCommand {
   };
   static override flags = {
     interestRate: percentFlag({
-      description: "Annual interest rate in percents",
+      description: "Annual interest rate (%)",
     }),
     supplyLimit: bigintFlag({ description: "Supply limit" }),
     pythOracleFeedId: pythFeedIdFlag({
@@ -36,7 +35,7 @@ export default class UpdateVault extends BaseCommand {
   };
   static override description = "Update a lending vault";
   static override examples = [
-    "<%= config.bin %> <%= command.id %> So11111111111111111111111111111111111111112 --interestRate=30.0 --supplyLimit 100000000000 --pythOracleFeedId=0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d --pythOraclePriceUpdate=7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE",
+    "<%= config.bin %> <%= command.id %> So11111111111111111111111111111111111111112 --interestRate=30% --supplyLimit 100000000000 --pythOracleFeedId=0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d --pythOraclePriceUpdate=7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE",
   ];
 
   private uint8ArrayToHex(array: ReadonlyUint8Array): string {
@@ -54,13 +53,13 @@ export default class UpdateVault extends BaseCommand {
     console.log("Fetching vault:", vaultAddress);
     const vault = await fetchVault(rpc, vaultAddress);
     console.log("Vault:", vault);
-    console.log("interestRate:", Number((vault.data.interestRate * 1000000n) / INTEREST_RATE_100_PERCENT) / 10000);
+    console.log("interestRate:", (Number(vault.data.interestRate) / Number(INTEREST_RATE_100_PERCENT)) * 100);
     console.log("pythOracleFeedId:", this.uint8ArrayToHex(getBase58Codec().encode(vault.data.pythOracleFeedId)));
 
     const newData = _.clone(vault.data);
 
     if (flags.interestRate !== undefined) {
-      newData.interestRate = (INTEREST_RATE_100_PERCENT * BigInt(Math.floor(flags.interestRate * 10000))) / 1000000n;
+      newData.interestRate = (INTEREST_RATE_100_PERCENT * BigInt(flags.interestRate)) / BigInt(HUNDRED_PERCENT);
     }
 
     if (flags.supplyLimit !== undefined) {

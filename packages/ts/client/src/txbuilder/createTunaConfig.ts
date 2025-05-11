@@ -1,4 +1,5 @@
 import { Address, IInstruction, TransactionSigner } from "@solana/kit";
+
 import { getCreateTunaConfigInstruction, getTunaConfigAddress } from "../index.ts";
 
 export async function createTunaConfigInstruction(

@@ -58,17 +58,17 @@ pub struct OpenPositionOrca {
           
               
           pub metadata_update_auth: solana_program::pubkey::Pubkey,
-                /// 
-/// Other accounts
-/// 
-
-    
+          
               
           pub token_program_a: solana_program::pubkey::Pubkey,
           
               
           pub token_program_b: solana_program::pubkey::Pubkey,
-          
+                /// 
+/// Other accounts
+/// 
+
+    
               
           pub token2022_program: solana_program::pubkey::Pubkey,
           
@@ -328,10 +328,7 @@ impl OpenPositionOrcaBuilder {
                         self.metadata_update_auth = Some(metadata_update_auth);
                     self
     }
-            /// 
-/// Other accounts
-/// 
-#[inline(always)]
+            #[inline(always)]
     pub fn token_program_a(&mut self, token_program_a: solana_program::pubkey::Pubkey) -> &mut Self {
                         self.token_program_a = Some(token_program_a);
                     self
@@ -341,7 +338,10 @@ impl OpenPositionOrcaBuilder {
                         self.token_program_b = Some(token_program_b);
                     self
     }
-            #[inline(always)]
+            /// 
+/// Other accounts
+/// 
+#[inline(always)]
     pub fn token2022_program(&mut self, token2022_program: solana_program::pubkey::Pubkey) -> &mut Self {
                         self.token2022_program = Some(token2022_program);
                     self
@@ -477,17 +477,17 @@ impl OpenPositionOrcaBuilder {
                 
                     
               pub metadata_update_auth: &'b solana_program::account_info::AccountInfo<'a>,
-                        /// 
-/// Other accounts
-/// 
-
-      
+                
                     
               pub token_program_a: &'b solana_program::account_info::AccountInfo<'a>,
                 
                     
               pub token_program_b: &'b solana_program::account_info::AccountInfo<'a>,
-                
+                        /// 
+/// Other accounts
+/// 
+
+      
                     
               pub token2022_program: &'b solana_program::account_info::AccountInfo<'a>,
                 
@@ -549,17 +549,17 @@ pub struct OpenPositionOrcaCpi<'a, 'b> {
           
               
           pub metadata_update_auth: &'b solana_program::account_info::AccountInfo<'a>,
-                /// 
-/// Other accounts
-/// 
-
-    
+          
               
           pub token_program_a: &'b solana_program::account_info::AccountInfo<'a>,
           
               
           pub token_program_b: &'b solana_program::account_info::AccountInfo<'a>,
-          
+                /// 
+/// Other accounts
+/// 
+
+    
               
           pub token2022_program: &'b solana_program::account_info::AccountInfo<'a>,
           
@@ -869,10 +869,7 @@ impl<'a, 'b> OpenPositionOrcaCpiBuilder<'a, 'b> {
                         self.instruction.metadata_update_auth = Some(metadata_update_auth);
                     self
     }
-      /// 
-/// Other accounts
-/// 
-#[inline(always)]
+      #[inline(always)]
     pub fn token_program_a(&mut self, token_program_a: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
                         self.instruction.token_program_a = Some(token_program_a);
                     self
@@ -882,7 +879,10 @@ impl<'a, 'b> OpenPositionOrcaCpiBuilder<'a, 'b> {
                         self.instruction.token_program_b = Some(token_program_b);
                     self
     }
-      #[inline(always)]
+      /// 
+/// Other accounts
+/// 
+#[inline(always)]
     pub fn token2022_program(&mut self, token2022_program: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
                         self.instruction.token2022_program = Some(token2022_program);
                     self

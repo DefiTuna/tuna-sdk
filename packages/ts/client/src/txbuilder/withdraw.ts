@@ -1,5 +1,7 @@
 import { Account, IInstruction, TransactionSigner } from "@solana/kit";
+import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
 import { findAssociatedTokenPda, Mint } from "@solana-program/token-2022";
+
 import {
   getCreateAtaInstructions,
   getLendingPositionAddress,
@@ -7,7 +9,6 @@ import {
   getTunaConfigAddress,
   getWithdrawInstruction,
 } from "../index.ts";
-import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
 
 export async function withdrawInstructions(
   authority: TransactionSigner,

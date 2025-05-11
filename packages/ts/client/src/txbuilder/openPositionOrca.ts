@@ -1,3 +1,4 @@
+import { getPositionAddress, Whirlpool, WHIRLPOOL_PROGRAM_ADDRESS } from "@orca-so/whirlpools-client";
 import { type Account, IInstruction, TransactionSigner } from "@solana/kit";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
@@ -5,7 +6,7 @@ import {
   Mint,
   TOKEN_2022_PROGRAM_ADDRESS,
 } from "@solana-program/token-2022";
-import { getPositionAddress, Whirlpool, WHIRLPOOL_PROGRAM_ADDRESS } from "@orca-so/whirlpools-client";
+
 import {
   getMarketAddress,
   getOpenPositionOrcaInstruction,

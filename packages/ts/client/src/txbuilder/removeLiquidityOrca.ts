@@ -1,7 +1,38 @@
-import { type Account, AccountRole, IAccountMeta, IInstruction, TransactionSigner } from "@solana/kit";
-import { findAssociatedTokenPda, Mint, TOKEN_2022_PROGRAM_ADDRESS } from "@solana-program/token-2022";
-import { getOracleAddress, getPositionAddress, Whirlpool, WHIRLPOOL_PROGRAM_ADDRESS } from "@orca-so/whirlpools-client";
 import {
+  fetchAllTickArray,
+  fetchPosition,
+  getOracleAddress,
+  getPositionAddress,
+  getTickArrayAddress,
+  Whirlpool,
+  WHIRLPOOL_PROGRAM_ADDRESS,
+} from "@orca-so/whirlpools-client";
+import { collectRewardsQuote, getTickArrayStartTickIndex, getTickIndexInArray } from "@orca-so/whirlpools-core";
+import {
+  type Account,
+  AccountRole,
+  Address,
+  assertAccountExists,
+  assertAccountsExist,
+  GetAccountInfoApi,
+  GetMultipleAccountsApi,
+  IAccountMeta,
+  IInstruction,
+  Rpc,
+  TransactionSigner,
+} from "@solana/kit";
+import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
+import {
+  fetchAllMaybeMint,
+  findAssociatedTokenPda,
+  Mint,
+  TOKEN_2022_PROGRAM_ADDRESS,
+} from "@solana-program/token-2022";
+import assert from "assert";
+
+import {
+  AccountsType,
+  DEFAULT_ADDRESS,
   getCreateAtaInstructions,
   getMarketAddress,
   getRemoveLiquidityOrcaInstruction,
@@ -12,44 +43,106 @@ import {
   TunaPosition,
   Vault,
 } from "../index.ts";
-import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
+
+export type RemoveLiquidityOrcaInstructionArgs = Omit<RemoveLiquidityOrcaInstructionDataArgs, "remainingAccountsInfo">;
 
 export async function removeLiquidityOrcaInstructions(
+  rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
   tunaPosition: Account<TunaPosition>,
-  mintA: Account<Mint>,
-  mintB: Account<Mint>,
   vaultA: Account<Vault>,
   vaultB: Account<Vault>,
   whirlpool: Account<Whirlpool>,
-  args: RemoveLiquidityOrcaInstructionDataArgs,
+  args: RemoveLiquidityOrcaInstructionArgs,
   createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
 ): Promise<IInstruction[]> {
-  const instructions: IInstruction[] = [];
+  const positionMint = tunaPosition.data.positionMint;
+  const orcaPositionAddress = (await getPositionAddress(positionMint))[0];
 
+  const orcaPosition = await fetchPosition(rpc, orcaPositionAddress);
+
+  const [mintA, mintB, ...rewardMints] = await fetchAllMaybeMint(rpc, [
+    whirlpool.data.tokenMintA,
+    whirlpool.data.tokenMintB,
+    ...whirlpool.data.rewardInfos.map(x => x.mint).filter(x => x !== DEFAULT_ADDRESS),
+  ]);
+  const allMints = [mintA, mintB, ...rewardMints];
+
+  assertAccountExists(mintA);
+  assertAccountExists(mintB);
+  assertAccountsExist(rewardMints);
+
+  const lowerTickArrayStartIndex = getTickArrayStartTickIndex(
+    tunaPosition.data.tickLowerIndex,
+    whirlpool.data.tickSpacing,
+  );
+  const [lowerTickArrayAddress] = await getTickArrayAddress(whirlpool.address, lowerTickArrayStartIndex);
+
+  const upperTickArrayStartIndex = getTickArrayStartTickIndex(
+    tunaPosition.data.tickUpperIndex,
+    whirlpool.data.tickSpacing,
+  );
+  const [upperTickArrayAddress] = await getTickArrayAddress(whirlpool.address, upperTickArrayStartIndex);
+
+  const [lowerTickArray, upperTickArray] = await fetchAllTickArray(rpc, [lowerTickArrayAddress, upperTickArrayAddress]);
+
+  const lowerTick =
+    lowerTickArray.data.ticks[
+      getTickIndexInArray(tunaPosition.data.tickLowerIndex, lowerTickArrayStartIndex, whirlpool.data.tickSpacing)
+    ];
+  const upperTick =
+    upperTickArray.data.ticks[
+      getTickIndexInArray(tunaPosition.data.tickUpperIndex, upperTickArrayStartIndex, whirlpool.data.tickSpacing)
+    ];
+
+  //
+  // Collect the list of instructions.
+  //
+
+  const instructions: IInstruction[] = [];
   if (!createInstructions) createInstructions = instructions;
   if (!cleanupInstructions) cleanupInstructions = instructions;
+  const internalCleanupInstructions: IInstruction[] = [];
 
   //
-  // Add create user's token account instructions if needed.
+  // Add token account creation instructions for every mint if needed.
   //
 
-  const createUserAtaAInstructions = await getCreateAtaInstructions(
-    authority,
-    mintA.address,
-    authority.address,
-    mintA.programAddress,
-  );
-  createInstructions.push(...createUserAtaAInstructions.init);
+  const rewardsToClaim: number[] = [];
+  const requiredMints: Address[] = [];
+  requiredMints.push(whirlpool.data.tokenMintA);
+  requiredMints.push(whirlpool.data.tokenMintB);
 
-  const createUserAtaBInstructions = await getCreateAtaInstructions(
-    authority,
-    mintB.address,
-    authority.address,
-    mintB.programAddress,
+  let currentUnixTimestamp = BigInt(Math.floor(Date.now() / 1000));
+  // It may happen in tests or in case of a wrong date.
+  if (currentUnixTimestamp < whirlpool.data.rewardLastUpdatedTimestamp)
+    currentUnixTimestamp = whirlpool.data.rewardLastUpdatedTimestamp;
+
+  const rewardsQuote = collectRewardsQuote(
+    whirlpool.data,
+    orcaPosition.data,
+    lowerTick,
+    upperTick,
+    currentUnixTimestamp,
   );
-  createInstructions.push(...createUserAtaBInstructions.init);
+
+  for (let i = 0; i < rewardsQuote.rewards.length; i++) {
+    if (rewardsQuote.rewards[i].rewardsOwed > 0n) {
+      requiredMints.push(whirlpool.data.rewardInfos[i].mint);
+      rewardsToClaim.push(i);
+    }
+  }
+
+  for (const mintAddress of requiredMints) {
+    const mint = allMints.find(mint => mint.address == mintAddress);
+    assert(mint && mint.exists);
+
+    const ixs = await getCreateAtaInstructions(authority, mint.address, authority.address, mint.programAddress);
+
+    createInstructions.push(...ixs.init);
+    internalCleanupInstructions.push(...ixs.cleanup);
+  }
 
   //
   // Finally add liquidity decrease instruction.
@@ -63,6 +156,8 @@ export async function removeLiquidityOrcaInstructions(
     vaultA,
     vaultB,
     whirlpool,
+    rewardsToClaim,
+    rewardMints,
     args,
   );
   instructions.push(ix);
@@ -71,8 +166,7 @@ export async function removeLiquidityOrcaInstructions(
   // Close WSOL accounts if needed.
   //
 
-  cleanupInstructions.push(...createUserAtaAInstructions.cleanup);
-  cleanupInstructions.push(...createUserAtaBInstructions.cleanup);
+  cleanupInstructions.push(...internalCleanupInstructions);
 
   return instructions;
 }
@@ -85,7 +179,9 @@ export async function removeLiquidityOrcaInstruction(
   vaultA: Account<Vault>,
   vaultB: Account<Vault>,
   whirlpool: Account<Whirlpool>,
-  args: RemoveLiquidityOrcaInstructionDataArgs,
+  rewardIndicesToClaim: number[],
+  rewardMints: Account<Mint>[],
+  args: RemoveLiquidityOrcaInstructionArgs,
 ): Promise<IInstruction> {
   const positionMint = tunaPosition.data.positionMint;
 
@@ -167,8 +263,38 @@ export async function removeLiquidityOrcaInstruction(
     { address: orcaOracleAddress, role: AccountRole.WRITABLE },
   ];
 
+  for (const rewardIndex of rewardIndicesToClaim) {
+    const rewardInfo = whirlpool.data.rewardInfos[rewardIndex];
+    const rewardMint = rewardMints.find(mint => mint.address == rewardInfo.mint);
+    assert(rewardMint, "Reward mint not found in the provided reward mint accounts");
+
+    const ownerAta = await findAssociatedTokenPda({
+      owner: authority.address,
+      mint: rewardMint.address,
+      tokenProgram: rewardMint.programAddress,
+    });
+
+    remainingAccounts.push({ address: rewardMint.address, role: AccountRole.READONLY });
+    remainingAccounts.push({ address: rewardMint.programAddress, role: AccountRole.READONLY });
+    remainingAccounts.push({ address: ownerAta[0], role: AccountRole.WRITABLE });
+    remainingAccounts.push({ address: rewardInfo.vault, role: AccountRole.WRITABLE });
+  }
+
+  const remainingAccountsInfo = {
+    slices: [
+      { accountsType: AccountsType.SwapTickArrays, length: 5 },
+      { accountsType: AccountsType.TickArrayLower, length: 1 },
+      { accountsType: AccountsType.TickArrayUpper, length: 1 },
+      { accountsType: AccountsType.PoolVaultTokenA, length: 1 },
+      { accountsType: AccountsType.PoolVaultTokenB, length: 1 },
+      { accountsType: AccountsType.WhirlpoolOracle, length: 1 },
+    ],
+  };
+  if (rewardIndicesToClaim.length > 0) {
+    remainingAccountsInfo.slices.push({ accountsType: AccountsType.Rewards, length: 4 * rewardIndicesToClaim.length });
+  }
+
   const ix = getRemoveLiquidityOrcaInstruction({
-    ...args,
     market: marketAddress,
     mintA: mintA.address,
     mintB: mintB.address,
@@ -192,6 +318,8 @@ export async function removeLiquidityOrcaInstruction(
     tokenProgramA: mintA.programAddress,
     tokenProgramB: mintB.programAddress,
     memoProgram: MEMO_PROGRAM_ADDRESS,
+    ...args,
+    remainingAccountsInfo,
   });
 
   // @ts-expect-error don't worry about the error

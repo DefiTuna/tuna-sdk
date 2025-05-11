@@ -1,16 +1,16 @@
 import BaseCommand, { percentArg } from "../base.ts";
 import { rpc, sendTransaction, signer } from "../rpc.ts";
-import { fetchTunaConfig, getSetDefaultMaxPercentageOfLeftoversInstruction, getTunaConfigAddress, HUNDRED_PERCENT } from "@defituna/client";
+import { fetchTunaConfig, getSetDefaultMaxPercentageOfLeftoversInstruction, getTunaConfigAddress } from "@defituna/client";
 
 export default class SetDefaultMaxPercentageOfLeftovers extends BaseCommand {
   static override args = {
     value: percentArg({
-      description: "Default max percentage of leftovers (%)",
+      description: "Default max percentage of leftovers (hundredths of a basis point or %)",
       required: true,
     }),
   };
   static override description = "Sets the default max percentage of leftovers";
-  static override examples = ["<%= config.bin %> <%= command.id %> 1.0"];
+  static override examples = ["<%= config.bin %> <%= command.id %> 1.0%"];
 
   public async run() {
     const { args } = await this.parse(SetDefaultMaxPercentageOfLeftovers);
@@ -18,18 +18,15 @@ export default class SetDefaultMaxPercentageOfLeftovers extends BaseCommand {
     const tunaConfigAddress = (await getTunaConfigAddress())[0];
     const tunaConfig = await fetchTunaConfig(rpc, tunaConfigAddress);
 
-    const currentValue = (tunaConfig.data.maxPercentageOfLeftovers / HUNDRED_PERCENT) * 100;
-    console.log(`Current default max percentage of leftovers: ${currentValue}%`);
+    console.log(`Current default max percentage of leftovers:`, this.percentageValueToString(tunaConfig.data.maxPercentageOfLeftovers));
 
-    const newValue = Math.floor((HUNDRED_PERCENT * args.value) / 100);
-
-    if (tunaConfig.data.maxPercentageOfLeftovers != newValue) {
-      console.log(`Setting value to: ${args.value}%`);
+    if (tunaConfig.data.maxPercentageOfLeftovers != args.value) {
+      console.log(`Setting value to:`, this.percentageValueToString(args.value));
 
       const ix = getSetDefaultMaxPercentageOfLeftoversInstruction({
         authority: signer,
         tunaConfig: tunaConfigAddress,
-        maxPercentageOfLeftovers: newValue,
+        maxPercentageOfLeftovers: args.value,
       });
 
       console.log("");
@@ -40,4 +37,6 @@ export default class SetDefaultMaxPercentageOfLeftovers extends BaseCommand {
       console.log("Nothing changed!");
     }
   }
+
+  public async;
 }

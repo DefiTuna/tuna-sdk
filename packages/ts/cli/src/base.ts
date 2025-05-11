@@ -1,5 +1,6 @@
 import { Args, Command, Flags } from "@oclif/core";
 import { address, Address, getBase58Codec, SolanaError } from "@solana/kit";
+import { HUNDRED_PERCENT } from "@defituna/client";
 
 export const bigintArg = Args.custom<bigint>({
   parse: async (input) => BigInt(input),
@@ -10,38 +11,46 @@ export const bigintFlag = Flags.custom<bigint>({
 });
 
 export const percentArg = Args.custom<number>({
-  parse: async (input) => {
-    const percent = Number(input);
-    if (percent > 100) throw "Percent value must be less or equal than 100";
-    if (percent < 0) throw "Percent value can't be negative";
-    return percent;
+  parse: async (input, context, opts) => {
+    let parsedInput: number;
+    if (input.endsWith("%")) {
+      const percent = Number(input.slice(0, -1));
+      parsedInput = Math.floor((HUNDRED_PERCENT * percent) / 100);
+    } else {
+      parsedInput = Math.floor(Number(input));
+    }
+
+    if (opts.min !== undefined && opts.min !== null && parsedInput < Number(opts.min)) {
+      throw new Error(`${context.token.arg} must be greater or equal to ${opts.min}`);
+    }
+
+    if (opts.max !== undefined && opts.max !== null && parsedInput > Number(opts.max)) {
+      throw new Error(`${context.token.arg} must be less or equal to ${opts.max}`);
+    }
+
+    return parsedInput;
   },
 });
 
 export const percentFlag = Flags.custom<number>({
-  parse: async (input) => {
-    const percent = Number(input);
-    if (percent > 100) throw "Percent value must be less or equal than 100";
-    if (percent < 0) throw "Percent value can't be negative";
-    return percent;
-  },
-});
+  parse: async (input, context, opts) => {
+    let parsedInput: number;
+    if (input.endsWith("%")) {
+      const percent = Number(input.slice(0, -1));
+      parsedInput = Math.floor((HUNDRED_PERCENT * percent) / 100);
+    } else {
+      parsedInput = Math.floor(Number(input));
+    }
 
-export const normalizedNumberArg = Args.custom<number>({
-  parse: async (input) => {
-    const value = Number(input);
-    if (value > 1) throw "Value must be less or equal than 1.0";
-    if (value < 0) throw "Value can't be negative";
-    return value;
-  },
-});
+    if (opts.min !== undefined && opts.min !== null && parsedInput < Number(opts.min)) {
+      throw new Error(`${context.token.flag} must be greater or equal to ${opts.min}`);
+    }
 
-export const normalizedNumberFlag = Flags.custom<number>({
-  parse: async (input) => {
-    const value = Number(input);
-    if (value > 1) throw "Value must be less or equal than 1.0";
-    if (value < 0) throw "Value can't be negative";
-    return value;
+    if (opts.max !== undefined && opts.max !== null && parsedInput > Number(opts.max)) {
+      throw new Error(`${context.token.flag} must be less or equal to ${opts.max}`);
+    }
+
+    return parsedInput;
   },
 });
 
@@ -117,5 +126,9 @@ export default abstract class BaseCommand extends Command {
     } else {
       console.log(err.message);
     }
+  }
+
+  percentageValueToString(value: number) {
+    return value.toString() + " (" + ((value / HUNDRED_PERCENT) * 100).toString() + "%)";
   }
 }

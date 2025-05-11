@@ -5,6 +5,7 @@
 //! <https://github.com/codama-idl/codama>
 //!
 
+use crate::generated::types::RemainingAccountsInfo;
 use borsh::BorshSerialize;
 use borsh::BorshDeserialize;
 
@@ -85,11 +86,10 @@ pub struct OpenPositionWithLiquidityOrca {
           
               
           pub whirlpool: solana_program::pubkey::Pubkey,
-                /// 
-/// Other accounts
-/// 
-
-    
+          
+              
+          pub orca_position: solana_program::pubkey::Pubkey,
+          
               
           pub token_program_a: solana_program::pubkey::Pubkey,
           
@@ -97,8 +97,15 @@ pub struct OpenPositionWithLiquidityOrca {
           pub token_program_b: solana_program::pubkey::Pubkey,
           
               
-          pub memo_program: solana_program::pubkey::Pubkey,
+          pub metadata_update_auth: solana_program::pubkey::Pubkey,
           
+              
+          pub memo_program: solana_program::pubkey::Pubkey,
+                /// 
+/// Other accounts
+/// 
+
+    
               
           pub token2022_program: solana_program::pubkey::Pubkey,
           
@@ -116,7 +123,7 @@ impl OpenPositionWithLiquidityOrca {
   #[allow(clippy::arithmetic_side_effects)]
   #[allow(clippy::vec_init_then_push)]
   pub fn instruction_with_remaining_accounts(&self, args: OpenPositionWithLiquidityOrcaInstructionArgs, remaining_accounts: &[solana_program::instruction::AccountMeta]) -> solana_program::instruction::Instruction {
-    let mut accounts = Vec::with_capacity(28+ remaining_accounts.len());
+    let mut accounts = Vec::with_capacity(30+ remaining_accounts.len());
                             accounts.push(solana_program::instruction::AccountMeta::new(
             self.authority,
             true
@@ -205,12 +212,20 @@ impl OpenPositionWithLiquidityOrca {
             self.whirlpool,
             false
           ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new(
+            self.orca_position,
+            false
+          ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.token_program_a,
             false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             self.token_program_b,
+            false
+          ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            self.metadata_update_auth,
             false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -246,13 +261,13 @@ impl OpenPositionWithLiquidityOrca {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
  pub struct OpenPositionWithLiquidityOrcaInstructionData {
             discriminator: [u8; 8],
-                                                                              }
+                                                                                    }
 
 impl OpenPositionWithLiquidityOrcaInstructionData {
   pub fn new() -> Self {
     Self {
                         discriminator: [163, 21, 84, 199, 172, 40, 87, 122],
-                                                                                                                                                                                          }
+                                                                                                                                                                                                        }
   }
 }
 
@@ -277,6 +292,7 @@ impl Default for OpenPositionWithLiquidityOrcaInstructionData {
                 pub min_added_amount_a: u64,
                 pub min_added_amount_b: u64,
                 pub max_swap_slippage: u32,
+                pub remaining_accounts_info: RemainingAccountsInfo,
       }
 
 
@@ -306,12 +322,14 @@ impl Default for OpenPositionWithLiquidityOrcaInstructionData {
           ///   19. `[]` pyth_oracle_price_feed_b
           ///   20. `[]` whirlpool_program
                 ///   21. `[writable]` whirlpool
-          ///   22. `[]` token_program_a
-          ///   23. `[]` token_program_b
-          ///   24. `[]` memo_program
-          ///   25. `[]` token2022_program
-                ///   26. `[optional]` system_program (default to `11111111111111111111111111111111`)
-          ///   27. `[]` associated_token_program
+                ///   22. `[writable]` orca_position
+          ///   23. `[]` token_program_a
+          ///   24. `[]` token_program_b
+          ///   25. `[]` metadata_update_auth
+          ///   26. `[]` memo_program
+          ///   27. `[]` token2022_program
+                ///   28. `[optional]` system_program (default to `11111111111111111111111111111111`)
+          ///   29. `[]` associated_token_program
 #[derive(Clone, Debug, Default)]
 pub struct OpenPositionWithLiquidityOrcaBuilder {
             authority: Option<solana_program::pubkey::Pubkey>,
@@ -336,8 +354,10 @@ pub struct OpenPositionWithLiquidityOrcaBuilder {
                 pyth_oracle_price_feed_b: Option<solana_program::pubkey::Pubkey>,
                 whirlpool_program: Option<solana_program::pubkey::Pubkey>,
                 whirlpool: Option<solana_program::pubkey::Pubkey>,
+                orca_position: Option<solana_program::pubkey::Pubkey>,
                 token_program_a: Option<solana_program::pubkey::Pubkey>,
                 token_program_b: Option<solana_program::pubkey::Pubkey>,
+                metadata_update_auth: Option<solana_program::pubkey::Pubkey>,
                 memo_program: Option<solana_program::pubkey::Pubkey>,
                 token2022_program: Option<solana_program::pubkey::Pubkey>,
                 system_program: Option<solana_program::pubkey::Pubkey>,
@@ -354,6 +374,7 @@ pub struct OpenPositionWithLiquidityOrcaBuilder {
                 min_added_amount_a: Option<u64>,
                 min_added_amount_b: Option<u64>,
                 max_swap_slippage: Option<u32>,
+                remaining_accounts_info: Option<RemainingAccountsInfo>,
         __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -477,10 +498,12 @@ impl OpenPositionWithLiquidityOrcaBuilder {
                         self.whirlpool = Some(whirlpool);
                     self
     }
-            /// 
-/// Other accounts
-/// 
-#[inline(always)]
+            #[inline(always)]
+    pub fn orca_position(&mut self, orca_position: solana_program::pubkey::Pubkey) -> &mut Self {
+                        self.orca_position = Some(orca_position);
+                    self
+    }
+            #[inline(always)]
     pub fn token_program_a(&mut self, token_program_a: solana_program::pubkey::Pubkey) -> &mut Self {
                         self.token_program_a = Some(token_program_a);
                     self
@@ -491,11 +514,19 @@ impl OpenPositionWithLiquidityOrcaBuilder {
                     self
     }
             #[inline(always)]
+    pub fn metadata_update_auth(&mut self, metadata_update_auth: solana_program::pubkey::Pubkey) -> &mut Self {
+                        self.metadata_update_auth = Some(metadata_update_auth);
+                    self
+    }
+            #[inline(always)]
     pub fn memo_program(&mut self, memo_program: solana_program::pubkey::Pubkey) -> &mut Self {
                         self.memo_program = Some(memo_program);
                     self
     }
-            #[inline(always)]
+            /// 
+/// Other accounts
+/// 
+#[inline(always)]
     pub fn token2022_program(&mut self, token2022_program: solana_program::pubkey::Pubkey) -> &mut Self {
                         self.token2022_program = Some(token2022_program);
                     self
@@ -571,6 +602,11 @@ impl OpenPositionWithLiquidityOrcaBuilder {
         self.max_swap_slippage = Some(max_swap_slippage);
         self
       }
+                #[inline(always)]
+      pub fn remaining_accounts_info(&mut self, remaining_accounts_info: RemainingAccountsInfo) -> &mut Self {
+        self.remaining_accounts_info = Some(remaining_accounts_info);
+        self
+      }
         /// Add an additional account to the instruction.
   #[inline(always)]
   pub fn add_remaining_account(&mut self, account: solana_program::instruction::AccountMeta) -> &mut Self {
@@ -608,8 +644,10 @@ impl OpenPositionWithLiquidityOrcaBuilder {
                                         pyth_oracle_price_feed_b: self.pyth_oracle_price_feed_b.expect("pyth_oracle_price_feed_b is not set"),
                                         whirlpool_program: self.whirlpool_program.expect("whirlpool_program is not set"),
                                         whirlpool: self.whirlpool.expect("whirlpool is not set"),
+                                        orca_position: self.orca_position.expect("orca_position is not set"),
                                         token_program_a: self.token_program_a.expect("token_program_a is not set"),
                                         token_program_b: self.token_program_b.expect("token_program_b is not set"),
+                                        metadata_update_auth: self.metadata_update_auth.expect("metadata_update_auth is not set"),
                                         memo_program: self.memo_program.expect("memo_program is not set"),
                                         token2022_program: self.token2022_program.expect("token2022_program is not set"),
                                         system_program: self.system_program.unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
@@ -628,6 +666,7 @@ impl OpenPositionWithLiquidityOrcaBuilder {
                                                                   min_added_amount_a: self.min_added_amount_a.clone().expect("min_added_amount_a is not set"),
                                                                   min_added_amount_b: self.min_added_amount_b.clone().expect("min_added_amount_b is not set"),
                                                                   max_swap_slippage: self.max_swap_slippage.clone().expect("max_swap_slippage is not set"),
+                                                                  remaining_accounts_info: self.remaining_accounts_info.clone().expect("remaining_accounts_info is not set"),
                                     };
     
     accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -710,11 +749,10 @@ impl OpenPositionWithLiquidityOrcaBuilder {
                 
                     
               pub whirlpool: &'b solana_program::account_info::AccountInfo<'a>,
-                        /// 
-/// Other accounts
-/// 
-
-      
+                
+                    
+              pub orca_position: &'b solana_program::account_info::AccountInfo<'a>,
+                
                     
               pub token_program_a: &'b solana_program::account_info::AccountInfo<'a>,
                 
@@ -722,8 +760,15 @@ impl OpenPositionWithLiquidityOrcaBuilder {
               pub token_program_b: &'b solana_program::account_info::AccountInfo<'a>,
                 
                     
-              pub memo_program: &'b solana_program::account_info::AccountInfo<'a>,
+              pub metadata_update_auth: &'b solana_program::account_info::AccountInfo<'a>,
                 
+                    
+              pub memo_program: &'b solana_program::account_info::AccountInfo<'a>,
+                        /// 
+/// Other accounts
+/// 
+
+      
                     
               pub token2022_program: &'b solana_program::account_info::AccountInfo<'a>,
                 
@@ -812,11 +857,10 @@ pub struct OpenPositionWithLiquidityOrcaCpi<'a, 'b> {
           
               
           pub whirlpool: &'b solana_program::account_info::AccountInfo<'a>,
-                /// 
-/// Other accounts
-/// 
-
-    
+          
+              
+          pub orca_position: &'b solana_program::account_info::AccountInfo<'a>,
+          
               
           pub token_program_a: &'b solana_program::account_info::AccountInfo<'a>,
           
@@ -824,8 +868,15 @@ pub struct OpenPositionWithLiquidityOrcaCpi<'a, 'b> {
           pub token_program_b: &'b solana_program::account_info::AccountInfo<'a>,
           
               
-          pub memo_program: &'b solana_program::account_info::AccountInfo<'a>,
+          pub metadata_update_auth: &'b solana_program::account_info::AccountInfo<'a>,
           
+              
+          pub memo_program: &'b solana_program::account_info::AccountInfo<'a>,
+                /// 
+/// Other accounts
+/// 
+
+    
               
           pub token2022_program: &'b solana_program::account_info::AccountInfo<'a>,
           
@@ -868,8 +919,10 @@ impl<'a, 'b> OpenPositionWithLiquidityOrcaCpi<'a, 'b> {
               pyth_oracle_price_feed_b: accounts.pyth_oracle_price_feed_b,
               whirlpool_program: accounts.whirlpool_program,
               whirlpool: accounts.whirlpool,
+              orca_position: accounts.orca_position,
               token_program_a: accounts.token_program_a,
               token_program_b: accounts.token_program_b,
+              metadata_update_auth: accounts.metadata_update_auth,
               memo_program: accounts.memo_program,
               token2022_program: accounts.token2022_program,
               system_program: accounts.system_program,
@@ -897,7 +950,7 @@ impl<'a, 'b> OpenPositionWithLiquidityOrcaCpi<'a, 'b> {
     signers_seeds: &[&[&[u8]]],
     remaining_accounts: &[(&'b solana_program::account_info::AccountInfo<'a>, bool, bool)]
   ) -> solana_program::entrypoint::ProgramResult {
-    let mut accounts = Vec::with_capacity(28+ remaining_accounts.len());
+    let mut accounts = Vec::with_capacity(30+ remaining_accounts.len());
                             accounts.push(solana_program::instruction::AccountMeta::new(
             *self.authority.key,
             true
@@ -986,12 +1039,20 @@ impl<'a, 'b> OpenPositionWithLiquidityOrcaCpi<'a, 'b> {
             *self.whirlpool.key,
             false
           ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new(
+            *self.orca_position.key,
+            false
+          ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.token_program_a.key,
             false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
             *self.token_program_b.key,
+            false
+          ));
+                                          accounts.push(solana_program::instruction::AccountMeta::new_readonly(
+            *self.metadata_update_auth.key,
             false
           ));
                                           accounts.push(solana_program::instruction::AccountMeta::new_readonly(
@@ -1026,7 +1087,7 @@ impl<'a, 'b> OpenPositionWithLiquidityOrcaCpi<'a, 'b> {
       accounts,
       data,
     };
-    let mut account_infos = Vec::with_capacity(29 + remaining_accounts.len());
+    let mut account_infos = Vec::with_capacity(31 + remaining_accounts.len());
     account_infos.push(self.__program.clone());
                   account_infos.push(self.authority.clone());
                         account_infos.push(self.tuna_config.clone());
@@ -1050,8 +1111,10 @@ impl<'a, 'b> OpenPositionWithLiquidityOrcaCpi<'a, 'b> {
                         account_infos.push(self.pyth_oracle_price_feed_b.clone());
                         account_infos.push(self.whirlpool_program.clone());
                         account_infos.push(self.whirlpool.clone());
+                        account_infos.push(self.orca_position.clone());
                         account_infos.push(self.token_program_a.clone());
                         account_infos.push(self.token_program_b.clone());
+                        account_infos.push(self.metadata_update_auth.clone());
                         account_infos.push(self.memo_program.clone());
                         account_infos.push(self.token2022_program.clone());
                         account_infos.push(self.system_program.clone());
@@ -1092,12 +1155,14 @@ impl<'a, 'b> OpenPositionWithLiquidityOrcaCpi<'a, 'b> {
           ///   19. `[]` pyth_oracle_price_feed_b
           ///   20. `[]` whirlpool_program
                 ///   21. `[writable]` whirlpool
-          ///   22. `[]` token_program_a
-          ///   23. `[]` token_program_b
-          ///   24. `[]` memo_program
-          ///   25. `[]` token2022_program
-          ///   26. `[]` system_program
-          ///   27. `[]` associated_token_program
+                ///   22. `[writable]` orca_position
+          ///   23. `[]` token_program_a
+          ///   24. `[]` token_program_b
+          ///   25. `[]` metadata_update_auth
+          ///   26. `[]` memo_program
+          ///   27. `[]` token2022_program
+          ///   28. `[]` system_program
+          ///   29. `[]` associated_token_program
 #[derive(Clone, Debug)]
 pub struct OpenPositionWithLiquidityOrcaCpiBuilder<'a, 'b> {
   instruction: Box<OpenPositionWithLiquidityOrcaCpiBuilderInstruction<'a, 'b>>,
@@ -1129,8 +1194,10 @@ impl<'a, 'b> OpenPositionWithLiquidityOrcaCpiBuilder<'a, 'b> {
               pyth_oracle_price_feed_b: None,
               whirlpool_program: None,
               whirlpool: None,
+              orca_position: None,
               token_program_a: None,
               token_program_b: None,
+              metadata_update_auth: None,
               memo_program: None,
               token2022_program: None,
               system_program: None,
@@ -1147,6 +1214,7 @@ impl<'a, 'b> OpenPositionWithLiquidityOrcaCpiBuilder<'a, 'b> {
                                 min_added_amount_a: None,
                                 min_added_amount_b: None,
                                 max_swap_slippage: None,
+                                remaining_accounts_info: None,
                     __remaining_accounts: Vec::new(),
     });
     Self { instruction }
@@ -1267,10 +1335,12 @@ impl<'a, 'b> OpenPositionWithLiquidityOrcaCpiBuilder<'a, 'b> {
                         self.instruction.whirlpool = Some(whirlpool);
                     self
     }
-      /// 
-/// Other accounts
-/// 
-#[inline(always)]
+      #[inline(always)]
+    pub fn orca_position(&mut self, orca_position: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+                        self.instruction.orca_position = Some(orca_position);
+                    self
+    }
+      #[inline(always)]
     pub fn token_program_a(&mut self, token_program_a: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
                         self.instruction.token_program_a = Some(token_program_a);
                     self
@@ -1281,11 +1351,19 @@ impl<'a, 'b> OpenPositionWithLiquidityOrcaCpiBuilder<'a, 'b> {
                     self
     }
       #[inline(always)]
+    pub fn metadata_update_auth(&mut self, metadata_update_auth: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
+                        self.instruction.metadata_update_auth = Some(metadata_update_auth);
+                    self
+    }
+      #[inline(always)]
     pub fn memo_program(&mut self, memo_program: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
                         self.instruction.memo_program = Some(memo_program);
                     self
     }
-      #[inline(always)]
+      /// 
+/// Other accounts
+/// 
+#[inline(always)]
     pub fn token2022_program(&mut self, token2022_program: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
                         self.instruction.token2022_program = Some(token2022_program);
                     self
@@ -1360,6 +1438,11 @@ impl<'a, 'b> OpenPositionWithLiquidityOrcaCpiBuilder<'a, 'b> {
         self.instruction.max_swap_slippage = Some(max_swap_slippage);
         self
       }
+                #[inline(always)]
+      pub fn remaining_accounts_info(&mut self, remaining_accounts_info: RemainingAccountsInfo) -> &mut Self {
+        self.instruction.remaining_accounts_info = Some(remaining_accounts_info);
+        self
+      }
         /// Add an additional account to the instruction.
   #[inline(always)]
   pub fn add_remaining_account(&mut self, account: &'b solana_program::account_info::AccountInfo<'a>, is_writable: bool, is_signer: bool) -> &mut Self {
@@ -1395,6 +1478,7 @@ impl<'a, 'b> OpenPositionWithLiquidityOrcaCpiBuilder<'a, 'b> {
                                                                   min_added_amount_a: self.instruction.min_added_amount_a.clone().expect("min_added_amount_a is not set"),
                                                                   min_added_amount_b: self.instruction.min_added_amount_b.clone().expect("min_added_amount_b is not set"),
                                                                   max_swap_slippage: self.instruction.max_swap_slippage.clone().expect("max_swap_slippage is not set"),
+                                                                  remaining_accounts_info: self.instruction.remaining_accounts_info.clone().expect("remaining_accounts_info is not set"),
                                     };
         let instruction = OpenPositionWithLiquidityOrcaCpi {
         __program: self.instruction.__program,
@@ -1443,9 +1527,13 @@ impl<'a, 'b> OpenPositionWithLiquidityOrcaCpiBuilder<'a, 'b> {
                   
           whirlpool: self.instruction.whirlpool.expect("whirlpool is not set"),
                   
+          orca_position: self.instruction.orca_position.expect("orca_position is not set"),
+                  
           token_program_a: self.instruction.token_program_a.expect("token_program_a is not set"),
                   
           token_program_b: self.instruction.token_program_b.expect("token_program_b is not set"),
+                  
+          metadata_update_auth: self.instruction.metadata_update_auth.expect("metadata_update_auth is not set"),
                   
           memo_program: self.instruction.memo_program.expect("memo_program is not set"),
                   
@@ -1485,8 +1573,10 @@ struct OpenPositionWithLiquidityOrcaCpiBuilderInstruction<'a, 'b> {
                 pyth_oracle_price_feed_b: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 whirlpool_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 whirlpool: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+                orca_position: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 token_program_a: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 token_program_b: Option<&'b solana_program::account_info::AccountInfo<'a>>,
+                metadata_update_auth: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 memo_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 token2022_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
@@ -1503,6 +1593,7 @@ struct OpenPositionWithLiquidityOrcaCpiBuilderInstruction<'a, 'b> {
                 min_added_amount_a: Option<u64>,
                 min_added_amount_b: Option<u64>,
                 max_swap_slippage: Option<u32>,
+                remaining_accounts_info: Option<RemainingAccountsInfo>,
         /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
   __remaining_accounts: Vec<(&'b solana_program::account_info::AccountInfo<'a>, bool, bool)>,
 }

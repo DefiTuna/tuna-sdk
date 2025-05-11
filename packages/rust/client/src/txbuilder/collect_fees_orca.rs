@@ -1,5 +1,6 @@
 use crate::accounts::TunaPosition;
-use crate::instructions::CollectFeesOrca;
+use crate::instructions::{CollectFeesOrca, CollectFeesOrcaInstructionArgs};
+use crate::types::{AccountsType, RemainingAccountsInfo, RemainingAccountsSlice};
 use crate::utils::get_create_ata_instructions;
 use crate::{get_tuna_config_address, get_tuna_position_address};
 use orca_whirlpools_client::{get_position_address, get_tick_array_address, Whirlpool};
@@ -77,10 +78,34 @@ pub fn collect_fees_orca_instruction(
         memo_program: spl_memo::ID,
     };
 
-    ix_builder.instruction_with_remaining_accounts(&[
-        AccountMeta::new(tick_array_lower_address, false),
-        AccountMeta::new(tick_array_upper_address, false),
-        AccountMeta::new(whirlpool.token_vault_a, false),
-        AccountMeta::new(whirlpool.token_vault_b, false),
-    ])
+    ix_builder.instruction_with_remaining_accounts(
+        CollectFeesOrcaInstructionArgs {
+            remaining_accounts_info: RemainingAccountsInfo {
+                slices: vec![
+                    RemainingAccountsSlice {
+                        accounts_type: AccountsType::TickArrayLower,
+                        length: 1,
+                    },
+                    RemainingAccountsSlice {
+                        accounts_type: AccountsType::TickArrayUpper,
+                        length: 1,
+                    },
+                    RemainingAccountsSlice {
+                        accounts_type: AccountsType::PoolVaultTokenA,
+                        length: 1,
+                    },
+                    RemainingAccountsSlice {
+                        accounts_type: AccountsType::PoolVaultTokenB,
+                        length: 1,
+                    },
+                ],
+            },
+        },
+        &[
+            AccountMeta::new(tick_array_lower_address, false),
+            AccountMeta::new(tick_array_upper_address, false),
+            AccountMeta::new(whirlpool.token_vault_a, false),
+            AccountMeta::new(whirlpool.token_vault_b, false),
+        ],
+    )
 }

@@ -5,7 +5,13 @@
 //! <https://github.com/codama-idl/codama>
 //!
 
+  pub(crate) mod r#accounts_type;
+  pub(crate) mod r#remaining_accounts_info;
+  pub(crate) mod r#remaining_accounts_slice;
   pub(crate) mod r#tuna_position_state;
 
+  pub use self::r#accounts_type::*;
+  pub use self::r#remaining_accounts_info::*;
+  pub use self::r#remaining_accounts_slice::*;
   pub use self::r#tuna_position_state::*;
 

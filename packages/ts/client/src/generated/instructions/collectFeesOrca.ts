@@ -32,6 +32,12 @@ import {
 } from '@solana/kit';
 import { TUNA_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+import {
+  getRemainingAccountsInfoDecoder,
+  getRemainingAccountsInfoEncoder,
+  type RemainingAccountsInfo,
+  type RemainingAccountsInfoArgs,
+} from '../types';
 
 export const COLLECT_FEES_ORCA_DISCRIMINATOR = new Uint8Array([
   147, 188, 191, 37, 255, 10, 239, 76,
@@ -121,13 +127,19 @@ export type CollectFeesOrcaInstruction<
 
 export type CollectFeesOrcaInstructionData = {
   discriminator: ReadonlyUint8Array;
+  remainingAccountsInfo: RemainingAccountsInfo;
 };
 
-export type CollectFeesOrcaInstructionDataArgs = {};
+export type CollectFeesOrcaInstructionDataArgs = {
+  remainingAccountsInfo: RemainingAccountsInfoArgs;
+};
 
 export function getCollectFeesOrcaInstructionDataEncoder(): Encoder<CollectFeesOrcaInstructionDataArgs> {
   return transformEncoder(
-    getStructEncoder([['discriminator', fixEncoderSize(getBytesEncoder(), 8)]]),
+    getStructEncoder([
+      ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
+      ['remainingAccountsInfo', getRemainingAccountsInfoEncoder()],
+    ]),
     (value) => ({ ...value, discriminator: COLLECT_FEES_ORCA_DISCRIMINATOR })
   );
 }
@@ -135,6 +147,7 @@ export function getCollectFeesOrcaInstructionDataEncoder(): Encoder<CollectFeesO
 export function getCollectFeesOrcaInstructionDataDecoder(): Decoder<CollectFeesOrcaInstructionData> {
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
+    ['remainingAccountsInfo', getRemainingAccountsInfoDecoder()],
   ]);
 }
 
@@ -189,14 +202,10 @@ export type CollectFeesOrcaInput<
   whirlpoolProgram: Address<TAccountWhirlpoolProgram>;
   whirlpool: Address<TAccountWhirlpool>;
   orcaPosition: Address<TAccountOrcaPosition>;
-  /**
-   *
-   * Other accounts
-   *
-   */
   tokenProgramA: Address<TAccountTokenProgramA>;
   tokenProgramB: Address<TAccountTokenProgramB>;
   memoProgram: Address<TAccountMemoProgram>;
+  remainingAccountsInfo: CollectFeesOrcaInstructionDataArgs['remainingAccountsInfo'];
 };
 
 export function getCollectFeesOrcaInstruction<
@@ -301,6 +310,9 @@ export function getCollectFeesOrcaInstruction<
     ResolvedAccount
   >;
 
+  // Original args.
+  const args = { ...input };
+
   const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
   const instruction = {
     accounts: [
@@ -322,7 +334,9 @@ export function getCollectFeesOrcaInstruction<
       getAccountMeta(accounts.memoProgram),
     ],
     programAddress,
-    data: getCollectFeesOrcaInstructionDataEncoder().encode({}),
+    data: getCollectFeesOrcaInstructionDataEncoder().encode(
+      args as CollectFeesOrcaInstructionDataArgs
+    ),
   } as CollectFeesOrcaInstruction<
     TProgramAddress,
     TAccountAuthority,
@@ -377,12 +391,6 @@ export type ParsedCollectFeesOrcaInstruction<
     whirlpoolProgram: TAccountMetas[10];
     whirlpool: TAccountMetas[11];
     orcaPosition: TAccountMetas[12];
-    /**
-     *
-     * Other accounts
-     *
-     */
-
     tokenProgramA: TAccountMetas[13];
     tokenProgramB: TAccountMetas[14];
     memoProgram: TAccountMetas[15];

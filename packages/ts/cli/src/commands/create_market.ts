@@ -1,4 +1,4 @@
-import BaseCommand, { addressArg, addressFlag, bigintFlag } from "../base.ts";
+import BaseCommand, { addressArg, addressFlag, bigintFlag, percentFlag } from "../base.ts";
 import { rpc, sendTransaction, signer } from "../rpc.ts";
 import {
   fetchMaybeMarket,
@@ -31,38 +31,38 @@ export default class CreateMarket extends BaseCommand {
     addressLookupTable: addressFlag({
       description: "Address lookup table",
     }),
-    maxLeverage: Flags.integer({
-      description: "Maximum allowed leverage for the market",
+    maxLeverage: percentFlag({
+      description: "Maximum allowed leverage for the market (hundredths of a basis point or %)",
       default: LEVERAGE_ONE,
       min: LEVERAGE_ONE,
       max: MAX_LEVERAGE,
     }),
-    protocolFeeOnCollateral: Flags.integer({
-      description: "Protocol fee on collateral",
+    protocolFeeOnCollateral: percentFlag({
+      description: "Protocol fee on collateral (hundredths of a basis point or %)",
       default: 0,
       min: 0,
       max: MAX_PROTOCOL_FEE,
     }),
-    protocolFee: Flags.integer({
-      description: "Protocol fee on borrowed funds",
+    protocolFee: percentFlag({
+      description: "Protocol fee on borrowed funds (hundredths of a basis point or %)",
       default: 0,
       min: 0,
       max: MAX_PROTOCOL_FEE,
     }),
-    limitOrderExecutionFee: Flags.integer({
-      description: "Limit order execution fee",
+    limitOrderExecutionFee: percentFlag({
+      description: "Limit order execution fee (hundredths of a basis point or %)",
       default: 0,
       min: 0,
       max: MAX_LIMIT_ORDER_EXECUTION_FEE,
     }),
-    liquidationFee: Flags.integer({
-      description: "Position liquidation fee",
+    liquidationFee: percentFlag({
+      description: "Position liquidation fee (hundredths of a basis point or %)",
       default: 0,
       min: 0,
       max: MAX_LIQUIDATION_FEE,
     }),
-    liquidationThreshold: Flags.integer({
-      description: "Liquidation threshold",
+    liquidationThreshold: percentFlag({
+      description: "Liquidation threshold (hundredths of a basis point or %)",
       default: 0,
       min: 0,
       max: MAX_LIQUIDATION_THRESHOLD,
@@ -75,14 +75,14 @@ export default class CreateMarket extends BaseCommand {
       description: "Borrow limit B. Set to zero for unlimited borrowing",
       default: 0n,
     }),
-    oraclePriceDeviationThreshold: Flags.integer({
-      description: "Oracle price deviation threshold from the spot price",
+    oraclePriceDeviationThreshold: percentFlag({
+      description: "Oracle price deviation threshold from the spot price (hundredths of a basis point or %)",
       default: 0,
       min: 0,
       max: HUNDRED_PERCENT,
     }),
-    maxSwapSlippage: Flags.integer({
-      description: "Maximum allowed swap slippage for the market",
+    maxSwapSlippage: percentFlag({
+      description: "Maximum allowed swap slippage for the market (hundredths of a basis point or %)",
       default: 0,
       min: 0,
       max: HUNDRED_PERCENT,
@@ -90,7 +90,7 @@ export default class CreateMarket extends BaseCommand {
   };
   static override description = "Create a tuna market";
   static override examples = [
-    "<%= config.bin %> <%= command.id %> Czfq3xZZDmsdGdUyrNLtRhGc47cXcZtLG4crryfu44zE --maxLeverage 5090000 --protocolFee 500 --liquidationFee 50000 --liquidationThreshold 830000",
+    "<%= config.bin %> <%= command.id %> Czfq3xZZDmsdGdUyrNLtRhGc47cXcZtLG4crryfu44zE --maxLeverage 509% --protocolFeeOnCollateral 0.01% --protocolFee 0.05% --limitOrderExecutionFee 0.05% --liquidationFee 5% --liquidationThreshold 83%",
   ];
 
   public async run() {

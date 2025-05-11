@@ -1,4 +1,14 @@
 import {
+  fetchAllMaybeTickArray,
+  getInitializeTickArrayInstruction,
+  getOracleAddress,
+  getPositionAddress,
+  getTickArrayAddress,
+  Whirlpool,
+  WHIRLPOOL_PROGRAM_ADDRESS,
+} from "@orca-so/whirlpools-client";
+import { getTickArrayStartTickIndex } from "@orca-so/whirlpools-core";
+import {
   type Account,
   AccountRole,
   GetAccountInfoApi,
@@ -8,42 +18,40 @@ import {
   Rpc,
   TransactionSigner,
 } from "@solana/kit";
-import { findAssociatedTokenPda, Mint, TOKEN_2022_PROGRAM_ADDRESS } from "@solana-program/token-2022";
-import { getTickArrayStartTickIndex } from "@orca-so/whirlpools-core";
+import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
 import {
-  fetchAllMaybeTickArray,
-  getInitializeTickArrayInstruction,
-  getOracleAddress,
-  getPositionAddress,
-  getTickArrayAddress,
-  Whirlpool,
-  WHIRLPOOL_PROGRAM_ADDRESS,
-} from "@orca-so/whirlpools-client";
+  fetchAllMaybeMint,
+  findAssociatedTokenPda,
+  Mint,
+  TOKEN_2022_PROGRAM_ADDRESS,
+} from "@solana-program/token-2022";
+import assert from "assert";
+
 import {
+  AccountsType,
   AddLiquidityOrcaInstructionDataArgs,
   getAddLiquidityOrcaInstruction,
+  getCreateAtaInstructions,
   getMarketAddress,
   getSwapTickArrayAddresses,
   getTickArrayAddressFromTickIndex,
-  TunaConfig,
-  Vault,
-  getCreateAtaInstructions,
   getTunaPositionAddress,
+  TunaConfig,
   TunaPosition,
+  Vault,
 } from "../index.ts";
-import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
+
+export type AddLiquidityOrcaInstructionArgs = Omit<AddLiquidityOrcaInstructionDataArgs, "remainingAccountsInfo">;
 
 export async function addLiquidityOrcaInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
   tunaPosition: Account<TunaPosition>,
   tunaConfig: Account<TunaConfig>,
-  mintA: Account<Mint>,
-  mintB: Account<Mint>,
   vaultA: Account<Vault>,
   vaultB: Account<Vault>,
   whirlpool: Account<Whirlpool>,
-  args: AddLiquidityOrcaInstructionDataArgs,
+  args: AddLiquidityOrcaInstructionArgs,
   createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
 ): Promise<IInstruction[]> {
@@ -51,6 +59,10 @@ export async function addLiquidityOrcaInstructions(
 
   if (!createInstructions) createInstructions = instructions;
   if (!cleanupInstructions) cleanupInstructions = instructions;
+
+  const [mintA, mintB] = await fetchAllMaybeMint(rpc, [whirlpool.data.tokenMintA, whirlpool.data.tokenMintB]);
+  assert(mintA.exists, "Token A not found");
+  assert(mintB.exists, "Token B not found");
 
   //
   // Add create user's token account instructions if needed.
@@ -97,11 +109,17 @@ export async function addLiquidityOrcaInstructions(
   //
   // Add create tick arrays instructions if needed.
   //
-  const lowerTickArrayIndex = getTickArrayStartTickIndex(tunaPosition.data.tickLowerIndex, whirlpool.data.tickSpacing);
-  const [lowerTickArrayAddress] = await getTickArrayAddress(whirlpool.address, lowerTickArrayIndex);
+  const lowerTickArrayStartIndex = getTickArrayStartTickIndex(
+    tunaPosition.data.tickLowerIndex,
+    whirlpool.data.tickSpacing,
+  );
+  const [lowerTickArrayAddress] = await getTickArrayAddress(whirlpool.address, lowerTickArrayStartIndex);
 
-  const upperTickArrayIndex = getTickArrayStartTickIndex(tunaPosition.data.tickUpperIndex, whirlpool.data.tickSpacing);
-  const [upperTickArrayAddress] = await getTickArrayAddress(whirlpool.address, upperTickArrayIndex);
+  const upperTickArrayStartIndex = getTickArrayStartTickIndex(
+    tunaPosition.data.tickUpperIndex,
+    whirlpool.data.tickSpacing,
+  );
+  const [upperTickArrayAddress] = await getTickArrayAddress(whirlpool.address, upperTickArrayStartIndex);
 
   const [lowerTickArray, upperTickArray] = await fetchAllMaybeTickArray(rpc, [
     lowerTickArrayAddress,
@@ -115,19 +133,19 @@ export async function addLiquidityOrcaInstructions(
         whirlpool: whirlpool.address,
         funder: authority,
         tickArray: lowerTickArrayAddress,
-        startTickIndex: lowerTickArrayIndex,
+        startTickIndex: lowerTickArrayStartIndex,
       }),
     );
   }
 
   // Create a tick array it doesn't exist.
-  if (!upperTickArray.exists && lowerTickArrayIndex !== upperTickArrayIndex) {
+  if (!upperTickArray.exists && lowerTickArrayStartIndex !== upperTickArrayStartIndex) {
     instructions.push(
       getInitializeTickArrayInstruction({
         whirlpool: whirlpool.address,
         funder: authority,
         tickArray: upperTickArrayAddress,
-        startTickIndex: upperTickArrayIndex,
+        startTickIndex: upperTickArrayStartIndex,
       }),
     );
   }
@@ -170,7 +188,7 @@ export async function addLiquidityOrcaInstruction(
   vaultA: Account<Vault>,
   vaultB: Account<Vault>,
   whirlpool: Account<Whirlpool>,
-  args: AddLiquidityOrcaInstructionDataArgs,
+  args: AddLiquidityOrcaInstructionArgs,
 ): Promise<IInstruction> {
   const positionMint = tunaPosition.data.positionMint;
   const tunaPositionAddress = (await getTunaPositionAddress(positionMint))[0];
@@ -268,8 +286,20 @@ export async function addLiquidityOrcaInstruction(
     { address: orcaOracleAddress, role: AccountRole.WRITABLE },
   ];
 
+  const remainingAccountsInfo = {
+    slices: [
+      { accountsType: AccountsType.SwapTickArrays, length: 5 },
+      { accountsType: AccountsType.TickArrayLower, length: 1 },
+      { accountsType: AccountsType.TickArrayUpper, length: 1 },
+      { accountsType: AccountsType.PoolVaultTokenA, length: 1 },
+      { accountsType: AccountsType.PoolVaultTokenB, length: 1 },
+      { accountsType: AccountsType.WhirlpoolOracle, length: 1 },
+    ],
+  };
+
   const ix = getAddLiquidityOrcaInstruction({
     ...args,
+    remainingAccountsInfo,
     market: marketAddress,
     mintA: mintA.address,
     mintB: mintB.address,

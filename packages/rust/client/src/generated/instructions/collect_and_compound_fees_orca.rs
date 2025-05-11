@@ -5,6 +5,7 @@
 //! <https://github.com/codama-idl/codama>
 //!
 
+use crate::generated::types::RemainingAccountsInfo;
 use borsh::BorshSerialize;
 use borsh::BorshDeserialize;
 
@@ -79,11 +80,7 @@ pub struct CollectAndCompoundFeesOrca {
           
               
           pub orca_position: solana_program::pubkey::Pubkey,
-                /// 
-/// Other accounts
-/// 
-
-    
+          
               
           pub token_program_a: solana_program::pubkey::Pubkey,
           
@@ -211,13 +208,13 @@ impl CollectAndCompoundFeesOrca {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
  pub struct CollectAndCompoundFeesOrcaInstructionData {
             discriminator: [u8; 8],
-            }
+                  }
 
 impl CollectAndCompoundFeesOrcaInstructionData {
   pub fn new() -> Self {
     Self {
                         discriminator: [213, 44, 171, 74, 209, 13, 137, 0],
-                                }
+                                              }
   }
 }
 
@@ -231,6 +228,7 @@ impl Default for CollectAndCompoundFeesOrcaInstructionData {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
  pub struct CollectAndCompoundFeesOrcaInstructionArgs {
                   pub use_leverage: bool,
+                pub remaining_accounts_info: RemainingAccountsInfo,
       }
 
 
@@ -287,6 +285,7 @@ pub struct CollectAndCompoundFeesOrcaBuilder {
                 token_program_b: Option<solana_program::pubkey::Pubkey>,
                 memo_program: Option<solana_program::pubkey::Pubkey>,
                         use_leverage: Option<bool>,
+                remaining_accounts_info: Option<RemainingAccountsInfo>,
         __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -400,10 +399,7 @@ impl CollectAndCompoundFeesOrcaBuilder {
                         self.orca_position = Some(orca_position);
                     self
     }
-            /// 
-/// Other accounts
-/// 
-#[inline(always)]
+            #[inline(always)]
     pub fn token_program_a(&mut self, token_program_a: solana_program::pubkey::Pubkey) -> &mut Self {
                         self.token_program_a = Some(token_program_a);
                     self
@@ -421,6 +417,11 @@ impl CollectAndCompoundFeesOrcaBuilder {
                     #[inline(always)]
       pub fn use_leverage(&mut self, use_leverage: bool) -> &mut Self {
         self.use_leverage = Some(use_leverage);
+        self
+      }
+                #[inline(always)]
+      pub fn remaining_accounts_info(&mut self, remaining_accounts_info: RemainingAccountsInfo) -> &mut Self {
+        self.remaining_accounts_info = Some(remaining_accounts_info);
         self
       }
         /// Add an additional account to the instruction.
@@ -464,6 +465,7 @@ impl CollectAndCompoundFeesOrcaBuilder {
                       };
           let args = CollectAndCompoundFeesOrcaInstructionArgs {
                                                               use_leverage: self.use_leverage.clone().expect("use_leverage is not set"),
+                                                                  remaining_accounts_info: self.remaining_accounts_info.clone().expect("remaining_accounts_info is not set"),
                                     };
     
     accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -540,11 +542,7 @@ impl CollectAndCompoundFeesOrcaBuilder {
                 
                     
               pub orca_position: &'b solana_program::account_info::AccountInfo<'a>,
-                        /// 
-/// Other accounts
-/// 
-
-      
+                
                     
               pub token_program_a: &'b solana_program::account_info::AccountInfo<'a>,
                 
@@ -627,11 +625,7 @@ pub struct CollectAndCompoundFeesOrcaCpi<'a, 'b> {
           
               
           pub orca_position: &'b solana_program::account_info::AccountInfo<'a>,
-                /// 
-/// Other accounts
-/// 
-
-    
+          
               
           pub token_program_a: &'b solana_program::account_info::AccountInfo<'a>,
           
@@ -902,6 +896,7 @@ impl<'a, 'b> CollectAndCompoundFeesOrcaCpiBuilder<'a, 'b> {
               token_program_b: None,
               memo_program: None,
                                             use_leverage: None,
+                                remaining_accounts_info: None,
                     __remaining_accounts: Vec::new(),
     });
     Self { instruction }
@@ -1012,10 +1007,7 @@ impl<'a, 'b> CollectAndCompoundFeesOrcaCpiBuilder<'a, 'b> {
                         self.instruction.orca_position = Some(orca_position);
                     self
     }
-      /// 
-/// Other accounts
-/// 
-#[inline(always)]
+      #[inline(always)]
     pub fn token_program_a(&mut self, token_program_a: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
                         self.instruction.token_program_a = Some(token_program_a);
                     self
@@ -1033,6 +1025,11 @@ impl<'a, 'b> CollectAndCompoundFeesOrcaCpiBuilder<'a, 'b> {
                     #[inline(always)]
       pub fn use_leverage(&mut self, use_leverage: bool) -> &mut Self {
         self.instruction.use_leverage = Some(use_leverage);
+        self
+      }
+                #[inline(always)]
+      pub fn remaining_accounts_info(&mut self, remaining_accounts_info: RemainingAccountsInfo) -> &mut Self {
+        self.instruction.remaining_accounts_info = Some(remaining_accounts_info);
         self
       }
         /// Add an additional account to the instruction.
@@ -1059,6 +1056,7 @@ impl<'a, 'b> CollectAndCompoundFeesOrcaCpiBuilder<'a, 'b> {
   pub fn invoke_signed(&self, signers_seeds: &[&[&[u8]]]) -> solana_program::entrypoint::ProgramResult {
           let args = CollectAndCompoundFeesOrcaInstructionArgs {
                                                               use_leverage: self.instruction.use_leverage.clone().expect("use_leverage is not set"),
+                                                                  remaining_accounts_info: self.instruction.remaining_accounts_info.clone().expect("remaining_accounts_info is not set"),
                                     };
         let instruction = CollectAndCompoundFeesOrcaCpi {
         __program: self.instruction.__program,
@@ -1141,6 +1139,7 @@ struct CollectAndCompoundFeesOrcaCpiBuilderInstruction<'a, 'b> {
                 token_program_b: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 memo_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                         use_leverage: Option<bool>,
+                remaining_accounts_info: Option<RemainingAccountsInfo>,
         /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
   __remaining_accounts: Vec<(&'b solana_program::account_info::AccountInfo<'a>, bool, bool)>,
 }

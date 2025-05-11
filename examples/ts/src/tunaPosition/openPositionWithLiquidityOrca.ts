@@ -5,26 +5,17 @@ import {
   getLendingVaultAddress,
   getMarketAddress,
   getTunaConfigAddress,
-  Market,
-  NO_STOP_LOSS as _NO_STOP_LOSS,
   NO_TAKE_PROFIT,
-  OpenPositionWithLiquidityOrcaInstructionDataArgs,
+  OpenPositionWithLiquidityOrcaInstructionArgs,
   openPositionWithLiquidityOrcaInstructions,
-  TUNA_POSITION_FLAGS_AUTO_COMPOUND_YIELD as _TUNA_POSITION_FLAGS_AUTO_COMPOUND_YIELD,
-  TUNA_POSITION_FLAGS_AUTO_COMPOUND_YIELD_WITH_LEVERAGE as _TUNA_POSITION_FLAGS_AUTO_COMPOUND_YIELD_WITH_LEVERAGE,
-  TUNA_POSITION_FLAGS_STOP_LOSS_SWAP_TO_TOKEN_A as _TUNA_POSITION_FLAGS_STOP_LOSS_SWAP_TO_TOKEN_A,
   TUNA_POSITION_FLAGS_STOP_LOSS_SWAP_TO_TOKEN_B,
-  TUNA_POSITION_FLAGS_TAKE_PROFIT_SWAP_TO_TOKEN_A as _TUNA_POSITION_FLAGS_TAKE_PROFIT_SWAP_TO_TOKEN_A,
-  TUNA_POSITION_FLAGS_TAKE_PROFIT_SWAP_TO_TOKEN_B as _TUNA_POSITION_FLAGS_TAKE_PROFIT_SWAP_TO_TOKEN_B,
-  TunaConfig,
-  TunaPosition as _TunaPosition,
-  Vault,
 } from "@defituna/client";
-import { fetchWhirlpool, Position as _OrcaPosition, Tick as _Tick, Whirlpool } from "@orca-so/whirlpools-client";
+import { fetchMaybeWhirlpool } from "@orca-so/whirlpools-client";
 import { sqrtPriceToPrice } from "@orca-so/whirlpools-core";
-import { Account, Address, generateKeyPairSigner } from "@solana/kit";
+import { generateKeyPairSigner } from "@solana/kit";
+import { fetchAllMint } from "@solana-program/token-2022";
 import { SOL_USDC_WHIRLPOOL } from "src/constants";
-import { accountExists, getMintDecimals, loadKeypair } from "src/utils/common";
+import { loadKeypair } from "src/utils/common";
 import { createAndSendTransaction, rpc } from "src/utils/rpc";
 
 /**
@@ -35,6 +26,24 @@ import { createAndSendTransaction, rpc } from "src/utils/rpc";
  * @throws {Error} If the transaction fails to send or confirm.
  */
 export async function openPositionWithLiquidity(): Promise<void> {
+  const whirlpoolAddress = SOL_USDC_WHIRLPOOL;
+
+  const authority = await loadKeypair();
+
+  const whirlpool = await fetchMaybeWhirlpool(rpc, whirlpoolAddress);
+  if (!whirlpool.exists) throw new Error("Whirlpool Account does not exist.");
+
+  const tunaConfigAddress = (await getTunaConfigAddress())[0];
+  const marketAddress = (await getMarketAddress(whirlpoolAddress))[0];
+  const lendingVaultAAddress = (await getLendingVaultAddress(whirlpool.data.tokenMintA))[0];
+  const lendingVaultBAddress = (await getLendingVaultAddress(whirlpool.data.tokenMintB))[0];
+
+  const tunaConfig = await fetchTunaConfig(rpc, tunaConfigAddress);
+  const [mintA, mintB] = await fetchAllMint(rpc, [whirlpool.data.tokenMintA, whirlpool.data.tokenMintB]);
+  const vaultA = await fetchVault(rpc, lendingVaultAAddress);
+  const vaultB = await fetchVault(rpc, lendingVaultBAddress);
+  const market = await fetchMarket(rpc, marketAddress);
+
   /** Defining variables required to open an Orca *Position* and add liquidity with borrowed funds from Tuna's *Lending Pools*. */
   /**
    * The nominal amounts of *Token A* (SOL in this example) and *Token B* (USDC in this example) to deposit for liquidity,
@@ -51,29 +60,10 @@ export async function openPositionWithLiquidity(): Promise<void> {
   const borrowRatio = { a: 0.6, b: 0.4 };
 
   /**
-   * The Program Derived {@link Address Address} of the pool from Orca's Whirlpools to create the position in.
-   * For this example we use the SOL/USDC Pool.
-   */
-  const whirlpoolPda: Address = SOL_USDC_WHIRLPOOL;
-
-  /**
-   * The {@link KeyPairSigner Keypair} signing the transaction and the owner of the {@link _TunaPosition Tuna Position}.
-   * This is defaulted to the Solana config keypair (~/.config/solana/id.json).
-   */
-  const authority = await loadKeypair();
-  /**
    * A newly generated {@link KeyPairSigner Keypair} for the new *Position Mint*, which will be
    * created with the position and it's used to identify it.
    */
   const newPositionMintKeypair = await generateKeyPairSigner();
-
-  if (!accountExists(rpc, whirlpoolPda)) throw new Error("Whirlpool Account does not exist.");
-
-  /**
-   * The Whirlpool Account containing deserialized {@link Whirlpool data},
-   * fetched using {@link https://github.com/orca-so/whirlpools/tree/main/ts-sdk/client Orca's Whirlpool Client}
-   */
-  const whirlpoolAccount: Account<Whirlpool> = await fetchWhirlpool(rpc, whirlpoolPda);
 
   /**
    * Deriving collateral and borrow amounts for adding liquidity
@@ -82,8 +72,8 @@ export async function openPositionWithLiquidity(): Promise<void> {
    * Fetches token decimals for Tokens A and B, using {@link https://github.com/orca-so/whirlpools/tree/main/ts-sdk/client Orca's Whirlpool Client}.
    */
   const decimals = {
-    a: await getMintDecimals(rpc, whirlpoolAccount.data.tokenMintA),
-    b: await getMintDecimals(rpc, whirlpoolAccount.data.tokenMintB),
+    a: mintA.data.decimals,
+    b: mintB.data.decimals,
   };
   /**
    * The decimal scale to adjust nominal amounts for Tokens A and B based on their decimals.
@@ -103,7 +93,7 @@ export async function openPositionWithLiquidity(): Promise<void> {
   /**
    * The current *Whirlpool* price, derived from the sqrtPrice using {@link https://github.com/orca-so/whirlpools/tree/main/ts-sdk/client Orca's Whirlpool Client}.
    */
-  const currentPrice = sqrtPriceToPrice(whirlpoolAccount.data.sqrtPrice, decimals.a, decimals.b);
+  const currentPrice = sqrtPriceToPrice(whirlpool.data.sqrtPrice, decimals.a, decimals.b);
   /**
    * The total nominal collateral amount (excluding decimals) represented in *Token B* units.
    */
@@ -130,41 +120,6 @@ export async function openPositionWithLiquidity(): Promise<void> {
     a: Math.floor(nominalBorrow.a * decimalsScale.a),
     b: Math.floor(nominalBorrow.b * decimalsScale.b),
   };
-
-  /**
-   * Program Derived Addresses and Accounts, fetched from their respective Client (Tuna or Orca);
-   */
-  /**
-   * The {@link TunaConfig Tuna Config} Program Derived {@link Address Address} for Tuna operations, fetched from the Tuna Client.
-   */
-  const tunaConfigPda: Address = (await getTunaConfigAddress())[0];
-  /**
-   * The {@link Market Market} Program Derived {@link Address Address} for Tuna operations, fetched from the Tuna Client.
-   */
-  const marketPda: Address = (await getMarketAddress(whirlpoolPda))[0];
-  /**
-   * The {@link Vault Lending Vault} Program Derived {@link Address Address} for Tuna operations, fetched from the Tuna Client.
-   */
-  const lendingVaultPdaA: Address = (await getLendingVaultAddress(whirlpoolAccount.data.tokenMintA))[0];
-  /**
-   * The {@link Vault Lending Vault} Program Derived {@link Address Address} for Tuna operations, fetched from the Tuna Client.
-   */
-  const lendingVaultPdaB: Address = (await getLendingVaultAddress(whirlpoolAccount.data.tokenMintB))[0];
-
-  /**
-   * The *Tuna Config* Account containing deserialized {@link TunaConfig data}, fetched using Tuna's Client
-   */
-  const tunaConfigAccount: Account<TunaConfig> = await fetchTunaConfig(rpc, tunaConfigPda);
-  /**
-   * The *Market* Account containing deserialized {@link Market data}, fetched using Tuna's Client
-   */
-  const marketAccount: Account<Market> = await fetchMarket(rpc, marketPda);
-  /**
-   * The *Market* Account containing deserialized {@link Market data}, fetched using Tuna's Client
-   */
-  const lendingVaulAccountA: Account<Vault> = await fetchVault(rpc, lendingVaultPdaA);
-  const lendingVaulAccountB: Account<Vault> = await fetchVault(rpc, lendingVaultPdaB);
-
   /**
    * Defining input variables for account configuration.
    */
@@ -235,7 +190,7 @@ export async function openPositionWithLiquidity(): Promise<void> {
    */
   const flags = stopLossSwapToToken | takeProfitSwapToToken | autoCompoundYield;
 
-  const args: OpenPositionWithLiquidityOrcaInstructionDataArgs = {
+  const args: OpenPositionWithLiquidityOrcaInstructionArgs = {
     tickLowerIndex,
     tickUpperIndex,
     tickStopLossIndex,
@@ -253,34 +208,21 @@ export async function openPositionWithLiquidity(): Promise<void> {
   /**
    * Creation of instructions for Position Accounts creation and adding liquidity.
    */
-
-  /**
-   * The AddLiquidityOrca instruction created via the Tuna Client, handling:
-   * - Potential borrowing of funds from *Tuna* {@link _Vault Lending Vaults} ATAs.
-   * - Potential swap of tokens if deposit ratio is different from the {@link _OrcaPosition Position's} range-to-price ratio.
-   * - Depositing *tokens* to the *Whirlpool*s vaults to increase the {@link _OrcaPosition Position's} liquidity.
-   */
-  /**
-   * The OpenPositionOrca instruction created via the Tuna Client, handling:
-   * - Creation of the {@link _TunaPosition Tuna Position} account with its settings in the Tuna smart contract.
-   * - Creation of the {@link _OrcaPosition Orca Position} account with its settings via CPI to the Whirlpools smart contract.
-   * - Minting of the *Position Mint NFT*.
-   */
   const instructions = await openPositionWithLiquidityOrcaInstructions(
     rpc,
     authority,
     newPositionMintKeypair,
-    tunaConfigAccount,
-    lendingVaulAccountA,
-    lendingVaulAccountB,
-    whirlpoolAccount,
+    tunaConfig,
+    vaultA,
+    vaultB,
+    whirlpool,
     args,
   );
 
   /**
    * Signing and sending the transaction with all the instructions to the Solana network.
    */
-  await createAndSendTransaction(authority, instructions, marketAccount.data.addressLookupTable);
+  await createAndSendTransaction(authority, instructions, market.data.addressLookupTable);
 }
 
 openPositionWithLiquidity().catch(console.error);

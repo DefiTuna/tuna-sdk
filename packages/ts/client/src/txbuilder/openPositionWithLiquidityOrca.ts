@@ -1,4 +1,14 @@
 import {
+  fetchAllMaybeTickArray,
+  getInitializeTickArrayInstruction,
+  getOracleAddress,
+  getPositionAddress,
+  getTickArrayAddress,
+  Whirlpool,
+  WHIRLPOOL_PROGRAM_ADDRESS,
+} from "@orca-so/whirlpools-client";
+import { getTickArrayStartTickIndex } from "@orca-so/whirlpools-core";
+import {
   type Account,
   AccountRole,
   GetAccountInfoApi,
@@ -8,47 +18,44 @@ import {
   Rpc,
   TransactionSigner,
 } from "@solana/kit";
+import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
+  fetchAllMaybeMint,
   findAssociatedTokenPda,
   Mint,
   TOKEN_2022_PROGRAM_ADDRESS,
 } from "@solana-program/token-2022";
-import { getTickArrayStartTickIndex } from "@orca-so/whirlpools-core";
+import assert from "assert";
+
 import {
-  fetchAllMaybeTickArray,
-  getInitializeTickArrayInstruction,
-  getOracleAddress,
-  getPositionAddress,
-  getTickArrayAddress,
-  Whirlpool,
-  WHIRLPOOL_PROGRAM_ADDRESS,
-} from "@orca-so/whirlpools-client";
-import {
+  AccountsType,
+  getCreateAtaInstructions,
   getMarketAddress,
+  getOpenPositionWithLiquidityOrcaInstruction,
   getSwapTickArrayAddresses,
   getTickArrayAddressFromTickIndex,
-  TunaConfig,
-  Vault,
-  getCreateAtaInstructions,
   getTunaPositionAddress,
   OpenPositionWithLiquidityOrcaInstructionDataArgs,
-  getOpenPositionWithLiquidityOrcaInstruction,
+  TunaConfig,
+  Vault,
   WP_NFT_UPDATE_AUTH,
 } from "../index.ts";
-import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
+
+export type OpenPositionWithLiquidityOrcaInstructionArgs = Omit<
+  OpenPositionWithLiquidityOrcaInstructionDataArgs,
+  "remainingAccountsInfo"
+>;
 
 export async function openPositionWithLiquidityOrcaInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
   positionMint: TransactionSigner,
   tunaConfig: Account<TunaConfig>,
-  mintA: Account<Mint>,
-  mintB: Account<Mint>,
   vaultA: Account<Vault>,
   vaultB: Account<Vault>,
   whirlpool: Account<Whirlpool>,
-  args: OpenPositionWithLiquidityOrcaInstructionDataArgs,
+  args: OpenPositionWithLiquidityOrcaInstructionArgs,
   createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
 ): Promise<IInstruction[]> {
@@ -56,6 +63,10 @@ export async function openPositionWithLiquidityOrcaInstructions(
 
   if (!createInstructions) createInstructions = instructions;
   if (!cleanupInstructions) cleanupInstructions = instructions;
+
+  const [mintA, mintB] = await fetchAllMaybeMint(rpc, [whirlpool.data.tokenMintA, whirlpool.data.tokenMintB]);
+  assert(mintA.exists, "Token A account not found");
+  assert(mintB.exists, "Token B account not found");
 
   //
   // Add create user's token account instructions if needed.
@@ -175,7 +186,7 @@ export async function openPositionWithLiquidityOrcaInstruction(
   vaultA: Account<Vault>,
   vaultB: Account<Vault>,
   whirlpool: Account<Whirlpool>,
-  args: OpenPositionWithLiquidityOrcaInstructionDataArgs,
+  args: OpenPositionWithLiquidityOrcaInstructionArgs,
 ): Promise<IInstruction> {
   const tunaPositionAddress = (await getTunaPositionAddress(positionMint.address))[0];
 
@@ -270,12 +281,20 @@ export async function openPositionWithLiquidityOrcaInstruction(
     { address: whirlpool.data.tokenVaultA, role: AccountRole.WRITABLE },
     { address: whirlpool.data.tokenVaultB, role: AccountRole.WRITABLE },
     { address: orcaOracleAddress, role: AccountRole.WRITABLE },
-    { address: orcaPositionAddress, role: AccountRole.WRITABLE },
-    { address: WP_NFT_UPDATE_AUTH, role: AccountRole.READONLY },
   ];
 
+  const remainingAccountsInfo = {
+    slices: [
+      { accountsType: AccountsType.SwapTickArrays, length: 5 },
+      { accountsType: AccountsType.TickArrayLower, length: 1 },
+      { accountsType: AccountsType.TickArrayUpper, length: 1 },
+      { accountsType: AccountsType.PoolVaultTokenA, length: 1 },
+      { accountsType: AccountsType.PoolVaultTokenB, length: 1 },
+      { accountsType: AccountsType.WhirlpoolOracle, length: 1 },
+    ],
+  };
+
   const ix = getOpenPositionWithLiquidityOrcaInstruction({
-    ...args,
     authority,
     tunaConfig: tunaConfig.address,
     mintA: mintA.address,
@@ -298,11 +317,15 @@ export async function openPositionWithLiquidityOrcaInstruction(
     feeRecipientAtaB,
     whirlpool: whirlpool.address,
     whirlpoolProgram: WHIRLPOOL_PROGRAM_ADDRESS,
+    orcaPosition: orcaPositionAddress,
     tokenProgramA: mintA.programAddress,
     tokenProgramB: mintB.programAddress,
     memoProgram: MEMO_PROGRAM_ADDRESS,
+    metadataUpdateAuth: WP_NFT_UPDATE_AUTH,
     associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
     token2022Program: TOKEN_2022_PROGRAM_ADDRESS,
+    ...args,
+    remainingAccountsInfo,
   });
 
   // @ts-expect-error don't worry about the error

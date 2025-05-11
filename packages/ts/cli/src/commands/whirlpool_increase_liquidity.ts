@@ -1,6 +1,11 @@
 import { fetchMaybeWhirlpool, fetchPosition, getPositionAddress } from "@orca-so/whirlpools-client";
 import { sqrtPriceToPrice, tickIndexToPrice } from "@orca-so/whirlpools-core";
-import { increaseLiquidityInstructions, IncreaseLiquidityQuoteParam, openPositionInstructions } from "@orca-so/whirlpools";
+import {
+  DEFAULT_ADDRESS,
+  increaseLiquidityInstructions,
+  IncreaseLiquidityQuoteParam,
+  openPositionInstructions,
+} from "@orca-so/whirlpools";
 import BaseCommand, { addressArg, addressFlag, bigintFlag, priceFlag } from "../base.ts";
 import { rpc, sendTransaction, signer } from "../rpc.ts";
 import { fetchMint } from "@solana-program/token-2022";
@@ -45,8 +50,11 @@ export default class WhirlpoolIncreaseLiquidity extends BaseCommand {
       description: "Provided liquidity",
     }),
   };
-  static override description = "Add liquidity to the position. Opens a new position if a position mint account is not provided.";
-  static override examples = ["<%= config.bin %> <%= command.id %> POOLADDRESS --lowerPrice=5.0 --upperPrice=300.0 --amountA 1000000"];
+  static override description =
+    "Add liquidity to the position. Opens a new position if a position mint account is not provided.";
+  static override examples = [
+    "<%= config.bin %> <%= command.id %> POOLADDRESS --lowerPrice=5.0 --upperPrice=300.0 --amountA 1000000",
+  ];
 
   public async run() {
     const { args, flags } = await this.parse(WhirlpoolIncreaseLiquidity);
@@ -62,7 +70,15 @@ export default class WhirlpoolIncreaseLiquidity extends BaseCommand {
     const mintB = await fetchMint(rpc, whirlpool.data.tokenMintB);
 
     console.log("Whirlpool:", whirlpool);
-    console.log("Current pool price:", sqrtPriceToPrice(whirlpool.data.sqrtPrice, mintA.data.decimals, mintB.data.decimals));
+    for (let i = 0; i < whirlpool.data.rewardInfos.length; i++) {
+      if (whirlpool.data.rewardInfos[i].mint !== DEFAULT_ADDRESS) {
+        console.log("Whirlpool reward:", whirlpool.data.rewardInfos[i]);
+      }
+    }
+    console.log(
+      "Current pool price:",
+      sqrtPriceToPrice(whirlpool.data.sqrtPrice, mintA.data.decimals, mintB.data.decimals),
+    );
     console.log("Current tick index:", whirlpool.data.tickCurrentIndex);
 
     let positionMint = flags.positionMint;
@@ -72,11 +88,17 @@ export default class WhirlpoolIncreaseLiquidity extends BaseCommand {
       const position = await fetchPosition(rpc, positionAddress[0]);
       console.log("");
       console.log("Position:", position);
-      console.log("Lower price:", tickIndexToPrice(position.data.tickLowerIndex, mintA.data.decimals, mintB.data.decimals));
-      console.log("Upper price:", tickIndexToPrice(position.data.tickUpperIndex, mintA.data.decimals, mintB.data.decimals));
+      console.log(
+        "Lower price:",
+        tickIndexToPrice(position.data.tickLowerIndex, mintA.data.decimals, mintB.data.decimals),
+      );
+      console.log(
+        "Upper price:",
+        tickIndexToPrice(position.data.tickUpperIndex, mintA.data.decimals, mintB.data.decimals),
+      );
     }
 
-    if ([flags.liquidity, flags.amountA, flags.amountB].filter((v) => v !== undefined).length !== 1) {
+    if ([flags.liquidity, flags.amountA, flags.amountB].filter(v => v !== undefined).length !== 1) {
       throw new Error("Exactly one of the following parameters must be provided: liquidity, amountA, or amountB");
     }
 
@@ -120,7 +142,13 @@ export default class WhirlpoolIncreaseLiquidity extends BaseCommand {
 
       console.log("Increasing liquidity of the position at address:", positionMint);
 
-      const increaseInstructions = await increaseLiquidityInstructions(rpc, positionMint, increaseParam, flags.slippageToleranceBps, signer);
+      const increaseInstructions = await increaseLiquidityInstructions(
+        rpc,
+        positionMint,
+        increaseParam,
+        flags.slippageToleranceBps,
+        signer,
+      );
       instructions.push(...increaseInstructions.instructions);
 
       console.log("Increase quote:", increaseInstructions.quote);

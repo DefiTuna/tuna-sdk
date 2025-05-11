@@ -1,7 +1,8 @@
 import { Account, IInstruction, TransactionSigner } from "@solana/kit";
-import { findAssociatedTokenPda, Mint } from "@solana-program/token-2022";
-import { getLendingVaultAddress, getRepayBadDebtInstruction, getTunaConfigAddress } from "../index.ts";
 import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
+import { findAssociatedTokenPda, Mint } from "@solana-program/token-2022";
+
+import { getLendingVaultAddress, getRepayBadDebtInstruction, getTunaConfigAddress } from "../index.ts";
 
 export async function repayBadDebtInstruction(
   authority: TransactionSigner,

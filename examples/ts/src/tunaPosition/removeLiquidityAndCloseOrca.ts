@@ -6,16 +6,14 @@ import {
   getLendingVaultAddress,
   getMarketAddress,
   getTunaPositionAddress,
-  Market,
-  RemoveLiquidityOrcaInstructionDataArgs,
+  RemoveLiquidityOrcaInstructionArgs,
   removeLiquidityOrcaInstructions,
-  TunaPosition,
-  Vault,
 } from "@defituna/client";
-import { fetchWhirlpool, Position as _OrcaPosition, Whirlpool } from "@orca-so/whirlpools-client";
-import { Account, Address, address, IInstruction, KeyPairSigner as _KeyPairSigner } from "@solana/kit";
+import { fetchMaybeWhirlpool } from "@orca-so/whirlpools-client";
+import { Address, address, IInstruction } from "@solana/kit";
+import { fetchAllMint } from "@solana-program/token-2022";
 import { SOL_USDC_WHIRLPOOL } from "src/constants";
-import { accountExists, loadKeypair } from "src/utils/common";
+import { loadKeypair } from "src/utils/common";
 import { createAndSendTransaction, rpc } from "src/utils/rpc";
 
 /**
@@ -29,58 +27,9 @@ import { createAndSendTransaction, rpc } from "src/utils/rpc";
  */
 export async function removeLiquidityAndClose(tunaPositionMint: Address): Promise<void> {
   /**
-   * Program Derived Addresses and Accounts, fetched from their respective Client (Tuna or Orca);
-   */
-  /**
-   * The {@link _KeyPairSigner Keypair} signing the transaction and the owner of the {@link TunaPosition Tuna Position}.
-   * This is defaulted to the Solana config keypair (~/.config/solana/id.json).
-   */
-  const authority = await loadKeypair();
-  /**
-   * The Program Derived {@link Address Address} of the pool from Orca's Whirlpools to create the position in.
-   * For this example we use the SOL/USDC Pool.
-   */
-  const whirlpoolPda: Address = SOL_USDC_WHIRLPOOL;
-  if (!accountExists(rpc, whirlpoolPda)) throw new Error("Whirlpool Account does not exist.");
-  /**
-   * The Whirlpool Account containing deserialized {@link Whirlpool data},
-   * fetched using {@link https://github.com/orca-so/whirlpools/tree/main/ts-sdk/client Orca's Whirlpool Client}
-   */
-  const whirlpoolAccount: Account<Whirlpool> = await fetchWhirlpool(rpc, whirlpoolPda);
-  /**
-   * The {@link Market Market} Program Derived {@link Address Address} for Tuna operations, fetched from the Tuna Client.
-   */
-  const marketPda: Address = (await getMarketAddress(whirlpoolPda))[0];
-  /**
-   * The {@link TunaPosition TunaPosition} Program Derived {@link Address Address} for Tuna operations, fetched from the Tuna Client.
-   */
-  const tunaPositionPda: Address = (await getTunaPositionAddress(tunaPositionMint))[0];
-  /**
-   * The {@link Vault Lending Vault} Program Derived {@link Address Address} for Token A for Tuna operations,
-   * fetched from the Tuna Client.
-   */
-  const lendingVaultPdaA: Address = (await getLendingVaultAddress(whirlpoolAccount.data.tokenMintA))[0];
-  /**
-   * The *Lending Vault* Account for Token A containing deserialized {@link Vault data}, fetched using Tuna's Client.
-   */
-  const lendingVaultAccountA: Account<Vault> = await fetchVault(rpc, lendingVaultPdaA);
-  /**
-   * The {@link Vault Lending Vault} Program Derived {@link Address Address} for Token B for Tuna operations,
-   * fetched from the Tuna Client.
-   */
-  const lendingVaultPdaB: Address = (await getLendingVaultAddress(whirlpoolAccount.data.tokenMintB))[0];
-  /**
-   * The *Lending Vault* Account for Token B containing deserialized {@link Vault data}, fetched using Tuna's Client.
-   */
-  const lendingVaultAccountB: Account<Vault> = await fetchVault(rpc, lendingVaultPdaB);
-  /**
-   * The *Market* Account containing deserialized {@link Market data}, fetched using Tuna's Client
-   */
-  const marketAccount: Account<Market> = await fetchMarket(rpc, marketPda);
-
-  /**
    * Defining input variables.
    */
+  const whirlpoolAddress = SOL_USDC_WHIRLPOOL;
   /**
    * Minimum removed amounts for Tokens A and B to be respected by the *RemoveLiquidity* instruction, acting as slippage limits.
    */
@@ -104,63 +53,45 @@ export async function removeLiquidityAndClose(tunaPositionMint: Address): Promis
   const withdrawPercent = 1000000;
 
   /**
-   * The *Tuna Position* Account containing deserialized {@link TunaPosition data}, fetched using Tuna's Client
-   */
-  const tunaPositionAccount: Account<TunaPosition> = await fetchTunaPosition(rpc, tunaPositionPda);
-
-  /**
    * Creation of instructions for removing liquidity and closing positions.
    */
-  /**
-   * The RemoveLiquidityOrca instruction created via the Tuna Client, handling:
-   * - Withdraws *tokens* from the *Whirlpool*s vaults to decrease the {@link _OrcaPosition Position's} liquidity.
-   * - Repays any potential borrowed funds from *Tuna* {@link _Vault Lending Vaults} ATAs, proportionally to the withdraw percentage.
-   * - Potential swap of tokens if user opts for it, in order to receive all in one token.
-   */
+
+  const authority = await loadKeypair();
+
+  const whirlpool = await fetchMaybeWhirlpool(rpc, whirlpoolAddress);
+  if (!whirlpool.exists) throw new Error("Whirlpool Account does not exist.");
+
+  const marketAddress = (await getMarketAddress(whirlpoolAddress))[0];
+  const tunaPositionAddress = (await getTunaPositionAddress(tunaPositionMint))[0];
+  const lendingVaultAAddress = (await getLendingVaultAddress(whirlpool.data.tokenMintA))[0];
+  const lendingVaultBAddress = (await getLendingVaultAddress(whirlpool.data.tokenMintB))[0];
+
+  const [mintA, mintB] = await fetchAllMint(rpc, [whirlpool.data.tokenMintA, whirlpool.data.tokenMintB]);
+  const tunaPosition = await fetchTunaPosition(rpc, tunaPositionAddress);
+  const vaultA = await fetchVault(rpc, lendingVaultAAddress);
+  const vaultB = await fetchVault(rpc, lendingVaultBAddress);
+  const market = await fetchMarket(rpc, marketAddress);
+
   const instructions: IInstruction[] = [];
 
-  /**
-   * Checks that position state is `Normal` in order to remove any remaining liquidity from it, otherwise skips removing liquidity.
-   * Available states are:
-   * - 0: Normal
-   * - 1: Liquidated
-   * - 2: ClosedByLimitOrder
-   */
-  if (tunaPositionAccount.data.state === 0) {
-    const args: RemoveLiquidityOrcaInstructionDataArgs = {
-      withdrawPercent,
-      swapToToken,
-      minRemovedAmountA: minRemovedAmount.a,
-      minRemovedAmountB: minRemovedAmount.b,
-      maxSwapSlippage,
-    };
+  const args: RemoveLiquidityOrcaInstructionArgs = {
+    withdrawPercent,
+    swapToToken,
+    minRemovedAmountA: minRemovedAmount.a,
+    minRemovedAmountB: minRemovedAmount.b,
+    maxSwapSlippage,
+  };
 
-    const removeLiquidityOrcaIxs = await removeLiquidityOrcaInstructions(
-      authority,
-      tunaPositionAccount,
-      lendingVaultAccountA,
-      lendingVaultAccountB,
-      whirlpoolAccount,
-      args,
-    );
+  instructions.push(
+    ...(await removeLiquidityOrcaInstructions(rpc, authority, tunaPosition, vaultA, vaultB, whirlpool, args)),
+  );
 
-    instructions.push(...removeLiquidityOrcaIxs);
-  }
-
-  /**
-   * The ClosePositionOrca instruction created via the Tuna Client, handling:
-   * - Closing the {@link TunaPosition Tuna Position} account in the Tuna smart contract.
-   * - Closing the {@link _OrcaPosition Orca Position} account via CPI to the Whirlpools smart contract.
-   * - Closing Tuna Position ATA accounts and burning of the *Position Mint NFT*.
-   */
-  const closePositionOrcaIx = await closePositionOrcaInstruction(authority, tunaPositionAccount);
-
-  instructions.push(closePositionOrcaIx);
+  instructions.push(await closePositionOrcaInstruction(authority, tunaPosition, mintA, mintB));
 
   /**
    * Signing and sending the transaction with all the instructions to the Solana network.
    */
-  await createAndSendTransaction(authority, instructions, marketAccount.data.addressLookupTable);
+  await createAndSendTransaction(authority, instructions, market.data.addressLookupTable);
 }
 
 const tunaPositionMint = process.argv[2];

@@ -36,6 +36,12 @@ import {
 } from '@solana/kit';
 import { TUNA_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+import {
+  getRemainingAccountsInfoDecoder,
+  getRemainingAccountsInfoEncoder,
+  type RemainingAccountsInfo,
+  type RemainingAccountsInfoArgs,
+} from '../types';
 
 export const ADD_LIQUIDITY_ORCA_DISCRIMINATOR = new Uint8Array([
   185, 68, 41, 204, 33, 179, 12, 78,
@@ -168,6 +174,7 @@ export type AddLiquidityOrcaInstructionData = {
   minAddedAmountA: bigint;
   minAddedAmountB: bigint;
   maxSwapSlippage: number;
+  remainingAccountsInfo: RemainingAccountsInfo;
 };
 
 export type AddLiquidityOrcaInstructionDataArgs = {
@@ -178,6 +185,7 @@ export type AddLiquidityOrcaInstructionDataArgs = {
   minAddedAmountA: number | bigint;
   minAddedAmountB: number | bigint;
   maxSwapSlippage: number;
+  remainingAccountsInfo: RemainingAccountsInfoArgs;
 };
 
 export function getAddLiquidityOrcaInstructionDataEncoder(): Encoder<AddLiquidityOrcaInstructionDataArgs> {
@@ -191,6 +199,7 @@ export function getAddLiquidityOrcaInstructionDataEncoder(): Encoder<AddLiquidit
       ['minAddedAmountA', getU64Encoder()],
       ['minAddedAmountB', getU64Encoder()],
       ['maxSwapSlippage', getU32Encoder()],
+      ['remainingAccountsInfo', getRemainingAccountsInfoEncoder()],
     ]),
     (value) => ({ ...value, discriminator: ADD_LIQUIDITY_ORCA_DISCRIMINATOR })
   );
@@ -206,6 +215,7 @@ export function getAddLiquidityOrcaInstructionDataDecoder(): Decoder<AddLiquidit
     ['minAddedAmountA', getU64Decoder()],
     ['minAddedAmountB', getU64Decoder()],
     ['maxSwapSlippage', getU32Decoder()],
+    ['remainingAccountsInfo', getRemainingAccountsInfoDecoder()],
   ]);
 }
 
@@ -278,11 +288,6 @@ export type AddLiquidityOrcaInput<
   whirlpoolProgram: Address<TAccountWhirlpoolProgram>;
   whirlpool: Address<TAccountWhirlpool>;
   orcaPosition: Address<TAccountOrcaPosition>;
-  /**
-   *
-   * Other accounts
-   *
-   */
   tokenProgramA: Address<TAccountTokenProgramA>;
   tokenProgramB: Address<TAccountTokenProgramB>;
   memoProgram: Address<TAccountMemoProgram>;
@@ -293,6 +298,7 @@ export type AddLiquidityOrcaInput<
   minAddedAmountA: AddLiquidityOrcaInstructionDataArgs['minAddedAmountA'];
   minAddedAmountB: AddLiquidityOrcaInstructionDataArgs['minAddedAmountB'];
   maxSwapSlippage: AddLiquidityOrcaInstructionDataArgs['maxSwapSlippage'];
+  remainingAccountsInfo: AddLiquidityOrcaInstructionDataArgs['remainingAccountsInfo'];
 };
 
 export function getAddLiquidityOrcaInstruction<
@@ -550,12 +556,6 @@ export type ParsedAddLiquidityOrcaInstruction<
     whirlpoolProgram: TAccountMetas[19];
     whirlpool: TAccountMetas[20];
     orcaPosition: TAccountMetas[21];
-    /**
-     *
-     * Other accounts
-     *
-     */
-
     tokenProgramA: TAccountMetas[22];
     tokenProgramB: TAccountMetas[23];
     memoProgram: TAccountMetas[24];

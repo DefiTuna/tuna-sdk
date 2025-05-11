@@ -1,5 +1,7 @@
 import { address } from "@solana/kit";
 
+export const DEFAULT_ADDRESS = address("11111111111111111111111111111111");
+
 export const HUNDRED_PERCENT = 1000000;
 export const LEVERAGE_ONE = HUNDRED_PERCENT; // 1.0x
 

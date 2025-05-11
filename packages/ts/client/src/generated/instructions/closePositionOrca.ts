@@ -171,13 +171,13 @@ export type ClosePositionOrcaInput<
    */
   whirlpoolProgram: Address<TAccountWhirlpoolProgram>;
   orcaPosition: Address<TAccountOrcaPosition>;
+  tokenProgramA: Address<TAccountTokenProgramA>;
+  tokenProgramB: Address<TAccountTokenProgramB>;
   /**
    *
    * Other accounts
    *
    */
-  tokenProgramA: Address<TAccountTokenProgramA>;
-  tokenProgramB: Address<TAccountTokenProgramB>;
   token2022Program: Address<TAccountToken2022Program>;
 };
 
@@ -335,14 +335,14 @@ export type ParsedClosePositionOrcaInstruction<
 
     whirlpoolProgram: TAccountMetas[8];
     orcaPosition: TAccountMetas[9];
+    tokenProgramA: TAccountMetas[10];
+    tokenProgramB: TAccountMetas[11];
     /**
      *
      * Other accounts
      *
      */
 
-    tokenProgramA: TAccountMetas[10];
-    tokenProgramB: TAccountMetas[11];
     token2022Program: TAccountMetas[12];
   };
   data: ClosePositionOrcaInstructionData;

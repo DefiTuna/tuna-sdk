@@ -1,5 +1,5 @@
 import { fetchAllTunaPositionWithFilter, TunaPosition, tunaPositionAuthorityFilter } from "@defituna/client";
-import { Address, address, KeyPairSigner as _KeyPairSigner } from "@solana/kit";
+import { Address, address } from "@solana/kit";
 import { loadKeypair } from "src/utils/common";
 import { rpc } from "src/utils/rpc";
 

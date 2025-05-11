@@ -5,6 +5,7 @@
 //! <https://github.com/codama-idl/codama>
 //!
 
+use crate::generated::types::RemainingAccountsInfo;
 use borsh::BorshSerialize;
 use borsh::BorshDeserialize;
 
@@ -79,11 +80,7 @@ pub struct RemoveLiquidityOrca {
           
               
           pub orca_position: solana_program::pubkey::Pubkey,
-                /// 
-/// Other accounts
-/// 
-
-    
+          
               
           pub token_program_a: solana_program::pubkey::Pubkey,
           
@@ -211,13 +208,13 @@ impl RemoveLiquidityOrca {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
  pub struct RemoveLiquidityOrcaInstructionData {
             discriminator: [u8; 8],
-                                    }
+                                          }
 
 impl RemoveLiquidityOrcaInstructionData {
   pub fn new() -> Self {
     Self {
                         discriminator: [30, 69, 45, 170, 183, 195, 12, 119],
-                                                                                        }
+                                                                                                      }
   }
 }
 
@@ -235,6 +232,7 @@ impl Default for RemoveLiquidityOrcaInstructionData {
                 pub min_removed_amount_a: u64,
                 pub min_removed_amount_b: u64,
                 pub max_swap_slippage: u32,
+                pub remaining_accounts_info: RemainingAccountsInfo,
       }
 
 
@@ -295,6 +293,7 @@ pub struct RemoveLiquidityOrcaBuilder {
                 min_removed_amount_a: Option<u64>,
                 min_removed_amount_b: Option<u64>,
                 max_swap_slippage: Option<u32>,
+                remaining_accounts_info: Option<RemainingAccountsInfo>,
         __remaining_accounts: Vec<solana_program::instruction::AccountMeta>,
 }
 
@@ -408,10 +407,7 @@ impl RemoveLiquidityOrcaBuilder {
                         self.orca_position = Some(orca_position);
                     self
     }
-            /// 
-/// Other accounts
-/// 
-#[inline(always)]
+            #[inline(always)]
     pub fn token_program_a(&mut self, token_program_a: solana_program::pubkey::Pubkey) -> &mut Self {
                         self.token_program_a = Some(token_program_a);
                     self
@@ -449,6 +445,11 @@ impl RemoveLiquidityOrcaBuilder {
                 #[inline(always)]
       pub fn max_swap_slippage(&mut self, max_swap_slippage: u32) -> &mut Self {
         self.max_swap_slippage = Some(max_swap_slippage);
+        self
+      }
+                #[inline(always)]
+      pub fn remaining_accounts_info(&mut self, remaining_accounts_info: RemainingAccountsInfo) -> &mut Self {
+        self.remaining_accounts_info = Some(remaining_accounts_info);
         self
       }
         /// Add an additional account to the instruction.
@@ -496,6 +497,7 @@ impl RemoveLiquidityOrcaBuilder {
                                                                   min_removed_amount_a: self.min_removed_amount_a.clone().expect("min_removed_amount_a is not set"),
                                                                   min_removed_amount_b: self.min_removed_amount_b.clone().expect("min_removed_amount_b is not set"),
                                                                   max_swap_slippage: self.max_swap_slippage.clone().expect("max_swap_slippage is not set"),
+                                                                  remaining_accounts_info: self.remaining_accounts_info.clone().expect("remaining_accounts_info is not set"),
                                     };
     
     accounts.instruction_with_remaining_accounts(args, &self.__remaining_accounts)
@@ -572,11 +574,7 @@ impl RemoveLiquidityOrcaBuilder {
                 
                     
               pub orca_position: &'b solana_program::account_info::AccountInfo<'a>,
-                        /// 
-/// Other accounts
-/// 
-
-      
+                
                     
               pub token_program_a: &'b solana_program::account_info::AccountInfo<'a>,
                 
@@ -659,11 +657,7 @@ pub struct RemoveLiquidityOrcaCpi<'a, 'b> {
           
               
           pub orca_position: &'b solana_program::account_info::AccountInfo<'a>,
-                /// 
-/// Other accounts
-/// 
-
-    
+          
               
           pub token_program_a: &'b solana_program::account_info::AccountInfo<'a>,
           
@@ -938,6 +932,7 @@ impl<'a, 'b> RemoveLiquidityOrcaCpiBuilder<'a, 'b> {
                                 min_removed_amount_a: None,
                                 min_removed_amount_b: None,
                                 max_swap_slippage: None,
+                                remaining_accounts_info: None,
                     __remaining_accounts: Vec::new(),
     });
     Self { instruction }
@@ -1048,10 +1043,7 @@ impl<'a, 'b> RemoveLiquidityOrcaCpiBuilder<'a, 'b> {
                         self.instruction.orca_position = Some(orca_position);
                     self
     }
-      /// 
-/// Other accounts
-/// 
-#[inline(always)]
+      #[inline(always)]
     pub fn token_program_a(&mut self, token_program_a: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
                         self.instruction.token_program_a = Some(token_program_a);
                     self
@@ -1091,6 +1083,11 @@ impl<'a, 'b> RemoveLiquidityOrcaCpiBuilder<'a, 'b> {
         self.instruction.max_swap_slippage = Some(max_swap_slippage);
         self
       }
+                #[inline(always)]
+      pub fn remaining_accounts_info(&mut self, remaining_accounts_info: RemainingAccountsInfo) -> &mut Self {
+        self.instruction.remaining_accounts_info = Some(remaining_accounts_info);
+        self
+      }
         /// Add an additional account to the instruction.
   #[inline(always)]
   pub fn add_remaining_account(&mut self, account: &'b solana_program::account_info::AccountInfo<'a>, is_writable: bool, is_signer: bool) -> &mut Self {
@@ -1119,6 +1116,7 @@ impl<'a, 'b> RemoveLiquidityOrcaCpiBuilder<'a, 'b> {
                                                                   min_removed_amount_a: self.instruction.min_removed_amount_a.clone().expect("min_removed_amount_a is not set"),
                                                                   min_removed_amount_b: self.instruction.min_removed_amount_b.clone().expect("min_removed_amount_b is not set"),
                                                                   max_swap_slippage: self.instruction.max_swap_slippage.clone().expect("max_swap_slippage is not set"),
+                                                                  remaining_accounts_info: self.instruction.remaining_accounts_info.clone().expect("remaining_accounts_info is not set"),
                                     };
         let instruction = RemoveLiquidityOrcaCpi {
         __program: self.instruction.__program,
@@ -1205,6 +1203,7 @@ struct RemoveLiquidityOrcaCpiBuilderInstruction<'a, 'b> {
                 min_removed_amount_a: Option<u64>,
                 min_removed_amount_b: Option<u64>,
                 max_swap_slippage: Option<u32>,
+                remaining_accounts_info: Option<RemainingAccountsInfo>,
         /// Additional instruction accounts `(AccountInfo, is_writable, is_signer)`.
   __remaining_accounts: Vec<(&'b solana_program::account_info::AccountInfo<'a>, bool, bool)>,
 }

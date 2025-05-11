@@ -1,6 +1,7 @@
+import { getPositionAddress, WHIRLPOOL_PROGRAM_ADDRESS } from "@orca-so/whirlpools-client";
 import { type Account, IInstruction, TransactionSigner } from "@solana/kit";
 import { findAssociatedTokenPda, Mint, TOKEN_2022_PROGRAM_ADDRESS } from "@solana-program/token-2022";
-import { getPositionAddress, WHIRLPOOL_PROGRAM_ADDRESS } from "@orca-so/whirlpools-client";
+
 import { getClosePositionOrcaInstruction, getTunaPositionAddress, TunaPosition } from "../index.ts";
 
 export async function closePositionOrcaInstruction(

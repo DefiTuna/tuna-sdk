@@ -2,7 +2,7 @@
   "address": "tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD",
   "metadata": {
     "name": "tuna",
-    "version": "1.0.66",
+    "version": "1.0.67",
     "spec": "0.1.0",
     "description": "DefiTuna"
   },
@@ -114,12 +114,7 @@
           "writable": true
         },
         {
-          "name": "token_program_a",
-          "docs": [
-            "",
-            "Other accounts",
-            ""
-          ]
+          "name": "token_program_a"
         },
         {
           "name": "token_program_b"
@@ -156,6 +151,14 @@
         {
           "name": "max_swap_slippage",
           "type": "u32"
+        },
+        {
+          "name": "remaining_accounts_info",
+          "type": {
+            "defined": {
+              "name": "RemainingAccountsInfo"
+            }
+          }
         }
       ]
     },
@@ -221,18 +224,18 @@
           "writable": true
         },
         {
-          "name": "token_program_a",
-          "docs": [
-            "",
-            "Other accounts",
-            ""
-          ]
+          "name": "token_program_a"
         },
         {
           "name": "token_program_b"
         },
         {
-          "name": "token_2022_program"
+          "name": "token_2022_program",
+          "docs": [
+            "",
+            "Other accounts",
+            ""
+          ]
         }
       ],
       "args": []
@@ -335,12 +338,7 @@
           "writable": true
         },
         {
-          "name": "token_program_a",
-          "docs": [
-            "",
-            "Other accounts",
-            ""
-          ]
+          "name": "token_program_a"
         },
         {
           "name": "token_program_b"
@@ -353,6 +351,14 @@
         {
           "name": "use_leverage",
           "type": "bool"
+        },
+        {
+          "name": "remaining_accounts_info",
+          "type": {
+            "defined": {
+              "name": "RemainingAccountsInfo"
+            }
+          }
         }
       ]
     },
@@ -428,12 +434,7 @@
           "writable": true
         },
         {
-          "name": "token_program_a",
-          "docs": [
-            "",
-            "Other accounts",
-            ""
-          ]
+          "name": "token_program_a"
         },
         {
           "name": "token_program_b"
@@ -442,7 +443,16 @@
           "name": "memo_program"
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "remaining_accounts_info",
+          "type": {
+            "defined": {
+              "name": "RemainingAccountsInfo"
+            }
+          }
+        }
+      ]
     },
     {
       "name": "collect_reward_orca",
@@ -474,11 +484,18 @@
           "name": "reward_mint"
         },
         {
+          "name": "reward_token_program"
+        },
+        {
           "name": "tuna_position",
           "writable": true
         },
         {
           "name": "tuna_position_ata"
+        },
+        {
+          "name": "tuna_position_owner_reward_ata",
+          "writable": true
         },
         {
           "name": "whirlpool_program",
@@ -506,18 +523,6 @@
         {
           "name": "tick_array_upper",
           "writable": true
-        },
-        {
-          "name": "reward_owner_ata",
-          "writable": true
-        },
-        {
-          "name": "reward_token_program",
-          "docs": [
-            "",
-            "Other accounts",
-            ""
-          ]
         },
         {
           "name": "memo_program"
@@ -876,12 +881,7 @@
           "writable": true
         },
         {
-          "name": "token_program_a",
-          "docs": [
-            "",
-            "Other accounts",
-            ""
-          ]
+          "name": "token_program_a"
         },
         {
           "name": "token_program_b"
@@ -894,6 +894,14 @@
         {
           "name": "withdraw_percent",
           "type": "u32"
+        },
+        {
+          "name": "remaining_accounts_info",
+          "type": {
+            "defined": {
+              "name": "RemainingAccountsInfo"
+            }
+          }
         }
       ]
     },
@@ -1006,18 +1014,18 @@
           "name": "metadata_update_auth"
         },
         {
-          "name": "token_program_a",
-          "docs": [
-            "",
-            "Other accounts",
-            ""
-          ]
+          "name": "token_program_a"
         },
         {
           "name": "token_program_b"
         },
         {
-          "name": "token_2022_program"
+          "name": "token_2022_program",
+          "docs": [
+            "",
+            "Other accounts",
+            ""
+          ]
         },
         {
           "name": "system_program"
@@ -1157,21 +1165,28 @@
           "writable": true
         },
         {
-          "name": "token_program_a",
-          "docs": [
-            "",
-            "Other accounts",
-            ""
-          ]
+          "name": "orca_position",
+          "writable": true
+        },
+        {
+          "name": "token_program_a"
         },
         {
           "name": "token_program_b"
         },
         {
+          "name": "metadata_update_auth"
+        },
+        {
           "name": "memo_program"
         },
         {
-          "name": "token_2022_program"
+          "name": "token_2022_program",
+          "docs": [
+            "",
+            "Other accounts",
+            ""
+          ]
         },
         {
           "name": "system_program"
@@ -1228,6 +1243,14 @@
         {
           "name": "max_swap_slippage",
           "type": "u32"
+        },
+        {
+          "name": "remaining_accounts_info",
+          "type": {
+            "defined": {
+              "name": "RemainingAccountsInfo"
+            }
+          }
         }
       ]
     },
@@ -1330,12 +1353,7 @@
           "writable": true
         },
         {
-          "name": "token_program_a",
-          "docs": [
-            "",
-            "Other accounts",
-            ""
-          ]
+          "name": "token_program_a"
         },
         {
           "name": "token_program_b"
@@ -1364,6 +1382,14 @@
         {
           "name": "max_swap_slippage",
           "type": "u32"
+        },
+        {
+          "name": "remaining_accounts_info",
+          "type": {
+            "defined": {
+              "name": "RemainingAccountsInfo"
+            }
+          }
         }
       ]
     },
@@ -2272,131 +2298,185 @@
     },
     {
       "code": 6030,
+      "name": "RemainingAccountsDuplicatedAccountsType",
+      "msg": "Same accounts type is provided more than once"
+    },
+    {
+      "code": 6031,
+      "name": "RemainingAccountsInvalidSlice",
+      "msg": "Invalid remaining accounts"
+    },
+    {
+      "code": 6032,
+      "name": "RemainingAccountsInvalidSliceLength",
+      "msg": "Invalid remaining accounts slice length"
+    },
+    {
+      "code": 6033,
+      "name": "RemainingAccountsInsufficient",
+      "msg": "Insufficient remaining accounts"
+    },
+    {
+      "code": 6034,
+      "name": "RequiredRemainingAccountNotProvided",
+      "msg": "Required remaining account is not provided"
+    },
+    {
+      "code": 6035,
       "name": "SolverFailedToFindRoot",
       "msg": "SolverFailedToFindRoot"
     },
     {
-      "code": 6031,
+      "code": 6036,
       "name": "SqrtPriceOutOfBounds",
       "msg": "SqrtPriceOutOfBounds"
     },
     {
-      "code": 6032,
+      "code": 6037,
       "name": "SupplyLimitExceeded",
       "msg": "SupplyLimitExceeded"
     },
     {
-      "code": 6033,
+      "code": 6038,
       "name": "Suspended",
       "msg": "Suspended"
     },
     {
-      "code": 6034,
+      "code": 6039,
       "name": "SwapSlippageExceeded",
       "msg": "SwapSlippageExceeded"
     },
     {
-      "code": 6035,
+      "code": 6040,
       "name": "SwapSlippageIsOutOfRange",
       "msg": "SwapSlippageIsOutOfRange"
     },
     {
-      "code": 6036,
+      "code": 6041,
       "name": "TickIndexOfBounds",
       "msg": "TickIndexOfBounds"
     },
     {
-      "code": 6037,
+      "code": 6042,
       "name": "TransferFeeCalculationError",
       "msg": "Transfer fee calculation failed"
     },
     {
-      "code": 6038,
+      "code": 6043,
       "name": "TypeCastOverflow",
       "msg": "TypeCastOverflow"
     },
     {
-      "code": 6039,
+      "code": 6044,
       "name": "UnexpectedValue",
       "msg": "UnexpectedValue"
     },
     {
-      "code": 6040,
+      "code": 6045,
       "name": "UnsupportedTokenMint",
       "msg": "Token mint has unsupported attributes"
     },
     {
-      "code": 6041,
+      "code": 6046,
       "name": "VaultNotInitialized",
       "msg": "VaultNotInitialized"
     },
     {
-      "code": 6042,
+      "code": 6047,
       "name": "WithdrawRequestExceedsUserBalance",
       "msg": "WithdrawRequestExceedsUserBalance"
     },
     {
-      "code": 6043,
+      "code": 6048,
       "name": "ZeroPriceRange",
       "msg": "ZeroPriceRange"
     },
     {
-      "code": 6044,
+      "code": 6049,
       "name": "ZeroTradableAmount",
       "msg": "There are no tradable amount to swap."
     },
     {
-      "code": 6045,
+      "code": 6050,
       "name": "ZeroYield",
       "msg": "ZeroYield"
     },
     {
-      "code": 6046,
+      "code": 6051,
       "name": "RaydiumInvalidFirstTickArrayAccount",
       "msg": "RaydiumInvalidFirstTickArrayAccount"
     },
     {
-      "code": 6047,
+      "code": 6052,
       "name": "RaydiumInvalidTickArray",
       "msg": "RaydiumInvalidTickArray"
     },
     {
-      "code": 6048,
+      "code": 6053,
       "name": "RaydiumInvaildTickIndex",
       "msg": "RaydiumInvaildTickIndex"
     },
     {
-      "code": 6049,
+      "code": 6054,
       "name": "RaydiumMaxTokenOverflow",
       "msg": "RaydiumMaxTokenOverflow"
     },
     {
-      "code": 6050,
+      "code": 6055,
       "name": "RaydiumNotEnoughTickArrayAccount",
       "msg": "RaydiumNotEnoughTickArrayAccount"
     },
     {
-      "code": 6051,
+      "code": 6056,
       "name": "RaydiumSqrtPriceLimitOverflow",
       "msg": "RaydiumSqrtPriceLimitOverflow"
     },
     {
-      "code": 6052,
+      "code": 6057,
       "name": "RaydiumZeroAmountSpecified",
       "msg": "RaydiumZeroAmountSpecified"
     },
     {
-      "code": 6053,
+      "code": 6058,
       "name": "UnableToLoadAccountData",
       "msg": "UnableToLoadAccountData"
     },
     {
-      "code": 6054,
+      "code": 6059,
       "name": "UnableToDeserializeAccountData",
       "msg": "UnableToDeserializeAccountData"
     }
   ],
   "types": [
+    {
+      "name": "AccountsType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "SwapTickArrays"
+          },
+          {
+            "name": "TickArrayLower"
+          },
+          {
+            "name": "TickArrayUpper"
+          },
+          {
+            "name": "PoolVaultTokenA"
+          },
+          {
+            "name": "PoolVaultTokenB"
+          },
+          {
+            "name": "WhirlpoolOracle"
+          },
+          {
+            "name": "Rewards"
+          }
+        ]
+      }
+    },
     {
       "name": "LendingPosition",
       "type": {
@@ -2684,6 +2764,44 @@
           {
             "name": "amount_owed",
             "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RemainingAccountsInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "slices",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "RemainingAccountsSlice"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "RemainingAccountsSlice",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "accounts_type",
+            "type": {
+              "defined": {
+                "name": "AccountsType"
+              }
+            }
+          },
+          {
+            "name": "length",
+            "type": "u8"
           }
         ]
       }

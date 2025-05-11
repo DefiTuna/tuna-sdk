@@ -49,17 +49,17 @@ pub struct ClosePositionOrca {
           
               
           pub orca_position: solana_program::pubkey::Pubkey,
-                /// 
-/// Other accounts
-/// 
-
-    
+          
               
           pub token_program_a: solana_program::pubkey::Pubkey,
           
               
           pub token_program_b: solana_program::pubkey::Pubkey,
-          
+                /// 
+/// Other accounts
+/// 
+
+    
               
           pub token2022_program: solana_program::pubkey::Pubkey,
       }
@@ -252,10 +252,7 @@ impl ClosePositionOrcaBuilder {
                         self.orca_position = Some(orca_position);
                     self
     }
-            /// 
-/// Other accounts
-/// 
-#[inline(always)]
+            #[inline(always)]
     pub fn token_program_a(&mut self, token_program_a: solana_program::pubkey::Pubkey) -> &mut Self {
                         self.token_program_a = Some(token_program_a);
                     self
@@ -265,7 +262,10 @@ impl ClosePositionOrcaBuilder {
                         self.token_program_b = Some(token_program_b);
                     self
     }
-            #[inline(always)]
+            /// 
+/// Other accounts
+/// 
+#[inline(always)]
     pub fn token2022_program(&mut self, token2022_program: solana_program::pubkey::Pubkey) -> &mut Self {
                         self.token2022_program = Some(token2022_program);
                     self
@@ -344,17 +344,17 @@ impl ClosePositionOrcaBuilder {
                 
                     
               pub orca_position: &'b solana_program::account_info::AccountInfo<'a>,
-                        /// 
-/// Other accounts
-/// 
-
-      
+                
                     
               pub token_program_a: &'b solana_program::account_info::AccountInfo<'a>,
                 
                     
               pub token_program_b: &'b solana_program::account_info::AccountInfo<'a>,
-                
+                        /// 
+/// Other accounts
+/// 
+
+      
                     
               pub token2022_program: &'b solana_program::account_info::AccountInfo<'a>,
             }
@@ -401,17 +401,17 @@ pub struct ClosePositionOrcaCpi<'a, 'b> {
           
               
           pub orca_position: &'b solana_program::account_info::AccountInfo<'a>,
-                /// 
-/// Other accounts
-/// 
-
-    
+          
               
           pub token_program_a: &'b solana_program::account_info::AccountInfo<'a>,
           
               
           pub token_program_b: &'b solana_program::account_info::AccountInfo<'a>,
-          
+                /// 
+/// Other accounts
+/// 
+
+    
               
           pub token2022_program: &'b solana_program::account_info::AccountInfo<'a>,
         }
@@ -649,10 +649,7 @@ impl<'a, 'b> ClosePositionOrcaCpiBuilder<'a, 'b> {
                         self.instruction.orca_position = Some(orca_position);
                     self
     }
-      /// 
-/// Other accounts
-/// 
-#[inline(always)]
+      #[inline(always)]
     pub fn token_program_a(&mut self, token_program_a: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
                         self.instruction.token_program_a = Some(token_program_a);
                     self
@@ -662,7 +659,10 @@ impl<'a, 'b> ClosePositionOrcaCpiBuilder<'a, 'b> {
                         self.instruction.token_program_b = Some(token_program_b);
                     self
     }
-      #[inline(always)]
+      /// 
+/// Other accounts
+/// 
+#[inline(always)]
     pub fn token2022_program(&mut self, token2022_program: &'b solana_program::account_info::AccountInfo<'a>) -> &mut Self {
                         self.instruction.token2022_program = Some(token2022_program);
                     self

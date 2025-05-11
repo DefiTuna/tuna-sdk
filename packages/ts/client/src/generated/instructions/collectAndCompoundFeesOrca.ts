@@ -34,6 +34,12 @@ import {
 } from '@solana/kit';
 import { TUNA_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+import {
+  getRemainingAccountsInfoDecoder,
+  getRemainingAccountsInfoEncoder,
+  type RemainingAccountsInfo,
+  type RemainingAccountsInfoArgs,
+} from '../types';
 
 export const COLLECT_AND_COMPOUND_FEES_ORCA_DISCRIMINATOR = new Uint8Array([
   213, 44, 171, 74, 209, 13, 137, 0,
@@ -152,10 +158,12 @@ export type CollectAndCompoundFeesOrcaInstruction<
 export type CollectAndCompoundFeesOrcaInstructionData = {
   discriminator: ReadonlyUint8Array;
   useLeverage: boolean;
+  remainingAccountsInfo: RemainingAccountsInfo;
 };
 
 export type CollectAndCompoundFeesOrcaInstructionDataArgs = {
   useLeverage: boolean;
+  remainingAccountsInfo: RemainingAccountsInfoArgs;
 };
 
 export function getCollectAndCompoundFeesOrcaInstructionDataEncoder(): Encoder<CollectAndCompoundFeesOrcaInstructionDataArgs> {
@@ -163,6 +171,7 @@ export function getCollectAndCompoundFeesOrcaInstructionDataEncoder(): Encoder<C
     getStructEncoder([
       ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
       ['useLeverage', getBooleanEncoder()],
+      ['remainingAccountsInfo', getRemainingAccountsInfoEncoder()],
     ]),
     (value) => ({
       ...value,
@@ -175,6 +184,7 @@ export function getCollectAndCompoundFeesOrcaInstructionDataDecoder(): Decoder<C
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
     ['useLeverage', getBooleanDecoder()],
+    ['remainingAccountsInfo', getRemainingAccountsInfoDecoder()],
   ]);
 }
 
@@ -243,15 +253,11 @@ export type CollectAndCompoundFeesOrcaInput<
   whirlpoolProgram: Address<TAccountWhirlpoolProgram>;
   whirlpool: Address<TAccountWhirlpool>;
   orcaPosition: Address<TAccountOrcaPosition>;
-  /**
-   *
-   * Other accounts
-   *
-   */
   tokenProgramA: Address<TAccountTokenProgramA>;
   tokenProgramB: Address<TAccountTokenProgramB>;
   memoProgram: Address<TAccountMemoProgram>;
   useLeverage: CollectAndCompoundFeesOrcaInstructionDataArgs['useLeverage'];
+  remainingAccountsInfo: CollectAndCompoundFeesOrcaInstructionDataArgs['remainingAccountsInfo'];
 };
 
 export function getCollectAndCompoundFeesOrcaInstruction<
@@ -492,12 +498,6 @@ export type ParsedCollectAndCompoundFeesOrcaInstruction<
     whirlpoolProgram: TAccountMetas[17];
     whirlpool: TAccountMetas[18];
     orcaPosition: TAccountMetas[19];
-    /**
-     *
-     * Other accounts
-     *
-     */
-
     tokenProgramA: TAccountMetas[20];
     tokenProgramB: TAccountMetas[21];
     memoProgram: TAccountMetas[22];

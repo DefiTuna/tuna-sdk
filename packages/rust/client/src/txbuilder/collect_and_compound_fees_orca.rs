@@ -8,6 +8,7 @@ use solana_program::instruction::{AccountMeta, Instruction};
 use solana_program::pubkey::Pubkey;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 use spl_associated_token_account::instruction::create_associated_token_account_idempotent;
+use crate::types::{AccountsType, RemainingAccountsInfo, RemainingAccountsSlice};
 
 pub fn collect_and_compound_fees_orca_instructions(
     authority: &Pubkey,
@@ -90,7 +91,37 @@ pub fn collect_and_compound_fees_orca_instruction(
     };
 
     ix_builder.instruction_with_remaining_accounts(
-        CollectAndCompoundFeesOrcaInstructionArgs { use_leverage },
+        CollectAndCompoundFeesOrcaInstructionArgs { 
+            use_leverage,
+            remaining_accounts_info: RemainingAccountsInfo {
+                slices: vec![
+                    RemainingAccountsSlice {
+                        accounts_type: AccountsType::SwapTickArrays,
+                        length: 5,
+                    },
+                    RemainingAccountsSlice {
+                        accounts_type: AccountsType::TickArrayLower,
+                        length: 1,
+                    },
+                    RemainingAccountsSlice {
+                        accounts_type: AccountsType::TickArrayUpper,
+                        length: 1,
+                    },
+                    RemainingAccountsSlice {
+                        accounts_type: AccountsType::PoolVaultTokenA,
+                        length: 1,
+                    },
+                    RemainingAccountsSlice {
+                        accounts_type: AccountsType::PoolVaultTokenB,
+                        length: 1,
+                    },
+                    RemainingAccountsSlice {
+                        accounts_type: AccountsType::WhirlpoolOracle,
+                        length: 1,
+                    },
+                ],
+            },            
+        },
         &[
             AccountMeta::new(swap_ticks_arrays[0], false),
             AccountMeta::new(swap_ticks_arrays[1], false),

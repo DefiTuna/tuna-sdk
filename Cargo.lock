@@ -1022,6 +1022,7 @@ checksum = "2a2330da5de22e8a3cb63252ce2abb30116bf5265e89c0e01bc17015ce30a476"
 name = "defituna-client"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "borsh 0.10.4",
  "fixed",
  "num-derive",
