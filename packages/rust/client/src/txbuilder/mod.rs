@@ -1,5 +1,6 @@
 pub mod add_liquidity_orca;
 pub mod close_position_orca;
+pub mod close_position_with_liquidity_orca;
 pub mod collect_and_compound_fees_orca;
 pub mod collect_fees_orca;
 pub mod deposit;
@@ -13,6 +14,7 @@ pub mod withdraw;
 
 pub use add_liquidity_orca::*;
 pub use close_position_orca::*;
+pub use close_position_with_liquidity_orca::*;
 pub use collect_and_compound_fees_orca::*;
 pub use collect_fees_orca::*;
 pub use deposit::*;

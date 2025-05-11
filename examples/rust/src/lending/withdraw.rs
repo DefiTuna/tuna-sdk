@@ -23,13 +23,7 @@ pub fn withdraw(rpc: RpcClient, authority: Box<dyn Signer>) -> Result<()> {
 
   // The withdraw instruction interacts with the Tuna program to withdraw the funds into the lending position.
   // Here we have a choice to pass either funds or shares. For simplicity reasons we will use funds.
-  let mut instructions = withdraw_instructions(
-    &authority.pubkey(),
-    &token_mint_address,
-    &token_mint_account.owner,
-    amount,
-    0,
-  );
+  let mut instructions = withdraw_instructions(&rpc, &authority.pubkey(), &token_mint_address, amount, 0)?;
 
   // We sign and send the transaction to the network, which will withdraw from the Lending Position.
   create_and_send_transaction(&rpc, &authority, &mut instructions, None, None, None)

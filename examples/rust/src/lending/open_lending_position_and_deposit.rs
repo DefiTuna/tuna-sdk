@@ -7,7 +7,7 @@ use solana_sdk::signer::Signer;
 use spl_token::state::Mint;
 use std::ops::Mul;
 
-pub fn deposit_and_create(rpc: RpcClient, authority: Box<dyn Signer>) -> Result<()> {
+pub fn open_lending_position_and_deposit(rpc: RpcClient, authority: Box<dyn Signer>) -> Result<()> {
   // The address of the token mint to deposit/withdraw, identifying the target Tuna Lending Vault.
   // Set to the USDC token address in our examples;
   // There are methods in our sdk to fetch all available lending vaults and their respective mint addresses.

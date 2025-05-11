@@ -11,8 +11,8 @@ pub fn close_position_orca_instruction(authority: &Pubkey, tuna_position: &TunaP
 
     let ix_builder = ClosePositionOrca {
         authority: *authority,
-        mint_a: Default::default(),
-        mint_b: Default::default(),
+        mint_a: tuna_position.mint_a,
+        mint_b: tuna_position.mint_b,
         tuna_position: tuna_position_address,
         tuna_position_mint: tuna_position.position_mint,
         tuna_position_ata: get_associated_token_address_with_program_id(&tuna_position_address, &tuna_position.position_mint, &spl_token_2022::ID),

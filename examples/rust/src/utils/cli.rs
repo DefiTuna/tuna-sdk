@@ -6,24 +6,24 @@ use crate::constants::VALID_METHODS;
 
 #[derive(PartialEq)]
 pub enum Method {
-  DepositAndCreate,
-  Withdraw,
+  OpenLendingPositionAndDeposit,
+  WithdrawFromLendingPosition,
   CollectAndCompoundFeesOrca,
   CollectFeesOrca,
   OpenPositionWithLiquidityOrca,
-  RemoveLiquidityAndCloseOrca,
+  ClosePositionWithLiquidityOrca,
   RetrieveLendingPositions,
   RetrieveTunaPositions,
 }
 impl Method {
   fn from_str(s: &str) -> Result<Self> {
     match s.to_lowercase().as_str() {
-      "deposit_and_create" => Ok(Self::DepositAndCreate),
-      "withdraw" => Ok(Self::Withdraw),
+      "deposit_and_create" => Ok(Self::OpenLendingPositionAndDeposit),
+      "withdraw" => Ok(Self::WithdrawFromLendingPosition),
       "open_position_with_liquidity_orca" => Ok(Self::OpenPositionWithLiquidityOrca),
       "collect_fees_orca" => Ok(Self::CollectFeesOrca),
       "collect_and_compound_fees_orca" => Ok(Self::CollectAndCompoundFeesOrca),
-      "remove_liquidity_and_close_orca" => Ok(Self::RemoveLiquidityAndCloseOrca),
+      "remove_liquidity_and_close_orca" => Ok(Self::ClosePositionWithLiquidityOrca),
       "retrieve_lending_positions" => Ok(Self::RetrieveLendingPositions),
       "retrieve_tuna_positions" => Ok(Self::RetrieveTunaPositions),
       _ => bail!("Unknown method: {}. Valid options: {}", s, VALID_METHODS.join(", ")),
@@ -33,7 +33,7 @@ impl Method {
 fn is_tuna_position_mint_dependent(m: &Method) -> bool {
   matches!(
     m,
-    Method::CollectAndCompoundFeesOrca | Method::CollectFeesOrca | Method::RemoveLiquidityAndCloseOrca
+    Method::CollectAndCompoundFeesOrca | Method::CollectFeesOrca | Method::ClosePositionWithLiquidityOrca
   )
 }
 fn is_positions_retrieval(m: &Method) -> bool {

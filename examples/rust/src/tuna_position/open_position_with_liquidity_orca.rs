@@ -1,22 +1,20 @@
-use std::ops::{Add, Div, Mul};
-use std::str::FromStr;
-
 use crate::constants::SOL_USDC_WHIRLPOOL;
 use crate::types::Amounts;
 use crate::utils::rpc::create_and_send_transaction;
-use anyhow::{bail, Result};
-use defituna_client::accounts::{fetch_market, fetch_tuna_config, fetch_vault};
+use anyhow::Result;
+use defituna_client::accounts::fetch_market;
 use defituna_client::{
-  get_market_address, get_tuna_config_address, get_vault_address, OpenPositionWithLiquidityOrcaArgs,
-  TUNA_POSITION_FLAGS_STOP_LOSS_SWAP_TO_TOKEN_B,
+  get_market_address, OpenPositionWithLiquidityOrcaArgs, TUNA_POSITION_FLAGS_STOP_LOSS_SWAP_TO_TOKEN_B,
 };
 use defituna_client::{open_position_with_liquidity_orca_instructions, NO_TAKE_PROFIT};
-use orca_whirlpools_client::{self, fetch_maybe_whirlpool, MaybeAccount};
+use orca_whirlpools_client::{self, fetch_whirlpool};
 use orca_whirlpools_core::sqrt_price_to_price;
 use solana_client::rpc_client::RpcClient;
 use solana_sdk::program_pack::Pack;
 use solana_sdk::{pubkey::Pubkey, signature::Keypair, signer::Signer};
 use spl_token::state::Mint;
+use std::ops::{Add, Div, Mul};
+use std::str::FromStr;
 
 /// Opens a position in an Orca Liquidity Pool and adds liquidity using borrowed funds from Tuna Lending Pools.
 /// Uses the SOL/USDC Whirlpool with preset amounts and leverage for this example; these can be adjusted or passed through the function’s input.
@@ -29,8 +27,19 @@ use spl_token::state::Mint;
 ///
 /// # Returns
 /// - `Result<()>`: Returns `Ok(())` if the transaction is successful, or an error if it fails.
-pub fn open_position_with_liquidity(rpc: RpcClient, authority: Box<dyn Signer>) -> Result<()> {
-  // Defining variables required to open an Orca Position and add liquidity with borrowed funds from Tuna's Lending Pools;
+pub fn open_position_with_liquidity_orca(rpc: RpcClient, authority: Box<dyn Signer>) -> Result<()> {
+  // The Program Derived Address of the pool from Orca's Whirlpools to create the position in.
+  // For this example we use the SOL/USDC Pool.
+  let whirlpool_address = Pubkey::from_str(SOL_USDC_WHIRLPOOL)?;
+
+  // The Whirlpool Account containing deserialized data, fetched using Orca's Whirlpool Client
+  let whirlpool = fetch_whirlpool(&rpc, &whirlpool_address)?;
+
+  // The Market Account containing deserialized data, fetched using Tuna's Client.
+  let market = fetch_market(&rpc, &get_market_address(&whirlpool_address).0)?;
+
+  // A newly generated Keypair for the new Position Mint, which will be created with the position and it's used to identify it.
+  let new_position_mint_keypair = Keypair::new();
 
   // The nominal amounts of Token A (SOL in this example) and Token B (USDC in this example) to deposit for liquidity,
   // as a flat value (e.g., 1 SOL) excluding decimals.
@@ -39,25 +48,12 @@ pub fn open_position_with_liquidity(rpc: RpcClient, authority: Box<dyn Signer>) 
   let leverage: u8 = 2;
   // Ratio for borrowing funds, freely chosen by the user, unbound by the Position’s liquidity range.
   let borrow_ratio = Amounts { a: 0.6, b: 0.4 };
-  // The Program Derived Address of the pool from Orca's Whirlpools to create the position in.
-  // For this example we use the SOL/USDC Pool.
-  let whirlpool_pda = Pubkey::from_str(SOL_USDC_WHIRLPOOL)?;
-  // A newly generated Keypair for the new Position Mint, which will be created with the position and it's used to identify it.
-  let new_position_mint_keypair = Keypair::new();
-  // The Whirlpool Account containing deserialized data, fetched using Orca's Whirlpool Client
-  let maybe_whirlpool_account = fetch_maybe_whirlpool(&rpc, &whirlpool_pda)?;
-  if let MaybeAccount::NotFound(_) = maybe_whirlpool_account {
-    bail!("The account was not found for provided address {}", whirlpool_pda);
-  };
-  let whirlpool_account = match maybe_whirlpool_account {
-    MaybeAccount::Exists(data) => data,
-    MaybeAccount::NotFound(_) => unreachable!(),
-  };
+
   // Token Mint A
-  let token_mint_a_account = rpc.get_account(&whirlpool_account.data.token_mint_a)?;
+  let token_mint_a_account = rpc.get_account(&whirlpool.data.token_mint_a)?;
   let token_mint_a = Mint::unpack(&token_mint_a_account.data)?;
   // Token Mint B
-  let token_mint_b_account = rpc.get_account(&whirlpool_account.data.token_mint_b)?;
+  let token_mint_b_account = rpc.get_account(&whirlpool.data.token_mint_b)?;
   let token_mint_b = Mint::unpack(&token_mint_b_account.data)?;
 
   // The collateral amounts of tokens A and B (adjusted for decimals) provided by the user to use for increasing liquidity.
@@ -69,12 +65,10 @@ pub fn open_position_with_liquidity(rpc: RpcClient, authority: Box<dyn Signer>) 
       .b
       .mul(10_u64.pow(token_mint_b.decimals as u32) as f64) as u64,
   };
+
   // The current Whirlpool price, derived from the sqrtPrice using Orca's Whirlpool Client.
-  let price = sqrt_price_to_price(
-    whirlpool_account.data.sqrt_price,
-    token_mint_a.decimals,
-    token_mint_b.decimals,
-  );
+  let price = sqrt_price_to_price(whirlpool.data.sqrt_price, token_mint_a.decimals, token_mint_b.decimals);
+
   // The total nominal collateral amount (excluding decimals) represented in Token B units.
   let total_nominal_collateral_amount = nominal_collateral.a.mul(price).add(nominal_collateral.b);
   // Safety checks
@@ -104,25 +98,6 @@ pub fn open_position_with_liquidity(rpc: RpcClient, authority: Box<dyn Signer>) 
     a: nominal_borrow.a.mul(10_u64.pow(token_mint_a.decimals as u32) as f64) as u64,
     b: nominal_borrow.b.mul(10_u64.pow(token_mint_b.decimals as u32) as f64) as u64,
   };
-
-  // Program Derived Addresses and Accounts, fetched from their respective Client (Tuna or Orca);
-
-  // The Tuna Config Program Derived Address for Tuna operations, fetched from the Tuna Client.
-  let (tuna_config_pda, _) = get_tuna_config_address();
-  // The Tuna Config Account containing deserialized data, fetched using Tuna's Client.
-  let tuna_config_account = fetch_tuna_config(&rpc, &tuna_config_pda)?;
-  // The Market Program Derived Address for Tuna operations, fetched from the Tuna Client.
-  let (market_pda, _) = get_market_address(&whirlpool_pda);
-  // The Market Account containing deserialized data, fetched using Tuna's Client.
-  let market_account = fetch_market(&rpc, &market_pda)?;
-  // The Vault Program Derived Address for Tuna operations, for Token A, fetched from the Tuna Client.
-  let (lending_vault_pda_a, _) = get_vault_address(&whirlpool_account.data.token_mint_a);
-  // The Vault Account for token A containing deserialized data, fetched using Tuna's Client.
-  let vault_a_account = fetch_vault(&rpc, &lending_vault_pda_a)?;
-  // The Vault Program Derived Address for Tuna operations, for Token B, fetched from the Tuna Client.
-  let (lending_vault_pda_b, _) = get_vault_address(&whirlpool_account.data.token_mint_b);
-  // The Vault Account for token B containing deserialized data, fetched using Tuna's Client.
-  let vault_b_account = fetch_vault(&rpc, &lending_vault_pda_b)?;
 
   // Defining additional input variables;
 
@@ -199,10 +174,7 @@ pub fn open_position_with_liquidity(rpc: RpcClient, authority: Box<dyn Signer>) 
     &rpc,
     &authority.pubkey(),
     &new_position_mint_keypair.pubkey(),
-    &tuna_config_account.data,
-    &vault_a_account.data,
-    &vault_b_account.data,
-    &whirlpool_account.data,
+    &whirlpool_address,
     args,
   )?;
 
@@ -212,7 +184,7 @@ pub fn open_position_with_liquidity(rpc: RpcClient, authority: Box<dyn Signer>) 
     &authority,
     &mut instructions,
     Some(vec![new_position_mint_keypair]),
-    Some(market_account.data.address_lookup_table),
+    Some(market.data.address_lookup_table),
     None,
   )
 }

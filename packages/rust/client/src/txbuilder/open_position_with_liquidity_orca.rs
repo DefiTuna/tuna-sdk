@@ -1,4 +1,4 @@
-use crate::accounts::{TunaConfig, Vault};
+use crate::accounts::{fetch_all_vault, fetch_tuna_config, TunaConfig, Vault};
 use crate::instructions::{OpenPositionWithLiquidityOrca, OpenPositionWithLiquidityOrcaInstructionArgs};
 use crate::types::{AccountsType, RemainingAccountsInfo, RemainingAccountsSlice};
 use crate::utils::get_create_ata_instructions;
@@ -6,7 +6,8 @@ use crate::utils::orca::get_swap_tick_arrays;
 use crate::{get_market_address, get_tuna_config_address, get_tuna_position_address, get_vault_address, WP_NFT_UPDATE_AUTH};
 use anyhow::{anyhow, Result};
 use orca_whirlpools_client::{
-    get_oracle_address, get_position_address, get_tick_array_address, get_whirlpool_address, InitializeTickArray, InitializeTickArrayInstructionArgs, Whirlpool,
+    fetch_whirlpool, get_oracle_address, get_position_address, get_tick_array_address, get_whirlpool_address, InitializeTickArray, InitializeTickArrayInstructionArgs,
+    Whirlpool,
 };
 use orca_whirlpools_core::get_tick_array_start_tick_index;
 use solana_client::rpc_client::RpcClient;
@@ -35,21 +36,21 @@ pub fn open_position_with_liquidity_orca_instructions(
     rpc: &RpcClient,
     authority: &Pubkey,
     position_mint: &Pubkey,
-    tuna_config: &TunaConfig,
-    vault_a: &Vault,
-    vault_b: &Vault,
-    whirlpool: &Whirlpool,
+    whirlpool_address: &Pubkey,
     args: OpenPositionWithLiquidityOrcaArgs,
 ) -> Result<Vec<Instruction>> {
-    let mint_a_address = whirlpool.token_mint_a;
-    let mint_b_address = whirlpool.token_mint_b;
+    let whirlpool = fetch_whirlpool(rpc, whirlpool_address)?;
+    let mint_a_address = whirlpool.data.token_mint_a;
+    let mint_b_address = whirlpool.data.token_mint_b;
+
+    let tuna_config = fetch_tuna_config(rpc, &get_tuna_config_address().0)?;
+
+    let vaults = fetch_all_vault(&rpc, &[get_vault_address(&mint_a_address).0, get_vault_address(&mint_b_address).0])?;
+    let (vault_a, vault_b) = (&vaults[0], &vaults[1]);
 
     let mint_accounts = rpc.get_multiple_accounts(&[mint_a_address.into(), mint_b_address.into()])?;
     let mint_a_account = mint_accounts[0].as_ref().ok_or(anyhow!("Token A mint account not found"))?;
     let mint_b_account = mint_accounts[1].as_ref().ok_or(anyhow!("Token B mint account not found"))?;
-
-    let tick_spacing = whirlpool.tick_spacing;
-    let whirlpool_address = get_whirlpool_address(&whirlpool.whirlpools_config, &mint_a_address, &mint_b_address, tick_spacing)?.0;
 
     let authority_ata_a_instructions = get_create_ata_instructions(&mint_a_address, authority, authority, &mint_a_account.owner, args.collateral_a);
     let authority_ata_b_instructions = get_create_ata_instructions(&mint_b_address, authority, authority, &mint_b_account.owner, args.collateral_b);
@@ -59,17 +60,18 @@ pub fn open_position_with_liquidity_orca_instructions(
     instructions.extend(authority_ata_b_instructions.create);
     instructions.push(create_associated_token_account_idempotent(
         authority,
-        &tuna_config.fee_recipient,
+        &tuna_config.data.fee_recipient,
         &mint_a_address,
         &mint_a_account.owner,
     ));
     instructions.push(create_associated_token_account_idempotent(
         authority,
-        &tuna_config.fee_recipient,
+        &tuna_config.data.fee_recipient,
         &mint_b_address,
         &mint_b_account.owner,
     ));
 
+    let tick_spacing = whirlpool.data.tick_spacing;
     let lower_tick_array_start_index = get_tick_array_start_tick_index(args.tick_lower_index, tick_spacing);
     let upper_tick_array_start_index = get_tick_array_start_tick_index(args.tick_upper_index, tick_spacing);
 
@@ -81,7 +83,7 @@ pub fn open_position_with_liquidity_orca_instructions(
     if tick_array_infos[0].is_none() {
         instructions.push(
             InitializeTickArray {
-                whirlpool: whirlpool_address,
+                whirlpool: whirlpool.address,
                 funder: *authority,
                 tick_array: lower_tick_array_address,
                 system_program: system_program::id(),
@@ -95,7 +97,7 @@ pub fn open_position_with_liquidity_orca_instructions(
     if tick_array_infos[1].is_none() && lower_tick_array_start_index != upper_tick_array_start_index {
         instructions.push(
             InitializeTickArray {
-                whirlpool: whirlpool_address,
+                whirlpool: whirlpool.address,
                 funder: *authority,
                 tick_array: upper_tick_array_address,
                 system_program: system_program::id(),
@@ -109,10 +111,10 @@ pub fn open_position_with_liquidity_orca_instructions(
     instructions.push(open_position_with_liquidity_orca_instruction(
         authority,
         position_mint,
-        tuna_config,
-        vault_a,
-        vault_b,
-        whirlpool,
+        &tuna_config.data,
+        &vault_a.data,
+        &vault_b.data,
+        &whirlpool.data,
         &mint_a_account.owner,
         &mint_b_account.owner,
         args,

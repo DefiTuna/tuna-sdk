@@ -1,31 +1,48 @@
-use crate::accounts::{TunaConfig, TunaPosition, Vault};
+use crate::accounts::{fetch_all_vault, fetch_tuna_config, fetch_tuna_position, TunaConfig, TunaPosition, Vault};
 use crate::instructions::{CollectAndCompoundFeesOrca, CollectAndCompoundFeesOrcaInstructionArgs};
+use crate::types::{AccountsType, RemainingAccountsInfo, RemainingAccountsSlice};
 use crate::utils::orca::get_swap_tick_arrays;
 use crate::{get_market_address, get_tuna_config_address, get_tuna_position_address, get_vault_address};
-use orca_whirlpools_client::{get_oracle_address, get_position_address, get_tick_array_address, Whirlpool};
+use anyhow::{anyhow, Result};
+use orca_whirlpools_client::{fetch_whirlpool, get_oracle_address, get_position_address, get_tick_array_address, Whirlpool};
 use orca_whirlpools_core::get_tick_array_start_tick_index;
+use solana_client::rpc_client::RpcClient;
 use solana_program::instruction::{AccountMeta, Instruction};
 use solana_program::pubkey::Pubkey;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 use spl_associated_token_account::instruction::create_associated_token_account_idempotent;
-use crate::types::{AccountsType, RemainingAccountsInfo, RemainingAccountsSlice};
 
-pub fn collect_and_compound_fees_orca_instructions(
-    authority: &Pubkey,
-    tuna_config: &TunaConfig,
-    tuna_position: &TunaPosition,
-    vault_a: &Vault,
-    vault_b: &Vault,
-    whirlpool: &Whirlpool,
-    token_program_a: &Pubkey,
-    token_program_b: &Pubkey,
-    use_leverage: bool,
-) -> Vec<Instruction> {
-    vec![
-        create_associated_token_account_idempotent(authority, &tuna_config.fee_recipient, &vault_a.mint, token_program_a),
-        create_associated_token_account_idempotent(authority, &tuna_config.fee_recipient, &vault_b.mint, token_program_b),
-        collect_and_compound_fees_orca_instruction(authority, tuna_config, tuna_position, vault_a, vault_b, whirlpool, token_program_a, token_program_b, use_leverage),
-    ]
+pub fn collect_and_compound_fees_orca_instructions(rpc: &RpcClient, authority: &Pubkey, position_mint: &Pubkey, use_leverage: bool) -> Result<Vec<Instruction>> {
+    let tuna_position = fetch_tuna_position(&rpc, &get_tuna_position_address(&position_mint).0)?;
+
+    let whirlpool = fetch_whirlpool(rpc, &tuna_position.data.pool)?;
+    let mint_a_address = whirlpool.data.token_mint_a;
+    let mint_b_address = whirlpool.data.token_mint_b;
+
+    let tuna_config = fetch_tuna_config(rpc, &get_tuna_config_address().0)?;
+
+    let vaults = fetch_all_vault(&rpc, &[get_vault_address(&mint_a_address).0, get_vault_address(&mint_b_address).0])?;
+    let (vault_a, vault_b) = (&vaults[0], &vaults[1]);
+
+    let mint_accounts = rpc.get_multiple_accounts(&[mint_a_address.into(), mint_b_address.into()])?;
+    let mint_a_account = mint_accounts[0].as_ref().ok_or(anyhow!("Token A mint account not found"))?;
+    let mint_b_account = mint_accounts[1].as_ref().ok_or(anyhow!("Token B mint account not found"))?;
+
+    Ok(vec![
+        create_associated_token_account_idempotent(authority, &tuna_config.data.fee_recipient, &vault_a.data.mint, &mint_a_account.owner),
+        create_associated_token_account_idempotent(authority, &tuna_config.data.fee_recipient, &vault_b.data.mint, &mint_b_account.owner),
+        collect_and_compound_fees_orca_instruction(
+            authority,
+            &tuna_config.data,
+            &tuna_position.data,
+            &vault_a.data,
+            &vault_b.data,
+            &whirlpool.data,
+            &mint_a_account.owner,
+            &mint_b_account.owner,
+            use_leverage,
+        ),
+    ])
 }
 
 pub fn collect_and_compound_fees_orca_instruction(
@@ -91,7 +108,7 @@ pub fn collect_and_compound_fees_orca_instruction(
     };
 
     ix_builder.instruction_with_remaining_accounts(
-        CollectAndCompoundFeesOrcaInstructionArgs { 
+        CollectAndCompoundFeesOrcaInstructionArgs {
             use_leverage,
             remaining_accounts_info: RemainingAccountsInfo {
                 slices: vec![
@@ -120,7 +137,7 @@ pub fn collect_and_compound_fees_orca_instruction(
                         length: 1,
                     },
                 ],
-            },            
+            },
         },
         &[
             AccountMeta::new(swap_ticks_arrays[0], false),

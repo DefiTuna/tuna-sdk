@@ -1,37 +1,46 @@
-use crate::accounts::TunaPosition;
+use crate::accounts::{fetch_tuna_position, TunaPosition};
 use crate::instructions::{CollectFeesOrca, CollectFeesOrcaInstructionArgs};
 use crate::types::{AccountsType, RemainingAccountsInfo, RemainingAccountsSlice};
 use crate::utils::get_create_ata_instructions;
 use crate::{get_tuna_config_address, get_tuna_position_address};
-use orca_whirlpools_client::{get_position_address, get_tick_array_address, Whirlpool};
+use anyhow::{anyhow, Result};
+use orca_whirlpools_client::{fetch_whirlpool, get_position_address, get_tick_array_address, Whirlpool};
 use orca_whirlpools_core::get_tick_array_start_tick_index;
+use solana_client::rpc_client::RpcClient;
 use solana_program::instruction::{AccountMeta, Instruction};
 use solana_program::pubkey::Pubkey;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 
-pub fn collect_fees_orca_instructions(
-    authority: &Pubkey,
-    tuna_position: &TunaPosition,
-    whirlpool: &Whirlpool,
-    token_program_a: &Pubkey,
-    token_program_b: &Pubkey,
-) -> Vec<Instruction> {
-    let mint_a = whirlpool.token_mint_a;
-    let mint_b = whirlpool.token_mint_b;
+pub fn collect_fees_orca_instructions(rpc: &RpcClient, authority: &Pubkey, position_mint: &Pubkey) -> Result<Vec<Instruction>> {
+    let tuna_position = fetch_tuna_position(&rpc, &get_tuna_position_address(&position_mint).0)?;
 
-    let authority_ata_a_instructions = get_create_ata_instructions(&mint_a, authority, authority, token_program_a, 0);
-    let authority_ata_b_instructions = get_create_ata_instructions(&mint_b, authority, authority, token_program_b, 0);
+    let whirlpool = fetch_whirlpool(rpc, &tuna_position.data.pool)?;
+    let mint_a_address = whirlpool.data.token_mint_a;
+    let mint_b_address = whirlpool.data.token_mint_b;
+
+    let mint_accounts = rpc.get_multiple_accounts(&[mint_a_address.into(), mint_b_address.into()])?;
+    let mint_a_account = mint_accounts[0].as_ref().ok_or(anyhow!("Token A mint account not found"))?;
+    let mint_b_account = mint_accounts[1].as_ref().ok_or(anyhow!("Token B mint account not found"))?;
+
+    let authority_ata_a_instructions = get_create_ata_instructions(&mint_a_address, authority, authority, &mint_a_account.owner, 0);
+    let authority_ata_b_instructions = get_create_ata_instructions(&mint_b_address, authority, authority, &mint_b_account.owner, 0);
 
     let mut instructions = vec![];
     instructions.extend(authority_ata_a_instructions.create);
     instructions.extend(authority_ata_b_instructions.create);
 
-    instructions.push(collect_fees_orca_instruction(authority, tuna_position, whirlpool, token_program_a, token_program_b));
+    instructions.push(collect_fees_orca_instruction(
+        authority,
+        &tuna_position.data,
+        &whirlpool.data,
+        &mint_a_account.owner,
+        &mint_b_account.owner,
+    ));
 
     instructions.extend(authority_ata_a_instructions.cleanup);
     instructions.extend(authority_ata_b_instructions.cleanup);
 
-    instructions
+    Ok(instructions)
 }
 
 pub fn collect_fees_orca_instruction(

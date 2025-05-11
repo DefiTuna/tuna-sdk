@@ -1,11 +1,11 @@
-use crate::accounts::{TunaPosition, Vault};
+use crate::accounts::{fetch_all_vault, fetch_tuna_position, TunaPosition, Vault};
 use crate::instructions::{RemoveLiquidityOrca, RemoveLiquidityOrcaInstructionArgs};
 use crate::types::{AccountsType, RemainingAccountsInfo, RemainingAccountsSlice};
 use crate::utils::get_create_ata_instructions;
 use crate::utils::orca::get_swap_tick_arrays;
 use crate::{get_market_address, get_tuna_config_address, get_tuna_position_address, get_vault_address};
 use anyhow::{anyhow, Result};
-use orca_whirlpools_client::{get_oracle_address, get_position_address, get_tick_array_address, Whirlpool};
+use orca_whirlpools_client::{fetch_whirlpool, get_oracle_address, get_position_address, get_tick_array_address, Whirlpool};
 use orca_whirlpools_core::get_tick_array_start_tick_index;
 use solana_client::rpc_client::RpcClient;
 use solana_program::instruction::{AccountMeta, Instruction};
@@ -21,20 +21,18 @@ pub struct RemoveLiquidityOrcaArgs {
 }
 
 // TODO: rewards support
-pub fn remove_liquidity_orca_instructions(
-    rpc: &RpcClient,
-    authority: &Pubkey,
-    tuna_position: &TunaPosition,
-    vault_a: &Vault,
-    vault_b: &Vault,
-    whirlpool: &Whirlpool,
-    args: RemoveLiquidityOrcaArgs,
-) -> Result<Vec<Instruction>> {
-    let mint_a_address = whirlpool.token_mint_a;
-    let mint_b_address = whirlpool.token_mint_b;
+pub fn remove_liquidity_orca_instructions(rpc: &RpcClient, authority: &Pubkey, position_mint: &Pubkey, args: RemoveLiquidityOrcaArgs) -> Result<Vec<Instruction>> {
+    let tuna_position = fetch_tuna_position(&rpc, &get_tuna_position_address(&position_mint).0)?;
+
+    let whirlpool = fetch_whirlpool(rpc, &tuna_position.data.pool)?;
+    let mint_a_address = whirlpool.data.token_mint_a;
+    let mint_b_address = whirlpool.data.token_mint_b;
+
+    let vaults = fetch_all_vault(&rpc, &[get_vault_address(&mint_a_address).0, get_vault_address(&mint_b_address).0])?;
+    let (vault_a, vault_b) = (&vaults[0], &vaults[1]);
 
     let mut all_mint_addresses = vec![mint_a_address, mint_b_address];
-    for reward_info in &whirlpool.reward_infos {
+    for reward_info in &whirlpool.data.reward_infos {
         if reward_info.mint != Pubkey::default() {
             all_mint_addresses.push(reward_info.mint);
         }
@@ -53,10 +51,10 @@ pub fn remove_liquidity_orca_instructions(
 
     instructions.push(remove_liquidity_orca_instruction(
         authority,
-        tuna_position,
-        vault_a,
-        vault_b,
-        whirlpool,
+        &tuna_position.data,
+        &vault_a.data,
+        &vault_b.data,
+        &whirlpool.data,
         &mint_a_account.owner,
         &mint_b_account.owner,
         args,
