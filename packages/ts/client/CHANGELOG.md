@@ -1,5 +1,11 @@
 # @defituna/client
 
+## 1.0.27
+
+### Patch Changes
+
+- 388ee7d: Added closePositionWithLiquidityOrca transaction helper
+
 ## 1.0.26
 
 ### Patch Changes
