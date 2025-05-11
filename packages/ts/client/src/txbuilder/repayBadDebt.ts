@@ -1,17 +1,22 @@
-import { Account, IInstruction, TransactionSigner } from "@solana/kit";
+import { Address, GetAccountInfoApi, GetMultipleAccountsApi, IInstruction, Rpc, TransactionSigner } from "@solana/kit";
 import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
-import { findAssociatedTokenPda, Mint } from "@solana-program/token-2022";
+import { fetchMaybeMint, findAssociatedTokenPda } from "@solana-program/token-2022";
 
 import { getLendingVaultAddress, getRepayBadDebtInstruction, getTunaConfigAddress } from "../index.ts";
 
 export async function repayBadDebtInstruction(
+  rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
-  mint: Account<Mint>,
+  mintAddress: Address,
   funds: bigint,
   shares: bigint,
 ): Promise<IInstruction> {
+  const mint = await fetchMaybeMint(rpc, mintAddress);
+  if (!mint.exists) throw new Error("Mint account not found");
+
   const tunaConfig = (await getTunaConfigAddress())[0];
   const vault = (await getLendingVaultAddress(mint.address))[0];
+
   const vaultAta = (
     await findAssociatedTokenPda({
       owner: vault,

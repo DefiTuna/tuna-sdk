@@ -1,6 +1,14 @@
-import { Account, IInstruction, TransactionSigner } from "@solana/kit";
+import {
+  Account,
+  Address,
+  GetAccountInfoApi,
+  GetMultipleAccountsApi,
+  IInstruction,
+  Rpc,
+  TransactionSigner,
+} from "@solana/kit";
 import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
-import { findAssociatedTokenPda, Mint } from "@solana-program/token-2022";
+import { fetchMaybeMint, findAssociatedTokenPda, Mint } from "@solana-program/token-2022";
 
 import {
   getCreateAtaInstructions,
@@ -11,11 +19,15 @@ import {
 } from "../index.ts";
 
 export async function depositInstructions(
+  rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
-  mint: Account<Mint>,
+  mintAddress: Address,
   amount: bigint,
 ): Promise<IInstruction[]> {
   const instructions: IInstruction[] = [];
+
+  const mint = await fetchMaybeMint(rpc, mintAddress);
+  if (!mint.exists) throw new Error("Mint account not found");
 
   // Add create user's token account instruction if needed.
   const createUserAtaInstructions = await getCreateAtaInstructions(

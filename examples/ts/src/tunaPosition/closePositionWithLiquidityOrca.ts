@@ -1,17 +1,10 @@
 import {
-  closePositionOrcaInstruction,
+  ClosePositionWithLiquidityOrcaInstructionArgs,
+  closePositionWithLiquidityOrcaInstructions,
   fetchMarket,
-  fetchTunaPosition,
-  fetchVault,
-  getLendingVaultAddress,
   getMarketAddress,
-  getTunaPositionAddress,
-  RemoveLiquidityOrcaInstructionArgs,
-  removeLiquidityOrcaInstructions,
 } from "@defituna/client";
-import { fetchMaybeWhirlpool } from "@orca-so/whirlpools-client";
 import { Address, address, IInstruction } from "@solana/kit";
-import { fetchAllMint } from "@solana-program/token-2022";
 import { SOL_USDC_WHIRLPOOL } from "src/constants";
 import { loadKeypair } from "src/utils/common";
 import { createAndSendTransaction, rpc } from "src/utils/rpc";
@@ -25,7 +18,7 @@ import { createAndSendTransaction, rpc } from "src/utils/rpc";
  * @returns {Promise<void>} A promise that resolves when the transaction is confirmed.
  * @throws {Error} If the transaction fails to send or confirm.
  */
-export async function removeLiquidityAndClose(tunaPositionMint: Address): Promise<void> {
+export async function closePositionWithLiquidityOrca(tunaPositionMint: Address): Promise<void> {
   /**
    * Defining input variables.
    */
@@ -45,48 +38,24 @@ export async function removeLiquidityAndClose(tunaPositionMint: Address): Promis
    * - 2 - Swaps to *Token B*
    */
   const swapToToken = 1;
-  /**
-   * The percentage of *liquidity* in the *Orca Position* to remove via the *RemoveLiquidity* instruction.
-   * Ranges from 0 (0%) to 1000000 (100%), where each increment of 1 equals 0.0001% (e.g., 250000 = 25%, 5000 = 0.5%, 100000 = 10%).
-   * For this example since closing the Position after, set to 1000000 (100%) to remove all *liquidity*.
-   */
-  const withdrawPercent = 1000000;
 
-  /**
-   * Creation of instructions for removing liquidity and closing positions.
-   */
+  //
+  // Creation of instructions for removing liquidity and closing the position.
+  //
 
   const authority = await loadKeypair();
-
-  const whirlpool = await fetchMaybeWhirlpool(rpc, whirlpoolAddress);
-  if (!whirlpool.exists) throw new Error("Whirlpool Account does not exist.");
-
-  const marketAddress = (await getMarketAddress(whirlpoolAddress))[0];
-  const tunaPositionAddress = (await getTunaPositionAddress(tunaPositionMint))[0];
-  const lendingVaultAAddress = (await getLendingVaultAddress(whirlpool.data.tokenMintA))[0];
-  const lendingVaultBAddress = (await getLendingVaultAddress(whirlpool.data.tokenMintB))[0];
-
-  const [mintA, mintB] = await fetchAllMint(rpc, [whirlpool.data.tokenMintA, whirlpool.data.tokenMintB]);
-  const tunaPosition = await fetchTunaPosition(rpc, tunaPositionAddress);
-  const vaultA = await fetchVault(rpc, lendingVaultAAddress);
-  const vaultB = await fetchVault(rpc, lendingVaultBAddress);
-  const market = await fetchMarket(rpc, marketAddress);
+  const market = await fetchMarket(rpc, (await getMarketAddress(whirlpoolAddress))[0]);
 
   const instructions: IInstruction[] = [];
 
-  const args: RemoveLiquidityOrcaInstructionArgs = {
-    withdrawPercent,
+  const args: ClosePositionWithLiquidityOrcaInstructionArgs = {
     swapToToken,
     minRemovedAmountA: minRemovedAmount.a,
     minRemovedAmountB: minRemovedAmount.b,
     maxSwapSlippage,
   };
 
-  instructions.push(
-    ...(await removeLiquidityOrcaInstructions(rpc, authority, tunaPosition, vaultA, vaultB, whirlpool, args)),
-  );
-
-  instructions.push(await closePositionOrcaInstruction(authority, tunaPosition, mintA, mintB));
+  instructions.push(...(await closePositionWithLiquidityOrcaInstructions(rpc, authority, tunaPositionMint, args)));
 
   /**
    * Signing and sending the transaction with all the instructions to the Solana network.
@@ -100,4 +69,4 @@ if (!tunaPositionMint) {
   process.exit(1);
 }
 
-removeLiquidityAndClose(address(tunaPositionMint)).catch(console.error);
+closePositionWithLiquidityOrca(address(tunaPositionMint)).catch(console.error);

@@ -1,5 +1,6 @@
 import {
   fetchAllMaybeTickArray,
+  fetchMaybeWhirlpool,
   getInitializeTickArrayInstruction,
   getOracleAddress,
   getPositionAddress,
@@ -11,6 +12,7 @@ import { getTickArrayStartTickIndex } from "@orca-so/whirlpools-core";
 import {
   type Account,
   AccountRole,
+  Address,
   GetAccountInfoApi,
   GetMultipleAccountsApi,
   IAccountMeta,
@@ -30,11 +32,16 @@ import assert from "assert";
 import {
   AccountsType,
   AddLiquidityOrcaInstructionDataArgs,
+  fetchAllVault,
+  fetchMaybeTunaPosition,
+  fetchTunaConfig,
   getAddLiquidityOrcaInstruction,
   getCreateAtaInstructions,
+  getLendingVaultAddress,
   getMarketAddress,
   getSwapTickArrayAddresses,
   getTickArrayAddressFromTickIndex,
+  getTunaConfigAddress,
   getTunaPositionAddress,
   TunaConfig,
   TunaPosition,
@@ -46,19 +53,27 @@ export type AddLiquidityOrcaInstructionArgs = Omit<AddLiquidityOrcaInstructionDa
 export async function addLiquidityOrcaInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
-  tunaPosition: Account<TunaPosition>,
-  tunaConfig: Account<TunaConfig>,
-  vaultA: Account<Vault>,
-  vaultB: Account<Vault>,
-  whirlpool: Account<Whirlpool>,
+  positionMint: Address,
   args: AddLiquidityOrcaInstructionArgs,
   createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
 ): Promise<IInstruction[]> {
   const instructions: IInstruction[] = [];
-
   if (!createInstructions) createInstructions = instructions;
   if (!cleanupInstructions) cleanupInstructions = instructions;
+
+  const tunaConfig = await fetchTunaConfig(rpc, (await getTunaConfigAddress())[0]);
+
+  const tunaPosition = await fetchMaybeTunaPosition(rpc, (await getTunaPositionAddress(positionMint))[0]);
+  if (!tunaPosition.exists) throw new Error("Tuna position account not found");
+
+  const whirlpool = await fetchMaybeWhirlpool(rpc, tunaPosition.data.pool);
+  if (!whirlpool.exists) throw new Error("Whirlpool account not found");
+
+  const [vaultA, vaultB] = await fetchAllVault(rpc, [
+    (await getLendingVaultAddress(whirlpool.data.tokenMintA))[0],
+    (await getLendingVaultAddress(whirlpool.data.tokenMintB))[0],
+  ]);
 
   const [mintA, mintB] = await fetchAllMaybeMint(rpc, [whirlpool.data.tokenMintA, whirlpool.data.tokenMintB]);
   assert(mintA.exists, "Token A not found");

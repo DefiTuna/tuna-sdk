@@ -1,7 +1,6 @@
-import { collectFeesOrcaInstructions, fetchTunaPosition, getTunaPositionAddress } from "@defituna/client";
+import { collectFeesOrcaInstructions } from "@defituna/client";
 import { fetchMaybeWhirlpool } from "@orca-so/whirlpools-client";
 import { Address, address } from "@solana/kit";
-import { fetchAllMint } from "@solana-program/token-2022";
 import { SOL_USDC_WHIRLPOOL } from "src/constants";
 import { loadKeypair } from "src/utils/common";
 import { createAndSendTransaction, rpc } from "src/utils/rpc";
@@ -21,13 +20,8 @@ export async function collectFees(tunaPositionMint: Address): Promise<void> {
   const whirlpool = await fetchMaybeWhirlpool(rpc, whirlpoolAddress);
   if (!whirlpool.exists) throw new Error("Whirlpool Account does not exist.");
 
-  const [mintA, mintB] = await fetchAllMint(rpc, [whirlpool.data.tokenMintA, whirlpool.data.tokenMintB]);
-
-  const tunaPositionAddress = (await getTunaPositionAddress(tunaPositionMint))[0];
-  const tunaPosition = await fetchTunaPosition(rpc, tunaPositionAddress);
-
   // Creation of instructions for collecting fees.
-  const collectFeesInstructions = await collectFeesOrcaInstructions(authority, tunaPosition, mintA, mintB, whirlpool);
+  const collectFeesInstructions = await collectFeesOrcaInstructions(rpc, authority, tunaPositionMint);
 
   // Signing and sending the transaction with all the instructions to the Solana network.
   await createAndSendTransaction(authority, collectFeesInstructions);

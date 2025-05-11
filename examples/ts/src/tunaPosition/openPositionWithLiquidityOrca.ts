@@ -1,10 +1,6 @@
 import {
   fetchMarket,
-  fetchTunaConfig,
-  fetchVault,
-  getLendingVaultAddress,
   getMarketAddress,
-  getTunaConfigAddress,
   NO_TAKE_PROFIT,
   OpenPositionWithLiquidityOrcaInstructionArgs,
   openPositionWithLiquidityOrcaInstructions,
@@ -25,7 +21,7 @@ import { createAndSendTransaction, rpc } from "src/utils/rpc";
  * @returns {Promise<void>} A promise that resolves when the transaction is confirmed.
  * @throws {Error} If the transaction fails to send or confirm.
  */
-export async function openPositionWithLiquidity(): Promise<void> {
+export async function openPositionWithLiquidityOrca(): Promise<void> {
   const whirlpoolAddress = SOL_USDC_WHIRLPOOL;
 
   const authority = await loadKeypair();
@@ -33,16 +29,9 @@ export async function openPositionWithLiquidity(): Promise<void> {
   const whirlpool = await fetchMaybeWhirlpool(rpc, whirlpoolAddress);
   if (!whirlpool.exists) throw new Error("Whirlpool Account does not exist.");
 
-  const tunaConfigAddress = (await getTunaConfigAddress())[0];
-  const marketAddress = (await getMarketAddress(whirlpoolAddress))[0];
-  const lendingVaultAAddress = (await getLendingVaultAddress(whirlpool.data.tokenMintA))[0];
-  const lendingVaultBAddress = (await getLendingVaultAddress(whirlpool.data.tokenMintB))[0];
-
-  const tunaConfig = await fetchTunaConfig(rpc, tunaConfigAddress);
   const [mintA, mintB] = await fetchAllMint(rpc, [whirlpool.data.tokenMintA, whirlpool.data.tokenMintB]);
-  const vaultA = await fetchVault(rpc, lendingVaultAAddress);
-  const vaultB = await fetchVault(rpc, lendingVaultBAddress);
-  const market = await fetchMarket(rpc, marketAddress);
+
+  const market = await fetchMarket(rpc, (await getMarketAddress(whirlpoolAddress))[0]);
 
   /** Defining variables required to open an Orca *Position* and add liquidity with borrowed funds from Tuna's *Lending Pools*. */
   /**
@@ -212,10 +201,7 @@ export async function openPositionWithLiquidity(): Promise<void> {
     rpc,
     authority,
     newPositionMintKeypair,
-    tunaConfig,
-    vaultA,
-    vaultB,
-    whirlpool,
+    whirlpoolAddress,
     args,
   );
 
@@ -225,4 +211,4 @@ export async function openPositionWithLiquidity(): Promise<void> {
   await createAndSendTransaction(authority, instructions, market.data.addressLookupTable);
 }
 
-openPositionWithLiquidity().catch(console.error);
+openPositionWithLiquidityOrca().catch(console.error);

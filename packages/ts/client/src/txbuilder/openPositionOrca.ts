@@ -1,11 +1,12 @@
-import { getPositionAddress, Whirlpool, WHIRLPOOL_PROGRAM_ADDRESS } from "@orca-so/whirlpools-client";
-import { type Account, IInstruction, TransactionSigner } from "@solana/kit";
+import { fetchMaybeWhirlpool, getPositionAddress, WHIRLPOOL_PROGRAM_ADDRESS } from "@orca-so/whirlpools-client";
+import { Address, GetAccountInfoApi, GetMultipleAccountsApi, IInstruction, Rpc, TransactionSigner } from "@solana/kit";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
+  fetchAllMaybeMint,
   findAssociatedTokenPda,
-  Mint,
   TOKEN_2022_PROGRAM_ADDRESS,
 } from "@solana-program/token-2022";
+import assert from "assert";
 
 import {
   getMarketAddress,
@@ -16,13 +17,19 @@ import {
 } from "../index.ts";
 
 export async function openPositionOrcaInstruction(
+  rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
   positionMint: TransactionSigner,
-  mintA: Account<Mint>,
-  mintB: Account<Mint>,
-  whirlpool: Account<Whirlpool>,
+  whirlpoolAddress: Address,
   args: OpenPositionOrcaInstructionDataArgs,
 ): Promise<IInstruction> {
+  const whirlpool = await fetchMaybeWhirlpool(rpc, whirlpoolAddress);
+  if (!whirlpool.exists) throw new Error("Whirlpool account not found");
+
+  const [mintA, mintB] = await fetchAllMaybeMint(rpc, [whirlpool.data.tokenMintA, whirlpool.data.tokenMintB]);
+  assert(mintA.exists, "Token A account not found");
+  assert(mintB.exists, "Token B account not found");
+
   const marketAddress = (await getMarketAddress(whirlpool.address))[0];
   const orcaPositionAddress = (await getPositionAddress(positionMint.address))[0];
   const tunaPositionAddress = (await getTunaPositionAddress(positionMint.address))[0];

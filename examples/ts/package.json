@@ -17,9 +17,9 @@
     "example:deposit_and_create": "tsx src/lending/depositAndCreate.ts",
     "example:withdraw": "tsx src/lending/withdraw.ts",
     "example:open_position_with_liquidity_orca": "tsx src/tunaPosition/openPositionWithLiquidityOrca.ts",
+    "example:close_position_with_liquidity_orca": "tsx src/tunaPosition/closePositionWithLiquidityOrca.ts",
     "example:collect_fees_orca": "tsx src/tunaPosition/collectFeesOrca.ts",
     "example:collect_and_compound_fees_orca": "tsx src/tunaPosition/collectAndCompoundFeesOrca.ts",
-    "example:remove_liquidity_and_close_orca": "tsx src/tunaPosition/removeLiquidityAndCloseOrca.ts",
     "example:retrieve_lending_positions": "tsx src/lending/retrieveLendingPositions.ts",
     "example:retrieve_tuna_positions": "tsx src/tunaPosition/retrieveTunaPositions.ts"
   },

@@ -1,17 +1,6 @@
-import {
-  collectAndCompoundFeesOrcaInstructions,
-  fetchMarket,
-  fetchTunaConfig,
-  fetchTunaPosition,
-  fetchVault,
-  getLendingVaultAddress,
-  getMarketAddress,
-  getTunaConfigAddress,
-  getTunaPositionAddress,
-} from "@defituna/client";
+import { collectAndCompoundFeesOrcaInstructions, fetchMarket, getMarketAddress } from "@defituna/client";
 import { fetchMaybeWhirlpool } from "@orca-so/whirlpools-client";
 import { Address, address } from "@solana/kit";
-import { fetchAllMint } from "@solana-program/token-2022";
 import { SOL_USDC_WHIRLPOOL } from "src/constants";
 import { loadKeypair } from "src/utils/common";
 import { createAndSendTransaction, rpc } from "src/utils/rpc";
@@ -31,17 +20,7 @@ export async function collectAndCompoundFees(tunaPositionMint: Address): Promise
   const whirlpool = await fetchMaybeWhirlpool(rpc, whirlpoolAddress);
   if (!whirlpool.exists) throw new Error("Whirlpool Account does not exist.");
 
-  const tunaConfigAddress = (await getTunaConfigAddress())[0];
   const marketAddress = (await getMarketAddress(whirlpoolAddress))[0];
-  const tunaPositionAddress = (await getTunaPositionAddress(tunaPositionMint))[0];
-  const lendingVaultAAddress = (await getLendingVaultAddress(whirlpool.data.tokenMintA))[0];
-  const lendingVaultBAddress = (await getLendingVaultAddress(whirlpool.data.tokenMintB))[0];
-
-  const tunaConfig = await fetchTunaConfig(rpc, tunaConfigAddress);
-  const [mintA, mintB] = await fetchAllMint(rpc, [whirlpool.data.tokenMintA, whirlpool.data.tokenMintB]);
-  const tunaPosition = await fetchTunaPosition(rpc, tunaPositionAddress);
-  const vaultA = await fetchVault(rpc, lendingVaultAAddress);
-  const vaultB = await fetchVault(rpc, lendingVaultBAddress);
   const market = await fetchMarket(rpc, marketAddress);
 
   // Wheter to maintain the *leverage multiplier* by borrowing additional *tokens* from Tuna *Lending Vaults* to match the compounded fees.
@@ -51,14 +30,9 @@ export async function collectAndCompoundFees(tunaPositionMint: Address): Promise
 
   // Creation of instructions for collecting and compounding fees
   const collectAndCompoundFeesInstructions = await collectAndCompoundFeesOrcaInstructions(
+    rpc,
     authority,
-    tunaPosition,
-    tunaConfig,
-    mintA,
-    mintB,
-    vaultA,
-    vaultB,
-    whirlpool,
+    tunaPositionMint,
     useLeverage,
   );
 

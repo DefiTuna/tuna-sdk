@@ -1,18 +1,26 @@
-import { getPositionAddress, WHIRLPOOL_PROGRAM_ADDRESS } from "@orca-so/whirlpools-client";
-import { type Account, IInstruction, TransactionSigner } from "@solana/kit";
-import { findAssociatedTokenPda, Mint, TOKEN_2022_PROGRAM_ADDRESS } from "@solana-program/token-2022";
+import { fetchMaybeWhirlpool, getPositionAddress, WHIRLPOOL_PROGRAM_ADDRESS } from "@orca-so/whirlpools-client";
+import { Address, GetAccountInfoApi, GetMultipleAccountsApi, IInstruction, Rpc, TransactionSigner } from "@solana/kit";
+import { fetchAllMaybeMint, findAssociatedTokenPda, TOKEN_2022_PROGRAM_ADDRESS } from "@solana-program/token-2022";
+import assert from "assert";
 
-import { getClosePositionOrcaInstruction, getTunaPositionAddress, TunaPosition } from "../index.ts";
+import { fetchMaybeTunaPosition, getClosePositionOrcaInstruction, getTunaPositionAddress } from "../index.ts";
 
 export async function closePositionOrcaInstruction(
+  rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
-  tunaPosition: Account<TunaPosition>,
-  mintA: Account<Mint>,
-  mintB: Account<Mint>,
+  positionMint: Address,
 ): Promise<IInstruction> {
-  const positionMint = tunaPosition.data.positionMint;
-
   const orcaPositionAddress = (await getPositionAddress(positionMint))[0];
+
+  const tunaPosition = await fetchMaybeTunaPosition(rpc, (await getTunaPositionAddress(positionMint))[0]);
+  if (!tunaPosition.exists) throw new Error("Tuna position account not found");
+
+  const whirlpool = await fetchMaybeWhirlpool(rpc, tunaPosition.data.pool);
+  if (!whirlpool.exists) throw new Error("Whirlpool account not found");
+
+  const [mintA, mintB] = await fetchAllMaybeMint(rpc, [whirlpool.data.tokenMintA, whirlpool.data.tokenMintB]);
+  assert(mintA.exists, "Token A account not found");
+  assert(mintB.exists, "Token B account not found");
 
   const tunaPositionAddress = (await getTunaPositionAddress(positionMint))[0];
   const tunaPositionAta = (

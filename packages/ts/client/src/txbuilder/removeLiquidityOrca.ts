@@ -1,5 +1,6 @@
 import {
   fetchAllTickArray,
+  fetchMaybeWhirlpool,
   fetchPosition,
   getOracleAddress,
   getPositionAddress,
@@ -12,7 +13,6 @@ import {
   type Account,
   AccountRole,
   Address,
-  assertAccountExists,
   assertAccountsExist,
   GetAccountInfoApi,
   GetMultipleAccountsApi,
@@ -33,12 +33,16 @@ import assert from "assert";
 import {
   AccountsType,
   DEFAULT_ADDRESS,
+  fetchAllVault,
+  fetchMaybeTunaPosition,
   getCreateAtaInstructions,
+  getLendingVaultAddress,
   getMarketAddress,
   getRemoveLiquidityOrcaInstruction,
   getSwapTickArrayAddresses,
   getTickArrayAddressFromTickIndex,
   getTunaConfigAddress,
+  getTunaPositionAddress,
   RemoveLiquidityOrcaInstructionDataArgs,
   TunaPosition,
   Vault,
@@ -49,18 +53,23 @@ export type RemoveLiquidityOrcaInstructionArgs = Omit<RemoveLiquidityOrcaInstruc
 export async function removeLiquidityOrcaInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
-  tunaPosition: Account<TunaPosition>,
-  vaultA: Account<Vault>,
-  vaultB: Account<Vault>,
-  whirlpool: Account<Whirlpool>,
+  positionMint: Address,
   args: RemoveLiquidityOrcaInstructionArgs,
   createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
 ): Promise<IInstruction[]> {
-  const positionMint = tunaPosition.data.positionMint;
-  const orcaPositionAddress = (await getPositionAddress(positionMint))[0];
+  const tunaPosition = await fetchMaybeTunaPosition(rpc, (await getTunaPositionAddress(positionMint))[0]);
+  if (!tunaPosition.exists) throw new Error("Tuna position account not found");
 
-  const orcaPosition = await fetchPosition(rpc, orcaPositionAddress);
+  const orcaPosition = await fetchPosition(rpc, (await getPositionAddress(positionMint))[0]);
+
+  const whirlpool = await fetchMaybeWhirlpool(rpc, tunaPosition.data.pool);
+  if (!whirlpool.exists) throw new Error("Whirlpool account not found");
+
+  const [vaultA, vaultB] = await fetchAllVault(rpc, [
+    (await getLendingVaultAddress(whirlpool.data.tokenMintA))[0],
+    (await getLendingVaultAddress(whirlpool.data.tokenMintB))[0],
+  ]);
 
   const [mintA, mintB, ...rewardMints] = await fetchAllMaybeMint(rpc, [
     whirlpool.data.tokenMintA,
@@ -69,8 +78,8 @@ export async function removeLiquidityOrcaInstructions(
   ]);
   const allMints = [mintA, mintB, ...rewardMints];
 
-  assertAccountExists(mintA);
-  assertAccountExists(mintB);
+  assert(mintA.exists, "Token A account not found");
+  assert(mintB.exists, "Token B account not found");
   assertAccountsExist(rewardMints);
 
   const lowerTickArrayStartIndex = getTickArrayStartTickIndex(

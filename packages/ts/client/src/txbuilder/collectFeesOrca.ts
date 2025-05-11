@@ -1,10 +1,32 @@
-import { getPositionAddress, Whirlpool, WHIRLPOOL_PROGRAM_ADDRESS } from "@orca-so/whirlpools-client";
-import { type Account, AccountRole, IAccountMeta, IInstruction, TransactionSigner } from "@solana/kit";
+import {
+  fetchMaybeWhirlpool,
+  getPositionAddress,
+  Whirlpool,
+  WHIRLPOOL_PROGRAM_ADDRESS,
+} from "@orca-so/whirlpools-client";
+import {
+  type Account,
+  AccountRole,
+  Address,
+  GetAccountInfoApi,
+  GetMultipleAccountsApi,
+  IAccountMeta,
+  IInstruction,
+  Rpc,
+  TransactionSigner,
+} from "@solana/kit";
 import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
-import { findAssociatedTokenPda, Mint, TOKEN_2022_PROGRAM_ADDRESS } from "@solana-program/token-2022";
+import {
+  fetchAllMaybeMint,
+  findAssociatedTokenPda,
+  Mint,
+  TOKEN_2022_PROGRAM_ADDRESS,
+} from "@solana-program/token-2022";
+import assert from "assert";
 
 import {
   AccountsType,
+  fetchMaybeTunaPosition,
   getCollectFeesOrcaInstruction,
   getCreateAtaInstructions,
   getTickArrayAddressFromTickIndex,
@@ -14,18 +36,25 @@ import {
 } from "../index.ts";
 
 export async function collectFeesOrcaInstructions(
+  rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
-  tunaPosition: Account<TunaPosition>,
-  mintA: Account<Mint>,
-  mintB: Account<Mint>,
-  whirlpool: Account<Whirlpool>,
+  positionMint: Address,
   createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
 ): Promise<IInstruction[]> {
   const instructions: IInstruction[] = [];
-
   if (!createInstructions) createInstructions = instructions;
   if (!cleanupInstructions) cleanupInstructions = instructions;
+
+  const tunaPosition = await fetchMaybeTunaPosition(rpc, (await getTunaPositionAddress(positionMint))[0]);
+  if (!tunaPosition.exists) throw new Error("Tuna position account not found");
+
+  const whirlpool = await fetchMaybeWhirlpool(rpc, tunaPosition.data.pool);
+  if (!whirlpool.exists) throw new Error("Whirlpool account not found");
+
+  const [mintA, mintB] = await fetchAllMaybeMint(rpc, [whirlpool.data.tokenMintA, whirlpool.data.tokenMintB]);
+  assert(mintA.exists, "Token A account not found");
+  assert(mintB.exists, "Token B account not found");
 
   //
   // Add create user's token account instructions if needed.

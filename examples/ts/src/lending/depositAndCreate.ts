@@ -40,7 +40,7 @@ export async function depositAndCreateLendingPosition(): Promise<void> {
   const instructions = await openLendingPositionAndDepositInstructions(
     rpc,
     authority,
-    mint,
+    mint.address,
     nominalAmount * decimalsScale,
   );
 

@@ -1,32 +1,72 @@
-import { getOracleAddress, getPositionAddress, Whirlpool, WHIRLPOOL_PROGRAM_ADDRESS } from "@orca-so/whirlpools-client";
-import { type Account, AccountRole, IAccountMeta, IInstruction, TransactionSigner } from "@solana/kit";
+import {
+  fetchMaybeWhirlpool,
+  getOracleAddress,
+  getPositionAddress,
+  Whirlpool,
+  WHIRLPOOL_PROGRAM_ADDRESS,
+} from "@orca-so/whirlpools-client";
+import {
+  type Account,
+  AccountRole,
+  Address,
+  GetAccountInfoApi,
+  GetMultipleAccountsApi,
+  IAccountMeta,
+  IInstruction,
+  Rpc,
+  TransactionSigner,
+} from "@solana/kit";
 import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
-import { findAssociatedTokenPda, Mint, TOKEN_2022_PROGRAM_ADDRESS } from "@solana-program/token-2022";
+import {
+  fetchAllMaybeMint,
+  findAssociatedTokenPda,
+  Mint,
+  TOKEN_2022_PROGRAM_ADDRESS,
+} from "@solana-program/token-2022";
+import assert from "assert";
 
 import {
   AccountsType,
+  fetchAllVault,
+  fetchMaybeTunaPosition,
+  fetchTunaConfig,
   getCollectAndCompoundFeesOrcaInstruction,
   getCreateAtaInstructions,
+  getLendingVaultAddress,
   getMarketAddress,
   getSwapTickArrayAddresses,
   getTickArrayAddressFromTickIndex,
+  getTunaConfigAddress,
+  getTunaPositionAddress,
   TunaConfig,
   TunaPosition,
   Vault,
 } from "../index.ts";
 
 export async function collectAndCompoundFeesOrcaInstructions(
+  rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
-  tunaPosition: Account<TunaPosition>,
-  tunaConfig: Account<TunaConfig>,
-  mintA: Account<Mint>,
-  mintB: Account<Mint>,
-  vaultA: Account<Vault>,
-  vaultB: Account<Vault>,
-  whirlpool: Account<Whirlpool>,
+  positionMint: Address,
   useLeverage: boolean,
 ): Promise<IInstruction[]> {
   const instructions: IInstruction[] = [];
+
+  const tunaConfig = await fetchTunaConfig(rpc, (await getTunaConfigAddress())[0]);
+
+  const tunaPosition = await fetchMaybeTunaPosition(rpc, (await getTunaPositionAddress(positionMint))[0]);
+  if (!tunaPosition.exists) throw new Error("Tuna position account not found");
+
+  const whirlpool = await fetchMaybeWhirlpool(rpc, tunaPosition.data.pool);
+  if (!whirlpool.exists) throw new Error("Whirlpool account not found");
+
+  const [vaultA, vaultB] = await fetchAllVault(rpc, [
+    (await getLendingVaultAddress(whirlpool.data.tokenMintA))[0],
+    (await getLendingVaultAddress(whirlpool.data.tokenMintB))[0],
+  ]);
+
+  const [mintA, mintB] = await fetchAllMaybeMint(rpc, [whirlpool.data.tokenMintA, whirlpool.data.tokenMintB]);
+  assert(mintA.exists, "Token A account not found");
+  assert(mintB.exists, "Token B account not found");
 
   //
   // Add create fee recipient's token account instructions if needed.

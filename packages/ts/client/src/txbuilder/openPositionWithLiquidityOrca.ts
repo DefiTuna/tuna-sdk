@@ -1,5 +1,6 @@
 import {
   fetchAllMaybeTickArray,
+  fetchMaybeWhirlpool,
   getInitializeTickArrayInstruction,
   getOracleAddress,
   getPositionAddress,
@@ -11,6 +12,7 @@ import { getTickArrayStartTickIndex } from "@orca-so/whirlpools-core";
 import {
   type Account,
   AccountRole,
+  Address,
   GetAccountInfoApi,
   GetMultipleAccountsApi,
   IAccountMeta,
@@ -30,11 +32,15 @@ import assert from "assert";
 
 import {
   AccountsType,
+  fetchAllVault,
+  fetchTunaConfig,
   getCreateAtaInstructions,
+  getLendingVaultAddress,
   getMarketAddress,
   getOpenPositionWithLiquidityOrcaInstruction,
   getSwapTickArrayAddresses,
   getTickArrayAddressFromTickIndex,
+  getTunaConfigAddress,
   getTunaPositionAddress,
   OpenPositionWithLiquidityOrcaInstructionDataArgs,
   TunaConfig,
@@ -51,10 +57,7 @@ export async function openPositionWithLiquidityOrcaInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
   positionMint: TransactionSigner,
-  tunaConfig: Account<TunaConfig>,
-  vaultA: Account<Vault>,
-  vaultB: Account<Vault>,
-  whirlpool: Account<Whirlpool>,
+  whirlpoolAddress: Address,
   args: OpenPositionWithLiquidityOrcaInstructionArgs,
   createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
@@ -64,9 +67,19 @@ export async function openPositionWithLiquidityOrcaInstructions(
   if (!createInstructions) createInstructions = instructions;
   if (!cleanupInstructions) cleanupInstructions = instructions;
 
+  const tunaConfig = await fetchTunaConfig(rpc, (await getTunaConfigAddress())[0]);
+
+  const whirlpool = await fetchMaybeWhirlpool(rpc, whirlpoolAddress);
+  if (!whirlpool.exists) throw new Error("Whirlpool account not found");
+
   const [mintA, mintB] = await fetchAllMaybeMint(rpc, [whirlpool.data.tokenMintA, whirlpool.data.tokenMintB]);
   assert(mintA.exists, "Token A account not found");
   assert(mintB.exists, "Token B account not found");
+
+  const [vaultA, vaultB] = await fetchAllVault(rpc, [
+    (await getLendingVaultAddress(whirlpool.data.tokenMintA))[0],
+    (await getLendingVaultAddress(whirlpool.data.tokenMintB))[0],
+  ]);
 
   //
   // Add create user's token account instructions if needed.

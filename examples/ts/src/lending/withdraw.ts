@@ -26,7 +26,7 @@ export async function withdrawLendingPosition(): Promise<void> {
    * Here we have a choice to pass either funds or shares. For simplicity reasons we will use funds.
    */
 
-  const instructions = await withdrawInstructions(authority, mint, nominalAmount * decimalsScale, 0n);
+  const instructions = await withdrawInstructions(rpc, authority, mint.address, nominalAmount * decimalsScale, 0n);
 
   /**
    * We sign and send the transaction to the network, which will withdraw from the `Lending Position`.
