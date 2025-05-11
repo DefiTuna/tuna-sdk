@@ -1,5 +1,11 @@
 # @defituna/sdk
 
+## 1.1.26
+
+### Patch Changes
+
+- 7e3af72: Remove AbortSignal.timeout usage
+
 ## 1.1.25
 
 ### Patch Changes
