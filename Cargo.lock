@@ -1027,8 +1027,8 @@ dependencies = [
  "fixed",
  "num-derive",
  "num-traits",
- "orca_whirlpools_client",
- "orca_whirlpools_core",
+ "orca_whirlpools_client 3.0.0",
+ "orca_whirlpools_core 2.0.0",
  "solana-account-decoder",
  "solana-client",
  "solana-program",
@@ -1050,8 +1050,8 @@ dependencies = [
  "defituna-txsender",
  "dirs",
  "dotenv",
- "orca_whirlpools_client",
- "orca_whirlpools_core",
+ "orca_whirlpools_client 2.0.6",
+ "orca_whirlpools_core 1.0.7",
  "serde_json",
  "solana-account-decoder",
  "solana-client",
@@ -2704,7 +2704,24 @@ dependencies = [
  "borsh 0.10.4",
  "num-derive",
  "num-traits",
- "orca_whirlpools_core",
+ "orca_whirlpools_core 1.0.7",
+ "solana-account-decoder",
+ "solana-client",
+ "solana-program",
+ "solana-sdk",
+ "thiserror 2.0.12",
+]
+
+[[package]]
+name = "orca_whirlpools_client"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a233131eb25a1589a1db3d2a36a73ad9270ab22a3fcfaf87cb5812cf819a0529"
+dependencies = [
+ "borsh 0.10.4",
+ "num-derive",
+ "num-traits",
+ "orca_whirlpools_core 2.0.0",
  "solana-account-decoder",
  "solana-client",
  "solana-program",
@@ -2717,6 +2734,17 @@ name = "orca_whirlpools_core"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "128220a793ade3eb858e5bc35f44c2a5c51da5593573984baceae1d6213f7e1c"
+dependencies = [
+ "ethnum",
+ "libm",
+ "orca_whirlpools_macros",
+]
+
+[[package]]
+name = "orca_whirlpools_core"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5045fb81600bb120f6dbfffc4af806155aff543966bf27deabff4c08074a024f"
 dependencies = [
  "ethnum",
  "libm",
