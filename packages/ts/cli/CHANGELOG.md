@@ -1,5 +1,13 @@
 # @defituna/cli
 
+## 1.0.3
+
+### Patch Changes
+
+- 4e5f35a: Tuna program 1.0.67
+- Updated dependencies [4e5f35a]
+  - @defituna/client@1.0.26
+
 ## 1.0.2
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @defituna/rust-client
 
+## 1.0.16
+
+### Patch Changes
+
+- 4e5f35a: Tuna program 1.0.67
+
 ## 1.0.15
 
 ### Patch Changes
