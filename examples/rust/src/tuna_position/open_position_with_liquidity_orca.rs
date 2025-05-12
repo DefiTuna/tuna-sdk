@@ -11,10 +11,8 @@ use orca_whirlpools_client::{self, fetch_whirlpool};
 use orca_whirlpools_core::sqrt_price_to_price;
 use solana_client::rpc_client::RpcClient;
 use solana_sdk::program_pack::Pack;
-use solana_sdk::{pubkey::Pubkey, signature::Keypair, signer::Signer};
-use spl_token::state::Mint;
-use std::ops::{Add, Div, Mul};
-use std::str::FromStr;
+use solana_sdk::{signature::Keypair, signer::Signer};
+use spl_token_2022::state::Mint;
 
 /// Opens a position in an Orca Liquidity Pool and adds liquidity using borrowed funds from Tuna Lending Pools.
 /// Uses the SOL/USDC Whirlpool with preset amounts and leverage for this example; these can be adjusted or passed through the function’s input.
@@ -30,7 +28,7 @@ use std::str::FromStr;
 pub fn open_position_with_liquidity_orca(rpc: RpcClient, authority: Box<dyn Signer>) -> Result<()> {
   // The Program Derived Address of the pool from Orca's Whirlpools to create the position in.
   // For this example we use the SOL/USDC Pool.
-  let whirlpool_address = Pubkey::from_str(SOL_USDC_WHIRLPOOL)?;
+  let whirlpool_address = SOL_USDC_WHIRLPOOL;
 
   // The Whirlpool Account containing deserialized data, fetched using Orca's Whirlpool Client
   let whirlpool = fetch_whirlpool(&rpc, &whirlpool_address)?;
@@ -45,7 +43,7 @@ pub fn open_position_with_liquidity_orca(rpc: RpcClient, authority: Box<dyn Sign
   // as a flat value (e.g., 1 SOL) excluding decimals.
   let nominal_collateral = Amounts { a: 0.01, b: 0.1 };
   // Multiplier for borrowed funds applied to the total provided amount (min 1, max 5; e.g., 2 doubles the borrowed amount).
-  let leverage: u8 = 2;
+  let leverage = 2.0;
   // Ratio for borrowing funds, freely chosen by the user, unbound by the Position’s liquidity range.
   let borrow_ratio = Amounts { a: 0.6, b: 0.4 };
 
@@ -58,45 +56,36 @@ pub fn open_position_with_liquidity_orca(rpc: RpcClient, authority: Box<dyn Sign
 
   // The collateral amounts of tokens A and B (adjusted for decimals) provided by the user to use for increasing liquidity.
   let collateral = Amounts {
-    a: nominal_collateral
-      .a
-      .mul(10_u64.pow(token_mint_a.decimals as u32) as f64) as u64,
-    b: nominal_collateral
-      .b
-      .mul(10_u64.pow(token_mint_b.decimals as u32) as f64) as u64,
+    a: (nominal_collateral.a * 10_f64.powf(token_mint_a.decimals as f64)) as u64,
+    b: (nominal_collateral.b * 10_f64.powf(token_mint_b.decimals as f64)) as u64,
   };
 
   // The current Whirlpool price, derived from the sqrtPrice using Orca's Whirlpool Client.
   let price = sqrt_price_to_price(whirlpool.data.sqrt_price, token_mint_a.decimals, token_mint_b.decimals);
 
   // The total nominal collateral amount (excluding decimals) represented in Token B units.
-  let total_nominal_collateral_amount = nominal_collateral.a.mul(price).add(nominal_collateral.b);
+  let total_nominal_collateral_amount = nominal_collateral.a * price + nominal_collateral.b;
   // Safety checks
   assert!(
     borrow_ratio.a >= 0.0 && borrow_ratio.b >= 0.0,
     "Borrow ratios must be greater than or equal to 0"
   );
   assert_eq!(
-    borrow_ratio.a.add(borrow_ratio.b),
+    borrow_ratio.a + borrow_ratio.b,
     1.0,
     "Borrow ratios must be balanced (sum equal to 1)"
   );
-  assert!(leverage >= 1, "Leverage must be greater than or equal to 1");
+  assert!(leverage >= 1.0, "Leverage must be greater than or equal to 1");
   // The nominal amounts of Tokens A and B to borrow from Tuna's Lending Pools,
   // as a flat value (e.g., 1 SOL) excluding decimals.
   let nominal_borrow = Amounts {
-    a: total_nominal_collateral_amount
-      .mul((leverage - 1) as f64)
-      .mul(borrow_ratio.a)
-      .div(price),
-    b: total_nominal_collateral_amount
-      .mul((leverage - 1) as f64)
-      .mul(borrow_ratio.b),
+    a: total_nominal_collateral_amount * (leverage - 1.0) * (borrow_ratio.a) / (price),
+    b: total_nominal_collateral_amount * (leverage - 1.0) * (borrow_ratio.b),
   };
   // The amounts of tokens A and B (adjusted for decimals) borrowed from Tuna's Lending Pools to use for increasing liquidity.
   let borrow = Amounts {
-    a: nominal_borrow.a.mul(10_u64.pow(token_mint_a.decimals as u32) as f64) as u64,
-    b: nominal_borrow.b.mul(10_u64.pow(token_mint_b.decimals as u32) as f64) as u64,
+    a: (nominal_borrow.a * 10_f64.powf(token_mint_a.decimals as f64)) as u64,
+    b: (nominal_borrow.b * 10_f64.powf(token_mint_b.decimals as f64)) as u64,
   };
 
   // Defining additional input variables;

@@ -129,14 +129,14 @@ importers:
         specifier: ^4.2.10
         version: 4.2.10
       '@orca-so/whirlpools':
-        specifier: ^1.1.2
-        version: 1.1.2(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.1))(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+        specifier: ^2.0.0
+        version: 2.0.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.1))(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
       '@orca-so/whirlpools-client':
-        specifier: ^1.0.4
-        version: 1.0.5(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.1))
+        specifier: ^2.0.0
+        version: 2.0.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.1))
       '@orca-so/whirlpools-core':
-        specifier: ^1.0.4
-        version: 1.0.4
+        specifier: ^2.0.0
+        version: 2.0.0
       '@solana-program/memo':
         specifier: ^0.7.0
         version: 0.7.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.1))
@@ -178,11 +178,11 @@ importers:
   packages/ts/client:
     dependencies:
       '@orca-so/whirlpools-client':
-        specifier: ^1.0.4
-        version: 1.0.5(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.1))
+        specifier: ^2.0.0
+        version: 2.0.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.1))
       '@orca-so/whirlpools-core':
-        specifier: ^1.0.4
-        version: 1.0.4
+        specifier: ^2.0.0
+        version: 2.0.0
       '@solana-program/address-lookup-table':
         specifier: ^0.7.0
         version: 0.7.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.1))
@@ -1038,16 +1038,19 @@ packages:
     peerDependencies:
       '@solana/kit': ^2.1.0
 
-  '@orca-so/whirlpools-client@1.0.6':
-    resolution: {integrity: sha512-0q7B9yiSBbpfyma/61BZBlJTfyX9pKMNSpFo/Gv52U0HEjarIUYax6z3FuMYvT2OVKV8X14M8IPVDaPT+jIEpA==}
+  '@orca-so/whirlpools-client@2.0.0':
+    resolution: {integrity: sha512-6/2CdK5aAypA2cT/01l28WLN4Avb55rCuUM9qNyv69NOKnCXRT3byv7FxXkFcJ5GzqoAYaR/fPsZimvi2ndkUg==}
     peerDependencies:
       '@solana/kit': ^2.1.0
 
   '@orca-so/whirlpools-core@1.0.4':
     resolution: {integrity: sha512-+Yg8zuKS7aR0ydOMR0fzEg+PkgqEBWlqj8o5nvZmcwnZ0qF0O2CU++pEef3/RhUxUPPrHjkJLY6uSh+qx0/MIA==}
 
-  '@orca-so/whirlpools@1.1.2':
-    resolution: {integrity: sha512-27K7p+QGLWP4O7fi/sXDm4mVOukmuu1z80YKbw7s+kr4b7FwCsMQ0Sx8W7W3gCchEDYvNKA42dix+26w/iHdfg==}
+  '@orca-so/whirlpools-core@2.0.0':
+    resolution: {integrity: sha512-SzX9Jd9QDRk6UvUdM114Onq4woFVTl3rrx2Iu0IsnwBbA4lzFLPRYDxdsoyyRHceOgIrbhgpRU3IZc9jCRS8eg==}
+
+  '@orca-so/whirlpools@2.0.0':
+    resolution: {integrity: sha512-wThx6zBdDSx8ZYQvju4Y8np42QguB9KkGK0qD3gbhUGACScsUibzy5nA06wW+0rz7ZvbI8/mswFm5NlEXmElag==}
     peerDependencies:
       '@solana/kit': ^2.1.0
 
@@ -5665,16 +5668,18 @@ snapshots:
     dependencies:
       '@solana/kit': 2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.1)
 
-  '@orca-so/whirlpools-client@1.0.6(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.1))':
+  '@orca-so/whirlpools-client@2.0.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.1))':
     dependencies:
       '@solana/kit': 2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.1)
 
   '@orca-so/whirlpools-core@1.0.4': {}
 
-  '@orca-so/whirlpools@1.1.2(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.1))(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)':
+  '@orca-so/whirlpools-core@2.0.0': {}
+
+  '@orca-so/whirlpools@2.0.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.1))(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)':
     dependencies:
-      '@orca-so/whirlpools-client': 1.0.6(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.1))
-      '@orca-so/whirlpools-core': 1.0.4
+      '@orca-so/whirlpools-client': 2.0.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.1))
+      '@orca-so/whirlpools-core': 2.0.0
       '@solana-program/memo': 0.7.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.1))
       '@solana-program/system': 0.7.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.1))
       '@solana-program/token': 0.5.1(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.1))

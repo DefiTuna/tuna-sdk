@@ -16,9 +16,9 @@
     "@solana/kit": "^2.1.0",
     "@solana-program/token-2022": "^0.4.0",
     "@solana-program/memo": "^0.7.0",
-    "@orca-so/whirlpools-client": "^1.0.4",
-    "@orca-so/whirlpools-core": "^1.0.4",
-    "@orca-so/whirlpools": "^1.1.2",
+    "@orca-so/whirlpools-client": "^2.0.0",
+    "@orca-so/whirlpools-core": "^2.0.0",
+    "@orca-so/whirlpools": "^2.0.0",
     "dotenv": "^16.4.7",
     "lodash": "^4.17.21"
   },
