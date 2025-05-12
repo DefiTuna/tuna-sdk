@@ -28,21 +28,35 @@ pub fn collect_and_compound_fees_orca_instructions(rpc: &RpcClient, authority: &
     let mint_a_account = mint_accounts[0].as_ref().ok_or(anyhow!("Token A mint account not found"))?;
     let mint_b_account = mint_accounts[1].as_ref().ok_or(anyhow!("Token B mint account not found"))?;
 
-    Ok(vec![
-        create_associated_token_account_idempotent(authority, &tuna_config.data.fee_recipient, &vault_a.data.mint, &mint_a_account.owner),
-        create_associated_token_account_idempotent(authority, &tuna_config.data.fee_recipient, &vault_b.data.mint, &mint_b_account.owner),
-        collect_and_compound_fees_orca_instruction(
-            authority,
-            &tuna_config.data,
-            &tuna_position.data,
-            &vault_a.data,
-            &vault_b.data,
-            &whirlpool.data,
-            &mint_a_account.owner,
-            &mint_b_account.owner,
-            use_leverage,
-        ),
-    ])
+    Ok(_collect_and_compound_fees_orca_instructions(
+        authority,
+        &tuna_config.data,
+        &tuna_position.data,
+        &vault_a.data,
+        &vault_b.data,
+        &whirlpool.data,
+        &mint_a_account.owner,
+        &mint_b_account.owner,
+        use_leverage,
+    ))
+}
+
+pub fn _collect_and_compound_fees_orca_instructions(
+    authority: &Pubkey,
+    tuna_config: &TunaConfig,
+    tuna_position: &TunaPosition,
+    vault_a: &Vault,
+    vault_b: &Vault,
+    whirlpool: &Whirlpool,
+    token_program_a: &Pubkey,
+    token_program_b: &Pubkey,
+    use_leverage: bool,
+) -> Vec<Instruction> {
+    vec![
+        create_associated_token_account_idempotent(authority, &tuna_config.fee_recipient, &vault_a.mint, token_program_a),
+        create_associated_token_account_idempotent(authority, &tuna_config.fee_recipient, &vault_b.mint, token_program_b),
+        collect_and_compound_fees_orca_instruction(authority, tuna_config, tuna_position, vault_a, vault_b, whirlpool, token_program_a, token_program_b, use_leverage),
+    ]
 }
 
 pub fn collect_and_compound_fees_orca_instruction(
