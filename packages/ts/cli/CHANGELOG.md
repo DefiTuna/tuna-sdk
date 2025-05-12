@@ -1,5 +1,13 @@
 # @defituna/cli
 
+## 1.0.5
+
+### Patch Changes
+
+- 287077d: Updated whirlpools packages to 2.0.0
+- Updated dependencies [287077d]
+  - @defituna/client@1.0.28
+
 ## 1.0.4
 
 ### Patch Changes
