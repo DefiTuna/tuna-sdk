@@ -1,5 +1,6 @@
 import { fetchWhirlpool, getOracleAddress, WHIRLPOOL_PROGRAM_ADDRESS } from "@orca-so/whirlpools-client";
-import { Address, address, GetAccountInfoApi, Rpc, Slot, TransactionSigner } from "@solana/kit";
+import { Address, address, GetAccountInfoApi, GetMultipleAccountsApi, Rpc, Slot, TransactionSigner } from "@solana/kit";
+import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
 import { SYSTEM_PROGRAM_ADDRESS } from "@solana-program/system";
 import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
 import {
@@ -10,11 +11,14 @@ import {
 } from "@solana-program/token-2022";
 
 import { DEFAULT_ADDRESS, WP_NFT_UPDATE_AUTH } from "../consts.ts";
-import { fetchTunaConfig } from "../generated";
+import { fetchAllVault, fetchTunaConfig } from "../generated";
 import { getLendingVaultAddress, getMarketAddress, getTunaConfigAddress } from "../pda.ts";
 import { createAddressLookupTableInstructions, CreateAddressLookupTableResult, NATIVE_MINT } from "../utils";
 
-async function getAddressesForMarketLookupTable(rpc: Rpc<GetAccountInfoApi>, poolAddress: Address) {
+async function getAddressesForMarketLookupTable(
+  rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
+  poolAddress: Address,
+) {
   const tunaConfigAddress = (await getTunaConfigAddress())[0];
   const marketAddress = (await getMarketAddress(poolAddress))[0];
   const orcaOracleAddress = (await getOracleAddress(poolAddress))[0];
@@ -40,19 +44,21 @@ async function getAddressesForMarketLookupTable(rpc: Rpc<GetAccountInfoApi>, poo
     })
   )[0];
 
-  const vaultAAddress = (await getLendingVaultAddress(mintA.address))[0];
+  const [vaultA, vaultB] = await fetchAllVault(rpc, [
+    (await getLendingVaultAddress(mintA.address))[0],
+    (await getLendingVaultAddress(mintB.address))[0],
+  ]);
   const vaultAAta = (
     await findAssociatedTokenPda({
-      owner: vaultAAddress,
+      owner: vaultA.address,
       mint: mintA.address,
       tokenProgram: mintA.programAddress,
     })
   )[0];
 
-  const vaultBAddress = (await getLendingVaultAddress(mintB.address))[0];
   const vaultBAta = (
     await findAssociatedTokenPda({
-      owner: vaultBAddress,
+      owner: vaultB.address,
       mint: mintB.address,
       tokenProgram: mintB.programAddress,
     })
@@ -67,12 +73,13 @@ async function getAddressesForMarketLookupTable(rpc: Rpc<GetAccountInfoApi>, poo
     TOKEN_2022_PROGRAM_ADDRESS,
     NATIVE_MINT,
     WP_NFT_UPDATE_AUTH,
+    MEMO_PROGRAM_ADDRESS,
     tunaConfigAddress,
     marketAddress,
     mintA.address,
     mintB.address,
-    vaultAAddress,
-    vaultBAddress,
+    vaultA.address,
+    vaultB.address,
     vaultAAta,
     vaultBAta,
     poolAddress,
@@ -83,6 +90,9 @@ async function getAddressesForMarketLookupTable(rpc: Rpc<GetAccountInfoApi>, poo
     feeRecipientAtaA,
     feeRecipientAtaB,
   ];
+
+  if (vaultA.data.pythOraclePriceUpdate != DEFAULT_ADDRESS) addresses.push(vaultA.data.pythOraclePriceUpdate);
+  if (vaultB.data.pythOraclePriceUpdate != DEFAULT_ADDRESS) addresses.push(vaultB.data.pythOraclePriceUpdate);
 
   for (let i = 0; i < whirlpool.data.rewardInfos.length; i++) {
     const rewardInfo = whirlpool.data.rewardInfos[i];
@@ -96,7 +106,7 @@ async function getAddressesForMarketLookupTable(rpc: Rpc<GetAccountInfoApi>, poo
 }
 
 export async function createAddressLookupTableForMarketInstructions(
-  rpc: Rpc<GetAccountInfoApi>,
+  rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   poolAddress: Address,
   authority: TransactionSigner,
   recentSlot: Slot,
