@@ -79,6 +79,7 @@ async function getAddressesForMarketLookupTable(rpc: Rpc<GetAccountInfoApi>, poo
     orcaOracleAddress,
     whirlpool.data.tokenVaultA,
     whirlpool.data.tokenVaultB,
+    tunaConfig.data.feeRecipient,
     feeRecipientAtaA,
     feeRecipientAtaB,
   ];
