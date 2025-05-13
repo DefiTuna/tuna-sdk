@@ -1,9 +1,4 @@
-import BaseCommand, {
-  addressArg,
-  addressFlag,
-  bigintFlag,
-  percentFlag,
-} from "../base.ts";
+import BaseCommand, { addressArg, addressFlag, bigintFlag, percentFlag } from "../base.ts";
 import { rpc, sendTransaction, signer } from "../rpc.ts";
 import {
   fetchMarket,
@@ -35,8 +30,10 @@ export default class UpdateMarket extends BaseCommand {
     }),
   };
   static override flags = {
-    disabled: Flags.boolean({
+    disabled: Flags.integer({
       description: "Indicates if the market is disabled",
+      min: 0,
+      max: 1,
     }),
     addressLookupTable: addressFlag({
       description: "Address lookup table",
@@ -45,32 +42,27 @@ export default class UpdateMarket extends BaseCommand {
       description: "Creates a new address lookup table for the market",
     }),
     maxLeverage: percentFlag({
-      description:
-        "Maximum allowed leverage for the market (hundredths of a basis point or %)",
+      description: "Maximum allowed leverage for the market (hundredths of a basis point or %)",
       min: LEVERAGE_ONE,
       max: MAX_LEVERAGE,
     }),
     protocolFeeOnCollateral: percentFlag({
-      description:
-        "Protocol fee on collateral (hundredths of a basis point or %)",
+      description: "Protocol fee on collateral (hundredths of a basis point or %)",
       min: 0,
       max: MAX_PROTOCOL_FEE,
     }),
     protocolFee: percentFlag({
-      description:
-        "Protocol fee on borrowed funds (hundredths of a basis point or %)",
+      description: "Protocol fee on borrowed funds (hundredths of a basis point or %)",
       min: 0,
       max: MAX_PROTOCOL_FEE,
     }),
     limitOrderExecutionFee: percentFlag({
-      description:
-        "Limit order execution fee (hundredths of a basis point or %)",
+      description: "Limit order execution fee (hundredths of a basis point or %)",
       min: 0,
       max: MAX_LIMIT_ORDER_EXECUTION_FEE,
     }),
     liquidationFee: percentFlag({
-      description:
-        "Position liquidation fee (hundredths of a basis point or %)",
+      description: "Position liquidation fee (hundredths of a basis point or %)",
       min: 0,
       max: MAX_LIQUIDATION_FEE,
     }),
@@ -86,14 +78,12 @@ export default class UpdateMarket extends BaseCommand {
       description: "Borrow limit B. Set to zero for unlimited borrowing",
     }),
     oraclePriceDeviationThreshold: percentFlag({
-      description:
-        "Oracle price deviation threshold from the spot price (hundredths of a basis point or %)",
+      description: "Oracle price deviation threshold from the spot price (hundredths of a basis point or %)",
       min: 0,
       max: HUNDRED_PERCENT,
     }),
     maxSwapSlippage: percentFlag({
-      description:
-        "Maximum allowed swap slippage for the market (hundredths of a basis point or %)",
+      description: "Maximum allowed swap slippage for the market (hundredths of a basis point or %)",
       min: 0,
       max: HUNDRED_PERCENT,
     }),
@@ -114,7 +104,7 @@ export default class UpdateMarket extends BaseCommand {
     const newData = _.clone(market.data);
 
     if (flags.disabled !== undefined) {
-      newData.disabled = flags.disabled;
+      newData.disabled = flags.disabled != 0;
     }
 
     if (flags.addressLookupTable !== undefined) {
@@ -154,8 +144,7 @@ export default class UpdateMarket extends BaseCommand {
     }
 
     if (flags.oraclePriceDeviationThreshold !== undefined) {
-      newData.oraclePriceDeviationThreshold =
-        flags.oraclePriceDeviationThreshold;
+      newData.oraclePriceDeviationThreshold = flags.oraclePriceDeviationThreshold;
     }
 
     if (flags.maxSwapSlippage !== undefined) {
@@ -164,23 +153,13 @@ export default class UpdateMarket extends BaseCommand {
 
     if (flags.recreateAddressLookupTable) {
       if (flags.addressLookupTable !== undefined) {
-        throw new Error(
-          "'recreateAddressLookupTable' parameter can't be used together with 'addressLookupTable'",
-        );
+        throw new Error("'recreateAddressLookupTable' parameter can't be used together with 'addressLookupTable'");
       }
 
       const currentSlot = await rpc.getSlot({ commitment: "finalized" }).send();
-      const lookupTable = await createAddressLookupTableForMarketInstructions(
-        rpc,
-        args.pool,
-        signer,
-        currentSlot,
-      );
+      const lookupTable = await createAddressLookupTableForMarketInstructions(rpc, args.pool, signer, currentSlot);
       newData.addressLookupTable = lookupTable.lookupTableAddress;
-      console.log(
-        "Market lookup table address is:",
-        newData.addressLookupTable,
-      );
+      console.log("Market lookup table address is:", newData.addressLookupTable);
 
       console.log("");
       console.log("Sending a transaction...");

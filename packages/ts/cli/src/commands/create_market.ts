@@ -1,9 +1,4 @@
-import BaseCommand, {
-  addressArg,
-  addressFlag,
-  bigintFlag,
-  percentFlag,
-} from "../base.ts";
+import BaseCommand, { addressArg, addressFlag, bigintFlag, percentFlag } from "../base.ts";
 import { rpc, sendTransaction, signer } from "../rpc.ts";
 import {
   fetchMaybeMarket,
@@ -36,36 +31,31 @@ export default class CreateMarket extends BaseCommand {
       description: "Address lookup table",
     }),
     maxLeverage: percentFlag({
-      description:
-        "Maximum allowed leverage for the market (hundredths of a basis point or %)",
+      description: "Maximum allowed leverage for the market (hundredths of a basis point or %)",
       default: LEVERAGE_ONE,
       min: LEVERAGE_ONE,
       max: MAX_LEVERAGE,
     }),
     protocolFeeOnCollateral: percentFlag({
-      description:
-        "Protocol fee on collateral (hundredths of a basis point or %)",
+      description: "Protocol fee on collateral (hundredths of a basis point or %)",
       default: 0,
       min: 0,
       max: MAX_PROTOCOL_FEE,
     }),
     protocolFee: percentFlag({
-      description:
-        "Protocol fee on borrowed funds (hundredths of a basis point or %)",
+      description: "Protocol fee on borrowed funds (hundredths of a basis point or %)",
       default: 0,
       min: 0,
       max: MAX_PROTOCOL_FEE,
     }),
     limitOrderExecutionFee: percentFlag({
-      description:
-        "Limit order execution fee (hundredths of a basis point or %)",
+      description: "Limit order execution fee (hundredths of a basis point or %)",
       default: 0,
       min: 0,
       max: MAX_LIMIT_ORDER_EXECUTION_FEE,
     }),
     liquidationFee: percentFlag({
-      description:
-        "Position liquidation fee (hundredths of a basis point or %)",
+      description: "Position liquidation fee (hundredths of a basis point or %)",
       default: 0,
       min: 0,
       max: MAX_LIQUIDATION_FEE,
@@ -85,15 +75,13 @@ export default class CreateMarket extends BaseCommand {
       default: 0n,
     }),
     oraclePriceDeviationThreshold: percentFlag({
-      description:
-        "Oracle price deviation threshold from the spot price (hundredths of a basis point or %)",
+      description: "Oracle price deviation threshold from the spot price (hundredths of a basis point or %)",
       default: 0,
       min: 0,
       max: HUNDRED_PERCENT,
     }),
     maxSwapSlippage: percentFlag({
-      description:
-        "Maximum allowed swap slippage for the market (hundredths of a basis point or %)",
+      description: "Maximum allowed swap slippage for the market (hundredths of a basis point or %)",
       default: 0,
       min: 0,
       max: HUNDRED_PERCENT,
@@ -113,9 +101,7 @@ export default class CreateMarket extends BaseCommand {
     const market = await fetchMaybeMarket(rpc, marketAddress);
     if (market.exists) {
       console.log("Market:", market);
-      throw new Error(
-        `The market for liquidity pool ${args.pool} already exists`,
-      );
+      throw new Error(`The market for liquidity pool ${args.pool} already exists`);
     } else {
       console.log("Market not found. Creating a new one.");
     }
@@ -123,12 +109,7 @@ export default class CreateMarket extends BaseCommand {
     let addressLookupTable = flags.addressLookupTable;
     if (!addressLookupTable) {
       const currentSlot = await rpc.getSlot({ commitment: "finalized" }).send();
-      const lookupTable = await createAddressLookupTableForMarketInstructions(
-        rpc,
-        args.pool,
-        signer,
-        currentSlot,
-      );
+      const lookupTable = await createAddressLookupTableForMarketInstructions(rpc, args.pool, signer, currentSlot);
       addressLookupTable = lookupTable.lookupTableAddress;
       console.log("Market lookup table address is:", addressLookupTable);
       console.log("");
