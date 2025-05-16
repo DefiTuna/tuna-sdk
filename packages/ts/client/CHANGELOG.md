@@ -1,5 +1,11 @@
 # @defituna/client
 
+## 1.0.29
+
+### Patch Changes
+
+- 99212bb: Added repayDebt instruction builder
+
 ## 1.0.28
 
 ### Patch Changes

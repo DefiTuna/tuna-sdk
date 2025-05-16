@@ -1,5 +1,12 @@
 # @defituna/cli
 
+## 1.0.6
+
+### Patch Changes
+
+- Updated dependencies [99212bb]
+  - @defituna/client@1.0.29
+
 ## 1.0.5
 
 ### Patch Changes
