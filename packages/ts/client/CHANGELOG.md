@@ -1,5 +1,11 @@
 # @defituna/client
 
+## 1.0.30
+
+### Patch Changes
+
+- 11fe02d: Token accounts creation in repayDebt tx builder
+
 ## 1.0.29
 
 ### Patch Changes
