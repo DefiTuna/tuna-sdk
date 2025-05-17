@@ -13,6 +13,7 @@ import assert from "assert";
 
 import { fetchTunaPosition, getRepayDebtInstruction } from "../generated";
 import { getLendingVaultAddress, getMarketAddress, getTunaPositionAddress } from "../pda.ts";
+import { getCreateAtaInstructions } from "../utils";
 
 export async function repayDebtInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
@@ -20,7 +21,13 @@ export async function repayDebtInstructions(
   positionMint: Address,
   collateralA: bigint,
   collateralB: bigint,
+  createInstructions?: IInstruction[],
+  cleanupInstructions?: IInstruction[],
 ): Promise<IInstruction[]> {
+  const instructions: IInstruction[] = [];
+  if (!createInstructions) createInstructions = instructions;
+  if (!cleanupInstructions) cleanupInstructions = instructions;
+
   const tunaPosition = await fetchTunaPosition(rpc, (await getTunaPositionAddress(positionMint))[0]);
 
   const [mintA, mintB] = await fetchAllMaybeMint(rpc, [tunaPosition.data.mintA, tunaPosition.data.mintB]);
@@ -29,9 +36,39 @@ export async function repayDebtInstructions(
 
   const marketAddress = (await getMarketAddress(tunaPosition.data.pool))[0];
 
-  const ix = await repayDebtInstruction(authority, positionMint, mintA, mintB, marketAddress, collateralA, collateralB);
+  //
+  // Add create user's token account instructions if needed.
+  //
 
-  return [ix];
+  const createUserAtaAInstructions = await getCreateAtaInstructions(
+    authority,
+    mintA.address,
+    authority.address,
+    mintA.programAddress,
+    collateralA,
+  );
+  createInstructions.push(...createUserAtaAInstructions.init);
+
+  const createUserAtaBInstructions = await getCreateAtaInstructions(
+    authority,
+    mintB.address,
+    authority.address,
+    mintB.programAddress,
+    collateralB,
+  );
+  createInstructions.push(...createUserAtaBInstructions.init);
+
+  const ix = await repayDebtInstruction(authority, positionMint, mintA, mintB, marketAddress, collateralA, collateralB);
+  instructions.push(ix);
+
+  //
+  // Close WSOL accounts if needed.
+  //
+
+  cleanupInstructions.push(...createUserAtaAInstructions.cleanup);
+  cleanupInstructions.push(...createUserAtaBInstructions.cleanup);
+
+  return instructions;
 }
 
 export async function repayDebtInstruction(
