@@ -1,5 +1,16 @@
 # @defituna/cli
 
+## 2.0.0
+
+### Major Changes
+
+- 224d33a: Added support for FusionAMM pools
+
+### Patch Changes
+
+- Updated dependencies [224d33a]
+  - @defituna/client@2.0.0
+
 ## 1.0.7
 
 ### Patch Changes
