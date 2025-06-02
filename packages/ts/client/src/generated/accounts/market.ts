@@ -29,8 +29,6 @@ import {
   getU32Encoder,
   getU64Decoder,
   getU64Encoder,
-  getU8Decoder,
-  getU8Encoder,
   transformEncoder,
   type Account,
   type Address,
@@ -44,6 +42,12 @@ import {
   type MaybeEncodedAccount,
   type ReadonlyUint8Array,
 } from '@solana/kit';
+import {
+  getMarketMakerDecoder,
+  getMarketMakerEncoder,
+  type MarketMaker,
+  type MarketMakerArgs,
+} from '../types';
 
 export const MARKET_DISCRIMINATOR = new Uint8Array([
   219, 190, 213, 55, 0, 227, 198, 154,
@@ -59,8 +63,8 @@ export type Market = {
   version: number;
   /** Bump seed for the market account */
   bump: ReadonlyUint8Array;
-  /** Liquidity provider: Orca, Raydium, etc... */
-  liquidityProvider: number;
+  /** Market maker: Orca, Fusion, Raydium, etc... */
+  marketMaker: MarketMaker;
   /** Liquidity pool address */
   pool: Address;
   /** Address Lookup Table address for this market */
@@ -100,8 +104,8 @@ export type MarketArgs = {
   version: number;
   /** Bump seed for the market account */
   bump: ReadonlyUint8Array;
-  /** Liquidity provider: Orca, Raydium, etc... */
-  liquidityProvider: number;
+  /** Market maker: Orca, Fusion, Raydium, etc... */
+  marketMaker: MarketMakerArgs;
   /** Liquidity pool address */
   pool: Address;
   /** Address Lookup Table address for this market */
@@ -142,7 +146,7 @@ export function getMarketEncoder(): Encoder<MarketArgs> {
       ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
       ['version', getU16Encoder()],
       ['bump', fixEncoderSize(getBytesEncoder(), 1)],
-      ['liquidityProvider', getU8Encoder()],
+      ['marketMaker', getMarketMakerEncoder()],
       ['pool', getAddressEncoder()],
       ['addressLookupTable', getAddressEncoder()],
       ['maxLeverage', getU32Encoder()],
@@ -169,7 +173,7 @@ export function getMarketDecoder(): Decoder<Market> {
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
     ['version', getU16Decoder()],
     ['bump', fixDecoderSize(getBytesDecoder(), 1)],
-    ['liquidityProvider', getU8Decoder()],
+    ['marketMaker', getMarketMakerDecoder()],
     ['pool', getAddressDecoder()],
     ['addressLookupTable', getAddressDecoder()],
     ['maxLeverage', getU32Decoder()],

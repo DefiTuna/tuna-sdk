@@ -47,8 +47,12 @@ import {
   type ReadonlyUint8Array,
 } from '@solana/kit';
 import {
+  getMarketMakerDecoder,
+  getMarketMakerEncoder,
   getTunaPositionStateDecoder,
   getTunaPositionStateEncoder,
+  type MarketMaker,
+  type MarketMakerArgs,
   type TunaPositionState,
   type TunaPositionStateArgs,
 } from '../types';
@@ -77,7 +81,7 @@ export type TunaPosition = {
   mintA: Address;
   /** The mint address for token B */
   mintB: Address;
-  /** The mint address for the position token (minted and used in Orca/Raydium) */
+  /** The mint address for the position token (minted and used in Orca/Fusion) */
   positionMint: Address;
   /** Total minted liquidity */
   liquidity: bigint;
@@ -122,6 +126,8 @@ export type TunaPosition = {
    * Bits 4..5: Yield auto compounding. 0 - don't compound, 1 - compound yield, 2 - compound yield with leverage
    */
   flags: number;
+  /** Market maker (Orca, Fusion) */
+  marketMaker: MarketMaker;
   /** Reserved */
   reserved: ReadonlyUint8Array;
 };
@@ -139,7 +145,7 @@ export type TunaPositionArgs = {
   mintA: Address;
   /** The mint address for token B */
   mintB: Address;
-  /** The mint address for the position token (minted and used in Orca/Raydium) */
+  /** The mint address for the position token (minted and used in Orca/Fusion) */
   positionMint: Address;
   /** Total minted liquidity */
   liquidity: number | bigint;
@@ -184,6 +190,8 @@ export type TunaPositionArgs = {
    * Bits 4..5: Yield auto compounding. 0 - don't compound, 1 - compound yield, 2 - compound yield with leverage
    */
   flags: number;
+  /** Market maker (Orca, Fusion) */
+  marketMaker: MarketMakerArgs;
   /** Reserved */
   reserved: ReadonlyUint8Array;
 };
@@ -216,7 +224,8 @@ export function getTunaPositionEncoder(): Encoder<TunaPositionArgs> {
       ['compoundedYieldA', getU64Encoder()],
       ['compoundedYieldB', getU64Encoder()],
       ['flags', getU32Encoder()],
-      ['reserved', fixEncoderSize(getBytesEncoder(), 62)],
+      ['marketMaker', getMarketMakerEncoder()],
+      ['reserved', fixEncoderSize(getBytesEncoder(), 61)],
     ]),
     (value) => ({ ...value, discriminator: TUNA_POSITION_DISCRIMINATOR })
   );
@@ -249,7 +258,8 @@ export function getTunaPositionDecoder(): Decoder<TunaPosition> {
     ['compoundedYieldA', getU64Decoder()],
     ['compoundedYieldB', getU64Decoder()],
     ['flags', getU32Decoder()],
-    ['reserved', fixDecoderSize(getBytesDecoder(), 62)],
+    ['marketMaker', getMarketMakerDecoder()],
+    ['reserved', fixDecoderSize(getBytesDecoder(), 61)],
   ]);
 }
 

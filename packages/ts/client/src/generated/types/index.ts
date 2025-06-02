@@ -7,6 +7,7 @@
  */
 
 export * from './accountsType';
+export * from './marketMaker';
 export * from './remainingAccountsInfo';
 export * from './remainingAccountsSlice';
 export * from './tunaPositionState';

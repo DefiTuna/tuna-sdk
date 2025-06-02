@@ -3,12 +3,19 @@ import {
   Address,
   getAddressEncoder,
   getBase58Decoder,
+  getI8Encoder,
   GetProgramAccountsApi,
   GetProgramAccountsMemcmpFilter,
   Rpc,
 } from "@solana/kit";
 
-import { getTunaPositionDecoder, TUNA_POSITION_DISCRIMINATOR, TUNA_PROGRAM_ADDRESS, TunaPosition } from "../generated";
+import {
+  getTunaPositionDecoder,
+  MarketMaker,
+  TUNA_POSITION_DISCRIMINATOR,
+  TUNA_PROGRAM_ADDRESS,
+  TunaPosition,
+} from "../generated";
 
 import { fetchDecodedProgramAccounts } from "./utils.ts";
 
@@ -61,6 +68,16 @@ export function tunaPositionMintFilter(address: Address): TunaPositionFilter {
     memcmp: {
       offset: 139n,
       bytes: getBase58Decoder().decode(getAddressEncoder().encode(address)),
+      encoding: "base58",
+    },
+  } as TunaPositionFilter;
+}
+
+export function tunaPositionMarketMakerFilter(marketMaker: MarketMaker): TunaPositionFilter {
+  return {
+    memcmp: {
+      offset: 277n,
+      bytes: getBase58Decoder().decode(getI8Encoder().encode(marketMaker)),
       encoding: "base58",
     },
   } as TunaPositionFilter;

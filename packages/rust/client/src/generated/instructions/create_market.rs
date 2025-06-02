@@ -5,6 +5,7 @@
 //! <https://github.com/codama-idl/codama>
 //!
 
+use crate::generated::types::MarketMaker;
 use solana_program::pubkey::Pubkey;
 use borsh::BorshSerialize;
 use borsh::BorshDeserialize;
@@ -93,7 +94,7 @@ impl Default for CreateMarketInstructionData {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
  pub struct CreateMarketInstructionArgs {
-                  pub liquidity_provider: u8,
+                  pub market_maker: MarketMaker,
                 pub address_lookup_table: Pubkey,
                 pub max_leverage: u32,
                 pub protocol_fee: u16,
@@ -125,7 +126,7 @@ pub struct CreateMarketBuilder {
                 market: Option<solana_program::pubkey::Pubkey>,
                 pool: Option<solana_program::pubkey::Pubkey>,
                 system_program: Option<solana_program::pubkey::Pubkey>,
-                        liquidity_provider: Option<u8>,
+                        market_maker: Option<MarketMaker>,
                 address_lookup_table: Option<Pubkey>,
                 max_leverage: Option<u32>,
                 protocol_fee: Option<u16>,
@@ -172,8 +173,8 @@ impl CreateMarketBuilder {
                     self
     }
                     #[inline(always)]
-      pub fn liquidity_provider(&mut self, liquidity_provider: u8) -> &mut Self {
-        self.liquidity_provider = Some(liquidity_provider);
+      pub fn market_maker(&mut self, market_maker: MarketMaker) -> &mut Self {
+        self.market_maker = Some(market_maker);
         self
       }
                 #[inline(always)]
@@ -258,7 +259,7 @@ impl CreateMarketBuilder {
                                         system_program: self.system_program.unwrap_or(solana_program::pubkey!("11111111111111111111111111111111")),
                       };
           let args = CreateMarketInstructionArgs {
-                                                              liquidity_provider: self.liquidity_provider.clone().expect("liquidity_provider is not set"),
+                                                              market_maker: self.market_maker.clone().expect("market_maker is not set"),
                                                                   address_lookup_table: self.address_lookup_table.clone().expect("address_lookup_table is not set"),
                                                                   max_leverage: self.max_leverage.clone().expect("max_leverage is not set"),
                                                                   protocol_fee: self.protocol_fee.clone().expect("protocol_fee is not set"),
@@ -432,7 +433,7 @@ impl<'a, 'b> CreateMarketCpiBuilder<'a, 'b> {
               market: None,
               pool: None,
               system_program: None,
-                                            liquidity_provider: None,
+                                            market_maker: None,
                                 address_lookup_table: None,
                                 max_leverage: None,
                                 protocol_fee: None,
@@ -475,8 +476,8 @@ impl<'a, 'b> CreateMarketCpiBuilder<'a, 'b> {
                     self
     }
                     #[inline(always)]
-      pub fn liquidity_provider(&mut self, liquidity_provider: u8) -> &mut Self {
-        self.instruction.liquidity_provider = Some(liquidity_provider);
+      pub fn market_maker(&mut self, market_maker: MarketMaker) -> &mut Self {
+        self.instruction.market_maker = Some(market_maker);
         self
       }
                 #[inline(always)]
@@ -562,7 +563,7 @@ impl<'a, 'b> CreateMarketCpiBuilder<'a, 'b> {
   #[allow(clippy::vec_init_then_push)]
   pub fn invoke_signed(&self, signers_seeds: &[&[&[u8]]]) -> solana_program::entrypoint::ProgramResult {
           let args = CreateMarketInstructionArgs {
-                                                              liquidity_provider: self.instruction.liquidity_provider.clone().expect("liquidity_provider is not set"),
+                                                              market_maker: self.instruction.market_maker.clone().expect("market_maker is not set"),
                                                                   address_lookup_table: self.instruction.address_lookup_table.clone().expect("address_lookup_table is not set"),
                                                                   max_leverage: self.instruction.max_leverage.clone().expect("max_leverage is not set"),
                                                                   protocol_fee: self.instruction.protocol_fee.clone().expect("protocol_fee is not set"),
@@ -602,7 +603,7 @@ struct CreateMarketCpiBuilderInstruction<'a, 'b> {
                 market: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 pool: Option<&'b solana_program::account_info::AccountInfo<'a>>,
                 system_program: Option<&'b solana_program::account_info::AccountInfo<'a>>,
-                        liquidity_provider: Option<u8>,
+                        market_maker: Option<MarketMaker>,
                 address_lookup_table: Option<Pubkey>,
                 max_leverage: Option<u32>,
                 protocol_fee: Option<u16>,

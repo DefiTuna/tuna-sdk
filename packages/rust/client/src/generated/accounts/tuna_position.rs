@@ -7,6 +7,7 @@
 
 use solana_program::pubkey::Pubkey;
 use crate::generated::types::TunaPositionState;
+use crate::generated::types::MarketMaker;
 use borsh::BorshSerialize;
 use borsh::BorshDeserialize;
 
@@ -31,7 +32,7 @@ pub mint_a: Pubkey,
 /// The mint address for token B
 #[cfg_attr(feature = "serde", serde(with = "serde_with::As::<serde_with::DisplayFromStr>"))]
 pub mint_b: Pubkey,
-/// The mint address for the position token (minted and used in Orca/Raydium)
+/// The mint address for the position token (minted and used in Orca/Fusion)
 #[cfg_attr(feature = "serde", serde(with = "serde_with::As::<serde_with::DisplayFromStr>"))]
 pub position_mint: Pubkey,
 /// Total minted liquidity
@@ -73,9 +74,11 @@ pub compounded_yield_b: u64,
 /// Bits 2..3: Take profit swap. 0 - no swap, 1 - swap to token A, 2 - swap to token B
 /// Bits 4..5: Yield auto compounding. 0 - don't compound, 1 - compound yield, 2 - compound yield with leverage
 pub flags: u32,
+/// Market maker (Orca, Fusion)
+pub market_maker: MarketMaker,
 /// Reserved
 #[cfg_attr(feature = "serde", serde(with = "serde_with::As::<serde_with::Bytes>"))]
-pub reserved: [u8; 62],
+pub reserved: [u8; 61],
 }
 
 

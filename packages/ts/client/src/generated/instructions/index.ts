@@ -6,19 +6,27 @@
  * @see https://github.com/codama-idl/codama
  */
 
+export * from './addLiquidityFusion';
 export * from './addLiquidityOrca';
+export * from './closePositionFusion';
 export * from './closePositionOrca';
+export * from './collectAndCompoundFeesFusion';
 export * from './collectAndCompoundFeesOrca';
+export * from './collectFeesFusion';
 export * from './collectFeesOrca';
 export * from './collectRewardOrca';
 export * from './createMarket';
 export * from './createTunaConfig';
 export * from './createVault';
 export * from './deposit';
+export * from './liquidatePositionFusion';
 export * from './liquidatePositionOrca';
 export * from './openLendingPosition';
+export * from './openPositionFusion';
 export * from './openPositionOrca';
+export * from './openPositionWithLiquidityFusion';
 export * from './openPositionWithLiquidityOrca';
+export * from './removeLiquidityFusion';
 export * from './removeLiquidityOrca';
 export * from './repayBadDebt';
 export * from './repayDebt';

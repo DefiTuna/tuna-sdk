@@ -24,8 +24,6 @@ import {
   getU32Encoder,
   getU64Decoder,
   getU64Encoder,
-  getU8Decoder,
-  getU8Encoder,
   transformEncoder,
   type Address,
   type Codec,
@@ -44,6 +42,12 @@ import {
 } from '@solana/kit';
 import { TUNA_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+import {
+  getMarketMakerDecoder,
+  getMarketMakerEncoder,
+  type MarketMaker,
+  type MarketMakerArgs,
+} from '../types';
 
 export const CREATE_MARKET_DISCRIMINATOR = new Uint8Array([
   103, 226, 97, 235, 200, 188, 251, 254,
@@ -91,7 +95,7 @@ export type CreateMarketInstruction<
 
 export type CreateMarketInstructionData = {
   discriminator: ReadonlyUint8Array;
-  liquidityProvider: number;
+  marketMaker: MarketMaker;
   addressLookupTable: Address;
   maxLeverage: number;
   protocolFee: number;
@@ -107,7 +111,7 @@ export type CreateMarketInstructionData = {
 };
 
 export type CreateMarketInstructionDataArgs = {
-  liquidityProvider: number;
+  marketMaker: MarketMakerArgs;
   addressLookupTable: Address;
   maxLeverage: number;
   protocolFee: number;
@@ -126,7 +130,7 @@ export function getCreateMarketInstructionDataEncoder(): Encoder<CreateMarketIns
   return transformEncoder(
     getStructEncoder([
       ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['liquidityProvider', getU8Encoder()],
+      ['marketMaker', getMarketMakerEncoder()],
       ['addressLookupTable', getAddressEncoder()],
       ['maxLeverage', getU32Encoder()],
       ['protocolFee', getU16Encoder()],
@@ -147,7 +151,7 @@ export function getCreateMarketInstructionDataEncoder(): Encoder<CreateMarketIns
 export function getCreateMarketInstructionDataDecoder(): Decoder<CreateMarketInstructionData> {
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['liquidityProvider', getU8Decoder()],
+    ['marketMaker', getMarketMakerDecoder()],
     ['addressLookupTable', getAddressDecoder()],
     ['maxLeverage', getU32Decoder()],
     ['protocolFee', getU16Decoder()],
@@ -185,7 +189,7 @@ export type CreateMarketInput<
   market: Address<TAccountMarket>;
   pool: Address<TAccountPool>;
   systemProgram?: Address<TAccountSystemProgram>;
-  liquidityProvider: CreateMarketInstructionDataArgs['liquidityProvider'];
+  marketMaker: CreateMarketInstructionDataArgs['marketMaker'];
   addressLookupTable: CreateMarketInstructionDataArgs['addressLookupTable'];
   maxLeverage: CreateMarketInstructionDataArgs['maxLeverage'];
   protocolFee: CreateMarketInstructionDataArgs['protocolFee'];

@@ -28,168 +28,171 @@ pub enum TunaError {
     /// 6005 - InvalidInstructionArguments
     #[error("InvalidInstructionArguments")]
     InvalidInstructionArguments = 0x1775,
-    /// 6006 - Provided SqrtPriceLimit not in the same direction as the swap.
+    /// 6006 - InvalidMarketMaker
+    #[error("InvalidMarketMaker")]
+    InvalidMarketMaker = 0x1776,
+    /// 6007 - Provided SqrtPriceLimit not in the same direction as the swap.
     #[error("Provided SqrtPriceLimit not in the same direction as the swap.")]
-    InvalidSqrtPriceLimitDirection = 0x1776,
-    /// 6007 - InvalidTickArraySequence
+    InvalidSqrtPriceLimitDirection = 0x1777,
+    /// 6008 - InvalidTickArraySequence
     #[error("InvalidTickArraySequence")]
-    InvalidTickArraySequence = 0x1777,
-    /// 6008 - InsufficientLiquidity
+    InvalidTickArraySequence = 0x1778,
+    /// 6009 - InsufficientLiquidity
     #[error("InsufficientLiquidity")]
-    InsufficientLiquidity = 0x1778,
-    /// 6009 - InterestRateIsOutOfRange
+    InsufficientLiquidity = 0x1779,
+    /// 6010 - InterestRateIsOutOfRange
     #[error("InterestRateIsOutOfRange")]
-    InterestRateIsOutOfRange = 0x1779,
-    /// 6010 - LeverageIsOutOfRange
+    InterestRateIsOutOfRange = 0x177A,
+    /// 6011 - LeverageIsOutOfRange
     #[error("LeverageIsOutOfRange")]
-    LeverageIsOutOfRange = 0x177A,
-    /// 6011 - LeftoversExceeded
+    LeverageIsOutOfRange = 0x177B,
+    /// 6012 - LeftoversExceeded
     #[error("LeftoversExceeded")]
-    LeftoversExceeded = 0x177B,
-    /// 6012 - LimitOrderExecutionFeeIsOutOfRange
+    LeftoversExceeded = 0x177C,
+    /// 6013 - LimitOrderExecutionFeeIsOutOfRange
     #[error("LimitOrderExecutionFeeIsOutOfRange")]
-    LimitOrderExecutionFeeIsOutOfRange = 0x177C,
-    /// 6013 - LiquidationFeeIsOutOfRange
+    LimitOrderExecutionFeeIsOutOfRange = 0x177D,
+    /// 6014 - LiquidationFeeIsOutOfRange
     #[error("LiquidationFeeIsOutOfRange")]
-    LiquidationFeeIsOutOfRange = 0x177D,
-    /// 6014 - LiquidationThresholdIsOutOfRange
+    LiquidationFeeIsOutOfRange = 0x177E,
+    /// 6015 - LiquidationThresholdIsOutOfRange
     #[error("LiquidationThresholdIsOutOfRange")]
-    LiquidationThresholdIsOutOfRange = 0x177E,
-    /// 6015 - Liquidity amount must be greater than zero.
+    LiquidationThresholdIsOutOfRange = 0x177F,
+    /// 6016 - Liquidity amount must be greater than zero.
     #[error("Liquidity amount must be greater than zero.")]
-    LiquidityZero = 0x177F,
-    /// 6016 - MarketDisabled
+    LiquidityZero = 0x1780,
+    /// 6017 - MarketDisabled
     #[error("MarketDisabled")]
-    MarketDisabled = 0x1780,
-    /// 6017 - MarketDebtLimitExceeded
+    MarketDisabled = 0x1781,
+    /// 6018 - MarketDebtLimitExceeded
     #[error("MarketDebtLimitExceeded")]
-    MarketDebtLimitExceeded = 0x1781,
-    /// 6018 - MathOverflow
+    MarketDebtLimitExceeded = 0x1782,
+    /// 6019 - MathOverflow
     #[error("MathOverflow")]
-    MathOverflow = 0x1782,
-    /// 6019 - MathUnderflow
+    MathOverflow = 0x1783,
+    /// 6020 - MathUnderflow
     #[error("MathUnderflow")]
-    MathUnderflow = 0x1783,
-    /// 6020 - Unable to call transfer hook without extra accounts
+    MathUnderflow = 0x1784,
+    /// 6021 - Unable to call transfer hook without extra accounts
     #[error("Unable to call transfer hook without extra accounts")]
-    NoExtraAccountsForTransferHook = 0x1784,
-    /// 6021 - OracleStalePrice
+    NoExtraAccountsForTransferHook = 0x1785,
+    /// 6022 - OracleStalePrice
     #[error("OracleStalePrice")]
-    OracleStalePrice = 0x1785,
-    /// 6022 - OraclePriceDeviationThresholdExceeded
+    OracleStalePrice = 0x1786,
+    /// 6023 - OraclePriceDeviationThresholdExceeded
     #[error("OraclePriceDeviationThresholdExceeded")]
-    OraclePriceDeviationThresholdExceeded = 0x1786,
-    /// 6023 - OraclePriceDeviationThresholdOutOfRange
+    OraclePriceDeviationThresholdExceeded = 0x1787,
+    /// 6024 - OraclePriceDeviationThresholdOutOfRange
     #[error("OraclePriceDeviationThresholdOutOfRange")]
-    OraclePriceDeviationThresholdOutOfRange = 0x1787,
-    /// 6024 - Trade resulted in partial fill
+    OraclePriceDeviationThresholdOutOfRange = 0x1788,
+    /// 6025 - Trade resulted in partial fill
     #[error("Trade resulted in partial fill")]
-    PartialFillError = 0x1788,
-    /// 6025 - PositionIsHealthy
+    PartialFillError = 0x1789,
+    /// 6026 - PositionIsHealthy
     #[error("PositionIsHealthy")]
-    PositionIsHealthy = 0x1789,
-    /// 6026 - PositionIsLiquidated
+    PositionIsHealthy = 0x178A,
+    /// 6027 - PositionIsLiquidated
     #[error("PositionIsLiquidated")]
-    PositionIsLiquidated = 0x178A,
-    /// 6027 - PositionIsUnhealthy
+    PositionIsLiquidated = 0x178B,
+    /// 6028 - PositionIsUnhealthy
     #[error("PositionIsUnhealthy")]
-    PositionIsUnhealthy = 0x178B,
-    /// 6028 - PositionNotEmpty
+    PositionIsUnhealthy = 0x178C,
+    /// 6029 - PositionNotEmpty
     #[error("PositionNotEmpty")]
-    PositionNotEmpty = 0x178C,
-    /// 6029 - ProtocolFeeIsOutOfRange
+    PositionNotEmpty = 0x178D,
+    /// 6030 - ProtocolFeeIsOutOfRange
     #[error("ProtocolFeeIsOutOfRange")]
-    ProtocolFeeIsOutOfRange = 0x178D,
-    /// 6030 - Same accounts type is provided more than once
+    ProtocolFeeIsOutOfRange = 0x178E,
+    /// 6031 - Same accounts type is provided more than once
     #[error("Same accounts type is provided more than once")]
-    RemainingAccountsDuplicatedAccountsType = 0x178E,
-    /// 6031 - Invalid remaining accounts
+    RemainingAccountsDuplicatedAccountsType = 0x178F,
+    /// 6032 - Invalid remaining accounts
     #[error("Invalid remaining accounts")]
-    RemainingAccountsInvalidSlice = 0x178F,
-    /// 6032 - Invalid remaining accounts slice length
+    RemainingAccountsInvalidSlice = 0x1790,
+    /// 6033 - Invalid remaining accounts slice length
     #[error("Invalid remaining accounts slice length")]
-    RemainingAccountsInvalidSliceLength = 0x1790,
-    /// 6033 - Insufficient remaining accounts
+    RemainingAccountsInvalidSliceLength = 0x1791,
+    /// 6034 - Insufficient remaining accounts
     #[error("Insufficient remaining accounts")]
-    RemainingAccountsInsufficient = 0x1791,
-    /// 6034 - Required remaining account is not provided
+    RemainingAccountsInsufficient = 0x1792,
+    /// 6035 - Required remaining account is not provided
     #[error("Required remaining account is not provided")]
-    RequiredRemainingAccountNotProvided = 0x1792,
-    /// 6035 - SolverFailedToFindRoot
+    RequiredRemainingAccountNotProvided = 0x1793,
+    /// 6036 - SolverFailedToFindRoot
     #[error("SolverFailedToFindRoot")]
-    SolverFailedToFindRoot = 0x1793,
-    /// 6036 - SqrtPriceOutOfBounds
+    SolverFailedToFindRoot = 0x1794,
+    /// 6037 - SqrtPriceOutOfBounds
     #[error("SqrtPriceOutOfBounds")]
-    SqrtPriceOutOfBounds = 0x1794,
-    /// 6037 - SupplyLimitExceeded
+    SqrtPriceOutOfBounds = 0x1795,
+    /// 6038 - SupplyLimitExceeded
     #[error("SupplyLimitExceeded")]
-    SupplyLimitExceeded = 0x1795,
-    /// 6038 - Suspended
+    SupplyLimitExceeded = 0x1796,
+    /// 6039 - Suspended
     #[error("Suspended")]
-    Suspended = 0x1796,
-    /// 6039 - SwapSlippageExceeded
+    Suspended = 0x1797,
+    /// 6040 - SwapSlippageExceeded
     #[error("SwapSlippageExceeded")]
-    SwapSlippageExceeded = 0x1797,
-    /// 6040 - SwapSlippageIsOutOfRange
+    SwapSlippageExceeded = 0x1798,
+    /// 6041 - SwapSlippageIsOutOfRange
     #[error("SwapSlippageIsOutOfRange")]
-    SwapSlippageIsOutOfRange = 0x1798,
-    /// 6041 - TickIndexOfBounds
+    SwapSlippageIsOutOfRange = 0x1799,
+    /// 6042 - TickIndexOfBounds
     #[error("TickIndexOfBounds")]
-    TickIndexOfBounds = 0x1799,
-    /// 6042 - Transfer fee calculation failed
+    TickIndexOfBounds = 0x179A,
+    /// 6043 - Transfer fee calculation failed
     #[error("Transfer fee calculation failed")]
-    TransferFeeCalculationError = 0x179A,
-    /// 6043 - TypeCastOverflow
+    TransferFeeCalculationError = 0x179B,
+    /// 6044 - TypeCastOverflow
     #[error("TypeCastOverflow")]
-    TypeCastOverflow = 0x179B,
-    /// 6044 - UnexpectedValue
+    TypeCastOverflow = 0x179C,
+    /// 6045 - UnexpectedValue
     #[error("UnexpectedValue")]
-    UnexpectedValue = 0x179C,
-    /// 6045 - Token mint has unsupported attributes
+    UnexpectedValue = 0x179D,
+    /// 6046 - Token mint has unsupported attributes
     #[error("Token mint has unsupported attributes")]
-    UnsupportedTokenMint = 0x179D,
-    /// 6046 - VaultNotInitialized
+    UnsupportedTokenMint = 0x179E,
+    /// 6047 - VaultNotInitialized
     #[error("VaultNotInitialized")]
-    VaultNotInitialized = 0x179E,
-    /// 6047 - WithdrawRequestExceedsUserBalance
+    VaultNotInitialized = 0x179F,
+    /// 6048 - WithdrawRequestExceedsUserBalance
     #[error("WithdrawRequestExceedsUserBalance")]
-    WithdrawRequestExceedsUserBalance = 0x179F,
-    /// 6048 - ZeroPriceRange
+    WithdrawRequestExceedsUserBalance = 0x17A0,
+    /// 6049 - ZeroPriceRange
     #[error("ZeroPriceRange")]
-    ZeroPriceRange = 0x17A0,
-    /// 6049 - There are no tradable amount to swap.
+    ZeroPriceRange = 0x17A1,
+    /// 6050 - There are no tradable amount to swap.
     #[error("There are no tradable amount to swap.")]
-    ZeroTradableAmount = 0x17A1,
-    /// 6050 - ZeroYield
+    ZeroTradableAmount = 0x17A2,
+    /// 6051 - ZeroYield
     #[error("ZeroYield")]
-    ZeroYield = 0x17A2,
-    /// 6051 - RaydiumInvalidFirstTickArrayAccount
+    ZeroYield = 0x17A3,
+    /// 6052 - RaydiumInvalidFirstTickArrayAccount
     #[error("RaydiumInvalidFirstTickArrayAccount")]
-    RaydiumInvalidFirstTickArrayAccount = 0x17A3,
-    /// 6052 - RaydiumInvalidTickArray
+    RaydiumInvalidFirstTickArrayAccount = 0x17A4,
+    /// 6053 - RaydiumInvalidTickArray
     #[error("RaydiumInvalidTickArray")]
-    RaydiumInvalidTickArray = 0x17A4,
-    /// 6053 - RaydiumInvaildTickIndex
+    RaydiumInvalidTickArray = 0x17A5,
+    /// 6054 - RaydiumInvaildTickIndex
     #[error("RaydiumInvaildTickIndex")]
-    RaydiumInvaildTickIndex = 0x17A5,
-    /// 6054 - RaydiumMaxTokenOverflow
+    RaydiumInvaildTickIndex = 0x17A6,
+    /// 6055 - RaydiumMaxTokenOverflow
     #[error("RaydiumMaxTokenOverflow")]
-    RaydiumMaxTokenOverflow = 0x17A6,
-    /// 6055 - RaydiumNotEnoughTickArrayAccount
+    RaydiumMaxTokenOverflow = 0x17A7,
+    /// 6056 - RaydiumNotEnoughTickArrayAccount
     #[error("RaydiumNotEnoughTickArrayAccount")]
-    RaydiumNotEnoughTickArrayAccount = 0x17A7,
-    /// 6056 - RaydiumSqrtPriceLimitOverflow
+    RaydiumNotEnoughTickArrayAccount = 0x17A8,
+    /// 6057 - RaydiumSqrtPriceLimitOverflow
     #[error("RaydiumSqrtPriceLimitOverflow")]
-    RaydiumSqrtPriceLimitOverflow = 0x17A8,
-    /// 6057 - RaydiumZeroAmountSpecified
+    RaydiumSqrtPriceLimitOverflow = 0x17A9,
+    /// 6058 - RaydiumZeroAmountSpecified
     #[error("RaydiumZeroAmountSpecified")]
-    RaydiumZeroAmountSpecified = 0x17A9,
-    /// 6058 - UnableToLoadAccountData
+    RaydiumZeroAmountSpecified = 0x17AA,
+    /// 6059 - UnableToLoadAccountData
     #[error("UnableToLoadAccountData")]
-    UnableToLoadAccountData = 0x17AA,
-    /// 6059 - UnableToDeserializeAccountData
+    UnableToLoadAccountData = 0x17AB,
+    /// 6060 - UnableToDeserializeAccountData
     #[error("UnableToDeserializeAccountData")]
-    UnableToDeserializeAccountData = 0x17AB,
+    UnableToDeserializeAccountData = 0x17AC,
 }
 
 impl solana_program::program_error::PrintProgramError for TunaError {

@@ -5,6 +5,7 @@
 //! <https://github.com/codama-idl/codama>
 //!
 
+use crate::generated::types::MarketMaker;
 use solana_program::pubkey::Pubkey;
 use borsh::BorshSerialize;
 use borsh::BorshDeserialize;
@@ -18,8 +19,8 @@ pub discriminator: [u8; 8],
 pub version: u16,
 /// Bump seed for the market account
 pub bump: [u8; 1],
-/// Liquidity provider: Orca, Raydium, etc...
-pub liquidity_provider: u8,
+/// Market maker: Orca, Fusion, Raydium, etc...
+pub market_maker: MarketMaker,
 /// Liquidity pool address
 #[cfg_attr(feature = "serde", serde(with = "serde_with::As::<serde_with::DisplayFromStr>"))]
 pub pool: Pubkey,

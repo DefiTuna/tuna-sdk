@@ -26,114 +26,116 @@ export const TUNA_ERROR__INVALID_TICK_ARRAY_ACCOUNTS = 0x1773; // 6003
 export const TUNA_ERROR__INVALID_ACCOUNT_OWNER = 0x1774; // 6004
 /** InvalidInstructionArguments: InvalidInstructionArguments */
 export const TUNA_ERROR__INVALID_INSTRUCTION_ARGUMENTS = 0x1775; // 6005
+/** InvalidMarketMaker: InvalidMarketMaker */
+export const TUNA_ERROR__INVALID_MARKET_MAKER = 0x1776; // 6006
 /** InvalidSqrtPriceLimitDirection: Provided SqrtPriceLimit not in the same direction as the swap. */
-export const TUNA_ERROR__INVALID_SQRT_PRICE_LIMIT_DIRECTION = 0x1776; // 6006
+export const TUNA_ERROR__INVALID_SQRT_PRICE_LIMIT_DIRECTION = 0x1777; // 6007
 /** InvalidTickArraySequence: InvalidTickArraySequence */
-export const TUNA_ERROR__INVALID_TICK_ARRAY_SEQUENCE = 0x1777; // 6007
+export const TUNA_ERROR__INVALID_TICK_ARRAY_SEQUENCE = 0x1778; // 6008
 /** InsufficientLiquidity: InsufficientLiquidity */
-export const TUNA_ERROR__INSUFFICIENT_LIQUIDITY = 0x1778; // 6008
+export const TUNA_ERROR__INSUFFICIENT_LIQUIDITY = 0x1779; // 6009
 /** InterestRateIsOutOfRange: InterestRateIsOutOfRange */
-export const TUNA_ERROR__INTEREST_RATE_IS_OUT_OF_RANGE = 0x1779; // 6009
+export const TUNA_ERROR__INTEREST_RATE_IS_OUT_OF_RANGE = 0x177a; // 6010
 /** LeverageIsOutOfRange: LeverageIsOutOfRange */
-export const TUNA_ERROR__LEVERAGE_IS_OUT_OF_RANGE = 0x177a; // 6010
+export const TUNA_ERROR__LEVERAGE_IS_OUT_OF_RANGE = 0x177b; // 6011
 /** LeftoversExceeded: LeftoversExceeded */
-export const TUNA_ERROR__LEFTOVERS_EXCEEDED = 0x177b; // 6011
+export const TUNA_ERROR__LEFTOVERS_EXCEEDED = 0x177c; // 6012
 /** LimitOrderExecutionFeeIsOutOfRange: LimitOrderExecutionFeeIsOutOfRange */
-export const TUNA_ERROR__LIMIT_ORDER_EXECUTION_FEE_IS_OUT_OF_RANGE = 0x177c; // 6012
+export const TUNA_ERROR__LIMIT_ORDER_EXECUTION_FEE_IS_OUT_OF_RANGE = 0x177d; // 6013
 /** LiquidationFeeIsOutOfRange: LiquidationFeeIsOutOfRange */
-export const TUNA_ERROR__LIQUIDATION_FEE_IS_OUT_OF_RANGE = 0x177d; // 6013
+export const TUNA_ERROR__LIQUIDATION_FEE_IS_OUT_OF_RANGE = 0x177e; // 6014
 /** LiquidationThresholdIsOutOfRange: LiquidationThresholdIsOutOfRange */
-export const TUNA_ERROR__LIQUIDATION_THRESHOLD_IS_OUT_OF_RANGE = 0x177e; // 6014
+export const TUNA_ERROR__LIQUIDATION_THRESHOLD_IS_OUT_OF_RANGE = 0x177f; // 6015
 /** LiquidityZero: Liquidity amount must be greater than zero. */
-export const TUNA_ERROR__LIQUIDITY_ZERO = 0x177f; // 6015
+export const TUNA_ERROR__LIQUIDITY_ZERO = 0x1780; // 6016
 /** MarketDisabled: MarketDisabled */
-export const TUNA_ERROR__MARKET_DISABLED = 0x1780; // 6016
+export const TUNA_ERROR__MARKET_DISABLED = 0x1781; // 6017
 /** MarketDebtLimitExceeded: MarketDebtLimitExceeded */
-export const TUNA_ERROR__MARKET_DEBT_LIMIT_EXCEEDED = 0x1781; // 6017
+export const TUNA_ERROR__MARKET_DEBT_LIMIT_EXCEEDED = 0x1782; // 6018
 /** MathOverflow: MathOverflow */
-export const TUNA_ERROR__MATH_OVERFLOW = 0x1782; // 6018
+export const TUNA_ERROR__MATH_OVERFLOW = 0x1783; // 6019
 /** MathUnderflow: MathUnderflow */
-export const TUNA_ERROR__MATH_UNDERFLOW = 0x1783; // 6019
+export const TUNA_ERROR__MATH_UNDERFLOW = 0x1784; // 6020
 /** NoExtraAccountsForTransferHook: Unable to call transfer hook without extra accounts */
-export const TUNA_ERROR__NO_EXTRA_ACCOUNTS_FOR_TRANSFER_HOOK = 0x1784; // 6020
+export const TUNA_ERROR__NO_EXTRA_ACCOUNTS_FOR_TRANSFER_HOOK = 0x1785; // 6021
 /** OracleStalePrice: OracleStalePrice */
-export const TUNA_ERROR__ORACLE_STALE_PRICE = 0x1785; // 6021
+export const TUNA_ERROR__ORACLE_STALE_PRICE = 0x1786; // 6022
 /** OraclePriceDeviationThresholdExceeded: OraclePriceDeviationThresholdExceeded */
-export const TUNA_ERROR__ORACLE_PRICE_DEVIATION_THRESHOLD_EXCEEDED = 0x1786; // 6022
+export const TUNA_ERROR__ORACLE_PRICE_DEVIATION_THRESHOLD_EXCEEDED = 0x1787; // 6023
 /** OraclePriceDeviationThresholdOutOfRange: OraclePriceDeviationThresholdOutOfRange */
-export const TUNA_ERROR__ORACLE_PRICE_DEVIATION_THRESHOLD_OUT_OF_RANGE = 0x1787; // 6023
+export const TUNA_ERROR__ORACLE_PRICE_DEVIATION_THRESHOLD_OUT_OF_RANGE = 0x1788; // 6024
 /** PartialFillError: Trade resulted in partial fill */
-export const TUNA_ERROR__PARTIAL_FILL_ERROR = 0x1788; // 6024
+export const TUNA_ERROR__PARTIAL_FILL_ERROR = 0x1789; // 6025
 /** PositionIsHealthy: PositionIsHealthy */
-export const TUNA_ERROR__POSITION_IS_HEALTHY = 0x1789; // 6025
+export const TUNA_ERROR__POSITION_IS_HEALTHY = 0x178a; // 6026
 /** PositionIsLiquidated: PositionIsLiquidated */
-export const TUNA_ERROR__POSITION_IS_LIQUIDATED = 0x178a; // 6026
+export const TUNA_ERROR__POSITION_IS_LIQUIDATED = 0x178b; // 6027
 /** PositionIsUnhealthy: PositionIsUnhealthy */
-export const TUNA_ERROR__POSITION_IS_UNHEALTHY = 0x178b; // 6027
+export const TUNA_ERROR__POSITION_IS_UNHEALTHY = 0x178c; // 6028
 /** PositionNotEmpty: PositionNotEmpty */
-export const TUNA_ERROR__POSITION_NOT_EMPTY = 0x178c; // 6028
+export const TUNA_ERROR__POSITION_NOT_EMPTY = 0x178d; // 6029
 /** ProtocolFeeIsOutOfRange: ProtocolFeeIsOutOfRange */
-export const TUNA_ERROR__PROTOCOL_FEE_IS_OUT_OF_RANGE = 0x178d; // 6029
+export const TUNA_ERROR__PROTOCOL_FEE_IS_OUT_OF_RANGE = 0x178e; // 6030
 /** RemainingAccountsDuplicatedAccountsType: Same accounts type is provided more than once */
-export const TUNA_ERROR__REMAINING_ACCOUNTS_DUPLICATED_ACCOUNTS_TYPE = 0x178e; // 6030
+export const TUNA_ERROR__REMAINING_ACCOUNTS_DUPLICATED_ACCOUNTS_TYPE = 0x178f; // 6031
 /** RemainingAccountsInvalidSlice: Invalid remaining accounts */
-export const TUNA_ERROR__REMAINING_ACCOUNTS_INVALID_SLICE = 0x178f; // 6031
+export const TUNA_ERROR__REMAINING_ACCOUNTS_INVALID_SLICE = 0x1790; // 6032
 /** RemainingAccountsInvalidSliceLength: Invalid remaining accounts slice length */
-export const TUNA_ERROR__REMAINING_ACCOUNTS_INVALID_SLICE_LENGTH = 0x1790; // 6032
+export const TUNA_ERROR__REMAINING_ACCOUNTS_INVALID_SLICE_LENGTH = 0x1791; // 6033
 /** RemainingAccountsInsufficient: Insufficient remaining accounts */
-export const TUNA_ERROR__REMAINING_ACCOUNTS_INSUFFICIENT = 0x1791; // 6033
+export const TUNA_ERROR__REMAINING_ACCOUNTS_INSUFFICIENT = 0x1792; // 6034
 /** RequiredRemainingAccountNotProvided: Required remaining account is not provided */
-export const TUNA_ERROR__REQUIRED_REMAINING_ACCOUNT_NOT_PROVIDED = 0x1792; // 6034
+export const TUNA_ERROR__REQUIRED_REMAINING_ACCOUNT_NOT_PROVIDED = 0x1793; // 6035
 /** SolverFailedToFindRoot: SolverFailedToFindRoot */
-export const TUNA_ERROR__SOLVER_FAILED_TO_FIND_ROOT = 0x1793; // 6035
+export const TUNA_ERROR__SOLVER_FAILED_TO_FIND_ROOT = 0x1794; // 6036
 /** SqrtPriceOutOfBounds: SqrtPriceOutOfBounds */
-export const TUNA_ERROR__SQRT_PRICE_OUT_OF_BOUNDS = 0x1794; // 6036
+export const TUNA_ERROR__SQRT_PRICE_OUT_OF_BOUNDS = 0x1795; // 6037
 /** SupplyLimitExceeded: SupplyLimitExceeded */
-export const TUNA_ERROR__SUPPLY_LIMIT_EXCEEDED = 0x1795; // 6037
+export const TUNA_ERROR__SUPPLY_LIMIT_EXCEEDED = 0x1796; // 6038
 /** Suspended: Suspended */
-export const TUNA_ERROR__SUSPENDED = 0x1796; // 6038
+export const TUNA_ERROR__SUSPENDED = 0x1797; // 6039
 /** SwapSlippageExceeded: SwapSlippageExceeded */
-export const TUNA_ERROR__SWAP_SLIPPAGE_EXCEEDED = 0x1797; // 6039
+export const TUNA_ERROR__SWAP_SLIPPAGE_EXCEEDED = 0x1798; // 6040
 /** SwapSlippageIsOutOfRange: SwapSlippageIsOutOfRange */
-export const TUNA_ERROR__SWAP_SLIPPAGE_IS_OUT_OF_RANGE = 0x1798; // 6040
+export const TUNA_ERROR__SWAP_SLIPPAGE_IS_OUT_OF_RANGE = 0x1799; // 6041
 /** TickIndexOfBounds: TickIndexOfBounds */
-export const TUNA_ERROR__TICK_INDEX_OF_BOUNDS = 0x1799; // 6041
+export const TUNA_ERROR__TICK_INDEX_OF_BOUNDS = 0x179a; // 6042
 /** TransferFeeCalculationError: Transfer fee calculation failed */
-export const TUNA_ERROR__TRANSFER_FEE_CALCULATION_ERROR = 0x179a; // 6042
+export const TUNA_ERROR__TRANSFER_FEE_CALCULATION_ERROR = 0x179b; // 6043
 /** TypeCastOverflow: TypeCastOverflow */
-export const TUNA_ERROR__TYPE_CAST_OVERFLOW = 0x179b; // 6043
+export const TUNA_ERROR__TYPE_CAST_OVERFLOW = 0x179c; // 6044
 /** UnexpectedValue: UnexpectedValue */
-export const TUNA_ERROR__UNEXPECTED_VALUE = 0x179c; // 6044
+export const TUNA_ERROR__UNEXPECTED_VALUE = 0x179d; // 6045
 /** UnsupportedTokenMint: Token mint has unsupported attributes */
-export const TUNA_ERROR__UNSUPPORTED_TOKEN_MINT = 0x179d; // 6045
+export const TUNA_ERROR__UNSUPPORTED_TOKEN_MINT = 0x179e; // 6046
 /** VaultNotInitialized: VaultNotInitialized */
-export const TUNA_ERROR__VAULT_NOT_INITIALIZED = 0x179e; // 6046
+export const TUNA_ERROR__VAULT_NOT_INITIALIZED = 0x179f; // 6047
 /** WithdrawRequestExceedsUserBalance: WithdrawRequestExceedsUserBalance */
-export const TUNA_ERROR__WITHDRAW_REQUEST_EXCEEDS_USER_BALANCE = 0x179f; // 6047
+export const TUNA_ERROR__WITHDRAW_REQUEST_EXCEEDS_USER_BALANCE = 0x17a0; // 6048
 /** ZeroPriceRange: ZeroPriceRange */
-export const TUNA_ERROR__ZERO_PRICE_RANGE = 0x17a0; // 6048
+export const TUNA_ERROR__ZERO_PRICE_RANGE = 0x17a1; // 6049
 /** ZeroTradableAmount: There are no tradable amount to swap. */
-export const TUNA_ERROR__ZERO_TRADABLE_AMOUNT = 0x17a1; // 6049
+export const TUNA_ERROR__ZERO_TRADABLE_AMOUNT = 0x17a2; // 6050
 /** ZeroYield: ZeroYield */
-export const TUNA_ERROR__ZERO_YIELD = 0x17a2; // 6050
+export const TUNA_ERROR__ZERO_YIELD = 0x17a3; // 6051
 /** RaydiumInvalidFirstTickArrayAccount: RaydiumInvalidFirstTickArrayAccount */
-export const TUNA_ERROR__RAYDIUM_INVALID_FIRST_TICK_ARRAY_ACCOUNT = 0x17a3; // 6051
+export const TUNA_ERROR__RAYDIUM_INVALID_FIRST_TICK_ARRAY_ACCOUNT = 0x17a4; // 6052
 /** RaydiumInvalidTickArray: RaydiumInvalidTickArray */
-export const TUNA_ERROR__RAYDIUM_INVALID_TICK_ARRAY = 0x17a4; // 6052
+export const TUNA_ERROR__RAYDIUM_INVALID_TICK_ARRAY = 0x17a5; // 6053
 /** RaydiumInvaildTickIndex: RaydiumInvaildTickIndex */
-export const TUNA_ERROR__RAYDIUM_INVAILD_TICK_INDEX = 0x17a5; // 6053
+export const TUNA_ERROR__RAYDIUM_INVAILD_TICK_INDEX = 0x17a6; // 6054
 /** RaydiumMaxTokenOverflow: RaydiumMaxTokenOverflow */
-export const TUNA_ERROR__RAYDIUM_MAX_TOKEN_OVERFLOW = 0x17a6; // 6054
+export const TUNA_ERROR__RAYDIUM_MAX_TOKEN_OVERFLOW = 0x17a7; // 6055
 /** RaydiumNotEnoughTickArrayAccount: RaydiumNotEnoughTickArrayAccount */
-export const TUNA_ERROR__RAYDIUM_NOT_ENOUGH_TICK_ARRAY_ACCOUNT = 0x17a7; // 6055
+export const TUNA_ERROR__RAYDIUM_NOT_ENOUGH_TICK_ARRAY_ACCOUNT = 0x17a8; // 6056
 /** RaydiumSqrtPriceLimitOverflow: RaydiumSqrtPriceLimitOverflow */
-export const TUNA_ERROR__RAYDIUM_SQRT_PRICE_LIMIT_OVERFLOW = 0x17a8; // 6056
+export const TUNA_ERROR__RAYDIUM_SQRT_PRICE_LIMIT_OVERFLOW = 0x17a9; // 6057
 /** RaydiumZeroAmountSpecified: RaydiumZeroAmountSpecified */
-export const TUNA_ERROR__RAYDIUM_ZERO_AMOUNT_SPECIFIED = 0x17a9; // 6057
+export const TUNA_ERROR__RAYDIUM_ZERO_AMOUNT_SPECIFIED = 0x17aa; // 6058
 /** UnableToLoadAccountData: UnableToLoadAccountData */
-export const TUNA_ERROR__UNABLE_TO_LOAD_ACCOUNT_DATA = 0x17aa; // 6058
+export const TUNA_ERROR__UNABLE_TO_LOAD_ACCOUNT_DATA = 0x17ab; // 6059
 /** UnableToDeserializeAccountData: UnableToDeserializeAccountData */
-export const TUNA_ERROR__UNABLE_TO_DESERIALIZE_ACCOUNT_DATA = 0x17ab; // 6059
+export const TUNA_ERROR__UNABLE_TO_DESERIALIZE_ACCOUNT_DATA = 0x17ac; // 6060
 
 export type TunaError =
   | typeof TUNA_ERROR__AMOUNT_SLIPPAGE_EXCEEDED
@@ -142,6 +144,7 @@ export type TunaError =
   | typeof TUNA_ERROR__INTEREST_RATE_IS_OUT_OF_RANGE
   | typeof TUNA_ERROR__INVALID_ACCOUNT_OWNER
   | typeof TUNA_ERROR__INVALID_INSTRUCTION_ARGUMENTS
+  | typeof TUNA_ERROR__INVALID_MARKET_MAKER
   | typeof TUNA_ERROR__INVALID_REMAINING_ACCOUNTS_LENGTH
   | typeof TUNA_ERROR__INVALID_SQRT_PRICE_LIMIT_DIRECTION
   | typeof TUNA_ERROR__INVALID_TICK_ARRAY_ACCOUNTS
@@ -206,6 +209,7 @@ if (process.env.NODE_ENV !== 'production') {
     [TUNA_ERROR__INTEREST_RATE_IS_OUT_OF_RANGE]: `InterestRateIsOutOfRange`,
     [TUNA_ERROR__INVALID_ACCOUNT_OWNER]: `InvalidAccountOwner`,
     [TUNA_ERROR__INVALID_INSTRUCTION_ARGUMENTS]: `InvalidInstructionArguments`,
+    [TUNA_ERROR__INVALID_MARKET_MAKER]: `InvalidMarketMaker`,
     [TUNA_ERROR__INVALID_REMAINING_ACCOUNTS_LENGTH]: `InvalidRemainingAccountsLength`,
     [TUNA_ERROR__INVALID_SQRT_PRICE_LIMIT_DIRECTION]: `Provided SqrtPriceLimit not in the same direction as the swap.`,
     [TUNA_ERROR__INVALID_TICK_ARRAY_ACCOUNTS]: `InvalidAccounts`,

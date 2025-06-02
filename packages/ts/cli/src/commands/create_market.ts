@@ -13,7 +13,8 @@ import {
   MAX_LIQUIDATION_THRESHOLD,
   createAddressLookupTableForMarketInstructions,
 } from "@defituna/client";
-import { Flags } from "@oclif/core";
+import { Args, Flags } from "@oclif/core";
+import { MarketMaker } from "@defituna/client/src";
 
 export default class CreateMarket extends BaseCommand {
   static override args = {
@@ -21,14 +22,19 @@ export default class CreateMarket extends BaseCommand {
       description: "Pool address",
       required: true,
     }),
+    marketMaker: Args.string({
+      description: "Market maker: Orca or Fusion",
+      required: true,
+      options: ["Orca", "Fusion"],
+    }),
   };
   static override flags = {
+    addressLookupTable: addressFlag({
+      description: "Address lookup table",
+    }),
     disabled: Flags.boolean({
       description: "Indicates if the market is disabled",
       default: false,
-    }),
-    addressLookupTable: addressFlag({
-      description: "Address lookup table",
     }),
     maxLeverage: percentFlag({
       description: "Maximum allowed leverage for the market (hundredths of a basis point or %)",
@@ -89,7 +95,7 @@ export default class CreateMarket extends BaseCommand {
   };
   static override description = "Create a tuna market";
   static override examples = [
-    "<%= config.bin %> <%= command.id %> Czfq3xZZDmsdGdUyrNLtRhGc47cXcZtLG4crryfu44zE --maxLeverage 509% --protocolFeeOnCollateral 0.01% --protocolFee 0.05% --limitOrderExecutionFee 0.05% --liquidationFee 5% --liquidationThreshold 83%",
+    "<%= config.bin %> <%= command.id %> Czfq3xZZDmsdGdUyrNLtRhGc47cXcZtLG4crryfu44zE Fusion --maxLeverage 509% --protocolFeeOnCollateral 0.01% --protocolFee 0.05% --limitOrderExecutionFee 0.05% --liquidationFee 5% --liquidationThreshold 83%",
   ];
 
   public async run() {
@@ -119,8 +125,8 @@ export default class CreateMarket extends BaseCommand {
     }
 
     const ix = await createMarketInstruction(signer, args.pool, {
-      liquidityProvider: 0,
       addressLookupTable,
+      marketMaker: args.marketMaker == "Orca" ? MarketMaker.Orca : MarketMaker.Fusion,
       disabled: flags.disabled,
       maxLeverage: flags.maxLeverage,
       protocolFee: flags.protocolFee,

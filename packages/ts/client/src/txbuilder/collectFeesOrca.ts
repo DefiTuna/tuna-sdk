@@ -29,9 +29,9 @@ import {
   fetchMaybeTunaPosition,
   getCollectFeesOrcaInstruction,
   getCreateAtaInstructions,
-  getTickArrayAddressFromTickIndex,
   getTunaConfigAddress,
   getTunaPositionAddress,
+  OrcaUtils,
   TunaPosition,
 } from "../index.ts";
 
@@ -146,8 +146,14 @@ export async function collectFeesOrcaInstruction(
     })
   )[0];
 
-  const lowerTickArrayAddress = await getTickArrayAddressFromTickIndex(whirlpool, tunaPosition.data.tickLowerIndex);
-  const upperTickArrayAddress = await getTickArrayAddressFromTickIndex(whirlpool, tunaPosition.data.tickUpperIndex);
+  const lowerTickArrayAddress = await OrcaUtils.getTickArrayAddressFromTickIndex(
+    whirlpool,
+    tunaPosition.data.tickLowerIndex,
+  );
+  const upperTickArrayAddress = await OrcaUtils.getTickArrayAddressFromTickIndex(
+    whirlpool,
+    tunaPosition.data.tickUpperIndex,
+  );
 
   const remainingAccounts: IAccountMeta[] = [
     { address: lowerTickArrayAddress, role: AccountRole.WRITABLE },

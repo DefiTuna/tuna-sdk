@@ -14,19 +14,27 @@ import {
   type ReadonlyUint8Array,
 } from '@solana/kit';
 import {
+  type ParsedAddLiquidityFusionInstruction,
   type ParsedAddLiquidityOrcaInstruction,
+  type ParsedClosePositionFusionInstruction,
   type ParsedClosePositionOrcaInstruction,
+  type ParsedCollectAndCompoundFeesFusionInstruction,
   type ParsedCollectAndCompoundFeesOrcaInstruction,
+  type ParsedCollectFeesFusionInstruction,
   type ParsedCollectFeesOrcaInstruction,
   type ParsedCollectRewardOrcaInstruction,
   type ParsedCreateMarketInstruction,
   type ParsedCreateTunaConfigInstruction,
   type ParsedCreateVaultInstruction,
   type ParsedDepositInstruction,
+  type ParsedLiquidatePositionFusionInstruction,
   type ParsedLiquidatePositionOrcaInstruction,
   type ParsedOpenLendingPositionInstruction,
+  type ParsedOpenPositionFusionInstruction,
   type ParsedOpenPositionOrcaInstruction,
+  type ParsedOpenPositionWithLiquidityFusionInstruction,
   type ParsedOpenPositionWithLiquidityOrcaInstruction,
+  type ParsedRemoveLiquidityFusionInstruction,
   type ParsedRemoveLiquidityOrcaInstruction,
   type ParsedRepayBadDebtInstruction,
   type ParsedRepayDebtInstruction,
@@ -49,6 +57,7 @@ export const TUNA_PROGRAM_ADDRESS =
   'tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD' as Address<'tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD'>;
 
 export enum TunaAccount {
+  FusionPool,
   LendingPosition,
   Market,
   TunaConfig,
@@ -60,6 +69,17 @@ export function identifyTunaAccount(
   account: { data: ReadonlyUint8Array } | ReadonlyUint8Array
 ): TunaAccount {
   const data = 'data' in account ? account.data : account;
+  if (
+    containsBytes(
+      data,
+      fixEncoderSize(getBytesEncoder(), 8).encode(
+        new Uint8Array([254, 204, 207, 98, 25, 181, 29, 67])
+      ),
+      0
+    )
+  ) {
+    return TunaAccount.FusionPool;
+  }
   if (
     containsBytes(
       data,
@@ -121,19 +141,27 @@ export function identifyTunaAccount(
 }
 
 export enum TunaInstruction {
+  AddLiquidityFusion,
   AddLiquidityOrca,
+  ClosePositionFusion,
   ClosePositionOrca,
+  CollectAndCompoundFeesFusion,
   CollectAndCompoundFeesOrca,
+  CollectFeesFusion,
   CollectFeesOrca,
   CollectRewardOrca,
   CreateMarket,
   CreateTunaConfig,
   CreateVault,
   Deposit,
+  LiquidatePositionFusion,
   LiquidatePositionOrca,
   OpenLendingPosition,
+  OpenPositionFusion,
   OpenPositionOrca,
+  OpenPositionWithLiquidityFusion,
   OpenPositionWithLiquidityOrca,
+  RemoveLiquidityFusion,
   RemoveLiquidityOrca,
   RepayBadDebt,
   RepayDebt,
@@ -160,12 +188,34 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
+        new Uint8Array([186, 221, 60, 139, 153, 11, 193, 11])
+      ),
+      0
+    )
+  ) {
+    return TunaInstruction.AddLiquidityFusion;
+  }
+  if (
+    containsBytes(
+      data,
+      fixEncoderSize(getBytesEncoder(), 8).encode(
         new Uint8Array([185, 68, 41, 204, 33, 179, 12, 78])
       ),
       0
     )
   ) {
     return TunaInstruction.AddLiquidityOrca;
+  }
+  if (
+    containsBytes(
+      data,
+      fixEncoderSize(getBytesEncoder(), 8).encode(
+        new Uint8Array([91, 149, 37, 23, 74, 118, 53, 119])
+      ),
+      0
+    )
+  ) {
+    return TunaInstruction.ClosePositionFusion;
   }
   if (
     containsBytes(
@@ -182,12 +232,34 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
+        new Uint8Array([61, 213, 30, 201, 89, 220, 156, 13])
+      ),
+      0
+    )
+  ) {
+    return TunaInstruction.CollectAndCompoundFeesFusion;
+  }
+  if (
+    containsBytes(
+      data,
+      fixEncoderSize(getBytesEncoder(), 8).encode(
         new Uint8Array([213, 44, 171, 74, 209, 13, 137, 0])
       ),
       0
     )
   ) {
     return TunaInstruction.CollectAndCompoundFeesOrca;
+  }
+  if (
+    containsBytes(
+      data,
+      fixEncoderSize(getBytesEncoder(), 8).encode(
+        new Uint8Array([52, 219, 25, 250, 31, 203, 9, 129])
+      ),
+      0
+    )
+  ) {
+    return TunaInstruction.CollectFeesFusion;
   }
   if (
     containsBytes(
@@ -259,6 +331,17 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
+        new Uint8Array([57, 160, 162, 122, 114, 173, 138, 220])
+      ),
+      0
+    )
+  ) {
+    return TunaInstruction.LiquidatePositionFusion;
+  }
+  if (
+    containsBytes(
+      data,
+      fixEncoderSize(getBytesEncoder(), 8).encode(
         new Uint8Array([62, 92, 176, 35, 164, 100, 46, 141])
       ),
       0
@@ -281,6 +364,17 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
+        new Uint8Array([78, 68, 77, 41, 132, 42, 34, 238])
+      ),
+      0
+    )
+  ) {
+    return TunaInstruction.OpenPositionFusion;
+  }
+  if (
+    containsBytes(
+      data,
+      fixEncoderSize(getBytesEncoder(), 8).encode(
         new Uint8Array([201, 85, 45, 226, 182, 208, 246, 115])
       ),
       0
@@ -292,12 +386,34 @@ export function identifyTunaInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
+        new Uint8Array([123, 115, 192, 91, 113, 191, 73, 56])
+      ),
+      0
+    )
+  ) {
+    return TunaInstruction.OpenPositionWithLiquidityFusion;
+  }
+  if (
+    containsBytes(
+      data,
+      fixEncoderSize(getBytesEncoder(), 8).encode(
         new Uint8Array([163, 21, 84, 199, 172, 40, 87, 122])
       ),
       0
     )
   ) {
     return TunaInstruction.OpenPositionWithLiquidityOrca;
+  }
+  if (
+    containsBytes(
+      data,
+      fixEncoderSize(getBytesEncoder(), 8).encode(
+        new Uint8Array([175, 74, 205, 238, 4, 123, 166, 35])
+      ),
+      0
+    )
+  ) {
+    return TunaInstruction.RemoveLiquidityFusion;
   }
   if (
     containsBytes(
@@ -484,14 +600,26 @@ export type ParsedTunaInstruction<
   TProgram extends string = 'tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD',
 > =
   | ({
+      instructionType: TunaInstruction.AddLiquidityFusion;
+    } & ParsedAddLiquidityFusionInstruction<TProgram>)
+  | ({
       instructionType: TunaInstruction.AddLiquidityOrca;
     } & ParsedAddLiquidityOrcaInstruction<TProgram>)
+  | ({
+      instructionType: TunaInstruction.ClosePositionFusion;
+    } & ParsedClosePositionFusionInstruction<TProgram>)
   | ({
       instructionType: TunaInstruction.ClosePositionOrca;
     } & ParsedClosePositionOrcaInstruction<TProgram>)
   | ({
+      instructionType: TunaInstruction.CollectAndCompoundFeesFusion;
+    } & ParsedCollectAndCompoundFeesFusionInstruction<TProgram>)
+  | ({
       instructionType: TunaInstruction.CollectAndCompoundFeesOrca;
     } & ParsedCollectAndCompoundFeesOrcaInstruction<TProgram>)
+  | ({
+      instructionType: TunaInstruction.CollectFeesFusion;
+    } & ParsedCollectFeesFusionInstruction<TProgram>)
   | ({
       instructionType: TunaInstruction.CollectFeesOrca;
     } & ParsedCollectFeesOrcaInstruction<TProgram>)
@@ -511,17 +639,29 @@ export type ParsedTunaInstruction<
       instructionType: TunaInstruction.Deposit;
     } & ParsedDepositInstruction<TProgram>)
   | ({
+      instructionType: TunaInstruction.LiquidatePositionFusion;
+    } & ParsedLiquidatePositionFusionInstruction<TProgram>)
+  | ({
       instructionType: TunaInstruction.LiquidatePositionOrca;
     } & ParsedLiquidatePositionOrcaInstruction<TProgram>)
   | ({
       instructionType: TunaInstruction.OpenLendingPosition;
     } & ParsedOpenLendingPositionInstruction<TProgram>)
   | ({
+      instructionType: TunaInstruction.OpenPositionFusion;
+    } & ParsedOpenPositionFusionInstruction<TProgram>)
+  | ({
       instructionType: TunaInstruction.OpenPositionOrca;
     } & ParsedOpenPositionOrcaInstruction<TProgram>)
   | ({
+      instructionType: TunaInstruction.OpenPositionWithLiquidityFusion;
+    } & ParsedOpenPositionWithLiquidityFusionInstruction<TProgram>)
+  | ({
       instructionType: TunaInstruction.OpenPositionWithLiquidityOrca;
     } & ParsedOpenPositionWithLiquidityOrcaInstruction<TProgram>)
+  | ({
+      instructionType: TunaInstruction.RemoveLiquidityFusion;
+    } & ParsedRemoveLiquidityFusionInstruction<TProgram>)
   | ({
       instructionType: TunaInstruction.RemoveLiquidityOrca;
     } & ParsedRemoveLiquidityOrcaInstruction<TProgram>)

@@ -31,7 +31,7 @@ export function lendingPositionAuthorityFilter(address: Address): LendingPositio
   } as LendingPositionFilter;
 }
 
-export function lendingPositionMintAFilter(address: Address): LendingPositionFilter {
+export function lendingPositionMintFilter(address: Address): LendingPositionFilter {
   return {
     memcmp: {
       offset: 43n,

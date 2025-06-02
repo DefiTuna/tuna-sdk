@@ -6,6 +6,7 @@
  * @see https://github.com/codama-idl/codama
  */
 
+export * from './fusionPool';
 export * from './lendingPosition';
 export * from './market';
 export * from './tunaConfig';

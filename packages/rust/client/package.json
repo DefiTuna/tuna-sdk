@@ -10,11 +10,11 @@
     "clean": "rimraf src/generated"
   },
   "devDependencies": {
-    "@codama/nodes": "^1.2.12",
-    "@codama/renderers-rust": "^1.0.20",
-    "@codama/visitors-core": "^1.2.12",
-    "@codama/nodes-from-anchor": "^1.1.12",
-    "@codama/renderers": "^1.0.20",
+    "@codama/nodes": "^1.2.13",
+    "@codama/renderers-rust": "^1.0.22",
+    "@codama/visitors-core": "^1.2.13",
+    "@codama/nodes-from-anchor": "^1.1.14",
+    "@codama/renderers": "^1.0.23",
     "codama": "^1.2.12",
     "rimraf": "^6.0.1"
   }

@@ -38,11 +38,10 @@ import {
   getLendingVaultAddress,
   getMarketAddress,
   getOpenPositionWithLiquidityOrcaInstruction,
-  getSwapTickArrayAddresses,
-  getTickArrayAddressFromTickIndex,
   getTunaConfigAddress,
   getTunaPositionAddress,
   OpenPositionWithLiquidityOrcaInstructionDataArgs,
+  OrcaUtils,
   TunaConfig,
   Vault,
   WP_NFT_UPDATE_AUTH,
@@ -279,9 +278,9 @@ export async function openPositionWithLiquidityOrcaInstruction(
     })
   )[0];
 
-  const swapTickArrays = await getSwapTickArrayAddresses(whirlpool);
-  const lowerTickArrayAddress = await getTickArrayAddressFromTickIndex(whirlpool, args.tickLowerIndex);
-  const upperTickArrayAddress = await getTickArrayAddressFromTickIndex(whirlpool, args.tickUpperIndex);
+  const swapTickArrays = await OrcaUtils.getSwapTickArrayAddresses(whirlpool);
+  const lowerTickArrayAddress = await OrcaUtils.getTickArrayAddressFromTickIndex(whirlpool, args.tickLowerIndex);
+  const upperTickArrayAddress = await OrcaUtils.getTickArrayAddressFromTickIndex(whirlpool, args.tickUpperIndex);
 
   const remainingAccounts: IAccountMeta[] = [
     { address: swapTickArrays[0], role: AccountRole.WRITABLE },

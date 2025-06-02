@@ -39,10 +39,9 @@ import {
   getCreateAtaInstructions,
   getLendingVaultAddress,
   getMarketAddress,
-  getSwapTickArrayAddresses,
-  getTickArrayAddressFromTickIndex,
   getTunaConfigAddress,
   getTunaPositionAddress,
+  OrcaUtils,
   TunaConfig,
   TunaPosition,
   Vault,
@@ -284,9 +283,15 @@ export async function addLiquidityOrcaInstruction(
     })
   )[0];
 
-  const swapTickArrays = await getSwapTickArrayAddresses(whirlpool);
-  const lowerTickArrayAddress = await getTickArrayAddressFromTickIndex(whirlpool, tunaPosition.data.tickLowerIndex);
-  const upperTickArrayAddress = await getTickArrayAddressFromTickIndex(whirlpool, tunaPosition.data.tickUpperIndex);
+  const swapTickArrays = await OrcaUtils.getSwapTickArrayAddresses(whirlpool);
+  const lowerTickArrayAddress = await OrcaUtils.getTickArrayAddressFromTickIndex(
+    whirlpool,
+    tunaPosition.data.tickLowerIndex,
+  );
+  const upperTickArrayAddress = await OrcaUtils.getTickArrayAddressFromTickIndex(
+    whirlpool,
+    tunaPosition.data.tickUpperIndex,
+  );
 
   const remainingAccounts: IAccountMeta[] = [
     { address: swapTickArrays[0], role: AccountRole.WRITABLE },
