@@ -1,5 +1,11 @@
 # @defituna/client
 
+## 2.0.0
+
+### Major Changes
+
+- 224d33a: Added support for FusionAMM pools
+
 ## 1.0.30
 
 ### Patch Changes
