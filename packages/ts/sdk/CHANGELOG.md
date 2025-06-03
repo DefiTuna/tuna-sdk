@@ -1,5 +1,11 @@
 # @defituna/sdk
 
+## 1.1.28
+
+### Patch Changes
+
+- 6c1a725: Add fusion types & endpoints
+
 ## 1.1.27
 
 ### Patch Changes
