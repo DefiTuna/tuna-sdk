@@ -2,7 +2,7 @@
   "name": "@defituna/client",
   "description": "Typescript client to interact with DefiTuna's on-chain program.",
   "version": "2.0.0",
-  "private": false,
+  "private": true,
   "license": "MIT",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -12,9 +12,6 @@
     "README.md"
   ],
   "sideEffects": false,
-  "publishConfig": {
-    "access": "public"
-  },
   "scripts": {
     "build": "node ./codama.mjs && tsup src/index.ts --format cjs,esm --dts",
     "test": "vitest test",
