@@ -21,12 +21,16 @@ const usdPnl = z.object({
 
 export const NotificationEntity = {
   POOL_SWAP: "pool_swap",
+  POOL_PRICE: "pool_price",
+  ORDER_BOOK: "order_book",
 } as const;
 export const NotificationAction = {
   CREATE: "create",
+  UPDATE: "update",
 } as const;
 export const PoolProvider = {
   ORCA: "orca",
+  FUSION: "fusion",
 } as const;
 export const TunaPositionState = {
   OPEN: "open",
@@ -34,11 +38,19 @@ export const TunaPositionState = {
   CLOSED_BY_LIMIT_ORDER: "closed_by_limit_order",
   CLOSED: "closed",
 } as const;
+export const LimitOrderState = {
+  OPEN: "open",
+  PARTIALLY_FILLED: "partially_filled",
+  FILLED: "filled",
+  COMPLETE: "complete",
+  CANCELLED: "cancelled",
+} as const;
 
 export const NotificationEntitySchema = z.enum([NotificationEntity.POOL_SWAP, ...Object.values(NotificationEntity)]);
 export const NotificationActionSchema = z.enum([NotificationAction.CREATE, ...Object.values(NotificationAction)]);
 export const PoolProviderSchema = z.enum([PoolProvider.ORCA, ...Object.values(PoolProvider)]);
 export const TunaPositionStateSchema = z.enum([TunaPositionState.OPEN, ...Object.values(TunaPositionState)]);
+export const LimitOrderStateSchema = z.enum([LimitOrderState.OPEN, ...Object.values(LimitOrderState)]);
 
 export const Mint = z.object({
   symbol: z.string(),
@@ -108,16 +120,19 @@ export const Pool = z.object({
     "24h": z.object({
       volume: z.coerce.number(),
       fees: z.coerce.number(),
+      rewards: z.coerce.number(),
       yieldOverTvl: z.coerce.number(),
     }),
     "7d": z.object({
       volume: z.coerce.number(),
       fees: z.coerce.number(),
+      rewards: z.coerce.number(),
       yieldOverTvl: z.coerce.number(),
     }),
     "30d": z.object({
       volume: z.coerce.number(),
       fees: z.coerce.number(),
+      rewards: z.coerce.number(),
       yieldOverTvl: z.coerce.number(),
     }),
   }),
@@ -192,13 +207,72 @@ export const PoolSwap = z.object({
   time: z.coerce.date(),
 });
 
-const createNotificationSchema = <DataType extends z.ZodTypeAny>(dataSchema: DataType) =>
+export const OrderBookEntry = z.object({
+  concentratedAmount: z.coerce.bigint(),
+  concentratedAmountQuote: z.coerce.bigint(),
+  concentratedTotal: z.coerce.bigint(),
+  concentratedTotalQuote: z.coerce.bigint(),
+  limitAmount: z.coerce.bigint(),
+  limitAmountQuote: z.coerce.bigint(),
+  limitTotal: z.coerce.bigint(),
+  limitTotalQuote: z.coerce.bigint(),
+  price: z.number(),
+  askSide: z.boolean(),
+});
+
+export const PoolPriceUpdate = z.object({
+  pool: z.string(),
+  price: z.number(),
+  sqrtPrice: z.coerce.bigint(),
+  time: z.coerce.date(),
+});
+
+export const OrderBook = z.object({
+  entries: OrderBookEntry.array(),
+  poolPrice: z.number(),
+});
+
+export const LimitOrder = z.object({
+  address: z.string(),
+  mint: z.string(),
+  pool: z.string(),
+  state: LimitOrderStateSchema,
+  aToB: z.boolean(),
+  tickIndex: z.number(),
+  fillRatio: z.number(),
+  openTxSignature: z.string(),
+  closeTxSignature: z.string().nullable(),
+  amount: amountWithUsd,
+  openedAt: z.coerce.date(),
+  closedAt: z.coerce.date().nullable(),
+});
+
+export const PoolPriceCandle = z.object({
+  time: z.number(),
+  open: z.number(),
+  close: z.number(),
+  high: z.number(),
+  low: z.number(),
+});
+
+const createNotificationSchema = <DataType extends z.ZodTypeAny, MetaType extends z.ZodTypeAny>(
+  dataSchema: DataType,
+  metaSchema?: MetaType,
+) =>
   z.object({
     entity: NotificationEntitySchema,
     action: NotificationActionSchema,
     data: dataSchema,
     id: z.string(),
     authority: z.nullable(z.string()),
+    ...(metaSchema ? { meta: metaSchema } : { meta: z.undefined().nullable() }),
   });
 
+export const OrderBookNotificationMeta = z.object({
+  pool: z.string(),
+  priceStep: z.number(),
+  inverted: z.boolean(),
+});
 export const PoolSwapNotification = createNotificationSchema(PoolSwap);
+export const PoolPriceUpdateNotification = createNotificationSchema(PoolPriceUpdate);
+export const OrderBookNotification = createNotificationSchema(OrderBook, OrderBookNotificationMeta);

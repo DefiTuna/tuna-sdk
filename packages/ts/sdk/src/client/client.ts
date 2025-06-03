@@ -11,6 +11,7 @@ export { schemas };
 export { PoolProvider, TunaPositionState, NotificationAction, NotificationEntity };
 export type PoolProviderType = z.infer<typeof schemas.PoolProviderSchema>;
 export type TunaPositionStateType = z.infer<typeof schemas.TunaPositionStateSchema>;
+export type LimitOrderStateType = z.infer<typeof schemas.LimitOrderStateSchema>;
 
 /* Entity types */
 export type Mint = z.infer<typeof schemas.Mint>;
@@ -21,14 +22,33 @@ export type Pool = z.infer<typeof schemas.Pool>;
 export type Tick = z.infer<typeof schemas.Tick>;
 export type PoolTicks = z.infer<typeof schemas.PoolTicks>;
 export type PoolSwap = z.infer<typeof schemas.PoolSwap>;
+export type OrderBookEntry = z.infer<typeof schemas.OrderBookEntry>;
+export type OrderBook = z.infer<typeof schemas.OrderBook>;
 export type LendingPosition = z.infer<typeof schemas.LendingPosition>;
 export type TunaPosition = z.infer<typeof schemas.TunaPosition>;
+export type LimitOrder = z.infer<typeof schemas.LimitOrder>;
+export type PoolPriceCandle = z.infer<typeof schemas.PoolPriceCandle>;
+export type PoolPriceUpdate = z.infer<typeof schemas.PoolPriceUpdate>;
 
 /* Client configuration */
 export type DurationInMs = number;
 
 const DEFAULT_TIMEOUT: DurationInMs = 5000;
 const DEFAULT_HTTP_RETRIES = 3;
+
+export enum ProviderFilter {
+  ORCA = "orca",
+  FUSION = "fusion",
+  ALL = "all",
+}
+
+export type GetPoolPriceCandlesOptions = {
+  from: Date;
+  to: Date;
+  candles: number;
+  /* Interval string like 5s, 5m, 1d */
+  interval: string;
+};
 
 export type TunaApiClientConfig = {
   /** Backend API URL */
@@ -166,8 +186,12 @@ export class TunaApiClient {
     return await this.httpRequest(url.toString(), schemas.Vault);
   }
 
-  async getPools(): Promise<Pool[]> {
+  async getPools(providerFilter?: ProviderFilter): Promise<Pool[]> {
     const url = this.buildURL("pools");
+    if (providerFilter && providerFilter !== ProviderFilter.ALL) {
+      this.appendUrlSearchParams(url, { provider: providerFilter });
+    }
+
     return await this.httpRequest(url.toString(), schemas.Pool.array());
   }
 
@@ -184,6 +208,28 @@ export class TunaApiClient {
   async getPoolSwaps(poolAddress: string): Promise<PoolSwap[]> {
     const url = this.buildURL(`pools/${poolAddress}/swaps`);
     return await this.httpRequest(url.toString(), schemas.PoolSwap.array());
+  }
+
+  async getPoolOrderBook(poolAddress: string, priceStep: number, inverted: boolean): Promise<OrderBook> {
+    const url = this.buildURL(`pools/${poolAddress}/order-book`);
+    this.appendUrlSearchParams(url, { price_step: priceStep.toString() });
+    if (inverted) {
+      this.appendUrlSearchParams(url, { inverted: inverted.toString() });
+    }
+    return await this.httpRequest(url.toString(), schemas.OrderBook);
+  }
+
+  async getPoolPriceCandles(poolAddress: string, options: GetPoolPriceCandlesOptions): Promise<PoolPriceCandle[]> {
+    const { from, to, interval, candles } = options;
+    const url = this.buildURL(`pools/${poolAddress}/candles`);
+
+    this.appendUrlSearchParams(url, {
+      from: from.toISOString(),
+      to: to.toISOString(),
+      candles: candles.toString(),
+      interval,
+    });
+    return await this.httpRequest(url.toString(), schemas.PoolPriceCandle.array());
   }
 
   async getUserLendingPositions(userAddress: string): Promise<LendingPosition[]> {
@@ -206,9 +252,28 @@ export class TunaApiClient {
     return await this.httpRequest(url.toString(), schemas.TunaPosition);
   }
 
-  async getPoolUpdatesStream(poolAddress: string): Promise<EventSource> {
+  async getUserLimitOrders(userAddress: string, poolFilter?: string): Promise<LimitOrder[]> {
+    const url = this.buildURL(`users/${userAddress}/limit-orders`);
+    if (poolFilter) {
+      this.appendUrlSearchParams(url, { pool: poolFilter });
+    }
+    return await this.httpRequest(url.toString(), schemas.LimitOrder.array());
+  }
+
+  async getUserLimitOrderByAddress(userAddress: string, limitOrderAddress: string): Promise<LimitOrder> {
+    const url = this.buildURL(`users/${userAddress}/limit-orders/${limitOrderAddress}`);
+    return await this.httpRequest(url.toString(), schemas.LimitOrder);
+  }
+
+  async getPoolUpdatesStream(poolAddress: string, priceStep?: number, inverted?: boolean): Promise<EventSource> {
     const url = this.buildURL(`stream`);
     this.appendUrlSearchParams(url, { pool: poolAddress });
+    if (priceStep) {
+      this.appendUrlSearchParams(url, { price_step: priceStep.toString() });
+    }
+    if (inverted) {
+      this.appendUrlSearchParams(url, { inverted: inverted.toString() });
+    }
 
     return new EventSource(url.toString());
   }
