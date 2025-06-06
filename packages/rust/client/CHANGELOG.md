@@ -1,4 +1,4 @@
-# @defituna/rust-client
+# @crypticdot/defituna-rust-client
 
 ## 2.0.0
 

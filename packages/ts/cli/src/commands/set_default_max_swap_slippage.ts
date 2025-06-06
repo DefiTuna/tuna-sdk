@@ -1,6 +1,11 @@
+import {
+  fetchTunaConfig,
+  getSetDefaultMaxSwapSlippageInstruction,
+  getTunaConfigAddress,
+} from "@crypticdot/defituna-client";
+
 import BaseCommand, { percentArg } from "../base.ts";
 import { rpc, sendTransaction, signer } from "../rpc.ts";
-import { fetchTunaConfig, getSetDefaultMaxSwapSlippageInstruction, getTunaConfigAddress } from "@defituna/client";
 
 export default class SetDefaultMaxSwapSlippage extends BaseCommand {
   static override args = {

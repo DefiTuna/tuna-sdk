@@ -1,16 +1,17 @@
-import { fetchMaybeWhirlpool, fetchPosition, getPositionAddress } from "@orca-so/whirlpools-client";
-import { sqrtPriceToPrice, tickIndexToPrice } from "@orca-so/whirlpools-core";
+import { Flags } from "@oclif/core";
 import {
   DEFAULT_ADDRESS,
   increaseLiquidityInstructions,
   IncreaseLiquidityQuoteParam,
   openPositionInstructions,
 } from "@orca-so/whirlpools";
+import { fetchMaybeWhirlpool, fetchPosition, getPositionAddress } from "@orca-so/whirlpools-client";
+import { sqrtPriceToPrice, tickIndexToPrice } from "@orca-so/whirlpools-core";
+import { IInstruction } from "@solana/kit";
+import { fetchMint } from "@solana-program/token-2022";
+
 import BaseCommand, { addressArg, addressFlag, bigintFlag, priceFlag } from "../base.ts";
 import { rpc, sendTransaction, signer } from "../rpc.ts";
-import { fetchMint } from "@solana-program/token-2022";
-import { IInstruction } from "@solana/kit";
-import { Flags } from "@oclif/core";
 
 export default class WhirlpoolIncreaseLiquidity extends BaseCommand {
   static override args = {

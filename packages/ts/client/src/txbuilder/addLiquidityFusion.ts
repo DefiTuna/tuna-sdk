@@ -6,7 +6,8 @@ import {
   getInitializeTickArrayInstruction,
   getPositionAddress,
   getTickArrayAddress,
-} from "@defituna/fusionamm-client";
+} from "@crypticdot/fusionamm-client";
+import { getTickArrayStartTickIndex } from "@crypticdot/fusionamm-core";
 import {
   type Account,
   AccountRole,
@@ -33,6 +34,7 @@ import {
   fetchAllVault,
   fetchMaybeTunaPosition,
   fetchTunaConfig,
+  FusionUtils,
   getAddLiquidityFusionInstruction,
   getCreateAtaInstructions,
   getLendingVaultAddress,
@@ -42,9 +44,7 @@ import {
   TunaConfig,
   TunaPosition,
   Vault,
-  FusionUtils,
 } from "../index.ts";
-import { getTickArrayStartTickIndex } from "@defituna/fusionamm-core";
 
 export type AddLiquidityFusionInstructionArgs = Omit<AddLiquidityFusionInstructionDataArgs, "remainingAccountsInfo">;
 

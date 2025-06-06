@@ -1,4 +1,5 @@
-import { fetchMaybeFusionPool, FUSIONAMM_PROGRAM_ADDRESS, getPositionAddress } from "@defituna/fusionamm-client";
+import { fetchMaybeFusionPool, FUSIONAMM_PROGRAM_ADDRESS, getPositionAddress } from "@crypticdot/fusionamm-client";
+import { FP_NFT_UPDATE_AUTH } from "@crypticdot/fusionamm-client";
 import { Address, GetAccountInfoApi, GetMultipleAccountsApi, IInstruction, Rpc, TransactionSigner } from "@solana/kit";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
@@ -14,8 +15,6 @@ import {
   getTunaPositionAddress,
   OpenPositionFusionInstructionDataArgs,
 } from "../index.ts";
-
-import { FP_NFT_UPDATE_AUTH } from "@defituna/fusionamm-client";
 
 export async function openPositionFusionInstruction(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,

@@ -3,7 +3,7 @@ import {
   fetchPosition,
   FUSIONAMM_PROGRAM_ADDRESS,
   getPositionAddress,
-} from "@defituna/fusionamm-client";
+} from "@crypticdot/fusionamm-client";
 import { Address, GetAccountInfoApi, GetMultipleAccountsApi, IInstruction, Rpc, TransactionSigner } from "@solana/kit";
 import { fetchAllMaybeMint, findAssociatedTokenPda, TOKEN_2022_PROGRAM_ADDRESS } from "@solana-program/token-2022";
 import assert from "assert";

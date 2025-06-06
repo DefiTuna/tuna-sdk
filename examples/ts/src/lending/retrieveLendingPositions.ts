@@ -1,4 +1,8 @@
-import { fetchAllLendingPositionWithFilter, LendingPosition, lendingPositionAuthorityFilter } from "@defituna/client";
+import {
+  fetchAllLendingPositionWithFilter,
+  LendingPosition,
+  lendingPositionAuthorityFilter,
+} from "@crypticdot/defituna-client";
 import { Address, address, KeyPairSigner as _KeyPairSigner } from "@solana/kit";
 import { loadKeypair } from "src/utils/common";
 import { rpc } from "src/utils/rpc";

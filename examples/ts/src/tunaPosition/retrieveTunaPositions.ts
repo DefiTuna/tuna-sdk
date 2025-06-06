@@ -1,4 +1,4 @@
-import { fetchAllTunaPositionWithFilter, TunaPosition, tunaPositionAuthorityFilter } from "@defituna/client";
+import { fetchAllTunaPositionWithFilter, TunaPosition, tunaPositionAuthorityFilter } from "@crypticdot/defituna-client";
 import { Address, address } from "@solana/kit";
 import { loadKeypair } from "src/utils/common";
 import { rpc } from "src/utils/rpc";

@@ -1,3 +1,4 @@
+import { Args } from "@oclif/core";
 import {
   fetchMaybeFeeTier,
   fetchMaybeWhirlpool,
@@ -7,11 +8,11 @@ import {
   getWhirlpoolAddress,
 } from "@orca-so/whirlpools-client";
 import { priceToSqrtPrice, sqrtPriceToPrice } from "@orca-so/whirlpools-core";
+import { generateKeyPairSigner } from "@solana/kit";
+import { fetchMaybeMint } from "@solana-program/token-2022";
+
 import BaseCommand, { addressArg, priceArg } from "../base.ts";
 import { rpc, sendTransaction, signer } from "../rpc.ts";
-import { Args } from "@oclif/core";
-import { fetchMaybeMint } from "@solana-program/token-2022";
-import { generateKeyPairSigner } from "@solana/kit";
 
 export default class WhirlpoolCreatePool extends BaseCommand {
   static override args = {
@@ -73,7 +74,9 @@ export default class WhirlpoolCreatePool extends BaseCommand {
       throw new Error("Token B mint account doesn't exist");
     }
 
-    const whirlpoolAddress = (await getWhirlpoolAddress(whirlpoolsConfigAddress, mintA.address, mintB.address, tickSpacing))[0];
+    const whirlpoolAddress = (
+      await getWhirlpoolAddress(whirlpoolsConfigAddress, mintA.address, mintB.address, tickSpacing)
+    )[0];
 
     const tokenBadgeAAddress = (await getTokenBadgeAddress(whirlpoolsConfigAddress, mintA.address))[0];
 
@@ -84,7 +87,10 @@ export default class WhirlpoolCreatePool extends BaseCommand {
     const whirlpool = await fetchMaybeWhirlpool(rpc, whirlpoolAddress);
     if (whirlpool.exists) {
       console.log("Whirlpool:", whirlpool);
-      console.log("Current pool price:", sqrtPriceToPrice(whirlpool.data.sqrtPrice, mintA.data.decimals, mintB.data.decimals));
+      console.log(
+        "Current pool price:",
+        sqrtPriceToPrice(whirlpool.data.sqrtPrice, mintA.data.decimals, mintB.data.decimals),
+      );
       throw new Error(`Whirlpool already exists at address ${whirlpoolAddress}`);
     }
 

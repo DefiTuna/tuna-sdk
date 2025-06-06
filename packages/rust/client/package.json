@@ -1,5 +1,5 @@
 {
-  "name": "@defituna/rust-client",
+  "name": "@crypticdot/defituna-rust-client",
   "description": "Rust client to interact with DefiTuna's on-chain program.",
   "version": "2.0.0",
   "private": true,

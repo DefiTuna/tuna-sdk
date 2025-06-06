@@ -1,5 +1,5 @@
 {
-  "name": "@defituna/rust-txsender",
+  "name": "@crypticdot/defituna-rust-txsender",
   "description": "Rust transaction sending library to interact with DefiTuna's on-chain program.",
   "version": "1.0.1",
   "private": true,

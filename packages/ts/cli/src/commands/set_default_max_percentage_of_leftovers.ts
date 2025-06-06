@@ -1,6 +1,11 @@
+import {
+  fetchTunaConfig,
+  getSetDefaultMaxPercentageOfLeftoversInstruction,
+  getTunaConfigAddress,
+} from "@crypticdot/defituna-client";
+
 import BaseCommand, { percentArg } from "../base.ts";
 import { rpc, sendTransaction, signer } from "../rpc.ts";
-import { fetchTunaConfig, getSetDefaultMaxPercentageOfLeftoversInstruction, getTunaConfigAddress } from "@defituna/client";
 
 export default class SetDefaultMaxPercentageOfLeftovers extends BaseCommand {
   static override args = {
@@ -18,7 +23,10 @@ export default class SetDefaultMaxPercentageOfLeftovers extends BaseCommand {
     const tunaConfigAddress = (await getTunaConfigAddress())[0];
     const tunaConfig = await fetchTunaConfig(rpc, tunaConfigAddress);
 
-    console.log(`Current default max percentage of leftovers:`, this.percentageValueToString(tunaConfig.data.maxPercentageOfLeftovers));
+    console.log(
+      `Current default max percentage of leftovers:`,
+      this.percentageValueToString(tunaConfig.data.maxPercentageOfLeftovers),
+    );
 
     if (tunaConfig.data.maxPercentageOfLeftovers != args.value) {
       console.log(`Setting value to:`, this.percentageValueToString(args.value));

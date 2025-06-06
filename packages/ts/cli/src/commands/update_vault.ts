@@ -1,8 +1,14 @@
-import BaseCommand, { addressArg, addressFlag, bigintFlag, percentFlag, pythFeedIdFlag } from "../base.ts";
-import { rpc, sendTransaction, signer } from "../rpc.ts";
-import { fetchVault, getLendingVaultAddress, updateVaultInstruction, HUNDRED_PERCENT } from "@defituna/client";
+import {
+  fetchVault,
+  getLendingVaultAddress,
+  HUNDRED_PERCENT,
+  updateVaultInstruction,
+} from "@crypticdot/defituna-client";
 import { getBase58Codec, ReadonlyUint8Array } from "@solana/kit";
 import _ from "lodash";
+
+import BaseCommand, { addressArg, addressFlag, bigintFlag, percentFlag, pythFeedIdFlag } from "../base.ts";
+import { rpc, sendTransaction, signer } from "../rpc.ts";
 
 // Some devnet Mints
 // DFT5_MINT = DFT5QXLcpH3S9J2cpkaUorP7uPJCqdS5tYvyY1skq6TK
@@ -40,7 +46,7 @@ export default class UpdateVault extends BaseCommand {
 
   private uint8ArrayToHex(array: ReadonlyUint8Array): string {
     return Array.from(array)
-      .map((byte) => byte.toString(16).padStart(2, "0"))
+      .map(byte => byte.toString(16).padStart(2, "0"))
       .join("");
   }
 

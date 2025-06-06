@@ -3,7 +3,7 @@ import {
   closePositionWithLiquidityOrcaInstructions,
   fetchMarket,
   getMarketAddress,
-} from "@defituna/client";
+} from "@crypticdot/defituna-client";
 import { Address, address, IInstruction } from "@solana/kit";
 import { SOL_USDC_WHIRLPOOL } from "src/constants";
 import { loadKeypair } from "src/utils/common";

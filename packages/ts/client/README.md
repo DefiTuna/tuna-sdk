@@ -21,9 +21,9 @@ This package provides developers with low-level functionalities for interacting 
 
 ```bash
 # NPM
-npm install @defituna/client
+npm install @crypticdot/defituna-client
 # Yarn
-yarn add @defituna/client
+yarn add @crypticdot/defituna-client
 # PNPM
-pnpm add @defituna/client
+pnpm add @crypticdot/defituna-client
 ```

@@ -5,7 +5,7 @@ import {
   OpenPositionWithLiquidityOrcaInstructionArgs,
   openPositionWithLiquidityOrcaInstructions,
   TUNA_POSITION_FLAGS_STOP_LOSS_SWAP_TO_TOKEN_B,
-} from "@defituna/client";
+} from "@crypticdot/defituna-client";
 import { fetchMaybeWhirlpool } from "@orca-so/whirlpools-client";
 import { sqrtPriceToPrice } from "@orca-so/whirlpools-core";
 import { generateKeyPairSigner } from "@solana/kit";

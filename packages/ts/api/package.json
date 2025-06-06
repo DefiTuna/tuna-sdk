@@ -1,5 +1,5 @@
 {
-  "name": "@defituna/api",
+  "name": "@crypticdot/defituna-api",
   "version": "1.1.28",
   "private": false,
   "main": "./dist/index.js",
@@ -25,10 +25,10 @@
     "test:watch": "vitest watch"
   },
   "devDependencies": {
-    "@defituna/client": "workspace:*",
-    "@defituna/eslint-config": "^0.4.0",
-    "@defituna/prettier-config": "^0.0.0",
-    "@defituna/typescript-config": "^0.2.0",
+    "@crypticdot/defituna-client": "workspace:*",
+    "@crypticdot/eslint-config": "^1.0.0",
+    "@crypticdot/prettier-config": "^1.0.0",
+    "@crypticdot/typescript-config": "^1.0.0",
     "@solana/kit": "^2.1.0",
     "@types/node": "^22.13.14",
     "decimal.js": "^10.5.0",

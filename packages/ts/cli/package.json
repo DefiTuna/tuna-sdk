@@ -1,5 +1,5 @@
 {
-  "name": "@defituna/cli",
+  "name": "@crypticdot/defituna-cli",
   "version": "2.0.0",
   "type": "module",
   "private": true,
@@ -8,10 +8,14 @@
   },
   "scripts": {
     "build": "tsc --noEmit",
-    "start": "./bin/dev.js"
+    "start": "./bin/dev.js",
+    "eslint": "eslint \"src/**/*.ts\"",
+    "eslint:fix": "eslint \"src/**/*.ts\" --fix",
+    "type-check": "tsc -p .",
+    "lint": "pnpm eslint && pnpm type-check"
   },
   "dependencies": {
-    "@defituna/client": "workspace:*",
+    "@crypticdot/defituna-client": "workspace:*",
     "@oclif/core": "^4.2.10",
     "@solana/kit": "^2.1.0",
     "@solana-program/token-2022": "^0.4.0",
@@ -23,9 +27,10 @@
     "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "@defituna/eslint-config": "^0.4.0",
-    "@defituna/prettier-config": "^0.0.0",
-    "@defituna/typescript-config": "^0.2.0",
+    "@crypticdot/eslint-config": "^1.0.0",
+    "@crypticdot/prettier-config": "^1.0.0",
+    "@crypticdot/typescript-config": "^1.0.0",
+    "eslint": "^8.57.0",
     "@types/node": "^22.15.2",
     "ts-node": "^10.9.2",
     "oclif": "^4",

@@ -1,6 +1,11 @@
+import {
+  fetchTunaConfig,
+  getSetDefaultOraclePriceDeviationThresholdInstruction,
+  getTunaConfigAddress,
+} from "@crypticdot/defituna-client";
+
 import BaseCommand, { percentArg } from "../base.ts";
 import { rpc, sendTransaction, signer } from "../rpc.ts";
-import { fetchTunaConfig, getSetDefaultOraclePriceDeviationThresholdInstruction, getTunaConfigAddress } from "@defituna/client";
 
 export default class SetDefaultOraclePriceDeviationThreshold extends BaseCommand {
   static override args = {
@@ -18,7 +23,10 @@ export default class SetDefaultOraclePriceDeviationThreshold extends BaseCommand
     const tunaConfigAddress = (await getTunaConfigAddress())[0];
     const tunaConfig = await fetchTunaConfig(rpc, tunaConfigAddress);
 
-    console.log(`Current default oracle price deviation threshold:`, this.percentageValueToString(tunaConfig.data.oraclePriceDeviationThreshold));
+    console.log(
+      `Current default oracle price deviation threshold:`,
+      this.percentageValueToString(tunaConfig.data.oraclePriceDeviationThreshold),
+    );
 
     if (tunaConfig.data.oraclePriceDeviationThreshold != args.value) {
       console.log(`Setting value to:`, this.percentageValueToString(args.value));

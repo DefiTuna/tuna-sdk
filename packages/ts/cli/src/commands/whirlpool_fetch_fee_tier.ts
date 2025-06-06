@@ -1,4 +1,5 @@
 import { fetchAllFeeTierWithFilter, fetchMaybeFeeTier } from "@orca-so/whirlpools-client";
+
 import BaseCommand, { addressArg } from "../base.ts";
 import { rpc } from "../rpc.ts";
 
@@ -27,7 +28,7 @@ export default class FetchFeeTier extends BaseCommand {
     } else {
       console.log("Fetching fee tiers...");
       const feeTiers = await fetchAllFeeTierWithFilter(rpc);
-      for (let feeTier of feeTiers) {
+      for (const feeTier of feeTiers) {
         console.log(
           `${feeTier.address}, config: ${feeTier.data.whirlpoolsConfig}, tickSpacing: ${feeTier.data.tickSpacing}, feeRate: ${feeTier.data.defaultFeeRate}`,
         );

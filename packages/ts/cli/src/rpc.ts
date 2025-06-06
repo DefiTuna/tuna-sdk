@@ -1,4 +1,3 @@
-import { configDotenv } from "dotenv";
 import {
   appendTransactionMessageInstructions,
   createKeyPairSignerFromBytes,
@@ -14,9 +13,10 @@ import {
   setTransactionMessageLifetimeUsingBlockhash,
   signTransactionMessageWithSigners,
 } from "@solana/kit";
+import { configDotenv } from "dotenv";
 import fs from "fs";
-import path from "path";
 import os from "os";
+import path from "path";
 
 async function loadKeypair(): Promise<KeyPairSigner> {
   try {
@@ -32,10 +32,10 @@ export async function sendTransaction(ixs: IInstruction[]) {
   const blockhash = await rpc.getLatestBlockhash().send();
   const transaction = await pipe(
     createTransactionMessage({ version: 0 }),
-    (x) => appendTransactionMessageInstructions([...ixs], x),
-    (x) => setTransactionMessageFeePayerSigner(signer, x),
-    (x) => setTransactionMessageLifetimeUsingBlockhash(blockhash.value, x),
-    (x) => signTransactionMessageWithSigners(x),
+    x => appendTransactionMessageInstructions([...ixs], x),
+    x => setTransactionMessageFeePayerSigner(signer, x),
+    x => setTransactionMessageLifetimeUsingBlockhash(blockhash.value, x),
+    x => signTransactionMessageWithSigners(x),
   );
 
   const signature = getSignatureFromTransaction(transaction);

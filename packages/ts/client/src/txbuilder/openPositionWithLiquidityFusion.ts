@@ -7,8 +7,8 @@ import {
   getInitializeTickArrayInstruction,
   getPositionAddress,
   getTickArrayAddress,
-} from "@defituna/fusionamm-client";
-import { getTickArrayStartTickIndex } from "@defituna/fusionamm-core";
+} from "@crypticdot/fusionamm-client";
+import { getTickArrayStartTickIndex } from "@crypticdot/fusionamm-core";
 import {
   type Account,
   AccountRole,

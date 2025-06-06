@@ -1,5 +1,5 @@
 {
-  "name": "@defituna/examples-typescript",
+  "name": "@crypticdot/defituna-examples-typescript",
   "description": "Collection of usage examples for DefiTuna's on-chain program.",
   "version": "0.0.0",
   "private": true,
@@ -24,9 +24,9 @@
     "example:retrieve_tuna_positions": "tsx src/tunaPosition/retrieveTunaPositions.ts"
   },
   "devDependencies": {
-    "@defituna/typescript-config": "^0.2.0",
-    "@defituna/eslint-config": "^0.4.0",
-    "@defituna/prettier-config": "^0.0.0",
+    "@crypticdot/typescript-config": "^1.0.0",
+    "@crypticdot/eslint-config": "^1.0.0",
+    "@crypticdot/prettier-config": "^1.0.0",
     "dotenv": "^16.4.7",
     "eslint": "^8.57.0",
     "tsx": "^4.19.3",
@@ -34,8 +34,8 @@
     "vite-tsconfig-paths": "^5.1.4"
   },
   "dependencies": {
-    "@defituna/client": "workspace:*",
-    "@defituna/cli": "workspace:*",
+    "@crypticdot/defituna-client": "workspace:*",
+    "@crypticdot/defituna-cli": "workspace:*",
     "@solana/kit": "^2.1.0",
     "@orca-so/whirlpools-client": "^1.0.4",
     "@orca-so/whirlpools-core": "^1.0.4",

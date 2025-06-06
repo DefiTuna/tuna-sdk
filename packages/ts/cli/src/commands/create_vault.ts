@@ -1,14 +1,15 @@
-import BaseCommand, { addressArg, addressFlag, bigintFlag, percentFlag, pythFeedIdFlag } from "../base.ts";
-import { rpc, sendTransaction, signer } from "../rpc.ts";
 import {
-  createVaultInstructions,
   CreateVaultInstructionDataArgs,
-  getLendingVaultAddress,
+  createVaultInstructions,
   fetchMaybeVault,
+  getLendingVaultAddress,
   HUNDRED_PERCENT,
-} from "@defituna/client";
+} from "@crypticdot/defituna-client";
 import { address } from "@solana/kit";
 import { fetchMint } from "@solana-program/token-2022";
+
+import BaseCommand, { addressArg, addressFlag, bigintFlag, percentFlag, pythFeedIdFlag } from "../base.ts";
+import { rpc, sendTransaction, signer } from "../rpc.ts";
 
 export default class UpdateVault extends BaseCommand {
   static override args = {

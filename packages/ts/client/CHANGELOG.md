@@ -1,4 +1,4 @@
-# @defituna/client
+# @crypticdot/defituna-client
 
 ## 2.0.0
 

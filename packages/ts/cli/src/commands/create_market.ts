@@ -1,20 +1,21 @@
-import BaseCommand, { addressArg, addressFlag, bigintFlag, percentFlag } from "../base.ts";
-import { rpc, sendTransaction, signer } from "../rpc.ts";
 import {
+  createAddressLookupTableForMarketInstructions,
+  createMarketInstruction,
   fetchMaybeMarket,
   getMarketAddress,
-  createMarketInstruction,
-  MAX_LIMIT_ORDER_EXECUTION_FEE,
-  MAX_LIQUIDATION_FEE,
+  HUNDRED_PERCENT,
   LEVERAGE_ONE,
   MAX_LEVERAGE,
-  MAX_PROTOCOL_FEE,
-  HUNDRED_PERCENT,
+  MAX_LIMIT_ORDER_EXECUTION_FEE,
+  MAX_LIQUIDATION_FEE,
   MAX_LIQUIDATION_THRESHOLD,
-  createAddressLookupTableForMarketInstructions,
-} from "@defituna/client";
+  MAX_PROTOCOL_FEE,
+} from "@crypticdot/defituna-client";
+import { MarketMaker } from "@crypticdot/defituna-client/src";
 import { Args, Flags } from "@oclif/core";
-import { MarketMaker } from "@defituna/client/src";
+
+import BaseCommand, { addressArg, addressFlag, bigintFlag, percentFlag } from "../base.ts";
+import { rpc, sendTransaction, signer } from "../rpc.ts";
 
 export default class CreateMarket extends BaseCommand {
   static override args = {

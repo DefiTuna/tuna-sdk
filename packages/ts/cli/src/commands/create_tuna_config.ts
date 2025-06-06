@@ -1,6 +1,7 @@
+import { createTunaConfigInstruction } from "@crypticdot/defituna-client";
+
 import BaseCommand, { addressArg } from "../base.ts";
 import { sendTransaction, signer } from "../rpc.ts";
-import { createTunaConfigInstruction } from "@defituna/client";
 
 export default class CreateTunaConfig extends BaseCommand {
   static override args = {
@@ -12,7 +13,10 @@ export default class CreateTunaConfig extends BaseCommand {
       description: "Administrator authority",
       required: true,
     }),
-    liquidationAuthority: addressArg({ description: "Liquidator authority", required: true }),
+    liquidationAuthority: addressArg({
+      description: "Liquidator authority",
+      required: true,
+    }),
     feeRecipient: addressArg({
       description: "Authority who receives all protocol fees of the platform",
       required: true,
@@ -24,7 +28,13 @@ export default class CreateTunaConfig extends BaseCommand {
   public async run() {
     const { args } = await this.parse(CreateTunaConfig);
 
-    const ix = await createTunaConfigInstruction(signer, args.adminAuthority, args.feeRecipient, args.liquidationAuthority, args.ownerAuthority);
+    const ix = await createTunaConfigInstruction(
+      signer,
+      args.adminAuthority,
+      args.feeRecipient,
+      args.liquidationAuthority,
+      args.ownerAuthority,
+    );
 
     console.log("");
     console.log("Sending a transaction...");

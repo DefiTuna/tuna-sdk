@@ -1,4 +1,4 @@
-import { FUSIONAMM_PROGRAM_ADDRESS, FusionPool, getPositionAddress } from "@defituna/fusionamm-client";
+import { FUSIONAMM_PROGRAM_ADDRESS, FusionPool, getPositionAddress } from "@crypticdot/fusionamm-client";
 import { type Account, AccountRole, IAccountMeta, IInstruction, TransactionSigner } from "@solana/kit";
 import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
 import { findAssociatedTokenPda, Mint, TOKEN_2022_PROGRAM_ADDRESS } from "@solana-program/token-2022";

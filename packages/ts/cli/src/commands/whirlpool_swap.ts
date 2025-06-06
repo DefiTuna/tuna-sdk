@@ -1,14 +1,12 @@
+import { Flags } from "@oclif/core";
+import { SLIPPAGE_TOLERANCE_BPS, swapInstructions } from "@orca-so/whirlpools";
+import { fetchMaybeWhirlpool, fetchWhirlpool } from "@orca-so/whirlpools-client";
+import { sqrtPriceToPrice } from "@orca-so/whirlpools-core";
+import { IInstruction } from "@solana/kit";
+import { fetchMint } from "@solana-program/token-2022";
+
 import BaseCommand, { addressArg, bigintFlag } from "../base.ts";
 import { rpc, sendTransaction, signer } from "../rpc.ts";
-import { fetchMint } from "@solana-program/token-2022";
-import { IInstruction } from "@solana/kit";
-import { Flags } from "@oclif/core";
-import { sqrtPriceToPrice } from "@orca-so/whirlpools-core";
-import {
-  fetchMaybeWhirlpool,
-  fetchWhirlpool,
-} from "@orca-so/whirlpools-client";
-import { SLIPPAGE_TOLERANCE_BPS, swapInstructions } from "@orca-so/whirlpools";
 
 export default class Swap extends BaseCommand {
   static override args = {
@@ -32,9 +30,7 @@ export default class Swap extends BaseCommand {
     }),
   };
   static override description = "Execute a swap.";
-  static override examples = [
-    "<%= config.bin %> <%= command.id %> POOLADDRESS --amountIn 1000000 --aToB",
-  ];
+  static override examples = ["<%= config.bin %> <%= command.id %> POOLADDRESS --amountIn 1000000 --aToB"];
 
   public async run() {
     const { args, flags } = await this.parse(Swap);
@@ -51,11 +47,7 @@ export default class Swap extends BaseCommand {
 
     console.log(
       "Current pool price:",
-      sqrtPriceToPrice(
-        whirlpool.data.sqrtPrice,
-        mintA.data.decimals,
-        mintB.data.decimals,
-      ),
+      sqrtPriceToPrice(whirlpool.data.sqrtPrice, mintA.data.decimals, mintB.data.decimals),
     );
 
     const instructions: IInstruction[] = [];
@@ -115,11 +107,7 @@ export default class Swap extends BaseCommand {
     const whirlpoolAfterSwap = await fetchWhirlpool(rpc, args.pool);
     console.log(
       "Pool price after swap:",
-      sqrtPriceToPrice(
-        whirlpoolAfterSwap.data.sqrtPrice,
-        mintA.data.decimals,
-        mintB.data.decimals,
-      ),
+      sqrtPriceToPrice(whirlpoolAfterSwap.data.sqrtPrice, mintA.data.decimals, mintB.data.decimals),
     );
   }
 }

@@ -1,2 +1,2 @@
-const config = require("@defituna/prettier-config");
+const config = require("@crypticdot/prettier-config");
 module.exports = config;

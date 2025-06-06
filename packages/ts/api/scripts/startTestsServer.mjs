@@ -1,5 +1,5 @@
 import { startVitest } from "vitest/node";
-import express from 'express';
+import express from "express";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -28,7 +28,7 @@ const runTests = async () => {
       {},
     );
     const testModules = vitest.state.getTestModules();
-    let isOk = testModules.every(testModule => testModule.ok())
+    let isOk = testModules.every(testModule => testModule.ok());
     if (isOk) {
       console.log("All tests passed");
     } else {
@@ -43,8 +43,7 @@ const runTests = async () => {
   }
 };
 
-
-app.get('/healthcheck', (_req, res) => {
+app.get("/healthcheck", (_req, res) => {
   const now = new Date();
   const elapsedMinutesSinceLastTest = (now.getTime() - lastTestCompletionDate.getTime()) / (1000 * 60);
 
@@ -53,7 +52,7 @@ app.get('/healthcheck', (_req, res) => {
   }
 
   res.status(500).send("Last test run has failed");
-})
+});
 
 const start = async () => {
   await runTests();
@@ -64,12 +63,11 @@ const start = async () => {
         runTests();
       },
       // Run every 5 mintues
-      5 * 60 * 1000
-    )
-    
-    console.log(`Tests server is listening on port ${port}`)
-  })
+      5 * 60 * 1000,
+    );
+
+    console.log(`Tests server is listening on port ${port}`);
+  });
 };
 
 start();
-

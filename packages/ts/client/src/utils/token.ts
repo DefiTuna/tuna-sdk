@@ -1,11 +1,11 @@
-import { address, Address, IInstruction, TransactionSigner } from "@solana/kit";
+import { Address, address, IInstruction, TransactionSigner } from "@solana/kit";
+import { getTransferSolInstruction } from "@solana-program/system";
 import { findAssociatedTokenPda, TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
 import {
   getCloseAccountInstruction,
   getCreateAssociatedTokenIdempotentInstruction,
   getSyncNativeInstruction,
 } from "@solana-program/token-2022";
-import { getTransferSolInstruction } from "@solana-program/system";
 
 export const NATIVE_MINT = address("So11111111111111111111111111111111111111112");
 

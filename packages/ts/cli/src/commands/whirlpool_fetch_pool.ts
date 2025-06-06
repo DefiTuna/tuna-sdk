@@ -1,8 +1,9 @@
 import { fetchAllWhirlpoolWithFilter, fetchMaybeWhirlpool } from "@orca-so/whirlpools-client";
+import { sqrtPriceToPrice } from "@orca-so/whirlpools-core";
+import { fetchAllMint } from "@solana-program/token-2022";
+
 import BaseCommand, { addressArg } from "../base.ts";
 import { rpc } from "../rpc.ts";
-import { fetchAllMint } from "@solana-program/token-2022";
-import { sqrtPriceToPrice } from "@orca-so/whirlpools-core";
 
 export default class FetchPool extends BaseCommand {
   static override args = {
@@ -35,7 +36,7 @@ export default class FetchPool extends BaseCommand {
     } else {
       console.log("Fetching whirlpools...");
       const pools = await fetchAllWhirlpoolWithFilter(rpc);
-      for (let pool of pools) {
+      for (const pool of pools) {
         console.log(pool.address);
       }
     }

@@ -3,7 +3,7 @@ import {
   FUSIONAMM_PROGRAM_ADDRESS,
   FusionPool,
   getPositionAddress,
-} from "@defituna/fusionamm-client";
+} from "@crypticdot/fusionamm-client";
 import {
   type Account,
   AccountRole,

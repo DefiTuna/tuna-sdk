@@ -1,5 +1,5 @@
-import { FusionPool, getTickArrayAddress } from "@defituna/fusionamm-client";
-import { _TICK_ARRAY_SIZE, getTickArrayStartTickIndex } from "@defituna/fusionamm-core";
+import { FusionPool, getTickArrayAddress } from "@crypticdot/fusionamm-client";
+import { _TICK_ARRAY_SIZE, getTickArrayStartTickIndex } from "@crypticdot/fusionamm-core";
 import { Account, type Address } from "@solana/kit";
 
 export class FusionUtils {

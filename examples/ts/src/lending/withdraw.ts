@@ -1,4 +1,4 @@
-import { withdrawInstructions } from "@defituna/client";
+import { withdrawInstructions } from "@crypticdot/defituna-client";
 import { address } from "@solana/kit";
 import { fetchMint } from "@solana-program/token-2022";
 import { USDC_MINT } from "src/constants";

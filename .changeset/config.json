@@ -8,6 +8,6 @@
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
   "ignore": [
-    "@defituna/examples-typescript"
+    "@crypticdot/defituna-examples-typescript"
   ]
 }

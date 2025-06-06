@@ -1,5 +1,5 @@
 {
-  "extends": "@defituna/typescript-config/base.json",
+  "extends": "@crypticdot/typescript-config/base.json",
   "include": [
     "src"
   ],
@@ -9,8 +9,8 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@defituna/rpc": [
-        "./node_modules/@defituna/cli/src/rpc"
+      "@crypticdot/rpc": [
+        "./node_modules/@crypticdot/defituna-cli/src/rpc"
       ]
     },
     "module": "es2022"

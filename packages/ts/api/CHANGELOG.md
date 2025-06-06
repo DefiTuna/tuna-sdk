@@ -1,4 +1,4 @@
-# @defituna/sdk
+# @crypticdot/defituna-api
 
 ## 1.1.28
 

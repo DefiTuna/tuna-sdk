@@ -1,4 +1,4 @@
-import * as DefiTunaClient from "@defituna/client";
+import * as DefiTunaClient from "@crypticdot/defituna-client";
 import { address, createSolanaRpc, getAddressEncoder, getBase64Decoder, getBase64Encoder } from "@solana/kit";
 
 const TUNA_PROGRAM_ID = address("tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD");

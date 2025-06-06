@@ -1,4 +1,4 @@
-import { collectFeesOrcaInstructions } from "@defituna/client";
+import { collectFeesOrcaInstructions } from "@crypticdot/defituna-client";
 import { fetchMaybeWhirlpool } from "@orca-so/whirlpools-client";
 import { Address, address } from "@solana/kit";
 import { SOL_USDC_WHIRLPOOL } from "src/constants";

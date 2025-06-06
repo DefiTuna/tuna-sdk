@@ -1,20 +1,21 @@
-import BaseCommand, { addressArg, addressFlag, bigintFlag, percentFlag } from "../base.ts";
-import { rpc, sendTransaction, signer } from "../rpc.ts";
 import {
+  createAddressLookupTableForMarketInstructions,
   fetchMarket,
   getMarketAddress,
-  updateMarketInstruction,
-  MAX_LIMIT_ORDER_EXECUTION_FEE,
-  MAX_LIQUIDATION_FEE,
+  HUNDRED_PERCENT,
   LEVERAGE_ONE,
   MAX_LEVERAGE,
-  MAX_PROTOCOL_FEE,
-  HUNDRED_PERCENT,
+  MAX_LIMIT_ORDER_EXECUTION_FEE,
+  MAX_LIQUIDATION_FEE,
   MAX_LIQUIDATION_THRESHOLD,
-  createAddressLookupTableForMarketInstructions,
-} from "@defituna/client";
-import _ from "lodash";
+  MAX_PROTOCOL_FEE,
+  updateMarketInstruction,
+} from "@crypticdot/defituna-client";
 import { Flags } from "@oclif/core";
+import _ from "lodash";
+
+import BaseCommand, { addressArg, addressFlag, bigintFlag, percentFlag } from "../base.ts";
+import { rpc, sendTransaction, signer } from "../rpc.ts";
 
 // A devnet pool
 // ORCA_POOL_USDC_DFT5 = "FKH7TTE7PgPPSb9SaaMRKVTGA7xTbiJjeTujXY2xTdxp"
