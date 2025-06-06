@@ -1,0 +1,15 @@
+{
+  "extends": "@crypticdot/typescript-config/base.json",
+  "include": ["src"],
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "module": "preserve",
+    "outDir": "dist",
+    "rootDir": ".",
+    "strict": true,
+    "target": "es2022",
+    "paths": {
+      "@crypticdot/defituna-client": ["../client/src/index"]
+    }
+  },
+}

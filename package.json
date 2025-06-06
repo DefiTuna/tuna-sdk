@@ -1,31 +1,27 @@
 {
-  "name": "tuna-backend-sdk",
-  "private": true,
+  "name": "@crypticdot/defituna-monorepo",
+  "version": "2.0.0",
+  "private": false,
+  "license": "SEE LICENSE IN LICENSE",
+  "description": "DefiTuna program and SDK",
+  "type": "module",
   "scripts": {
     "build": "turbo build",
-    "dev": "turbo dev",
-    "lint": "turbo lint",
     "test": "turbo test",
-    "clean": "turbo clean",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "release": "changeset publish -v",
-    "run_example": "bash -c 'if [ -z \"$1\" ]; then echo \"Please provide an example name\"; exit 1; fi; turbo example:$1 -- ${@:2}' --"
+    "clean": "anchor clean && turbo clean",
+    "release": "changeset publish -v"
   },
   "devDependencies": {
-    "prettier": "^3.5.0",
-    "turbo": "^2.4.1",
-    "typescript": "5.8.3",
-    "@codama/nodes": "^1.2.11",
-    "@codama/renderers-rust": "^1.0.19",
-    "@codama/visitors-core": "^1.2.11",
-    "@codama/nodes-from-anchor": "^1.1.11",
-    "@codama/renderers": "^1.0.19",
-    "codama": "^1.2.11",
-    "@changesets/cli": "^2.28.1"
+    "eslint": "^9.14.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.14.0",
+    "turbo": "^2.5.0",
+    "vitest": "^3.1.1",
+    "rimraf": "^6.0.1",
+    "@changesets/cli": "^2.28.1",
+    "tsx": "^4.19.3",
+    "tsup": "^8.4.0"
   },
-  "packageManager": "pnpm@9.0.0",
-  "engines": {
-    "node": ">=18"
-  },
-  "dependencies": {}
+  "packageManager": "pnpm@9.1.2"
 }

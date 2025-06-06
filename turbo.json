@@ -2,54 +2,28 @@
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
     "build": {
+      "cache": false,
       "dependsOn": [
         "^build"
       ],
       "inputs": [
         "$TURBO_DEFAULT$",
         ".env*"
-      ],
-      "outputs": [
-        "dist/**"
       ]
     },
-    "lint": {},
-    "test": {},
-    "clean": {},
-    "dev": {
+    "lint": {
       "cache": false,
-      "persistent": true
+      "dependsOn": [
+        "build"
+      ]
     },
-    "example:deposit_and_create": {
-      "dependsOn": [],
-      "cache": false
+    "test": {
+      "cache": false,
+      "dependsOn": [
+        "build"
+      ]
     },
-    "example:withdraw": {
-      "dependsOn": [],
-      "cache": false
-    },
-    "example:collect_and_compound_fees_orca": {
-      "dependsOn": [],
-      "cache": false
-    },
-    "example:collect_fees_orca": {
-      "dependsOn": [],
-      "cache": false
-    },
-    "example:open_position_with_liquidity_orca": {
-      "dependsOn": [],
-      "cache": false
-    },
-    "example:remove_liquidity_and_close_orca": {
-      "dependsOn": [],
-      "cache": false
-    },
-    "example:retrieve_lending_positions": {
-      "dependsOn": [],
-      "cache": false
-    },
-    "example:retrieve_tuna_positions": {
-      "dependsOn": [],
+    "clean": {
       "cache": false
     }
   }

@@ -1,0 +1,23 @@
+[features]
+seeds = false
+skip-lint = false
+resolution = false
+
+[programs.localnet]
+tuna = "tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD"
+
+[programs.devnet]
+tuna = "tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD"
+
+[programs.mainnet]
+tuna = "tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "devnet"
+wallet = "~/.config/solana/id.json"
+
+[workspace]
+members = ["programs/tuna"]

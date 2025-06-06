@@ -1,43 +1,19 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Rust
+.anchor
+target/*
+dist/
+sdk/js
+sdk/rust
+**/*.rs.bk
 
-# Dependencies
-node_modules
-.pnp
-.pnp.js
-
-# Local env files
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Testing
-coverage
-
-# Turbo
+.yarn
 .turbo
+generated/
 
-# Vercel
-.vercel
-
-# IDE configs
+# Webstorm & Vscode
 .idea
 .vscode
 
-# Build Outputs
-.next/
-out/
-build
-dist
-target
-
-
-# Debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Misc
-.DS_Store
-*.pem
+# Dependencies
+node_modules/

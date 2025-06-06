@@ -1,0 +1,14 @@
+{
+  "name": "@crypticdot/defituna-rust-examples",
+  "description": "Collection of usage examples for DefiTuna's on-chain program.",
+  "version": "2.0.1",
+  "private": true,
+  "license": "SEE LICENSE IN LICENSE",
+  "sideEffects": false,
+  "scripts": {
+    "build": "cargo build"
+  },
+  "devDependencies": {
+    "@crypticdot/defituna-rust-client": "workspace:*"
+  }
+}

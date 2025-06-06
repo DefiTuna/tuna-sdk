@@ -1,0 +1,50 @@
+{
+  "name": "@crypticdot/defituna-cli",
+  "version": "1.0.4",
+  "type": "module",
+  "private": true,
+  "license": "SEE LICENSE IN LICENSE",
+  "bin": {
+    "tuna-cli": "./bin/run.js"
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "start": "./bin/dev.js",
+    "eslint": "eslint \"src/**/*.ts\"",
+    "eslint:fix": "eslint \"src/**/*.ts\" --fix",
+    "type-check": "tsc -p .",
+    "lint": "pnpm eslint && pnpm type-check"
+  },
+  "dependencies": {
+    "@crypticdot/defituna-client": "workspace:*",
+    "@crypticdot/fusionamm-core": "^1.0.42",
+    "@crypticdot/fusionamm-client": "^1.0.42",
+    "@crypticdot/fusionamm-sdk": "^1.0.42",
+    "@crypticdot/fusionamm-tx-sender": "^1.0.10",
+    "@oclif/core": "^4.2.10",
+    "@solana/kit": "^2.1.0",
+    "@solana-program/token-2022": "^0.4.0",
+    "@solana-program/memo": "^0.7.0",
+    "@orca-so/whirlpools-client": "^2.0.0",
+    "@orca-so/whirlpools-core": "^2.0.0",
+    "@orca-so/whirlpools": "^2.0.0",
+    "dotenv": "^16.4.7",
+    "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "@crypticdot/typescript-config": "^1.0.0",
+    "@crypticdot/eslint-config": "^1.0.0",
+    "@crypticdot/prettier-config": "^1.0.0",
+    "@types/node": "^22.15.2",
+    "ts-node": "^10.9.2",
+    "oclif": "^4",
+    "eslint": "^8.57.0",
+    "typescript": "^5.8.3"
+  },
+  "oclif": {
+    "bin": "tuna-cli",
+    "commands": "./src/commands",
+    "dirname": "tuna-cli",
+    "topicSeparator": " "
+  }
+}

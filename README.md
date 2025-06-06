@@ -1,26 +1,25 @@
 # DefiTuna SDK
 
-This repo contains DefiTuna Client and Backend SDK
+DefiTuna is an advanced liquidity providing program on the Solana blockchain. This DefiTuna Client SDK allows
+developers to interact with the DefiTuna program on Solana, enabling the creation and management of
+markets and positions.
 
-> ⚠️ **WARNING:** DefiTuna Client version 2.0 is not yet compatible with the mainnet onchain program.
-> Please use the previous 1.0.x version.
+> ⚠️ **WARNING:** DefiTuna SDK version 2.0 is not fully compatible with the mainnet onchain program.
+> FusionAMM pools are not yet supported. Use Orca pools.
 
-## Quickstart
+## Building
 
-- `pnpm i`
-- Create .env file using .env.example in `packages/sdk`
-- `pnpm test`
+Install
+- Solana 2.1.21
+- Anchor 0.31.1
 
-## Workflow
+Run
+```
+pnpm i
+pnpm build
+````
 
-- Make changes first
-- Before commiting run `pnpm changeset` and complete steps
-- Commit to a new branch and create a PR
-- When pipeline succeeds - merge a PR and wait until the packages are published
-
-## Examples
-
-This repository offers **pre-configured examples** in TypeScript and Rust, showcasing the DefiTuna Client’s practical
-use. Fully tested and ready to use, they include **detailed commentary** for easy integration into Solana projects. See
-the [TypeScript](./examples/ts/README.md) and [Rust](./examples/rust/README.md) READMEs for more details.
-
+## Running tests
+```
+pnpm test
+```

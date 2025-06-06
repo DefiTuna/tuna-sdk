@@ -1,0 +1,42 @@
+[package]
+name = "defituna-client"
+version = "2.0.0"
+homepage = "https://defituna.com"
+description = "Rust client to interact with DefiTuna's on-chain program."
+license-file = "LICENSE"
+repository = "https://github.com/DefiTuna/tuna-sdk"
+keywords = ["solana", "crypto", "defi", "dex", "amm"]
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[features]
+default = ["fetch"]
+anchor = ["dep:anchor-lang"]
+anchor-idl-build = []
+serde = ["dep:serde", "dep:serde_with"]
+fetch = []
+solana-v1 = []
+
+[dependencies]
+anchor-lang = { version = ">=0.29, <=0.31.1", optional = true }
+borsh = { version = "0.10" }
+fixed = { version = "1.29.0" }
+num-derive = { version = "0.4" }
+num-traits = { version = "0.2" }
+serde = { version = "1.0", features = ["derive"], optional = true }
+serde_with = { version = "3.12", optional = true }
+solana-program = { version = ">=1.16, <3.0" }
+solana-sdk = { version = ">=1.16, <3.0"}
+solana-client = { version = ">=1.16, <3.0"}
+solana-account-decoder = { version = ">=1.16, <3.0"}
+spl-token = { version = "6.0" }
+spl-token-2022 = { version = "6.0" }
+spl-associated-token-account = { version = "6.0" }
+spl-memo = { version = "6.0.0" }
+thiserror = { version = "2.0" }
+uint = { version = "0.9", default-features = false }
+orca_whirlpools_client = { version = "3.0", features = ["fetch"] }
+orca_whirlpools_core = "2.0.0"
+anyhow = "1.0.98"

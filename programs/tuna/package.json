@@ -1,0 +1,7 @@
+{
+  "name": "@crypticdot/defituna-program",
+  "version": "2.0.0",
+  "private": true,
+  "devDependencies": {},
+  "packageManager": "pnpm@9.1.2"
+}

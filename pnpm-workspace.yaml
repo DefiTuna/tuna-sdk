@@ -1,5 +1,4 @@
 packages:
-  - "packages/ts/*"
-  - "packages/rust/*"
-  - "examples/*"
-
+  - "programs/*"
+  - "ts-sdk/*"
+  - "rust-sdk/*"
