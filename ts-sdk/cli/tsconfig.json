@@ -5,11 +5,10 @@
   "compilerOptions": {
     "module": "preserve",
     "outDir": "dist",
-    "rootDir": ".",
     "strict": true,
     "target": "es2022",
     "paths": {
-      "@crypticdot/defituna-client": ["../client/src/index"]
+      "@crypticdot/defituna-client": ["../client/src"]
     }
   },
 }
