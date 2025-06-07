@@ -1,16 +1,18 @@
-import { getCreateAccountInstruction } from "@solana-program/system";
 import { Address, IInstruction } from "@solana/kit";
-import { signer, sendTransaction } from "./mockRpc.ts";
-import { getNextKeypair } from "./keypair.ts";
+import { getCreateAccountInstruction } from "@solana-program/system";
 import {
   ExtensionArgs,
-  getInitializeTransferFeeConfigInstruction,
-  getSetTransferFeeInstruction,
-  getMintSize,
   getInitializeMint2Instruction,
+  getInitializeTransferFeeConfigInstruction,
+  getMintSize,
+  getSetTransferFeeInstruction,
   TOKEN_2022_PROGRAM_ADDRESS,
 } from "@solana-program/token-2022";
-import { DEFAULT_ADDRESS } from "./addresses.ts";
+
+import { DEFAULT_ADDRESS } from "../../src";
+
+import { getNextKeypair } from "./keypair.ts";
+import { sendTransaction, signer } from "./mockRpc.ts";
 
 export async function setupMintTE(config: { decimals?: number; extensions?: ExtensionArgs[] } = {}): Promise<Address> {
   const keypair = getNextKeypair();

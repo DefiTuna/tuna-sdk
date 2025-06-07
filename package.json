@@ -7,6 +7,7 @@
   "type": "module",
   "scripts": {
     "build": "turbo build",
+    "lint": "turbo lint",
     "test": "turbo test",
     "clean": "anchor clean && turbo clean",
     "release": "changeset publish -v"
