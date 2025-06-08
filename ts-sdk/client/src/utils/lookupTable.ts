@@ -1,9 +1,9 @@
+import { Address, IInstruction, Slot, TransactionSigner } from "@solana/kit";
 import {
   findAddressLookupTablePda,
   getCreateLookupTableInstruction,
   getExtendLookupTableInstruction,
 } from "@solana-program/address-lookup-table";
-import { Address, IInstruction, Slot, TransactionSigner } from "@solana/kit";
 
 export type CreateAddressLookupTableResult = {
   instructions: IInstruction[];

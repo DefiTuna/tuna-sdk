@@ -19,8 +19,8 @@
     "build": "node ./codama.mjs && tsup src/index.ts --format cjs,esm --dts",
     "test": "vitest run tests --no-cache",
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
-    "eslint": "eslint \"src/*.ts\"",
-    "eslint:fix": "eslint \"src/*.ts\" --fix",
+    "eslint": "eslint \"src/**/*.ts\"",
+    "eslint:fix": "eslint \"src/**/*.ts\" --fix",
     "type-check": "tsc -p .",
     "lint": "pnpm eslint && pnpm type-check",
     "clean": "rimraf dist src/generated"

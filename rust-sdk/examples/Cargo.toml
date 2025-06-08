@@ -28,4 +28,3 @@ solana-account-decoder = { version = "^2.0.25" }
 anyhow = { version = "1.0.98" }
 
 defituna-client = { package = "defituna-client", path = '../client', features = ["fetch"] }
-defituna-txsender = { package = "defituna-txsender", path = '../txsender' }

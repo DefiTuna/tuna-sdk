@@ -11,8 +11,8 @@ import {
 import {
   getLendingPositionDecoder,
   LENDING_POSITION_DISCRIMINATOR,
-  TUNA_PROGRAM_ADDRESS,
   LendingPosition,
+  TUNA_PROGRAM_ADDRESS,
 } from "../generated";
 
 import { fetchDecodedProgramAccounts } from "./utils.ts";
