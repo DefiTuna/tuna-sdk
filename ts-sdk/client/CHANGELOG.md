@@ -1,5 +1,24 @@
 # @defituna/client
 
+## 2.0.8
+
+### Patch Changes
+
+- de2c913: Change the order of entries in AccountsType structure
+
+## 2.0.7
+
+### Patch Changes
+
+- bab18f4: - Added rust instruction builders for fusion pools
+  - Added tuna position re-balance instruction
+
+## 2.0.6
+
+### Patch Changes
+
+- 5b3552e: Fixed liquidity getLiquidityIncreaseQuote overflow issue (updated fusionamm packages)
+
 ## 2.0.5
 
 ### Patch Changes

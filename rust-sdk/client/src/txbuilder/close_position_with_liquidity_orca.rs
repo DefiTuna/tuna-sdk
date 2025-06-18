@@ -1,12 +1,16 @@
 use crate::accounts::{fetch_all_vault, fetch_tuna_position};
 use crate::utils::get_create_ata_instructions;
-use crate::{close_position_orca_instruction, get_tuna_position_address, get_vault_address, remove_liquidity_orca_instruction, RemoveLiquidityOrcaArgs, HUNDRED_PERCENT};
+use crate::{
+    close_position_orca_instruction, get_tuna_position_address, get_vault_address, remove_liquidity_orca_instruction, RemoveLiquidityOrcaArgs,
+    HUNDRED_PERCENT,
+};
 use anyhow::anyhow;
 use orca_whirlpools_client::fetch_whirlpool;
 use solana_client::rpc_client::RpcClient;
 use solana_program::instruction::Instruction;
 use solana_program::pubkey::Pubkey;
 
+#[derive(Default)]
 pub struct ClosePositionWithLiquidityOrcaArgs {
     pub swap_to_token: u8,
     pub min_removed_amount_a: u64,

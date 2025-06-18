@@ -6,8 +6,8 @@ use crate::utils::orca::get_swap_tick_arrays;
 use crate::{get_market_address, get_tuna_config_address, get_tuna_position_address, get_vault_address};
 use anyhow::{anyhow, Result};
 use orca_whirlpools_client::{
-    fetch_whirlpool, get_oracle_address, get_position_address, get_tick_array_address, get_whirlpool_address, InitializeTickArray, InitializeTickArrayInstructionArgs,
-    Whirlpool,
+    fetch_whirlpool, get_oracle_address, get_position_address, get_tick_array_address, get_whirlpool_address, InitializeTickArray,
+    InitializeTickArrayInstructionArgs, Whirlpool,
 };
 use orca_whirlpools_core::get_tick_array_start_tick_index;
 use solana_client::rpc_client::RpcClient;
@@ -17,6 +17,7 @@ use solana_program::system_program;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 use spl_associated_token_account::instruction::create_associated_token_account_idempotent;
 
+#[derive(Default)]
 pub struct AddLiquidityOrcaArgs {
     pub collateral_a: u64,
     pub collateral_b: u64,
@@ -27,7 +28,12 @@ pub struct AddLiquidityOrcaArgs {
     pub max_swap_slippage: u32,
 }
 
-pub fn add_liquidity_orca_instructions(rpc: &RpcClient, authority: &Pubkey, position_mint: &Pubkey, args: AddLiquidityOrcaArgs) -> Result<Vec<Instruction>> {
+pub fn add_liquidity_orca_instructions(
+    rpc: &RpcClient,
+    authority: &Pubkey,
+    position_mint: &Pubkey,
+    args: AddLiquidityOrcaArgs,
+) -> Result<Vec<Instruction>> {
     let tuna_position = fetch_tuna_position(&rpc, &get_tuna_position_address(&position_mint).0)?;
 
     let whirlpool = fetch_whirlpool(rpc, &tuna_position.data.pool)?;
@@ -131,7 +137,9 @@ pub fn add_liquidity_orca_instruction(
     let mint_b = whirlpool.token_mint_b;
     let tick_spacing = whirlpool.tick_spacing;
 
-    let whirlpool_address = get_whirlpool_address(&whirlpool.whirlpools_config, &mint_a, &mint_b, tick_spacing).unwrap().0;
+    let whirlpool_address = get_whirlpool_address(&whirlpool.whirlpools_config, &mint_a, &mint_b, tick_spacing)
+        .unwrap()
+        .0;
     let oracle_address = get_oracle_address(&whirlpool_address).unwrap().0;
 
     assert_eq!(vault_a.mint, mint_a);

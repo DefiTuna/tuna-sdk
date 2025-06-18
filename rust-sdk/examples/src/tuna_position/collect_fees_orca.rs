@@ -1,9 +1,10 @@
 use anyhow::Result;
 use defituna_client::collect_fees_orca_instructions;
+use fusionamm_tx_sender::{send_smart_transaction, SmartTxConfig};
 use solana_client::rpc_client::RpcClient;
+use solana_sdk::signature::Keypair;
 use solana_sdk::{pubkey::Pubkey, signer::Signer};
-
-use crate::utils::rpc::create_and_send_transaction;
+use std::sync::Arc;
 
 /// Collects fees from an Orca position, managed via Orca's Whirlpools smart contract.
 ///
@@ -16,10 +17,20 @@ use crate::utils::rpc::create_and_send_transaction;
 ///
 /// # Returns
 /// - `Result<()>`: Returns `Ok(())` if the transaction is successful, or an error if it fails.
-pub fn collect_fees_orca(rpc: RpcClient, authority: Box<dyn Signer>, tuna_position_mint: Pubkey) -> Result<()> {
+pub async fn collect_fees_orca(rpc: RpcClient, authority: &Keypair, tuna_position_mint: Pubkey) -> Result<()> {
   // Creation of instructions for collecting fees
-  let mut instructions = collect_fees_orca_instructions(&rpc, &authority.pubkey(), &tuna_position_mint)?;
+  let instructions = collect_fees_orca_instructions(&rpc, &authority.pubkey(), &tuna_position_mint)?;
 
   // Signing and sending the transaction with all the instructions to the Solana network.
-  create_and_send_transaction(&rpc, &authority, &mut instructions, None, None, None)
+  send_smart_transaction(
+    &rpc.get_inner_client(),
+    vec![Arc::new(authority.insecure_clone())],
+    &authority.pubkey(),
+    instructions,
+    vec![],
+    SmartTxConfig::default(),
+  )
+  .await?;
+
+  Ok(())
 }

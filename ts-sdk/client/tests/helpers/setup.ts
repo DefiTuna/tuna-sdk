@@ -31,10 +31,10 @@ import { setupMintTE } from "./token2022.ts";
 export async function setup() {
   const ix = await createTunaConfigInstruction(
     signer,
-    TUNA_ADMIN_KEYPAIR.address,
-    FEE_RECIPIENT_KEYPAIR.address,
-    LIQUIDATOR_KEYPAIR.address,
     signer.address,
+    TUNA_ADMIN_KEYPAIR.address,
+    LIQUIDATOR_KEYPAIR.address,
+    FEE_RECIPIENT_KEYPAIR.address,
   );
   await sendTransaction([ix]);
 
@@ -92,7 +92,8 @@ export type TestMarket = {
 export async function setupTestMarket(
   args: CreateMarketInstructionDataArgs,
   mintAIsNative = false,
-  initializeRewards = false,
+  initializeRewards?: boolean,
+  adaptiveFee?: boolean,
 ): Promise<TestMarket> {
   if (args.marketMaker > 0) assert(!initializeRewards, "Rewards are supported by this liquidity provider");
 
@@ -114,8 +115,8 @@ export async function setupTestMarket(
 
   const initialPositionParams = { liquidity: 1000_000_000_000n };
 
-  if (args.marketMaker == 0) {
-    poolAddress = await setupWhirlpool(mintA.address, mintB.address, 64, { initialSqrtPrice });
+  if (args.marketMaker == MarketMaker.Orca) {
+    poolAddress = await setupWhirlpool(mintA.address, mintB.address, 64, { initialSqrtPrice, adaptiveFee });
 
     if (initializeRewards) {
       const mintCAddress = await setupMintTE({ decimals: 8 });

@@ -1,13 +1,15 @@
-use crate::utils::rpc::create_and_send_transaction;
 use anyhow::Result;
 use defituna_client::open_lending_position_and_deposit_instructions;
+use fusionamm_tx_sender::{send_smart_transaction, SmartTxConfig};
 use solana_client::rpc_client::RpcClient;
 use solana_sdk::program_pack::Pack;
+use solana_sdk::signature::Keypair;
 use solana_sdk::signer::Signer;
 use spl_token::state::Mint;
 use std::ops::Mul;
+use std::sync::Arc;
 
-pub fn open_lending_position_and_deposit(rpc: RpcClient, authority: Box<dyn Signer>) -> Result<()> {
+pub async fn open_lending_position_and_deposit(rpc: RpcClient, authority: &Keypair) -> Result<()> {
   // The address of the token mint to deposit/withdraw, identifying the target Tuna Lending Vault.
   // Set to the USDC token address in our examples;
   // There are methods in our sdk to fetch all available lending vaults and their respective mint addresses.
@@ -23,9 +25,19 @@ pub fn open_lending_position_and_deposit(rpc: RpcClient, authority: Box<dyn Sign
 
   // The deposit instruction interacts with the Tuna program to deposit the funds into the Lending Position.
   // If the Lending Position doesn't exist, we need to create it. We rely on the create instruction from the Tuna program.
-  let mut instructions =
+  let instructions =
     open_lending_position_and_deposit_instructions(&rpc, &authority.pubkey(), &token_mint_address, amount)?;
 
-  // We sign and send the transaction to the network, which will create (if necessary) and deposit into the Lending Position.
-  create_and_send_transaction(&rpc, &authority, &mut instructions, None, None, None)
+  // Signing and sending the transaction with all the instructions to the Solana network.
+  send_smart_transaction(
+    &rpc.get_inner_client(),
+    vec![Arc::new(authority.insecure_clone())],
+    &authority.pubkey(),
+    instructions,
+    vec![],
+    SmartTxConfig::default(),
+  )
+  .await?;
+
+  Ok(())
 }

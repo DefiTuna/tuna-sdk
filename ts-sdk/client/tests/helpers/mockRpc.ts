@@ -42,8 +42,8 @@ let _testContext: ProgramTestContext | null = null;
 export async function getTestContext(): Promise<ProgramTestContext> {
   if (_testContext == null) {
     const extraPrograms: Array<[string, Uint8Array]> = [
-      ["whirlpool", toBytes(WHIRLPOOL_PROGRAM_ADDRESS)],
-      ["fusionamm", toBytes(FUSIONAMM_PROGRAM_ADDRESS)],
+      ["../../external_programs/whirlpool", toBytes(WHIRLPOOL_PROGRAM_ADDRESS)],
+      ["../../external_programs/fusionamm", toBytes(FUSIONAMM_PROGRAM_ADDRESS)],
     ];
 
     const accounts: Array<[Uint8Array, Account]> = [];

@@ -1,12 +1,13 @@
 {
   "name": "@crypticdot/defituna-rust-client",
   "description": "Rust client to interact with DefiTuna's on-chain program.",
-  "version": "2.0.1",
+  "version": "2.0.3",
   "private": true,
   "license": "SEE LICENSE IN LICENSE",
   "sideEffects": false,
   "scripts": {
     "build": "node ./codama.mjs && cargo build",
+    "test": "cargo test",
     "clean": "rimraf src/generated"
   },
   "devDependencies": {

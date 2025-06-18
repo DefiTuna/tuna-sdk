@@ -10,6 +10,7 @@ use lending::{
   retrieve_lending_positions::retrieve_user_lending_positions, withdraw::withdraw,
 };
 use solana_client::rpc_client::RpcClient;
+use solana_sdk::signature::Signer;
 use tuna_position::{
   close_position_with_liquidity_orca::close_position_with_liquidity_orca,
   collect_and_compound_fees_orca::collect_and_compound_fees_orca, collect_fees_orca::collect_fees_orca,
@@ -19,30 +20,33 @@ use tuna_position::{
 
 use utils::cli::{Args, Method};
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
   dotenv().ok();
   let rpc_url = var("RPC_URL").map_err(|e| anyhow!("Error occurred when getting RPC_URL env var: {}", e))?;
   let rpc = RpcClient::new(rpc_url.to_string());
 
-  let wallet = utils::wallet::load_wallet()?;
+  let keypair = utils::keypair::load_keypair()?;
 
   let env_args: Vec<String> = std::env::args().collect();
   let args = Args::parse(&env_args)?;
 
   let method = args.method;
   let tuna_position_mint = args.tuna_position_mint;
-  let user_address = args.user_address.unwrap_or(wallet.pubkey());
+  let user_address = args.user_address.unwrap_or(keypair.pubkey());
 
   match method {
-    Method::OpenLendingPositionAndDeposit => open_lending_position_and_deposit(rpc, wallet),
-    Method::WithdrawFromLendingPosition => withdraw(rpc, wallet),
-    Method::OpenPositionWithLiquidityOrca => open_position_with_liquidity_orca(rpc, wallet),
-    Method::CollectFeesOrca => collect_fees_orca(rpc, wallet, tuna_position_mint.unwrap()),
-    Method::CollectAndCompoundFeesOrca => collect_and_compound_fees_orca(rpc, wallet, tuna_position_mint.unwrap()),
-    Method::ClosePositionWithLiquidityOrca => {
-      close_position_with_liquidity_orca(rpc, wallet, tuna_position_mint.unwrap())
+    Method::OpenLendingPositionAndDeposit => open_lending_position_and_deposit(rpc, &keypair).await,
+    Method::WithdrawFromLendingPosition => withdraw(rpc, &keypair).await,
+    Method::OpenPositionWithLiquidityOrca => open_position_with_liquidity_orca(rpc, &keypair).await,
+    Method::CollectFeesOrca => collect_fees_orca(rpc, &keypair, tuna_position_mint.unwrap()).await,
+    Method::CollectAndCompoundFeesOrca => {
+      collect_and_compound_fees_orca(rpc, &keypair, tuna_position_mint.unwrap()).await
     }
-    Method::RetrieveLendingPositions => retrieve_user_lending_positions(rpc, user_address),
-    Method::RetrieveTunaPositions => retrieve_user_tuna_positions(rpc, user_address),
+    Method::ClosePositionWithLiquidityOrca => {
+      close_position_with_liquidity_orca(rpc, &keypair, tuna_position_mint.unwrap()).await
+    }
+    Method::RetrieveLendingPositions => retrieve_user_lending_positions(rpc, user_address).await,
+    Method::RetrieveTunaPositions => retrieve_user_tuna_positions(rpc, user_address).await,
   }
 }

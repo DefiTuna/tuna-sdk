@@ -4,10 +4,10 @@ import { getCreateTunaConfigInstruction, getTunaConfigAddress } from "../index.t
 
 export async function createTunaConfigInstruction(
   authority: TransactionSigner,
-  adminAuthority: Address,
-  feeRecipient: Address,
-  liquidatorAuthority: Address,
   ownerAuthority: Address,
+  adminAuthority: Address,
+  liquidatorAuthority: Address,
+  feeRecipient: Address,
 ): Promise<IInstruction> {
   const tunaConfigAddress = await getTunaConfigAddress();
 

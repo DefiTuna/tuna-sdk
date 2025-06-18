@@ -29,3 +29,5 @@ export * from "./updateVault";
 export * from "./withdraw";
 export * from "./createMarketLookupTable";
 export * from "./repayDebt";
+export * from "./rebalancePositionOrca";
+export * from "./rebalancePositionFusion";

@@ -1,34 +1,20 @@
 import {
-  getInitializableTickIndex,
-  getTickArrayStartTickIndex,
-  increaseLiquidityQuote,
-  tickIndexToSqrtPrice,
-} from "@crypticdot/fusionamm-core";
-import {
-  fetchAllMaybeTickArray,
-  fetchPosition,
   fetchFusionPool,
-  getIncreaseLiquidityInstruction,
+  fetchPosition,
+  getFusionPoolAddress,
+  getFusionPoolsConfigAddress,
   getInitializeConfigInstruction,
   getInitializePoolInstruction,
-  getInitializeTickArrayInstruction,
-  getOpenPositionInstruction,
-  getPositionAddress,
   getTickArrayAddress,
   getTokenBadgeAddress,
   getUpdateFeesInstruction,
-  getFusionPoolAddress,
-  getFusionPoolsConfigAddress,
-  FP_NFT_UPDATE_AUTH,
 } from "@crypticdot/fusionamm-client";
-import { swapInstructions } from "@crypticdot/fusionamm-sdk";
-import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
 import {
-  ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
-  fetchMint,
-  findAssociatedTokenPda,
-  TOKEN_2022_PROGRAM_ADDRESS,
-} from "@solana-program/token-2022";
+  getInitializableTickIndex,
+  getTickArrayStartTickIndex,
+  tickIndexToSqrtPrice,
+} from "@crypticdot/fusionamm-core";
+import { swapInstructions } from "@crypticdot/fusionamm-sdk";
 import {
   type Address,
   GetAccountInfoApi,
@@ -39,6 +25,8 @@ import {
   Rpc,
   TransactionSigner,
 } from "@solana/kit";
+import { fetchMint } from "@solana-program/token-2022";
+
 import { getNextKeypair } from "./keypair.ts";
 import { rpc, sendTransaction, signer } from "./mockRpc.ts";
 

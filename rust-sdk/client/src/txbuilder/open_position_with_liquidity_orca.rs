@@ -6,8 +6,8 @@ use crate::utils::orca::get_swap_tick_arrays;
 use crate::{get_market_address, get_tuna_config_address, get_tuna_position_address, get_vault_address, WP_NFT_UPDATE_AUTH};
 use anyhow::{anyhow, Result};
 use orca_whirlpools_client::{
-    fetch_whirlpool, get_oracle_address, get_position_address, get_tick_array_address, get_whirlpool_address, InitializeTickArray, InitializeTickArrayInstructionArgs,
-    Whirlpool,
+    fetch_whirlpool, get_oracle_address, get_position_address, get_tick_array_address, get_whirlpool_address, InitializeTickArray,
+    InitializeTickArrayInstructionArgs, Whirlpool,
 };
 use orca_whirlpools_core::get_tick_array_start_tick_index;
 use solana_client::rpc_client::RpcClient;
@@ -17,6 +17,7 @@ use solana_program::system_program;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 use spl_associated_token_account::instruction::create_associated_token_account_idempotent;
 
+#[derive(Default)]
 pub struct OpenPositionWithLiquidityOrcaArgs {
     pub tick_lower_index: i32,
     pub tick_upper_index: i32,
@@ -143,7 +144,9 @@ pub fn open_position_with_liquidity_orca_instruction(
     assert_eq!(vault_a.mint, mint_a);
     assert_eq!(vault_b.mint, mint_b);
 
-    let whirlpool_address = get_whirlpool_address(&whirlpool.whirlpools_config, &mint_a, &mint_b, tick_spacing).unwrap().0;
+    let whirlpool_address = get_whirlpool_address(&whirlpool.whirlpools_config, &mint_a, &mint_b, tick_spacing)
+        .unwrap()
+        .0;
     let tuna_config_address = get_tuna_config_address().0;
     let market_address = get_market_address(&whirlpool_address).0;
     let tuna_position_address = get_tuna_position_address(&position_mint).0;

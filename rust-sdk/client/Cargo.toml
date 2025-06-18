@@ -7,6 +7,7 @@ license-file = "LICENSE"
 repository = "https://github.com/DefiTuna/tuna-sdk"
 keywords = ["solana", "crypto", "defi", "dex", "amm"]
 edition = "2021"
+include = ["src/*"]
 
 [lib]
 crate-type = ["cdylib", "lib"]
@@ -38,5 +39,19 @@ spl-memo = { version = "6.0.0" }
 thiserror = { version = "2.0" }
 uint = { version = "0.9", default-features = false }
 orca_whirlpools_client = { version = "3.0", features = ["fetch"] }
-orca_whirlpools_core = "2.0.0"
+orca_whirlpools_core = "2.0"
+orca_whirlpools = "2.0"
+fusionamm-core = { version = "1.0.47" }
+fusionamm-client = { version = "1.0.47", features = ["fetch"] }
+fusionamm-sdk = { version = "1.0.47" }
 anyhow = "1.0.98"
+
+[dev-dependencies]
+serial_test = { version = "^3.2" }
+tokio = { version = "^1.45", features = ["sync"] }
+serde_json = { version = "^1.0" }
+bincode = { version = "^1.3" }
+base64 = { version = "^0.22" }
+async-trait = { version = "^0.1" }
+solana-program-test = { version = "^2.2" }
+solana-version = { version = "^2.1" }

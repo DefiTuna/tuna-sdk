@@ -12,7 +12,7 @@ use solana_sdk::pubkey::Pubkey;
 ///
 /// # Returns
 /// - `Result<()>`: Returns `Ok(())` if the transaction is successful, or an error if it fails.
-pub fn retrieve_user_lending_positions(rpc: RpcClient, user_address: Pubkey) -> Result<()> {
+pub async fn retrieve_user_lending_positions(rpc: RpcClient, user_address: Pubkey) -> Result<()> {
   let filters = vec![LendingPositionFilter::Authority(user_address)];
 
   let positions = fetch_all_lending_position_with_filter(&rpc, filters).map_err(|e| anyhow::anyhow!(e.to_string()))?;

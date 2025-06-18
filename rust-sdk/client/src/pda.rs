@@ -6,8 +6,8 @@ pub fn get_tuna_config_address() -> (Pubkey, u8) {
     Pubkey::find_program_address(seeds, &TUNA_ID)
 }
 
-pub fn get_market_address(whirlpool: &Pubkey) -> (Pubkey, u8) {
-    let seeds = &[b"market", whirlpool.as_ref()];
+pub fn get_market_address(pool: &Pubkey) -> (Pubkey, u8) {
+    let seeds = &[b"market", pool.as_ref()];
     Pubkey::find_program_address(seeds, &TUNA_ID)
 }
 

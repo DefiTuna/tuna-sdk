@@ -2,7 +2,7 @@ import { Address, IInstruction, TransactionSigner } from "@solana/kit";
 
 import { getSetLimitOrdersInstruction, getTunaPositionAddress, SetLimitOrdersInstructionDataArgs } from "../index.ts";
 
-export async function setLimitOrdersOrcaInstruction(
+export async function setLimitOrdersInstruction(
   authority: TransactionSigner,
   args: SetLimitOrdersInstructionDataArgs,
   positionMint?: Address,

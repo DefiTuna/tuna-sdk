@@ -34,6 +34,36 @@ describe("Position Math", () => {
     expect(quote.swapOutput).toEqual(1470320n);
   });
 
+  it("Liquidity increase quote (A is provided)", async () => {
+    const quote = getLiquidityIncreaseQuote({
+      collateralA: 10000000n,
+      collateralB: 0n,
+      borrowA: 0n,
+      borrowB: 0n,
+      tickLowerIndex: priceToTickIndex(0.25, 6, 9),
+      sqrtPrice: priceToSqrtPrice(0.5, 6, 9),
+      tickUpperIndex: priceToTickIndex(1.0, 6, 9),
+      swapFeeRate: 10000, // 1%
+      maxAmountSlippage: HUNDRED_PERCENT / 10,
+      protocolFeeRate: HUNDRED_PERCENT / 100,
+      protocolFeeRateOnCollateral: HUNDRED_PERCENT / 100,
+    });
+
+    expect(quote.collateralA).toEqual(10000000n);
+    expect(quote.collateralB).toEqual(0n);
+    expect(quote.borrowA).toEqual(0n);
+    expect(quote.borrowB).toEqual(0n);
+    expect(quote.totalA).toEqual(4925137n); // ~5000000
+    expect(quote.totalB).toEqual(2462680451n); // ~2500000000
+    expect(quote.minTotalA).toEqual(4432624n);
+    expect(quote.minTotalB).toEqual(2216412406n);
+    expect(quote.maxCollateralA).toEqual(10000000n);
+    expect(quote.maxCollateralB).toEqual(0n);
+    expect(quote.swapAToB).toEqual(true);
+    expect(quote.swapInput).toEqual(4950113n);
+    expect(quote.swapOutput).toEqual(2450305500n);
+  });
+
   it("Liquidity increase quote with auto deposit ratio (A is provided)", async () => {
     const quote = getLiquidityIncreaseQuote({
       collateralA: 1000000n,

@@ -1,8 +1,5 @@
 # DefiTuna Client
 
-> ⚠️ **WARNING:** DefiTuna Client version 2.0 is not fully compatible with the mainnet onchain program.
-> FusionAMM pools are not yet supported. Use Orca pools.
-
 ## Overview
 This package provides developers with low-level functionalities for interacting with the DefiTuna Program on Solana.
 

@@ -99,6 +99,7 @@ describe("Get program account memcmp filters", () => {
       tickUpperIndex: 8010,
       tickStopLossIndex: 2301,
       tickTakeProfitIndex: 1023,
+      rebalanceThresholdTicks: 0,
       reserved: new Uint8Array(),
     };
     await fetchAllTunaPositionWithFilter(

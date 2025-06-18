@@ -1,5 +1,18 @@
 # @defituna/rust-client
 
+## 2.0.3
+
+### Patch Changes
+
+- de2c913: Change the order of entries in AccountsType structure
+
+## 2.0.2
+
+### Patch Changes
+
+- bab18f4: - Added rust instruction builders for fusion pools
+  - Added tuna position re-balance instruction
+
 ## 2.0.1
 
 ### Patch Changes

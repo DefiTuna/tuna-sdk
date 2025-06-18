@@ -34,10 +34,10 @@ describe("Tuna Config", () => {
   it("Can't create the global tuna config again", async () => {
     const ix = await createTunaConfigInstruction(
       signer,
-      TUNA_ADMIN_KEYPAIR.address,
-      FEE_RECIPIENT_KEYPAIR.address,
-      LIQUIDATOR_KEYPAIR.address,
       signer.address,
+      TUNA_ADMIN_KEYPAIR.address,
+      LIQUIDATOR_KEYPAIR.address,
+      FEE_RECIPIENT_KEYPAIR.address,
     );
 
     await assert.rejects(sendTransaction([ix]), err => {

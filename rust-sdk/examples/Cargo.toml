@@ -13,18 +13,16 @@ anchor-idl-build = []
 solana-v1 = []
 
 [dependencies]
-solana-program = { version = ">=1.16, <3.0" }
+defituna-client = { package = "defituna-client", path = '../client', features = ["fetch"] }
+fusionamm-tx-sender = { version = "1.0.5" }
 solana-client = { version = ">=1.16, <3.0" }
 solana-sdk = { version = ">=1.16, <3.0" }
 spl-token = { version = "^6.0.0" }
 spl-token-2022 = { version = "^6.0.0" }
-spl-associated-token-account = { version = "^6.0.0" }
 serde_json = { version = "^1.0" }
 dirs = { version = "^6.0.0" }
 dotenv = { version = "0.15.0" }
 orca_whirlpools_client = { version = "^2.0.6", features = ["fetch"] }
 orca_whirlpools_core = { version = "^2.0.0" }
-solana-account-decoder = { version = "^2.0.25" }
 anyhow = { version = "1.0.98" }
-
-defituna-client = { package = "defituna-client", path = '../client', features = ["fetch"] }
+tokio = { version = "1.45.1" }

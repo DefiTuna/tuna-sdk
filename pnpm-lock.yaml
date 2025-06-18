@@ -80,14 +80,14 @@ importers:
         specifier: workspace:*
         version: link:../client
       '@crypticdot/fusionamm-client':
-        specifier: ^1.0.42
-        version: 1.0.42(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
+        specifier: ^1.0.46
+        version: 1.0.46(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
       '@crypticdot/fusionamm-core':
-        specifier: ^1.0.42
-        version: 1.0.42
+        specifier: ^1.0.46
+        version: 1.0.46
       '@crypticdot/fusionamm-sdk':
-        specifier: ^1.0.42
-        version: 1.0.42(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+        specifier: ^1.0.46
+        version: 1.0.46(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
       '@crypticdot/fusionamm-tx-sender':
         specifier: ^1.0.10
         version: 1.0.10(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
@@ -147,17 +147,17 @@ importers:
   ts-sdk/client:
     dependencies:
       '@crypticdot/fusionamm-client':
-        specifier: ^1.0.42
-        version: 1.0.42(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
+        specifier: ^1.0.46
+        version: 1.0.46(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
       '@crypticdot/fusionamm-core':
-        specifier: ^1.0.42
-        version: 1.0.42
+        specifier: ^1.0.46
+        version: 1.0.46
       '@crypticdot/fusionamm-sdk':
-        specifier: ^1.0.42
-        version: 1.0.42(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+        specifier: ^1.0.46
+        version: 1.0.46(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
       '@orca-so/whirlpools':
-        specifier: ^2.0.0
-        version: 2.0.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+        specifier: ^2.2.0
+        version: 2.2.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
       '@orca-so/whirlpools-client':
         specifier: ^2.0.0
         version: 2.0.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
@@ -601,24 +601,21 @@ packages:
   '@crypticdot/eslint-config@1.0.0':
     resolution: {integrity: sha512-L9Po7dSSVAHXTYMfYDTOcf9LZwRP2VeYRFNfL/nzSgyjv+Ahcu7Yzac+Q2Hk89vF73qpQE1VNth7D2qt05qFGQ==}
 
-  '@crypticdot/fusionamm-client@1.0.42':
-    resolution: {integrity: sha512-G/3iyawCujgfSTU/tyeQAOV5zbFhm07iyZiJ4Ud90XqP+oHjNCxapUIIfezAd17WUDMdbmOtfm74a+NIJfLoqA==}
+  '@crypticdot/fusionamm-client@1.0.46':
+    resolution: {integrity: sha512-bp/cB4OdzaPGv9EpfdqL9SOJd4j8NBNRN1I4DGxFsfptZEHZyUKCLICTOE5cCY3p1ksf40NVj/G2b295pZu1bg==}
     peerDependencies:
       '@solana/kit': ^2.1.0
 
-  '@crypticdot/fusionamm-core@1.0.42':
-    resolution: {integrity: sha512-QtXR2sFlknlM9+ep5vUHPpqFECY0Ildvf1+sMJYzljwNj4mgsu2aGI1k6aFR6v/Afbo2VOUd1mlU5neVXz94YQ==}
+  '@crypticdot/fusionamm-core@1.0.46':
+    resolution: {integrity: sha512-BVyHjAsPGEpyw618YQ2WqtqxyXDLrfH+Ectx3NA/QBYFQPHgYlx01r6AG3rpRJ8Fm6zi0AdqkIPcBOM2LCPNLw==}
 
-  '@crypticdot/fusionamm-sdk@1.0.42':
-    resolution: {integrity: sha512-zqTHM2sTjkNvEGhphv1geBb7z/5EW0A9psxHMUevdjbKWVcj45IgJ3itNMmb5es7mUzRN5HhUVZr1PoRNokLjg==}
+  '@crypticdot/fusionamm-sdk@1.0.46':
+    resolution: {integrity: sha512-ZLSe15QyEdFCcFcl+dNMs5KJC1uDBW03LwU4VDR2EZXjsITSyTWLEf2ulxgtv4pm9wg0jsCBVgH8e68pW/DQrA==}
     peerDependencies:
       '@solana/kit': ^2.1.0
 
   '@crypticdot/fusionamm-tx-sender@1.0.10':
     resolution: {integrity: sha512-QW0JSpshx7UX5SBEKKyZPv9tWLzFeaOFMnLTdkAFCf07nNvs8D1JC18S/WM8mr5PKzeF1k+wVmH5EbIa4rQB0Q==}
-
-  '@crypticdot/fusionamm-tx-sender@1.0.8':
-    resolution: {integrity: sha512-OBJe9TWvHwCzmGufjROtYfIKC11x725Vup+kpbhrzH9IfhDCDzGm6VcUiltup+4K1N6fgueek1L9JBkeS7FreQ==}
 
   '@crypticdot/prettier-config@1.0.0':
     resolution: {integrity: sha512-SEcnTAIFSZYvtVPpuahJTcS2wQVovMafJhKpbGnOYC9u7qvIpSM5Dwf81E4j6Vt2yhjDS+N3UznxnJ9smRxWjg==}
@@ -1228,6 +1225,11 @@ packages:
     resolution: {integrity: sha512-lwYtVXdQaBJV94DglPu140Bc6NmmysHhX5PZtdxeNcUG2BgSX/Sre7oCzMEgmuhe4Lu2jDviMxTX81a8wv6v1w==}
     engines: {node: '>=18.0.0'}
 
+  '@orca-so/tx-sender@1.0.2':
+    resolution: {integrity: sha512-6PlGx4wwF9Q/XxfND43TtZsjiCJs6Ho5yIYBAkiXXaBOcIfqNTqKRhzhX598xv19TJl4DaldWhgx36m+nqmN8Q==}
+    peerDependencies:
+      '@solana/kit': ^2.1.0
+
   '@orca-so/whirlpools-client@2.0.0':
     resolution: {integrity: sha512-6/2CdK5aAypA2cT/01l28WLN4Avb55rCuUM9qNyv69NOKnCXRT3byv7FxXkFcJ5GzqoAYaR/fPsZimvi2ndkUg==}
     peerDependencies:
@@ -1238,6 +1240,11 @@ packages:
 
   '@orca-so/whirlpools@2.0.0':
     resolution: {integrity: sha512-wThx6zBdDSx8ZYQvju4Y8np42QguB9KkGK0qD3gbhUGACScsUibzy5nA06wW+0rz7ZvbI8/mswFm5NlEXmElag==}
+    peerDependencies:
+      '@solana/kit': ^2.1.0
+
+  '@orca-so/whirlpools@2.2.0':
+    resolution: {integrity: sha512-a43HQ+yZ8jnzmrVJ0lgJojnIjbvOIi+NlqBcawDhvwtnLz1uHsI1HaQawN3LJZLNrJtTowHdLT6GUCu4o0X0bA==}
     peerDependencies:
       '@solana/kit': ^2.1.0
 
@@ -5576,21 +5583,20 @@ snapshots:
       - turbo
       - typescript
 
-  '@crypticdot/fusionamm-client@1.0.42(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))':
+  '@crypticdot/fusionamm-client@1.0.46(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))':
     dependencies:
       '@solana/kit': 2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10))
 
-  '@crypticdot/fusionamm-client@1.0.42(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))':
+  '@crypticdot/fusionamm-client@1.0.46(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))':
     dependencies:
       '@solana/kit': 2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
 
-  '@crypticdot/fusionamm-core@1.0.42': {}
+  '@crypticdot/fusionamm-core@1.0.46': {}
 
-  '@crypticdot/fusionamm-sdk@1.0.42(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10))':
+  '@crypticdot/fusionamm-sdk@1.0.46(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)':
     dependencies:
-      '@crypticdot/fusionamm-client': 1.0.42(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
-      '@crypticdot/fusionamm-core': 1.0.42
-      '@crypticdot/fusionamm-tx-sender': 1.0.8(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+      '@crypticdot/fusionamm-client': 1.0.46(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
+      '@crypticdot/fusionamm-core': 1.0.46
       '@solana-program/memo': 0.7.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
       '@solana-program/system': 0.7.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
       '@solana-program/token': 0.5.1(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
@@ -5600,13 +5606,11 @@ snapshots:
     transitivePeerDependencies:
       - fastestsmallesttextencoderdecoder
       - typescript
-      - ws
 
-  '@crypticdot/fusionamm-sdk@1.0.42(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))':
+  '@crypticdot/fusionamm-sdk@1.0.46(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)':
     dependencies:
-      '@crypticdot/fusionamm-client': 1.0.42(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
-      '@crypticdot/fusionamm-core': 1.0.42
-      '@crypticdot/fusionamm-tx-sender': 1.0.8(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+      '@crypticdot/fusionamm-client': 1.0.46(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
+      '@crypticdot/fusionamm-core': 1.0.46
       '@solana-program/memo': 0.7.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
       '@solana-program/system': 0.7.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
       '@solana-program/token': 0.5.1(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
@@ -5616,35 +5620,8 @@ snapshots:
     transitivePeerDependencies:
       - fastestsmallesttextencoderdecoder
       - typescript
-      - ws
 
   '@crypticdot/fusionamm-tx-sender@1.0.10(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))':
-    dependencies:
-      '@solana-program/address-lookup-table': 0.7.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
-      '@solana-program/compute-budget': 0.7.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
-      '@solana-program/system': 0.7.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
-      '@solana/kit': 2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
-      '@solana/rpc': 2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
-      '@solana/rpc-api': 2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
-    transitivePeerDependencies:
-      - fastestsmallesttextencoderdecoder
-      - typescript
-      - ws
-
-  '@crypticdot/fusionamm-tx-sender@1.0.8(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10))':
-    dependencies:
-      '@solana-program/address-lookup-table': 0.7.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
-      '@solana-program/compute-budget': 0.7.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
-      '@solana-program/system': 0.7.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
-      '@solana/kit': 2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10))
-      '@solana/rpc': 2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
-      '@solana/rpc-api': 2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
-    transitivePeerDependencies:
-      - fastestsmallesttextencoderdecoder
-      - typescript
-      - ws
-
-  '@crypticdot/fusionamm-tx-sender@1.0.8(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))':
     dependencies:
       '@solana-program/address-lookup-table': 0.7.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
       '@solana-program/compute-budget': 0.7.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
@@ -6211,6 +6188,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@orca-so/tx-sender@1.0.2(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))':
+    dependencies:
+      '@solana-program/address-lookup-table': 0.7.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
+      '@solana-program/compute-budget': 0.7.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
+      '@solana-program/system': 0.7.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
+      '@solana/kit': 2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+
   '@orca-so/whirlpools-client@2.0.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))':
     dependencies:
       '@solana/kit': 2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10))
@@ -6221,20 +6205,6 @@ snapshots:
 
   '@orca-so/whirlpools-core@2.0.0': {}
 
-  '@orca-so/whirlpools@2.0.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)':
-    dependencies:
-      '@orca-so/whirlpools-client': 2.0.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
-      '@orca-so/whirlpools-core': 2.0.0
-      '@solana-program/memo': 0.7.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
-      '@solana-program/system': 0.7.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
-      '@solana-program/token': 0.5.1(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
-      '@solana-program/token-2022': 0.4.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(@solana/sysvars@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3))
-      '@solana/kit': 2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10))
-      '@solana/sysvars': 2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
-    transitivePeerDependencies:
-      - fastestsmallesttextencoderdecoder
-      - typescript
-
   '@orca-so/whirlpools@2.0.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)':
     dependencies:
       '@orca-so/whirlpools-client': 2.0.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
@@ -6244,6 +6214,21 @@ snapshots:
       '@solana-program/token': 0.5.1(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
       '@solana-program/token-2022': 0.4.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(@solana/sysvars@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3))
       '@solana/kit': 2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+      '@solana/sysvars': 2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+    transitivePeerDependencies:
+      - fastestsmallesttextencoderdecoder
+      - typescript
+
+  '@orca-so/whirlpools@2.2.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)':
+    dependencies:
+      '@orca-so/tx-sender': 1.0.2(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
+      '@orca-so/whirlpools-client': 2.0.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
+      '@orca-so/whirlpools-core': 2.0.0
+      '@solana-program/memo': 0.7.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
+      '@solana-program/system': 0.7.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
+      '@solana-program/token': 0.5.1(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
+      '@solana-program/token-2022': 0.4.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(@solana/sysvars@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3))
+      '@solana/kit': 2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@7.5.10(bufferutil@4.0.8)(utf-8-validate@5.0.10))
       '@solana/sysvars': 2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
     transitivePeerDependencies:
       - fastestsmallesttextencoderdecoder

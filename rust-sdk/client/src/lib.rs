@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 pub mod consts;
 pub mod implementation;
 pub mod math;
@@ -9,6 +11,9 @@ mod pda;
 
 #[cfg(feature = "fetch")]
 mod gpa;
+
+#[cfg(test)]
+mod tests;
 
 pub use generated::accounts;
 pub use generated::errors::*;

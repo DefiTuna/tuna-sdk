@@ -64,12 +64,7 @@ export async function removeLiquidityFusionInstructions(
     (await getLendingVaultAddress(fusionPool.data.tokenMintB))[0],
   ]);
 
-  const [mintA, mintB, ...rewardMints] = await fetchAllMaybeMint(rpc, [
-    fusionPool.data.tokenMintA,
-    fusionPool.data.tokenMintB,
-  ]);
-  const allMints = [mintA, mintB, ...rewardMints];
-
+  const [mintA, mintB] = await fetchAllMaybeMint(rpc, [fusionPool.data.tokenMintA, fusionPool.data.tokenMintB]);
   assert(mintA.exists, "Token A account not found");
   assert(mintB.exists, "Token B account not found");
 
@@ -80,20 +75,28 @@ export async function removeLiquidityFusionInstructions(
   const instructions: IInstruction[] = [];
   if (!createInstructions) createInstructions = instructions;
   if (!cleanupInstructions) cleanupInstructions = instructions;
-  const internalCleanupInstructions: IInstruction[] = [];
 
   //
-  // Add token account creation instructions for every mint if needed.
+  // Add create user's token account instructions if needed.
   //
 
-  const requiredMints: Address[] = [fusionPool.data.tokenMintA, fusionPool.data.tokenMintB];
-  for (const mintAddress of requiredMints) {
-    const mint = allMints.find(mint => mint.address == mintAddress);
-    assert(mint && mint.exists);
-    const ixs = await getCreateAtaInstructions(rpc, authority, mint.address, authority.address, mint.programAddress);
-    createInstructions.push(...ixs.init);
-    internalCleanupInstructions.push(...ixs.cleanup);
-  }
+  const createUserAtaAInstructions = await getCreateAtaInstructions(
+    rpc,
+    authority,
+    mintA.address,
+    authority.address,
+    mintA.programAddress,
+  );
+  createInstructions.push(...createUserAtaAInstructions.init);
+
+  const createUserAtaBInstructions = await getCreateAtaInstructions(
+    rpc,
+    authority,
+    mintB.address,
+    authority.address,
+    mintB.programAddress,
+  );
+  createInstructions.push(...createUserAtaBInstructions.init);
 
   //
   // Finally add liquidity decrease instruction.
@@ -116,7 +119,8 @@ export async function removeLiquidityFusionInstructions(
   // Close WSOL accounts if needed.
   //
 
-  cleanupInstructions.push(...internalCleanupInstructions);
+  cleanupInstructions.push(...createUserAtaAInstructions.cleanup);
+  cleanupInstructions.push(...createUserAtaBInstructions.cleanup);
 
   return instructions;
 }

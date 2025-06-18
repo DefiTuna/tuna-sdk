@@ -1,40 +1,23 @@
+import { SPLASH_POOL_TICK_SPACING, swapInstructions, WHIRLPOOLS_CONFIG_ADDRESS } from "@orca-so/whirlpools";
 import {
-  getInitializableTickIndex,
-  getTickArrayStartTickIndex,
-  increaseLiquidityQuote,
-  tickIndexToSqrtPrice,
-} from "@orca-so/whirlpools-core";
-import {
-  fetchAllMaybeTickArray,
   fetchPosition,
   fetchWhirlpool,
   getFeeTierAddress,
-  getIncreaseLiquidityV2Instruction,
+  getInitializeAdaptiveFeeTierInstruction,
   getInitializeConfigInstruction,
   getInitializeFeeTierInstruction,
   getInitializePoolV2Instruction,
+  getInitializePoolWithAdaptiveFeeInstruction,
   getInitializeRewardV2Instruction,
-  getInitializeTickArrayInstruction,
-  getOpenPositionInstruction,
-  getOpenPositionWithTokenExtensionsInstruction,
-  getPositionAddress,
+  getOracleAddress,
   getSetRewardEmissionsV2Instruction,
   getTickArrayAddress,
   getTokenBadgeAddress,
   getUpdateFeesAndRewardsInstruction,
   getWhirlpoolAddress,
 } from "@orca-so/whirlpools-client";
-import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
-import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
+import { getInitializableTickIndex, getTickArrayStartTickIndex, tickIndexToSqrtPrice } from "@orca-so/whirlpools-core";
 import {
-  ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
-  fetchMint,
-  findAssociatedTokenPda,
-  getMintToInstruction,
-  TOKEN_2022_PROGRAM_ADDRESS,
-} from "@solana-program/token-2022";
-import {
-  address,
   type Address,
   GetAccountInfoApi,
   GetEpochInfoApi,
@@ -44,9 +27,10 @@ import {
   Rpc,
   TransactionSigner,
 } from "@solana/kit";
+import { fetchMint, getMintToInstruction } from "@solana-program/token-2022";
+
 import { getNextKeypair } from "./keypair.ts";
 import { rpc, sendTransaction, signer } from "./mockRpc.ts";
-import { SPLASH_POOL_TICK_SPACING, swapInstructions, WHIRLPOOLS_CONFIG_ADDRESS } from "@orca-so/whirlpools";
 
 export async function setupWhirlpoolsConfigAndFeeTiers(): Promise<Address> {
   const keypair = getNextKeypair();
@@ -54,7 +38,6 @@ export async function setupWhirlpoolsConfigAndFeeTiers(): Promise<Address> {
 
   instructions.push(
     getInitializeConfigInstruction({
-      systemProgram: undefined,
       config: keypair,
       funder: signer,
       feeAuthority: signer.address,
@@ -100,6 +83,29 @@ export async function setupWhirlpoolsConfigAndFeeTiers(): Promise<Address> {
     }),
   );
 
+  const tickSpacing = 64;
+  const adaptiveFeeTierPda = await getFeeTierAddress(keypair.address, 1024 + tickSpacing);
+  instructions.push(
+    getInitializeAdaptiveFeeTierInstruction({
+      adaptiveFeeTier: adaptiveFeeTierPda[0],
+      defaultBaseFeeRate: 3000,
+      filterPeriod: 30,
+      decayPeriod: 600,
+      reductionFactor: 500,
+      adaptiveFeeControlFactor: 4_000,
+      maxVolatilityAccumulator: 350_000,
+      delegatedFeeAuthority: signer.address,
+      feeTierIndex: 1024 + tickSpacing,
+      initializePoolAuthority: signer.address,
+      majorSwapThresholdTicks: tickSpacing / 2,
+      tickGroupSize: tickSpacing / 2,
+      whirlpoolsConfig: keypair.address,
+      funder: signer,
+      feeAuthority: signer,
+      tickSpacing: tickSpacing,
+    }),
+  );
+
   await sendTransaction(instructions);
   return keypair.address;
 }
@@ -108,10 +114,12 @@ export async function setupWhirlpool(
   tokenA: Address,
   tokenB: Address,
   tickSpacing: number,
-  config: { initialSqrtPrice?: bigint } = {},
+  config: { initialSqrtPrice?: bigint; adaptiveFee?: boolean } = {},
 ): Promise<Address> {
-  const feeTierAddress = await getFeeTierAddress(WHIRLPOOLS_CONFIG_ADDRESS, tickSpacing);
-  const whirlpoolAddress = await getWhirlpoolAddress(WHIRLPOOLS_CONFIG_ADDRESS, tokenA, tokenB, tickSpacing);
+  const feeTierIndex = config.adaptiveFee ? 1024 + tickSpacing : tickSpacing;
+  const feeTierAddress = await getFeeTierAddress(WHIRLPOOLS_CONFIG_ADDRESS, feeTierIndex);
+  const whirlpoolAddress = await getWhirlpoolAddress(WHIRLPOOLS_CONFIG_ADDRESS, tokenA, tokenB, feeTierIndex);
+  const oracleAddress = await getOracleAddress(whirlpoolAddress[0]);
   const vaultA = getNextKeypair();
   const vaultB = getNextKeypair();
   const badgeA = await getTokenBadgeAddress(WHIRLPOOLS_CONFIG_ADDRESS, tokenA);
@@ -125,24 +133,47 @@ export async function setupWhirlpool(
 
   const instructions: IInstruction[] = [];
 
-  instructions.push(
-    getInitializePoolV2Instruction({
-      whirlpool: whirlpoolAddress[0],
-      feeTier: feeTierAddress[0],
-      tokenMintA: tokenA,
-      tokenMintB: tokenB,
-      tickSpacing,
-      whirlpoolsConfig: WHIRLPOOLS_CONFIG_ADDRESS,
-      funder: signer,
-      tokenVaultA: vaultA,
-      tokenVaultB: vaultB,
-      tokenBadgeA: badgeA[0],
-      tokenBadgeB: badgeB[0],
-      tokenProgramA: programA,
-      tokenProgramB: programB,
-      initialSqrtPrice: sqrtPrice,
-    }),
-  );
+  if (config.adaptiveFee) {
+    instructions.push(
+      getInitializePoolWithAdaptiveFeeInstruction({
+        adaptiveFeeTier: feeTierAddress[0],
+        initializePoolAuthority: signer,
+        oracle: oracleAddress[0],
+        tradeEnableTimestamp: null,
+        whirlpool: whirlpoolAddress[0],
+        tokenMintA: tokenA,
+        tokenMintB: tokenB,
+        whirlpoolsConfig: WHIRLPOOLS_CONFIG_ADDRESS,
+        funder: signer,
+        tokenVaultA: vaultA,
+        tokenVaultB: vaultB,
+        tokenBadgeA: badgeA[0],
+        tokenBadgeB: badgeB[0],
+        tokenProgramA: programA,
+        tokenProgramB: programB,
+        initialSqrtPrice: sqrtPrice,
+      }),
+    );
+  } else {
+    instructions.push(
+      getInitializePoolV2Instruction({
+        whirlpool: whirlpoolAddress[0],
+        feeTier: feeTierAddress[0],
+        tokenMintA: tokenA,
+        tokenMintB: tokenB,
+        tickSpacing,
+        whirlpoolsConfig: WHIRLPOOLS_CONFIG_ADDRESS,
+        funder: signer,
+        tokenVaultA: vaultA,
+        tokenVaultB: vaultB,
+        tokenBadgeA: badgeA[0],
+        tokenBadgeB: badgeB[0],
+        tokenProgramA: programA,
+        tokenProgramB: programB,
+        initialSqrtPrice: sqrtPrice,
+      }),
+    );
+  }
 
   await sendTransaction(instructions);
   return whirlpoolAddress[0];

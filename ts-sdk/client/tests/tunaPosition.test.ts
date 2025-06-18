@@ -21,6 +21,8 @@ import {
   TUNA_ERROR__POSITION_IS_HEALTHY,
   TUNA_ERROR__POSITION_IS_UNHEALTHY,
   TUNA_ERROR__POSITION_NOT_EMPTY,
+  TUNA_ERROR__REBALANCE_CONDITIONS_NOT_MET,
+  TUNA_POSITION_FLAGS_ALLOW_REBALANCING,
   TunaPositionState,
 } from "../src";
 
@@ -36,6 +38,7 @@ import { getTestContext, rpc, sendTransaction, signer } from "./helpers/mockRpc.
 import { openPosition } from "./helpers/openPosition.ts";
 import { openPositionWithLiquidity } from "./helpers/openPositionWithLiquidity.ts";
 import { updateFeesAndRewards } from "./helpers/orca.ts";
+import { assertRebalancePosition, rebalancePosition } from "./helpers/rebalancePosition.ts";
 import { assertRemoveLiquidity, removeLiquidity } from "./helpers/removeLiquidity.ts";
 import { repayDebt } from "./helpers/repayDebt.ts";
 import { setupTestMarket, TestMarket } from "./helpers/setup.ts";
@@ -592,10 +595,10 @@ describe("Tuna Position", () => {
           userBalanceDeltaB: 0n,
           vaultBalanceDeltaA: -1000000000n,
           vaultBalanceDeltaB: 0n,
-          poolBalanceDeltaA: 1997999995n,
-          poolBalanceDeltaB: 0n,
-          leftoversA: 5n,
-          leftoversB: 0n,
+          poolBalanceDeltaA: 1998000000n,
+          poolBalanceDeltaB: -11n,
+          leftoversA: 0n,
+          leftoversB: 11n,
         },
       );
 
@@ -608,12 +611,12 @@ describe("Tuna Position", () => {
           closePosition: true,
         }),
         {
-          userBalanceDeltaA: 119946502n,
-          userBalanceDeltaB: 175489124n,
+          userBalanceDeltaA: 119946468n,
+          userBalanceDeltaB: 175489131n,
           vaultBalanceDeltaA: 1000000000n,
           vaultBalanceDeltaB: 0n,
-          poolBalanceDeltaA: -1119946497n,
-          poolBalanceDeltaB: -175489124n,
+          poolBalanceDeltaA: -1119946468n,
+          poolBalanceDeltaB: -175489120n,
         },
       );
     });
@@ -649,10 +652,10 @@ describe("Tuna Position", () => {
           userBalanceDeltaB: -1000000000n,
           vaultBalanceDeltaA: 0n,
           vaultBalanceDeltaB: -1000000000n,
-          poolBalanceDeltaA: 0n,
-          poolBalanceDeltaB: 1997999996n,
-          leftoversA: 0n,
-          leftoversB: 4n,
+          poolBalanceDeltaA: -405n,
+          poolBalanceDeltaB: 1998000000n,
+          leftoversA: 405n,
+          leftoversB: 0n,
         },
       );
 
@@ -665,12 +668,12 @@ describe("Tuna Position", () => {
           closePosition: true,
         }),
         {
-          userBalanceDeltaA: 4796455347n,
-          userBalanceDeltaB: 36358295n,
+          userBalanceDeltaA: 4796455542n,
+          userBalanceDeltaB: 36358256n,
           vaultBalanceDeltaA: 0n,
           vaultBalanceDeltaB: 1000000000n,
-          poolBalanceDeltaA: -4796455347n,
-          poolBalanceDeltaB: -1036358291n,
+          poolBalanceDeltaA: -4796455137n,
+          poolBalanceDeltaB: -1036358256n,
         },
       );
     });
@@ -1404,8 +1407,8 @@ describe("Tuna Position", () => {
       assertLiquidatePosition(await liquidatePosition({ rpc, signer: LIQUIDATOR_KEYPAIR, positionMint }), {
         vaultBalanceDeltaA: 4000000000n,
         vaultBalanceDeltaB: 0n,
-        poolBalanceDeltaA: -3999999990n,
-        poolBalanceDeltaB: -18144824n,
+        poolBalanceDeltaA: -4000000000n,
+        poolBalanceDeltaB: -18144803n,
         badDebtDeltaA: 0n,
         badDebtDeltaB: 0n,
         tunaPositionState: TunaPositionState.Liquidated,
@@ -1429,7 +1432,7 @@ describe("Tuna Position", () => {
         }),
         {
           userBalanceDeltaA: 0n,
-          userBalanceDeltaB: 8092508n,
+          userBalanceDeltaB: 8092506n,
           vaultBalanceDeltaA: 0n,
           vaultBalanceDeltaB: 0n,
           poolBalanceDeltaA: 0n,
@@ -1477,11 +1480,11 @@ describe("Tuna Position", () => {
       //);
 
       assertLiquidatePosition(await liquidatePosition({ rpc, signer: LIQUIDATOR_KEYPAIR, positionMint }), {
-        vaultBalanceDeltaA: 8161132911n,
+        vaultBalanceDeltaA: 8161132905n,
         vaultBalanceDeltaB: 0n,
-        poolBalanceDeltaA: -8161132860n,
-        poolBalanceDeltaB: -0n,
-        badDebtDeltaA: 838867089n,
+        poolBalanceDeltaA: -8161132905n,
+        poolBalanceDeltaB: 31n,
+        badDebtDeltaA: 838867095n,
         badDebtDeltaB: 0n,
         tunaPositionState: TunaPositionState.Liquidated,
       });
@@ -1546,8 +1549,8 @@ describe("Tuna Position", () => {
       assertLiquidatePosition(await liquidatePosition({ rpc, signer: LIQUIDATOR_KEYPAIR, positionMint }), {
         vaultBalanceDeltaA: 0n,
         vaultBalanceDeltaB: 4785196n,
-        poolBalanceDeltaA: 0n,
-        poolBalanceDeltaB: -4785195n,
+        poolBalanceDeltaA: 6n,
+        poolBalanceDeltaB: -4785196n,
         badDebtDeltaA: 0n,
         badDebtDeltaB: 4214804n,
         tunaPositionState: TunaPositionState.Liquidated,
@@ -1683,12 +1686,12 @@ describe("Tuna Position", () => {
           closePosition: true,
         }),
         {
-          userBalanceDeltaA: 1494939297n,
+          userBalanceDeltaA: 1494939298n,
           userBalanceDeltaB: 0n,
           vaultBalanceDeltaA: 2_000_000_000n,
           vaultBalanceDeltaB: 200_000_000n,
-          poolBalanceDeltaA: -3494939290n,
-          poolBalanceDeltaB: -200000000n,
+          poolBalanceDeltaA: -3494939298n,
+          poolBalanceDeltaB: -199999994n,
         },
       );
     });
@@ -1728,8 +1731,8 @@ describe("Tuna Position", () => {
           userBalanceDeltaB: 298951363n,
           vaultBalanceDeltaA: 2_000_000_000n,
           vaultBalanceDeltaB: 200_000_000n,
-          poolBalanceDeltaA: -1999999993n,
-          poolBalanceDeltaB: -498951363n,
+          poolBalanceDeltaA: -2000000000n,
+          poolBalanceDeltaB: -498951357n,
         },
       );
     });
@@ -1850,8 +1853,8 @@ describe("Tuna Position", () => {
         {
           vaultBalanceDeltaA: 0n,
           vaultBalanceDeltaB: 0n,
-          poolBalanceDeltaA: -18n,
-          poolBalanceDeltaB: 0n,
+          poolBalanceDeltaA: -21n,
+          poolBalanceDeltaB: 15n,
         },
       );
 
@@ -1870,7 +1873,7 @@ describe("Tuna Position", () => {
         {
           vaultBalanceDeltaA: -20947n,
           vaultBalanceDeltaB: 0n,
-          poolBalanceDeltaA: 20904n,
+          poolBalanceDeltaA: 20902n,
           poolBalanceDeltaB: 0n,
         },
       );
@@ -2002,4 +2005,59 @@ describe("Tuna Position", () => {
 
     await repayDebt({ rpc, positionMint: positionMintKeypair.address, collateralA: 10000n, collateralB: 20000n });
   });
+
+  for (const marketMaker of marketMakers) {
+    it(`Re-balance a two-sided position (${MarketMaker[marketMaker]})`, async () => {
+      const market = markets.find(m => m.marketMaker == marketMaker)!;
+      const positionMintKeypair = await generateKeyPairSigner();
+      const positionMint = positionMintKeypair.address;
+      const pool = await fetchPool(rpc, market.pool, market.marketMaker);
+      const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
+
+      await openPositionWithLiquidity({
+        rpc,
+        positionMint: positionMintKeypair,
+        tickLowerIndex: actualTickIndex - pool.data.tickSpacing * 5,
+        tickUpperIndex: actualTickIndex + pool.data.tickSpacing * 5,
+        pool: pool.address,
+        collateralA: 1_000_000_000n,
+        collateralB: 1_000_000n,
+        borrowA: 2_000_000_000n,
+        borrowB: 2_000_000n,
+        flags: TUNA_POSITION_FLAGS_ALLOW_REBALANCING,
+      });
+
+      // Fails to re-balance the position because re-balance conditions are not met
+      await assert.rejects(
+        rebalancePosition({
+          rpc,
+          signer,
+          positionMint,
+          pool: pool.address,
+        }),
+        err => {
+          expect((err as Error).toString()).contain(
+            `custom program error: ${"0x" + TUNA_ERROR__REBALANCE_CONDITIONS_NOT_MET.toString(16)}`,
+          );
+          return true;
+        },
+      );
+
+      // Swap and move the price to allow re-balancing.
+      await swapExactInput(rpc, signer, pool.address, 100_000_000_000n, market.mintA.address);
+
+      assertRebalancePosition(
+        await rebalancePosition({
+          rpc,
+          signer,
+          positionMint,
+          pool: pool.address,
+        }),
+        {
+          newTickLowerIndex: -17280,
+          newTickUpperIndex: -16640,
+        },
+      );
+    });
+  }
 });

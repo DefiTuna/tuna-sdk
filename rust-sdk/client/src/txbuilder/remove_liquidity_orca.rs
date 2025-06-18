@@ -3,7 +3,7 @@ use crate::instructions::{RemoveLiquidityOrca, RemoveLiquidityOrcaInstructionArg
 use crate::types::{AccountsType, RemainingAccountsInfo, RemainingAccountsSlice};
 use crate::utils::get_create_ata_instructions;
 use crate::utils::orca::get_swap_tick_arrays;
-use crate::{get_market_address, get_tuna_config_address, get_tuna_position_address, get_vault_address};
+use crate::{get_market_address, get_tuna_config_address, get_tuna_position_address, get_vault_address, HUNDRED_PERCENT};
 use anyhow::{anyhow, Result};
 use orca_whirlpools_client::{fetch_whirlpool, get_oracle_address, get_position_address, get_tick_array_address, Whirlpool};
 use orca_whirlpools_core::get_tick_array_start_tick_index;
@@ -20,8 +20,25 @@ pub struct RemoveLiquidityOrcaArgs {
     pub max_swap_slippage: u32,
 }
 
+impl Default for RemoveLiquidityOrcaArgs {
+    fn default() -> Self {
+        Self {
+            withdraw_percent: HUNDRED_PERCENT,
+            swap_to_token: 0,
+            min_removed_amount_a: 0,
+            min_removed_amount_b: 0,
+            max_swap_slippage: 0,
+        }
+    }
+}
+
 // TODO: rewards support
-pub fn remove_liquidity_orca_instructions(rpc: &RpcClient, authority: &Pubkey, position_mint: &Pubkey, args: RemoveLiquidityOrcaArgs) -> Result<Vec<Instruction>> {
+pub fn remove_liquidity_orca_instructions(
+    rpc: &RpcClient,
+    authority: &Pubkey,
+    position_mint: &Pubkey,
+    args: RemoveLiquidityOrcaArgs,
+) -> Result<Vec<Instruction>> {
     let tuna_position = fetch_tuna_position(&rpc, &get_tuna_position_address(&position_mint).0)?;
 
     let whirlpool = fetch_whirlpool(rpc, &tuna_position.data.pool)?;

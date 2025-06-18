@@ -1,18 +1,18 @@
 use crate::constants::SOL_USDC_WHIRLPOOL;
 use crate::types::Amounts;
-use crate::utils::rpc::create_and_send_transaction;
 use anyhow::Result;
-use defituna_client::accounts::fetch_market;
 use defituna_client::{
-  get_market_address, OpenPositionWithLiquidityOrcaArgs, TUNA_POSITION_FLAGS_STOP_LOSS_SWAP_TO_TOKEN_B,
+  OpenPositionWithLiquidityOrcaArgs, TUNA_POSITION_FLAGS_STOP_LOSS_SWAP_TO_TOKEN_B,
 };
 use defituna_client::{open_position_with_liquidity_orca_instructions, NO_TAKE_PROFIT};
+use fusionamm_tx_sender::{send_smart_transaction, SmartTxConfig};
 use orca_whirlpools_client::{self, fetch_whirlpool};
 use orca_whirlpools_core::sqrt_price_to_price;
 use solana_client::rpc_client::RpcClient;
 use solana_sdk::program_pack::Pack;
 use solana_sdk::{signature::Keypair, signer::Signer};
 use spl_token_2022::state::Mint;
+use std::sync::Arc;
 
 /// Opens a position in an Orca Liquidity Pool and adds liquidity using borrowed funds from Tuna Lending Pools.
 /// Uses the SOL/USDC Whirlpool with preset amounts and leverage for this example; these can be adjusted or passed through the function’s input.
@@ -25,16 +25,13 @@ use spl_token_2022::state::Mint;
 ///
 /// # Returns
 /// - `Result<()>`: Returns `Ok(())` if the transaction is successful, or an error if it fails.
-pub fn open_position_with_liquidity_orca(rpc: RpcClient, authority: Box<dyn Signer>) -> Result<()> {
+pub async fn open_position_with_liquidity_orca(rpc: RpcClient, authority: &Keypair) -> Result<()> {
   // The Program Derived Address of the pool from Orca's Whirlpools to create the position in.
   // For this example we use the SOL/USDC Pool.
   let whirlpool_address = SOL_USDC_WHIRLPOOL;
 
   // The Whirlpool Account containing deserialized data, fetched using Orca's Whirlpool Client
   let whirlpool = fetch_whirlpool(&rpc, &whirlpool_address)?;
-
-  // The Market Account containing deserialized data, fetched using Tuna's Client.
-  let market = fetch_market(&rpc, &get_market_address(&whirlpool_address).0)?;
 
   // A newly generated Keypair for the new Position Mint, which will be created with the position and it's used to identify it.
   let new_position_mint_keypair = Keypair::new();
@@ -159,7 +156,7 @@ pub fn open_position_with_liquidity_orca(rpc: RpcClient, authority: Box<dyn Sign
   // - Potential borrowing of funds from Tuna Lending Vaults ATAs.
   // - Potential swap of tokens if deposit ratio is different from the Position's range-to-price ratio.
   // - Depositing tokens to the Whirlpools vaults to increase the Position's liquidity.
-  let mut instructions = open_position_with_liquidity_orca_instructions(
+  let instructions = open_position_with_liquidity_orca_instructions(
     &rpc,
     &authority.pubkey(),
     &new_position_mint_keypair.pubkey(),
@@ -168,12 +165,15 @@ pub fn open_position_with_liquidity_orca(rpc: RpcClient, authority: Box<dyn Sign
   )?;
 
   // Signing and sending the transaction with all the instructions to the Solana network.
-  create_and_send_transaction(
-    &rpc,
-    &authority,
-    &mut instructions,
-    Some(vec![new_position_mint_keypair]),
-    Some(market.data.address_lookup_table),
-    None,
+  send_smart_transaction(
+    &rpc.get_inner_client(),
+    vec![Arc::new(authority.insecure_clone())],
+    &authority.pubkey(),
+    instructions,
+    vec![],
+    SmartTxConfig::default(),
   )
+  .await?;
+
+  Ok(())
 }
