@@ -1,7 +1,7 @@
 use anyhow::Result;
 use defituna_client::{self, fetch_all_tuna_position_with_filter, TunaPositionFilter};
-use solana_client::rpc_client::RpcClient;
-use solana_sdk::pubkey::Pubkey;
+use solana_pubkey::Pubkey;
+use solana_rpc_client::rpc_client::RpcClient;
 
 /// Retrieves all Tuna Positions belonging to the user.
 ///

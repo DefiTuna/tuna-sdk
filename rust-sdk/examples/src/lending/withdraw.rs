@@ -1,15 +1,17 @@
 use anyhow::Result;
 use defituna_client::withdraw_instructions;
 use fusionamm_tx_sender::{send_smart_transaction, SmartTxConfig};
-use solana_client::rpc_client::RpcClient;
-use solana_sdk::program_pack::Pack;
-use solana_sdk::signature::Keypair;
-use solana_sdk::signer::Signer;
+use solana_keypair::Keypair;
+use solana_program_pack::Pack;
+use solana_rpc_client::rpc_client::RpcClient;
+use solana_signer::Signer;
 use spl_token::state::Mint;
 use std::ops::Mul;
 use std::sync::Arc;
 
 pub async fn withdraw(rpc: RpcClient, authority: &Keypair) -> Result<()> {
+  println!("Withdrawing the lending position...");
+
   // The address of the token mint to deposit/withdraw, identifying the target Tuna Lending Vault.
   // Set to the USDC token address in our examples;
   // There are methods in our sdk to fetch all available lending vaults and their respective mint addresses.
@@ -27,9 +29,14 @@ pub async fn withdraw(rpc: RpcClient, authority: &Keypair) -> Result<()> {
   // Here we have a choice to pass either funds or shares. For simplicity reasons we will use funds.
   let instructions = withdraw_instructions(&rpc, &authority.pubkey(), &token_mint_address, amount, 0)?;
 
+  // 'send_smart_transaction' requires a non-blocking rpc client, so we create it here.
+  // However, it's not recommended to create the client each time—initialize it once and reuse it.
+  let nonblocking_rpc = solana_rpc_client::nonblocking::rpc_client::RpcClient::new(rpc.url());
+
   // Signing and sending the transaction with all the instructions to the Solana network.
-  send_smart_transaction(
-    &rpc.get_inner_client(),
+  println!("Sending a transaction...");
+  let result = send_smart_transaction(
+    &nonblocking_rpc,
     vec![Arc::new(authority.insecure_clone())],
     &authority.pubkey(),
     instructions,
@@ -38,5 +45,6 @@ pub async fn withdraw(rpc: RpcClient, authority: &Keypair) -> Result<()> {
   )
   .await?;
 
+  println!("Transaction landed: {}", result.0);
   Ok(())
 }

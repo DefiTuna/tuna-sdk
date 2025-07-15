@@ -4,10 +4,11 @@ use fusionamm_client::{
     FUSION_POOLS_CONFIG_DISCRIMINATOR,
 };
 use fusionamm_sdk::{swap_instructions, SwapType};
-use solana_program::{system_program, sysvar};
-use solana_sdk::account::Account;
-use solana_sdk::pubkey::Pubkey;
-use solana_sdk::signature::{Signature, Signer};
+use solana_account::Account;
+use solana_pubkey::Pubkey;
+use solana_sdk_ids::{system_program, sysvar};
+use solana_signature::Signature;
+use solana_signer::Signer;
 use std::error::Error;
 
 pub fn get_fusion_pool_config_accounts(signer: &Pubkey) -> Vec<(Pubkey, Account)> {

@@ -8,8 +8,8 @@ use anyhow::{anyhow, Result};
 use fusionamm_client::{fetch_fusion_pool, get_position_address, get_tick_array_address, FusionPool};
 use fusionamm_core::get_tick_array_start_tick_index;
 use solana_client::rpc_client::RpcClient;
-use solana_program::instruction::{AccountMeta, Instruction};
-use solana_program::pubkey::Pubkey;
+use solana_instruction::{AccountMeta, Instruction};
+use solana_pubkey::Pubkey;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 
 pub struct RemoveLiquidityFusionArgs {

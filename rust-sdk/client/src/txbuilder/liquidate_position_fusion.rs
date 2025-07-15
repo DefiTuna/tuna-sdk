@@ -5,8 +5,8 @@ use crate::utils::fusion::get_swap_tick_arrays;
 use crate::{get_market_address, get_tuna_config_address, get_tuna_position_address, get_vault_address};
 use fusionamm_client::{get_position_address, get_tick_array_address, FusionPool};
 use fusionamm_core::get_tick_array_start_tick_index;
-use solana_program::instruction::{AccountMeta, Instruction};
-use solana_program::pubkey::Pubkey;
+use solana_instruction::{AccountMeta, Instruction};
+use solana_pubkey::Pubkey;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 use spl_associated_token_account::instruction::create_associated_token_account_idempotent;
 

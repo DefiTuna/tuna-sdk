@@ -5,18 +5,37 @@ use crate::utils::fusion::{get_swap_tick_arrays, get_tick_arrays_for_rebalanced_
 use crate::{get_market_address, get_tuna_config_address, get_tuna_position_address, get_vault_address};
 use anyhow::{anyhow, Result};
 use fusionamm_client::{
-    fetch_fusion_pool, get_position_address, get_tick_array_address, FusionPool, InitializeTickArray, InitializeTickArrayInstructionArgs,
+    fetch_fusion_pool, get_position_address, get_tick_array_address, FusionPool, InitializeTickArray, InitializeTickArrayInstructionArgs, TickArray,
 };
 use fusionamm_core::get_tick_array_start_tick_index;
 use solana_client::rpc_client::RpcClient;
-use solana_program::instruction::{AccountMeta, Instruction};
-use solana_program::pubkey::Pubkey;
-use solana_program::system_program;
+use solana_instruction::{AccountMeta, Instruction};
+use solana_pubkey::Pubkey;
+use solana_sdk_ids::system_program;
+use solana_sysvar::rent::Rent;
+use solana_sysvar::slot_hashes::SysvarId;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 use spl_associated_token_account::instruction::create_associated_token_account_idempotent;
 
-pub fn rebalance_position_fusion_instructions(rpc: &RpcClient, authority: &Pubkey, position_mint: &Pubkey) -> Result<Vec<Instruction>> {
-    let mut instructions: Vec<Instruction> = vec![];
+#[derive(Debug)]
+pub struct RebalancePositionFusionInstruction {
+    /// A vector of `Instruction` objects required to execute the position re-balancing.
+    pub instructions: Vec<Instruction>,
+
+    /// The cost of initializing tick arrays, measured in lamports.
+    pub initialization_cost: u64,
+}
+
+pub fn rebalance_position_fusion_instructions(
+    rpc: &RpcClient,
+    authority: &Pubkey,
+    position_mint: &Pubkey,
+) -> Result<RebalancePositionFusionInstruction> {
+    let rent = rpc.get_account(&Rent::id())?;
+    let rent: Rent = bincode::deserialize(&rent.data)?;
+
+    let mut instructions = vec![];
+    let mut non_refundable_rent: u64 = 0;
 
     let tuna_config = fetch_tuna_config(rpc, &get_tuna_config_address().0)?;
     let tuna_position = fetch_tuna_position(&rpc, &get_tuna_position_address(&position_mint).0)?;
@@ -56,6 +75,7 @@ pub fn rebalance_position_fusion_instructions(rpc: &RpcClient, authority: &Pubke
                 start_tick_index: secondary_tick_arrays[0].1,
             }),
         );
+        non_refundable_rent += rent.minimum_balance(TickArray::LEN);
     }
 
     if tick_array_infos[1].is_none() && secondary_tick_arrays[0].1 != secondary_tick_arrays[1].1 {
@@ -70,6 +90,7 @@ pub fn rebalance_position_fusion_instructions(rpc: &RpcClient, authority: &Pubke
                 start_tick_index: secondary_tick_arrays[1].1,
             }),
         );
+        non_refundable_rent += rent.minimum_balance(TickArray::LEN);
     }
 
     instructions.push(create_associated_token_account_idempotent(
@@ -97,7 +118,10 @@ pub fn rebalance_position_fusion_instructions(rpc: &RpcClient, authority: &Pubke
         &mint_b_account.owner,
     ));
 
-    Ok(instructions)
+    Ok(RebalancePositionFusionInstruction {
+        instructions,
+        initialization_cost: non_refundable_rent,
+    })
 }
 
 pub fn rebalance_position_fusion_instruction(

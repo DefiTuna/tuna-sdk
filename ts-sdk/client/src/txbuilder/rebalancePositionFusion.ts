@@ -5,6 +5,7 @@ import {
   FusionPool,
   getInitializeTickArrayInstruction,
   getPositionAddress,
+  getTickArraySize,
 } from "@crypticdot/fusionamm-client";
 import {
   type Account,
@@ -14,9 +15,12 @@ import {
   GetMultipleAccountsApi,
   IAccountMeta,
   IInstruction,
+  Lamports,
+  lamports,
   Rpc,
   TransactionSigner,
 } from "@solana/kit";
+import { fetchSysvarRent } from "@solana/sysvars";
 import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
 import {
   fetchAllMaybeMint,
@@ -38,6 +42,15 @@ import {
 } from "../generated";
 import { getLendingVaultAddress, getMarketAddress, getTunaConfigAddress, getTunaPositionAddress } from "../pda.ts";
 import { FusionUtils, getCreateAtaInstructions } from "../utils";
+import { calculateMinimumBalanceForRentExemption } from "../utils/sysvar.ts";
+
+export type RebalancePositionFusion = {
+  /** List of Solana transaction instructions to execute. */
+  instructions: IInstruction[];
+
+  /** The initialization cost for opening the position in lamports. */
+  initializationCost: Lamports;
+};
 
 export async function rebalancePositionFusionInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
@@ -45,7 +58,10 @@ export async function rebalancePositionFusionInstructions(
   positionMint: Address,
   createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
-): Promise<IInstruction[]> {
+): Promise<RebalancePositionFusion> {
+  const rent = await fetchSysvarRent(rpc);
+  let nonRefundableRent: bigint = 0n;
+
   const tunaConfig = await fetchTunaConfig(rpc, (await getTunaConfigAddress())[0]);
 
   const tunaPosition = await fetchMaybeTunaPosition(rpc, (await getTunaPositionAddress(positionMint))[0]);
@@ -92,6 +108,7 @@ export async function rebalancePositionFusionInstructions(
         startTickIndex: secondaryTickArrays.lowerTickArrayStartIndex,
       }),
     );
+    nonRefundableRent += calculateMinimumBalanceForRentExemption(rent, getTickArraySize());
   }
 
   // Create a tick array it doesn't exist.
@@ -107,6 +124,7 @@ export async function rebalancePositionFusionInstructions(
         startTickIndex: secondaryTickArrays.upperTickArrayStartIndex,
       }),
     );
+    nonRefundableRent += calculateMinimumBalanceForRentExemption(rent, getTickArraySize());
   }
 
   //
@@ -154,7 +172,10 @@ export async function rebalancePositionFusionInstructions(
   cleanupInstructions.push(...createFeeRecipientAtaAInstructions.cleanup);
   cleanupInstructions.push(...createFeeRecipientAtaBInstructions.cleanup);
 
-  return instructions;
+  return {
+    instructions,
+    initializationCost: lamports(nonRefundableRent),
+  };
 }
 
 export async function rebalancePositionFusionInstruction(

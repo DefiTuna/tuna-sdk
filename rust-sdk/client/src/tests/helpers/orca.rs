@@ -5,10 +5,11 @@ use orca_whirlpools_client::{
     InitializePoolWithAdaptiveFee, InitializePoolWithAdaptiveFeeInstructionArgs, ADAPTIVE_FEE_TIER_DISCRIMINATOR, FEE_TIER_DISCRIMINATOR,
     WHIRLPOOLS_CONFIG_DISCRIMINATOR, WHIRLPOOL_ID,
 };
-use solana_program::{system_program, sysvar};
-use solana_sdk::account::Account;
-use solana_sdk::pubkey::Pubkey;
-use solana_sdk::signature::{Signature, Signer};
+use solana_account::Account;
+use solana_pubkey::Pubkey;
+use solana_sdk_ids::{system_program, sysvar};
+use solana_signature::Signature;
+use solana_signer::Signer;
 use std::error::Error;
 
 pub fn get_whirlpool_config_accounts(signer: &Pubkey) -> Vec<(Pubkey, Account)> {

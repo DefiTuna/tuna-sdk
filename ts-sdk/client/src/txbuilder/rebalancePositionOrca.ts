@@ -1,7 +1,8 @@
 import {
   fetchAllMaybeTickArray,
   fetchMaybeWhirlpool,
-  getInitializeTickArrayInstruction,
+  getDynamicTickArrayMinSize,
+  getInitializeDynamicTickArrayInstruction,
   getOracleAddress,
   getPositionAddress,
   Whirlpool,
@@ -15,9 +16,12 @@ import {
   GetMultipleAccountsApi,
   IAccountMeta,
   IInstruction,
+  Lamports,
+  lamports,
   Rpc,
   TransactionSigner,
 } from "@solana/kit";
+import { fetchSysvarRent } from "@solana/sysvars";
 import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
 import {
   fetchAllMaybeMint,
@@ -39,6 +43,15 @@ import {
 } from "../generated";
 import { getLendingVaultAddress, getMarketAddress, getTunaConfigAddress, getTunaPositionAddress } from "../pda.ts";
 import { getCreateAtaInstructions, OrcaUtils } from "../utils";
+import { calculateMinimumBalanceForRentExemption } from "../utils/sysvar";
+
+export type RebalancePositionOrca = {
+  /** List of Solana transaction instructions to execute. */
+  instructions: IInstruction[];
+
+  /** The initialization cost for opening the position in lamports. */
+  initializationCost: Lamports;
+};
 
 export async function rebalancePositionOrcaInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
@@ -46,7 +59,10 @@ export async function rebalancePositionOrcaInstructions(
   positionMint: Address,
   createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
-): Promise<IInstruction[]> {
+): Promise<RebalancePositionOrca> {
+  const rent = await fetchSysvarRent(rpc);
+  let nonRefundableRent: bigint = 0n;
+
   const tunaConfig = await fetchTunaConfig(rpc, (await getTunaConfigAddress())[0]);
 
   const tunaPosition = await fetchMaybeTunaPosition(rpc, (await getTunaPositionAddress(positionMint))[0]);
@@ -87,13 +103,15 @@ export async function rebalancePositionOrcaInstructions(
   // Create a tick array it doesn't exist.
   if (!lowerTickArray.exists) {
     instructions.push(
-      getInitializeTickArrayInstruction({
+      getInitializeDynamicTickArrayInstruction({
         whirlpool: whirlpool.address,
         funder: authority,
         tickArray: secondaryTickArrays.lowerTickArrayAddress,
         startTickIndex: secondaryTickArrays.lowerTickArrayStartIndex,
+        idempotent: false,
       }),
     );
+    nonRefundableRent += calculateMinimumBalanceForRentExemption(rent, getDynamicTickArrayMinSize());
   }
 
   // Create a tick array it doesn't exist.
@@ -102,13 +120,15 @@ export async function rebalancePositionOrcaInstructions(
     secondaryTickArrays.lowerTickArrayStartIndex !== secondaryTickArrays.upperTickArrayStartIndex
   ) {
     instructions.push(
-      getInitializeTickArrayInstruction({
+      getInitializeDynamicTickArrayInstruction({
         whirlpool: whirlpool.address,
         funder: authority,
         tickArray: secondaryTickArrays.upperTickArrayAddress,
         startTickIndex: secondaryTickArrays.upperTickArrayStartIndex,
+        idempotent: false,
       }),
     );
+    nonRefundableRent += calculateMinimumBalanceForRentExemption(rent, getDynamicTickArrayMinSize());
   }
 
   //
@@ -157,7 +177,10 @@ export async function rebalancePositionOrcaInstructions(
   cleanupInstructions.push(...createFeeRecipientAtaAInstructions.cleanup);
   cleanupInstructions.push(...createFeeRecipientAtaBInstructions.cleanup);
 
-  return instructions;
+  return {
+    instructions,
+    initializationCost: lamports(nonRefundableRent),
+  };
 }
 
 export async function rebalancePositionOrcaInstruction(

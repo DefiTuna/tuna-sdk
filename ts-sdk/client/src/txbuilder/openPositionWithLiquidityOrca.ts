@@ -1,7 +1,8 @@
 import {
   fetchAllMaybeTickArray,
   fetchMaybeWhirlpool,
-  getInitializeTickArrayInstruction,
+  getDynamicTickArrayMinSize,
+  getInitializeDynamicTickArrayInstruction,
   getOracleAddress,
   getPositionAddress,
   getTickArrayAddress,
@@ -13,13 +14,17 @@ import {
   type Account,
   AccountRole,
   Address,
+  generateKeyPairSigner,
   GetAccountInfoApi,
   GetMultipleAccountsApi,
   IAccountMeta,
   IInstruction,
+  Lamports,
+  lamports,
   Rpc,
   TransactionSigner,
 } from "@solana/kit";
+import { fetchSysvarRent } from "@solana/sysvars";
 import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
@@ -48,6 +53,18 @@ import {
   WP_NFT_UPDATE_AUTH,
 } from "../index.ts";
 import { getLiquidityIncreaseQuote } from "../utils";
+import { calculateMinimumBalanceForRentExemption } from "../utils/sysvar";
+
+export type OpenPositionWithLiquidityOrca = {
+  /** The mint address of the position NFT. */
+  positionMint: Address;
+
+  /** List of Solana transaction instructions to execute. */
+  instructions: IInstruction[];
+
+  /** The initialization cost for opening the position in lamports. */
+  initializationCost: Lamports;
+};
 
 export type OpenPositionWithLiquidityOrcaInstructionsArgs = Omit<
   OpenPositionWithLiquidityOrcaInstructionDataArgs,
@@ -57,16 +74,19 @@ export type OpenPositionWithLiquidityOrcaInstructionsArgs = Omit<
 export async function openPositionWithLiquidityOrcaInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
-  positionMint: TransactionSigner,
   whirlpoolAddress: Address,
   args: OpenPositionWithLiquidityOrcaInstructionsArgs,
   createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
-): Promise<IInstruction[]> {
+): Promise<OpenPositionWithLiquidityOrca> {
   const instructions: IInstruction[] = [];
-
   if (!createInstructions) createInstructions = instructions;
   if (!cleanupInstructions) cleanupInstructions = instructions;
+
+  const rent = await fetchSysvarRent(rpc);
+  let nonRefundableRent: bigint = 0n;
+
+  const positionMint = await generateKeyPairSigner();
 
   const tunaConfig = await fetchTunaConfig(rpc, (await getTunaConfigAddress())[0]);
 
@@ -162,25 +182,29 @@ export async function openPositionWithLiquidityOrcaInstructions(
   // Create a tick array it doesn't exist.
   if (!lowerTickArray.exists) {
     instructions.push(
-      getInitializeTickArrayInstruction({
+      getInitializeDynamicTickArrayInstruction({
         whirlpool: whirlpool.address,
         funder: authority,
         tickArray: lowerTickArrayAddress,
         startTickIndex: lowerTickArrayIndex,
+        idempotent: false,
       }),
     );
+    nonRefundableRent += calculateMinimumBalanceForRentExemption(rent, getDynamicTickArrayMinSize());
   }
 
   // Create a tick array it doesn't exist.
   if (!upperTickArray.exists && lowerTickArrayIndex !== upperTickArrayIndex) {
     instructions.push(
-      getInitializeTickArrayInstruction({
+      getInitializeDynamicTickArrayInstruction({
         whirlpool: whirlpool.address,
         funder: authority,
         tickArray: upperTickArrayAddress,
         startTickIndex: upperTickArrayIndex,
+        idempotent: false,
       }),
     );
+    nonRefundableRent += calculateMinimumBalanceForRentExemption(rent, getDynamicTickArrayMinSize());
   }
 
   //
@@ -209,7 +233,11 @@ export async function openPositionWithLiquidityOrcaInstructions(
   cleanupInstructions.push(...createFeeRecipientAtaAInstructions.cleanup);
   cleanupInstructions.push(...createFeeRecipientAtaBInstructions.cleanup);
 
-  return instructions;
+  return {
+    instructions,
+    positionMint: positionMint.address,
+    initializationCost: lamports(nonRefundableRent),
+  };
 }
 
 export async function openPositionWithLiquidityOrcaInstruction(

@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Result};
 use dirs::home_dir;
-use solana_sdk::signature::Keypair;
+use solana_keypair::Keypair;
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
@@ -18,6 +18,6 @@ pub fn load_keypair() -> Result<Keypair> {
 
   let keypair_bytes: Vec<u8> = serde_json::from_str(&contents)?;
 
-  let keypair = Keypair::from_bytes(&keypair_bytes)?;
+  let keypair = Keypair::try_from(keypair_bytes.as_slice())?;
   Ok(keypair)
 }

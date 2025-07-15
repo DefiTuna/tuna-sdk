@@ -1,7 +1,6 @@
 import {
-  fetchAllMaybeTickArray,
   fetchMaybeWhirlpool,
-  getInitializeTickArrayInstruction,
+  getInitializeDynamicTickArrayInstruction,
   getOracleAddress,
   getPositionAddress,
   getTickArrayAddress,
@@ -161,34 +160,27 @@ export async function addLiquidityOrcaInstructions(
   );
   const [upperTickArrayAddress] = await getTickArrayAddress(whirlpool.address, upperTickArrayStartIndex);
 
-  const [lowerTickArray, upperTickArray] = await fetchAllMaybeTickArray(rpc, [
-    lowerTickArrayAddress,
-    upperTickArrayAddress,
-  ]);
+  // Create a tick array if it doesn't exist.
+  instructions.push(
+    getInitializeDynamicTickArrayInstruction({
+      whirlpool: whirlpool.address,
+      funder: authority,
+      tickArray: lowerTickArrayAddress,
+      startTickIndex: lowerTickArrayStartIndex,
+      idempotent: true,
+    }),
+  );
 
-  // Create a tick array it doesn't exist.
-  if (!lowerTickArray.exists) {
-    instructions.push(
-      getInitializeTickArrayInstruction({
-        whirlpool: whirlpool.address,
-        funder: authority,
-        tickArray: lowerTickArrayAddress,
-        startTickIndex: lowerTickArrayStartIndex,
-      }),
-    );
-  }
-
-  // Create a tick array it doesn't exist.
-  if (!upperTickArray.exists && lowerTickArrayStartIndex !== upperTickArrayStartIndex) {
-    instructions.push(
-      getInitializeTickArrayInstruction({
-        whirlpool: whirlpool.address,
-        funder: authority,
-        tickArray: upperTickArrayAddress,
-        startTickIndex: upperTickArrayStartIndex,
-      }),
-    );
-  }
+  // Create a tick array if it doesn't exist.
+  instructions.push(
+    getInitializeDynamicTickArrayInstruction({
+      whirlpool: whirlpool.address,
+      funder: authority,
+      tickArray: upperTickArrayAddress,
+      startTickIndex: upperTickArrayStartIndex,
+      idempotent: true,
+    }),
+  );
 
   //
   // Finally add liquidity increase instruction.

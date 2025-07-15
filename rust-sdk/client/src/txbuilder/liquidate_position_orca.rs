@@ -5,8 +5,8 @@ use crate::utils::orca::get_swap_tick_arrays;
 use crate::{get_market_address, get_tuna_config_address, get_tuna_position_address, get_vault_address};
 use orca_whirlpools_client::{get_oracle_address, get_position_address, get_tick_array_address, Whirlpool};
 use orca_whirlpools_core::get_tick_array_start_tick_index;
-use solana_program::instruction::{AccountMeta, Instruction};
-use solana_program::pubkey::Pubkey;
+use solana_instruction::{AccountMeta, Instruction};
+use solana_pubkey::Pubkey;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 use spl_associated_token_account::instruction::create_associated_token_account_idempotent;
 
@@ -25,7 +25,16 @@ pub fn liquidate_position_orca_instructions(
     vec![
         create_associated_token_account_idempotent(authority, authority, &vault_a.mint, token_program_a),
         create_associated_token_account_idempotent(authority, authority, &vault_b.mint, token_program_b),
-        liquidate_position_orca_instruction(authority, tuna_position, vault_a, vault_b, whirlpool, token_program_a, token_program_b, withdraw_percent),
+        liquidate_position_orca_instruction(
+            authority,
+            tuna_position,
+            vault_a,
+            vault_b,
+            whirlpool,
+            token_program_a,
+            token_program_b,
+            withdraw_percent,
+        ),
     ]
 }
 

@@ -61,6 +61,7 @@ describe("Markets", () => {
       borrowLimitA: 3433233243421n,
       borrowLimitB: 87855563453n,
       maxSwapSlippage: 400,
+      rebalanceProtocolFee: 10000,
     });
     await sendTransaction([ix]);
 
@@ -80,6 +81,7 @@ describe("Markets", () => {
     expect(market.data.borrowLimitA).toEqual(3433233243421n);
     expect(market.data.borrowLimitB).toEqual(87855563453n);
     expect(market.data.maxSwapSlippage).toEqual(400);
+    expect(market.data.rebalanceProtocolFee).toEqual(10000);
   });
 
   it("Update market", async () => {
@@ -101,6 +103,7 @@ describe("Markets", () => {
       borrowLimitA: 6783446n,
       borrowLimitB: 234576732n,
       maxSwapSlippage: 401,
+      rebalanceProtocolFee: 10001,
     });
     await sendTransaction([ix]);
 
@@ -119,6 +122,7 @@ describe("Markets", () => {
     expect(market.data.borrowLimitA).toEqual(6783446n);
     expect(market.data.borrowLimitB).toEqual(234576732n);
     expect(market.data.maxSwapSlippage).toEqual(401);
+    expect(market.data.rebalanceProtocolFee).toEqual(10001);
   });
 
   it("Cannot update market if not admin authority", async () => {
@@ -135,6 +139,7 @@ describe("Markets", () => {
       borrowLimitA: 6783446n,
       borrowLimitB: 234576732n,
       maxSwapSlippage: 401,
+      rebalanceProtocolFee: 10000,
     });
 
     await assert.rejects(sendTransaction([ix]), err => {
@@ -142,4 +147,4 @@ describe("Markets", () => {
       return true;
     });
   });
-});
+}, 20000);

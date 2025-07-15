@@ -14,15 +14,26 @@ solana-v1 = []
 
 [dependencies]
 defituna-client = { package = "defituna-client", path = '../client', features = ["fetch"] }
-fusionamm-tx-sender = { version = "1.0.5" }
-solana-client = { version = ">=1.16, <3.0" }
-solana-sdk = { version = ">=1.16, <3.0" }
+fusionamm-tx-sender = { version = "^1.0" }
+
+# Solana
+solana-rpc-client = { version = "^2.2"}
+solana-pubkey = { version = "^2.2" }
+solana-keypair = { version = "^2.2" }
+solana-signer = { version = "^2.2" }
+solana-account = { version = "^2.2", features = ["serde"] }
+solana-program-pack = { version = "^2.2" }
+solana-address-lookup-table-interface = { version = "^2.2" }
+
+# Spl token
 spl-token = { version = "^6.0.0" }
 spl-token-2022 = { version = "^6.0.0" }
+
 serde_json = { version = "^1.0" }
+bytemuck = "1.22.0"
 dirs = { version = "^6.0.0" }
 dotenv = { version = "0.15.0" }
-orca_whirlpools_client = { version = "^2.0.6", features = ["fetch"] }
-orca_whirlpools_core = { version = "^2.0.0" }
+orca_whirlpools_client = { version = "^3.0", features = ["fetch"] }
+orca_whirlpools_core = { version = "^2.0" }
 anyhow = { version = "1.0.98" }
 tokio = { version = "1.45.1" }

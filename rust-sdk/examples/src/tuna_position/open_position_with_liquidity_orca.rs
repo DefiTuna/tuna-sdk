@@ -1,16 +1,17 @@
 use crate::constants::SOL_USDC_WHIRLPOOL;
 use crate::types::Amounts;
+use crate::utils::fetch_address_lookup_table;
 use anyhow::Result;
-use defituna_client::{
-  OpenPositionWithLiquidityOrcaArgs, TUNA_POSITION_FLAGS_STOP_LOSS_SWAP_TO_TOKEN_B,
-};
-use defituna_client::{open_position_with_liquidity_orca_instructions, NO_TAKE_PROFIT};
+use defituna_client::accounts::fetch_market;
+use defituna_client::{get_market_address, open_position_with_liquidity_orca_instructions, NO_TAKE_PROFIT};
+use defituna_client::{OpenPositionWithLiquidityOrcaArgs, TUNA_POSITION_FLAGS_STOP_LOSS_SWAP_TO_TOKEN_B};
 use fusionamm_tx_sender::{send_smart_transaction, SmartTxConfig};
 use orca_whirlpools_client::{self, fetch_whirlpool};
 use orca_whirlpools_core::sqrt_price_to_price;
-use solana_client::rpc_client::RpcClient;
-use solana_sdk::program_pack::Pack;
-use solana_sdk::{signature::Keypair, signer::Signer};
+use solana_keypair::Keypair;
+use solana_program_pack::Pack;
+use solana_rpc_client::rpc_client::RpcClient;
+use solana_signer::Signer;
 use spl_token_2022::state::Mint;
 use std::sync::Arc;
 
@@ -26,6 +27,8 @@ use std::sync::Arc;
 /// # Returns
 /// - `Result<()>`: Returns `Ok(())` if the transaction is successful, or an error if it fails.
 pub async fn open_position_with_liquidity_orca(rpc: RpcClient, authority: &Keypair) -> Result<()> {
+  println!("Opening a position with liquidity...");
+
   // The Program Derived Address of the pool from Orca's Whirlpools to create the position in.
   // For this example we use the SOL/USDC Pool.
   let whirlpool_address = SOL_USDC_WHIRLPOOL;
@@ -33,12 +36,9 @@ pub async fn open_position_with_liquidity_orca(rpc: RpcClient, authority: &Keypa
   // The Whirlpool Account containing deserialized data, fetched using Orca's Whirlpool Client
   let whirlpool = fetch_whirlpool(&rpc, &whirlpool_address)?;
 
-  // A newly generated Keypair for the new Position Mint, which will be created with the position and it's used to identify it.
-  let new_position_mint_keypair = Keypair::new();
-
   // The nominal amounts of Token A (SOL in this example) and Token B (USDC in this example) to deposit for liquidity,
   // as a flat value (e.g., 1 SOL) excluding decimals.
-  let nominal_collateral = Amounts { a: 0.01, b: 0.1 };
+  let nominal_collateral = Amounts { a: 0.001, b: 0.0 };
   // Multiplier for borrowed funds applied to the total provided amount (min 1, max 5; e.g., 2 doubles the borrowed amount).
   let leverage = 2.0;
   // Ratio for borrowing funds, freely chosen by the user, unbound by the Position’s liquidity range.
@@ -156,24 +156,38 @@ pub async fn open_position_with_liquidity_orca(rpc: RpcClient, authority: &Keypa
   // - Potential borrowing of funds from Tuna Lending Vaults ATAs.
   // - Potential swap of tokens if deposit ratio is different from the Position's range-to-price ratio.
   // - Depositing tokens to the Whirlpools vaults to increase the Position's liquidity.
-  let instructions = open_position_with_liquidity_orca_instructions(
-    &rpc,
-    &authority.pubkey(),
-    &new_position_mint_keypair.pubkey(),
-    &whirlpool_address,
-    args,
-  )?;
+  let ix = open_position_with_liquidity_orca_instructions(&rpc, &authority.pubkey(), &whirlpool_address, args)?;
+
+  // Almost all tuna transactions require the address lookup table to make the tx size smaller.
+  // The LUT address is stored in the market account.
+  let market_address = get_market_address(&whirlpool_address).0;
+  let market = fetch_market(&rpc, &market_address)?;
+  let market_lut = fetch_address_lookup_table(&rpc, &market.data.address_lookup_table)?;
 
   // Signing and sending the transaction with all the instructions to the Solana network.
-  send_smart_transaction(
-    &rpc.get_inner_client(),
-    vec![Arc::new(authority.insecure_clone())],
+  let mut signers = vec![];
+  signers.push(Arc::new(authority.insecure_clone()));
+  for s in ix.additional_signers {
+    signers.push(Arc::new(s.insecure_clone()))
+  }
+
+  // 'send_smart_transaction' requires a non-blocking rpc client, so we create it here.
+  // However, it's not recommended to create the client each time—initialize it once and reuse it.
+  let nonblocking_rpc = solana_rpc_client::nonblocking::rpc_client::RpcClient::new(rpc.url());
+
+  // Finally send the transaction.
+  println!("Sending a transaction...");
+  let result = send_smart_transaction(
+    &nonblocking_rpc,
+    signers,
     &authority.pubkey(),
-    instructions,
-    vec![],
+    ix.instructions,
+    vec![market_lut],
     SmartTxConfig::default(),
   )
   .await?;
 
+  println!("Transaction landed: {}", result.0);
+  println!("Position mint: {}", ix.position_mint);
   Ok(())
 }

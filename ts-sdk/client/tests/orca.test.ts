@@ -30,6 +30,7 @@ describe("Tuna Position on Orca", () => {
         protocolFee: 1000, // 0.1%
         protocolFeeOnCollateral: 1000, // 0.1%
         limitOrderExecutionFee: 1000, // 0.1%
+        rebalanceProtocolFee: HUNDRED_PERCENT / 10,
       },
       false,
       false,

@@ -7,19 +7,24 @@ import {
   getInitializeTickArrayInstruction,
   getPositionAddress,
   getTickArrayAddress,
+  getTickArraySize,
 } from "@crypticdot/fusionamm-client";
 import { getTickArrayStartTickIndex } from "@crypticdot/fusionamm-core";
 import {
   type Account,
   AccountRole,
   Address,
+  generateKeyPairSigner,
   GetAccountInfoApi,
   GetMultipleAccountsApi,
   IAccountMeta,
   IInstruction,
+  Lamports,
+  lamports,
   Rpc,
   TransactionSigner,
 } from "@solana/kit";
+import { fetchSysvarRent } from "@solana/sysvars";
 import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
@@ -47,6 +52,18 @@ import {
   Vault,
 } from "../index.ts";
 import { getLiquidityIncreaseQuote } from "../utils";
+import { calculateMinimumBalanceForRentExemption } from "../utils/sysvar";
+
+export type OpenPositionWithLiquidityFusion = {
+  /** The mint address of the position NFT. */
+  positionMint: Address;
+
+  /** List of Solana transaction instructions to execute. */
+  instructions: IInstruction[];
+
+  /** The initialization cost for opening the position in lamports. */
+  initializationCost: Lamports;
+};
 
 export type OpenPositionWithLiquidityFusionInstructionsArgs = Omit<
   OpenPositionWithLiquidityFusionInstructionDataArgs,
@@ -56,16 +73,19 @@ export type OpenPositionWithLiquidityFusionInstructionsArgs = Omit<
 export async function openPositionWithLiquidityFusionInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
-  positionMint: TransactionSigner,
   fusionPoolAddress: Address,
   args: OpenPositionWithLiquidityFusionInstructionsArgs,
   createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
-): Promise<IInstruction[]> {
+): Promise<OpenPositionWithLiquidityFusion> {
   const instructions: IInstruction[] = [];
-
   if (!createInstructions) createInstructions = instructions;
   if (!cleanupInstructions) cleanupInstructions = instructions;
+
+  const rent = await fetchSysvarRent(rpc);
+  let nonRefundableRent: bigint = 0n;
+
+  const positionMint = await generateKeyPairSigner();
 
   const tunaConfig = await fetchTunaConfig(rpc, (await getTunaConfigAddress())[0]);
 
@@ -168,6 +188,7 @@ export async function openPositionWithLiquidityFusionInstructions(
         startTickIndex: lowerTickArrayIndex,
       }),
     );
+    nonRefundableRent += calculateMinimumBalanceForRentExemption(rent, getTickArraySize());
   }
 
   // Create a tick array it doesn't exist.
@@ -180,6 +201,7 @@ export async function openPositionWithLiquidityFusionInstructions(
         startTickIndex: upperTickArrayIndex,
       }),
     );
+    nonRefundableRent += calculateMinimumBalanceForRentExemption(rent, getTickArraySize());
   }
 
   //
@@ -208,7 +230,11 @@ export async function openPositionWithLiquidityFusionInstructions(
   cleanupInstructions.push(...createFeeRecipientAtaAInstructions.cleanup);
   cleanupInstructions.push(...createFeeRecipientAtaBInstructions.cleanup);
 
-  return instructions;
+  return {
+    instructions,
+    positionMint: positionMint.address,
+    initializationCost: lamports(nonRefundableRent),
+  };
 }
 
 export async function openPositionWithLiquidityFusionInstruction(

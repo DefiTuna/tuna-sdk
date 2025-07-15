@@ -1,6 +1,6 @@
 use orca_whirlpools_client::get_tick_array_address;
 use orca_whirlpools_core::{get_initializable_tick_index, get_tick_array_start_tick_index, TICK_ARRAY_SIZE};
-use solana_program::pubkey::Pubkey;
+use solana_pubkey::Pubkey;
 
 pub fn get_swap_tick_arrays(tick_current_index: i32, tick_spacing: u16, whirlpool_address: &Pubkey) -> [Pubkey; 5] {
     let mut tick_array_addresses = [Pubkey::default(); 5];

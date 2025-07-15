@@ -46,6 +46,4 @@ export default class SetDefaultMaxPercentageOfLeftovers extends BaseCommand {
       console.log("Nothing changed!");
     }
   }
-
-  public async;
 }

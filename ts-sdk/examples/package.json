@@ -1,7 +1,7 @@
 {
-  "name": "@crypticdot/examples-typescript",
+  "name": "@crypticdot/defituna-examples-typescript",
   "description": "Collection of usage examples for DefiTuna's on-chain program.",
-  "version": "2.0.8",
+  "version": "2.0.14",
   "private": true,
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",

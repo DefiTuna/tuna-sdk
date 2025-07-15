@@ -17,7 +17,7 @@ import { fetchFusionPool } from "@crypticdot/fusionamm-client";
 import { getInitializableTickIndex, priceToTickIndex } from "@crypticdot/fusionamm-core";
 import { DEFAULT_TRANSACTION_CONFIG, sendTransaction } from "@crypticdot/fusionamm-tx-sender";
 import { fetchWhirlpool } from "@orca-so/whirlpools-client";
-import { Address, generateKeyPairSigner, IInstruction } from "@solana/kit";
+import { Address, IInstruction } from "@solana/kit";
 import { fetchMint } from "@solana-program/token-2022";
 
 import BaseCommand, { addressFlag, bigintFlag, percentFlag, priceFlag } from "../base";
@@ -149,7 +149,6 @@ export default class AddLiquidity extends BaseCommand {
       if (!flags.collateralA && !flags.collateralB)
         throw new Error("Collateral A, B or both must be specified for a new position");
 
-      const positionMintKeypair = await generateKeyPairSigner();
       const marketAddress = (await getMarketAddress(flags.pool))[0];
 
       console.log("Fetching market...");
@@ -194,17 +193,11 @@ export default class AddLiquidity extends BaseCommand {
       };
 
       if (market.data.marketMaker == MarketMaker.Fusion) {
-        const ixs = await openPositionWithLiquidityFusionInstructions(
-          rpc,
-          signer,
-          positionMintKeypair,
-          flags.pool,
-          args,
-        );
-        instructions.push(...ixs);
+        const ix = await openPositionWithLiquidityFusionInstructions(rpc, signer, flags.pool, args);
+        instructions.push(...ix.instructions);
       } else {
-        const ixs = await openPositionWithLiquidityOrcaInstructions(rpc, signer, positionMintKeypair, flags.pool, args);
-        instructions.push(...ixs);
+        const ix = await openPositionWithLiquidityOrcaInstructions(rpc, signer, flags.pool, args);
+        instructions.push(...ix.instructions);
       }
     }
 

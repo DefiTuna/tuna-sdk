@@ -94,6 +94,12 @@ export default class CreateMarket extends BaseCommand {
       min: 0,
       max: HUNDRED_PERCENT,
     }),
+    rebalanceProtocolFee: percentFlag({
+      description: "Protocol fee taken from yield on position re-balancing (hundredths of a basis point or %)",
+      default: 0,
+      min: 0,
+      max: HUNDRED_PERCENT / 2,
+    }),
   };
   static override description = "Create a tuna market";
   static override examples = [
@@ -148,6 +154,7 @@ export default class CreateMarket extends BaseCommand {
       borrowLimitB: flags.borrowLimitB,
       oraclePriceDeviationThreshold: flags.oraclePriceDeviationThreshold,
       maxSwapSlippage: flags.maxSwapSlippage,
+      rebalanceProtocolFee: flags.rebalanceProtocolFee,
     });
 
     console.log("");

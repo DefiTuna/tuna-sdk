@@ -5,11 +5,18 @@ mod tests {
     use crate::tests::fusion::swap_exact_in;
     use crate::tests::*;
     use crate::types::MarketMaker;
-    use crate::{add_liquidity_fusion_instructions, close_position_fusion_instruction, close_position_with_liquidity_fusion_instructions, get_tuna_position_address, get_vault_address, liquidate_position_fusion_instructions, open_position_fusion_instruction, open_position_with_liquidity_fusion_instructions, rebalance_position_fusion_instructions, remove_liquidity_fusion_instructions, AddLiquidityFusionArgs, ClosePositionWithLiquidityFusionArgs, OpenPositionWithLiquidityFusionArgs, RemoveLiquidityFusionArgs, HUNDRED_PERCENT, LEVERAGE_ONE, TUNA_POSITION_FLAGS_ALLOW_REBALANCING};
+    use crate::{
+        add_liquidity_fusion_instructions, close_position_fusion_instruction, close_position_with_liquidity_fusion_instructions,
+        get_tuna_position_address, get_vault_address, liquidate_position_fusion_instructions, open_position_fusion_instruction,
+        open_position_with_liquidity_fusion_instructions, rebalance_position_fusion_instructions, remove_liquidity_fusion_instructions,
+        AddLiquidityFusionArgs, ClosePositionWithLiquidityFusionArgs, OpenPositionWithLiquidityFusionArgs, RemoveLiquidityFusionArgs,
+        HUNDRED_PERCENT, LEVERAGE_ONE, TUNA_POSITION_FLAGS_ALLOW_REBALANCING,
+    };
     use fusionamm_client::fetch_fusion_pool;
     use serial_test::serial;
+    use solana_keypair::Keypair;
     use solana_program_test::tokio;
-    use solana_sdk::signature::{Keypair, Signer};
+    use solana_signer::Signer;
 
     fn test_market_args() -> CreateMarketInstructionArgs {
         CreateMarketInstructionArgs {
@@ -26,6 +33,7 @@ mod tests {
             borrow_limit_a: 0,
             borrow_limit_b: 0,
             max_swap_slippage: 0,
+            rebalance_protocol_fee: 0,
         }
     }
 
@@ -125,40 +133,37 @@ mod tests {
 
             let pool = fetch_fusion_pool(&ctx.rpc, &test_market.pool).unwrap();
 
-            let position_mint = Keypair::new();
             let actual_tick_index = pool.data.tick_current_index - (pool.data.tick_current_index % pool.data.tick_spacing as i32);
 
-            ctx.send_transaction_with_signers(
-                open_position_with_liquidity_fusion_instructions(
-                    &ctx.rpc,
-                    &ctx.signer.pubkey(),
-                    &position_mint.pubkey(),
-                    &test_market.pool,
-                    OpenPositionWithLiquidityFusionArgs {
-                        tick_lower_index: actual_tick_index - pool.data.tick_spacing as i32 * 5,
-                        tick_upper_index: actual_tick_index + pool.data.tick_spacing as i32 * 5,
-                        tick_stop_loss_index: 0,
-                        tick_take_profit_index: 0,
-                        flags: 0,
-                        collateral_a: 1_000_000_000,
-                        collateral_b: 100_000_000,
-                        borrow_a: 1_000_000_000,
-                        borrow_b: 100_000_000,
-                        min_added_amount_a: 0,
-                        min_added_amount_b: 0,
-                        max_swap_slippage: 0,
-                    },
-                )
-                .unwrap(),
-                vec![&position_mint],
+            let ix = open_position_with_liquidity_fusion_instructions(
+                &ctx.rpc,
+                &ctx.signer.pubkey(),
+                &test_market.pool,
+                OpenPositionWithLiquidityFusionArgs {
+                    tick_lower_index: actual_tick_index - pool.data.tick_spacing as i32 * 5,
+                    tick_upper_index: actual_tick_index + pool.data.tick_spacing as i32 * 5,
+                    tick_stop_loss_index: 0,
+                    tick_take_profit_index: 0,
+                    flags: 0,
+                    collateral_a: 1_000_000_000,
+                    collateral_b: 100_000_000,
+                    borrow_a: 1_000_000_000,
+                    borrow_b: 100_000_000,
+                    min_added_amount_a: 0,
+                    min_added_amount_b: 0,
+                    max_swap_slippage: 0,
+                },
             )
             .unwrap();
+
+            ctx.send_transaction_with_signers(ix.instructions, ix.additional_signers.iter().collect())
+                .unwrap();
 
             ctx.send_transaction(
                 close_position_with_liquidity_fusion_instructions(
                     &ctx.rpc,
                     &ctx.signer.pubkey(),
-                    &position_mint.pubkey(),
+                    &ix.position_mint,
                     ClosePositionWithLiquidityFusionArgs::default(),
                 )
                 .unwrap(),
@@ -178,41 +183,42 @@ mod tests {
 
             let pool = fetch_fusion_pool(&ctx.rpc, &test_market.pool).unwrap();
 
-            let position_mint = Keypair::new();
             let actual_tick_index = pool.data.tick_current_index - (pool.data.tick_current_index % pool.data.tick_spacing as i32);
 
-            ctx.send_transaction_with_signers(
-                open_position_with_liquidity_fusion_instructions(
-                    &ctx.rpc,
-                    &ctx.signer.pubkey(),
-                    &position_mint.pubkey(),
-                    &test_market.pool,
-                    OpenPositionWithLiquidityFusionArgs {
-                        tick_lower_index: actual_tick_index - pool.data.tick_spacing as i32 * 5,
-                        tick_upper_index: actual_tick_index + pool.data.tick_spacing as i32 * 5,
-                        tick_stop_loss_index: 0,
-                        tick_take_profit_index: 0,
-                        flags: TUNA_POSITION_FLAGS_ALLOW_REBALANCING,
-                        collateral_a: 1_000_000_000,
-                        collateral_b: 1_000_000,
-                        borrow_a: 2_000_000_000,
-                        borrow_b: 2_000_000,
-                        min_added_amount_a: 0,
-                        min_added_amount_b: 0,
-                        max_swap_slippage: 0,
-                    },
-                )
-                .unwrap(),
-                vec![&position_mint],
+            let ix = open_position_with_liquidity_fusion_instructions(
+                &ctx.rpc,
+                &ctx.signer.pubkey(),
+                &test_market.pool,
+                OpenPositionWithLiquidityFusionArgs {
+                    tick_lower_index: actual_tick_index - pool.data.tick_spacing as i32 * 5,
+                    tick_upper_index: actual_tick_index + pool.data.tick_spacing as i32 * 5,
+                    tick_stop_loss_index: 0,
+                    tick_take_profit_index: 0,
+                    flags: TUNA_POSITION_FLAGS_ALLOW_REBALANCING,
+                    collateral_a: 1_000_000_000,
+                    collateral_b: 1_000_000,
+                    borrow_a: 2_000_000_000,
+                    borrow_b: 2_000_000,
+                    min_added_amount_a: 0,
+                    min_added_amount_b: 0,
+                    max_swap_slippage: 0,
+                },
             )
             .unwrap();
+
+            ctx.send_transaction_with_signers(ix.instructions, ix.additional_signers.iter().collect())
+                .unwrap();
 
             swap_exact_in(&ctx, &pool.address, 100_000_000_000, &pool.data.token_mint_a, None)
                 .await
                 .unwrap();
 
-            ctx.send_transaction(rebalance_position_fusion_instructions(&ctx.rpc, &ctx.signer.pubkey(), &position_mint.pubkey()).unwrap())
-                .unwrap();
+            ctx.send_transaction(
+                rebalance_position_fusion_instructions(&ctx.rpc, &ctx.signer.pubkey(), &ix.position_mint)
+                    .unwrap()
+                    .instructions,
+            )
+            .unwrap();
         });
     }
 
@@ -227,40 +233,37 @@ mod tests {
 
             let pool = fetch_fusion_pool(&ctx.rpc, &test_market.pool).unwrap();
 
-            let position_mint = Keypair::new();
             let actual_tick_index = pool.data.tick_current_index - (pool.data.tick_current_index % pool.data.tick_spacing as i32);
 
-            ctx.send_transaction_with_signers(
-                open_position_with_liquidity_fusion_instructions(
-                    &ctx.rpc,
-                    &ctx.signer.pubkey(),
-                    &position_mint.pubkey(),
-                    &test_market.pool,
-                    OpenPositionWithLiquidityFusionArgs {
-                        tick_lower_index: actual_tick_index - pool.data.tick_spacing as i32 * 3,
-                        tick_upper_index: actual_tick_index + pool.data.tick_spacing as i32 * 3,
-                        tick_stop_loss_index: 0,
-                        tick_take_profit_index: 0,
-                        flags: 0,
-                        collateral_a: 1_000_000_000,
-                        collateral_b: 0,
-                        borrow_a: 4_000_000_000,
-                        borrow_b: 0,
-                        min_added_amount_a: 0,
-                        min_added_amount_b: 0,
-                        max_swap_slippage: 0,
-                    },
-                )
-                .unwrap(),
-                vec![&position_mint],
+            let ix = open_position_with_liquidity_fusion_instructions(
+                &ctx.rpc,
+                &ctx.signer.pubkey(),
+                &test_market.pool,
+                OpenPositionWithLiquidityFusionArgs {
+                    tick_lower_index: actual_tick_index - pool.data.tick_spacing as i32 * 3,
+                    tick_upper_index: actual_tick_index + pool.data.tick_spacing as i32 * 3,
+                    tick_stop_loss_index: 0,
+                    tick_take_profit_index: 0,
+                    flags: 0,
+                    collateral_a: 1_000_000_000,
+                    collateral_b: 0,
+                    borrow_a: 4_000_000_000,
+                    borrow_b: 0,
+                    min_added_amount_a: 0,
+                    min_added_amount_b: 0,
+                    max_swap_slippage: 0,
+                },
             )
             .unwrap();
+
+            ctx.send_transaction_with_signers(ix.instructions, ix.additional_signers.iter().collect())
+                .unwrap();
 
             swap_exact_in(&ctx, &pool.address, 50000000000, &pool.data.token_mint_b, None)
                 .await
                 .unwrap();
 
-            let tuna_position = fetch_tuna_position(&ctx.rpc, &get_tuna_position_address(&position_mint.pubkey()).0).unwrap();
+            let tuna_position = fetch_tuna_position(&ctx.rpc, &get_tuna_position_address(&ix.position_mint).0).unwrap();
             let vaults = fetch_all_vault(
                 &ctx.rpc,
                 &[
@@ -269,7 +272,7 @@ mod tests {
                 ],
             )
             .unwrap();
-            
+
             ctx.send_transaction(liquidate_position_fusion_instructions(
                 &ctx.signer.pubkey(),
                 &tuna_position.data,

@@ -1,8 +1,7 @@
 use anyhow::Result;
 use defituna_client::{fetch_all_lending_position_with_filter, LendingPositionFilter};
-
-use solana_client::rpc_client::RpcClient;
-use solana_sdk::pubkey::Pubkey;
+use solana_pubkey::Pubkey;
+use solana_rpc_client::rpc_client::RpcClient;
 
 /// Retrieves all Lending Positions belonging to the user.
 ///

@@ -1,6 +1,6 @@
 use fusionamm_client::get_tick_array_address;
 use fusionamm_core::{get_initializable_tick_index, get_tick_array_start_tick_index, TICK_ARRAY_SIZE};
-use solana_program::pubkey::Pubkey;
+use solana_pubkey::Pubkey;
 
 pub fn get_swap_tick_arrays(tick_current_index: i32, tick_spacing: u16, whirlpool_address: &Pubkey) -> [Pubkey; 5] {
     let mut tick_array_addresses = [Pubkey::default(); 5];
@@ -28,14 +28,10 @@ pub fn get_tick_arrays_for_rebalanced_position(
     let new_tick_upper_index = new_tick_lower_index + position_range;
 
     let lower_tick_array_start_index = orca_whirlpools_core::get_tick_array_start_tick_index(new_tick_lower_index, tick_spacing);
-    let lower_tick_array_address = get_tick_array_address(&whirlpool_address, lower_tick_array_start_index)
-        .unwrap()
-        .0;
+    let lower_tick_array_address = get_tick_array_address(&whirlpool_address, lower_tick_array_start_index).unwrap().0;
 
     let upper_tick_array_start_index = orca_whirlpools_core::get_tick_array_start_tick_index(new_tick_upper_index, tick_spacing);
-    let upper_tick_array_address = get_tick_array_address(&whirlpool_address, upper_tick_array_start_index)
-        .unwrap()
-        .0;
+    let upper_tick_array_address = get_tick_array_address(&whirlpool_address, upper_tick_array_start_index).unwrap().0;
 
     [
         (lower_tick_array_address, lower_tick_array_start_index),

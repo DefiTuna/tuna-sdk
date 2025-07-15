@@ -8,7 +8,7 @@ import { sendTransaction } from "@crypticdot/fusionamm-tx-sender";
 import BaseCommand, { addressArg } from "../base";
 import { rpc, signer } from "../rpc";
 
-export default class SeLiquidatorAuthority extends BaseCommand {
+export default class SetLiquidatorAuthority extends BaseCommand {
   static override args = {
     value: addressArg({
       description: "Liquidator authority",
@@ -19,7 +19,7 @@ export default class SeLiquidatorAuthority extends BaseCommand {
   static override examples = ["<%= config.bin %> <%= command.id %> ADDRESS"];
 
   public async run() {
-    const { args } = await this.parse(SeLiquidatorAuthority);
+    const { args } = await this.parse(SetLiquidatorAuthority);
 
     const tunaConfigAddress = (await getTunaConfigAddress())[0];
     const tunaConfig = await fetchTunaConfig(rpc, tunaConfigAddress);

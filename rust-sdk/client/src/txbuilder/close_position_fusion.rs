@@ -2,8 +2,8 @@ use crate::accounts::TunaPosition;
 use crate::get_tuna_position_address;
 use crate::instructions::ClosePositionFusion;
 use fusionamm_client::get_position_address;
-use solana_program::instruction::Instruction;
-use solana_program::pubkey::Pubkey;
+use solana_instruction::Instruction;
+use solana_pubkey::Pubkey;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 
 pub fn close_position_fusion_instruction(

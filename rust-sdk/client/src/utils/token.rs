@@ -1,6 +1,6 @@
-use solana_program::instruction::Instruction;
-use solana_program::pubkey::Pubkey;
-use solana_program::system_instruction::transfer;
+use solana_instruction::Instruction;
+use solana_pubkey::Pubkey;
+use solana_system_interface::instruction::transfer;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 use spl_associated_token_account::instruction::create_associated_token_account_idempotent;
 use spl_token_2022::instruction::{close_account, sync_native};

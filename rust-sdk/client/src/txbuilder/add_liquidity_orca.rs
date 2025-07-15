@@ -6,14 +6,14 @@ use crate::utils::orca::get_swap_tick_arrays;
 use crate::{get_market_address, get_tuna_config_address, get_tuna_position_address, get_vault_address};
 use anyhow::{anyhow, Result};
 use orca_whirlpools_client::{
-    fetch_whirlpool, get_oracle_address, get_position_address, get_tick_array_address, get_whirlpool_address, InitializeTickArray,
-    InitializeTickArrayInstructionArgs, Whirlpool,
+    fetch_whirlpool, get_oracle_address, get_position_address, get_tick_array_address, get_whirlpool_address, InitializeDynamicTickArray,
+    InitializeDynamicTickArrayInstructionArgs, Whirlpool,
 };
 use orca_whirlpools_core::get_tick_array_start_tick_index;
 use solana_client::rpc_client::RpcClient;
-use solana_program::instruction::{AccountMeta, Instruction};
-use solana_program::pubkey::Pubkey;
-use solana_program::system_program;
+use solana_instruction::{AccountMeta, Instruction};
+use solana_pubkey::Pubkey;
+use solana_sdk_ids::system_program;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 use spl_associated_token_account::instruction::create_associated_token_account_idempotent;
 
@@ -75,35 +75,31 @@ pub fn add_liquidity_orca_instructions(
     let lower_tick_array_address = get_tick_array_address(&whirlpool.address, lower_tick_array_start_index)?.0;
     let upper_tick_array_address = get_tick_array_address(&whirlpool.address, upper_tick_array_start_index)?.0;
 
-    let tick_array_infos = rpc.get_multiple_accounts(&[lower_tick_array_address.into(), upper_tick_array_address.into()])?;
+    instructions.push(
+        InitializeDynamicTickArray {
+            whirlpool: whirlpool.address,
+            funder: *authority,
+            tick_array: lower_tick_array_address,
+            system_program: system_program::id(),
+        }
+        .instruction(InitializeDynamicTickArrayInstructionArgs {
+            start_tick_index: lower_tick_array_start_index,
+            idempotent: true,
+        }),
+    );
 
-    if tick_array_infos[0].is_none() {
-        instructions.push(
-            InitializeTickArray {
-                whirlpool: whirlpool.address,
-                funder: *authority,
-                tick_array: lower_tick_array_address,
-                system_program: system_program::id(),
-            }
-            .instruction(InitializeTickArrayInstructionArgs {
-                start_tick_index: lower_tick_array_start_index,
-            }),
-        );
-    }
-
-    if tick_array_infos[1].is_none() && lower_tick_array_start_index != upper_tick_array_start_index {
-        instructions.push(
-            InitializeTickArray {
-                whirlpool: whirlpool.address,
-                funder: *authority,
-                tick_array: upper_tick_array_address,
-                system_program: system_program::id(),
-            }
-            .instruction(InitializeTickArrayInstructionArgs {
-                start_tick_index: upper_tick_array_start_index,
-            }),
-        );
-    }
+    instructions.push(
+        InitializeDynamicTickArray {
+            whirlpool: whirlpool.address,
+            funder: *authority,
+            tick_array: upper_tick_array_address,
+            system_program: system_program::id(),
+        }
+        .instruction(InitializeDynamicTickArrayInstructionArgs {
+            start_tick_index: upper_tick_array_start_index,
+            idempotent: true,
+        }),
+    );
 
     instructions.push(add_liquidity_orca_instruction(
         authority,

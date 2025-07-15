@@ -1,5 +1,65 @@
 # @defituna/rust-client
 
+## 2.0.13
+
+### Patch Changes
+
+- 3ad885c: Updated dependencies in the rust client and fixed rust examples
+
+## 2.0.12
+
+### Patch Changes
+
+- adce08b: Accounts initialization cost calculation for the position opening and rebalancing
+
+## 2.0.11
+
+### Patch Changes
+
+- 158f45e: Updated the fee model of auto-rebalanceable positions and removed raydium related code
+
+## 2.0.10
+
+### Patch Changes
+
+- 1da0fca: Updated FusionAMM packages
+
+## 2.0.9
+
+### Patch Changes
+
+- a5eddd1: Tuna program 2.0.7 (updated Whirlpool program to 0.5.0)
+
+## 2.0.8
+
+### Patch Changes
+
+- 2eb5647: Updated orca whirlpools client to 4.0.0-beta.1
+
+## 2.0.7
+
+### Patch Changes
+
+- 66926b6: Use of granular solana crates instead of solana-sdk
+
+## 2.0.6
+
+### Patch Changes
+
+- 5571191: Updated fusionamm and orca dependencies
+
+## 2.0.5
+
+### Patch Changes
+
+- d0bbf95: Added vault and market account filters
+
+## 2.0.4
+
+### Patch Changes
+
+- 9210db3: Added account discriminators
+
 ## 2.0.3
 
 ### Patch Changes

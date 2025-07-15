@@ -2,7 +2,7 @@
   "address": "tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD",
   "metadata": {
     "name": "tuna",
-    "version": "2.0.3",
+    "version": "2.0.10",
     "spec": "0.1.0",
     "description": "DefiTuna"
   },
@@ -1069,6 +1069,10 @@
         },
         {
           "name": "max_swap_slippage",
+          "type": "u32"
+        },
+        {
+          "name": "rebalance_protocol_fee",
           "type": "u32"
         }
       ]
@@ -3211,6 +3215,10 @@
         {
           "name": "max_swap_slippage",
           "type": "u32"
+        },
+        {
+          "name": "rebalance_protocol_fee",
+          "type": "u32"
         }
       ]
     },
@@ -3694,38 +3702,8 @@
     },
     {
       "code": 6056,
-      "name": "RaydiumInvalidFirstTickArrayAccount",
-      "msg": "RaydiumInvalidFirstTickArrayAccount"
-    },
-    {
-      "code": 6057,
-      "name": "RaydiumInvalidTickArray",
-      "msg": "RaydiumInvalidTickArray"
-    },
-    {
-      "code": 6058,
-      "name": "RaydiumInvaildTickIndex",
-      "msg": "RaydiumInvaildTickIndex"
-    },
-    {
-      "code": 6059,
-      "name": "RaydiumMaxTokenOverflow",
-      "msg": "RaydiumMaxTokenOverflow"
-    },
-    {
-      "code": 6060,
-      "name": "RaydiumNotEnoughTickArrayAccount",
-      "msg": "RaydiumNotEnoughTickArrayAccount"
-    },
-    {
-      "code": 6061,
-      "name": "RaydiumSqrtPriceLimitOverflow",
-      "msg": "RaydiumSqrtPriceLimitOverflow"
-    },
-    {
-      "code": 6062,
-      "name": "RaydiumZeroAmountSpecified",
-      "msg": "RaydiumZeroAmountSpecified"
+      "name": "PositionIsAutoRebalanceable",
+      "msg": "Unable to claim yield for auto re-balanceable positions"
     }
   ],
   "types": [
@@ -3820,7 +3798,7 @@
             "type": "u16"
           },
           {
-            "name": "clp_to_olp_reward_ratio",
+            "name": "clp_reward_rate",
             "type": "u16"
           },
           {
@@ -3985,7 +3963,7 @@
           {
             "name": "market_maker",
             "docs": [
-              "Market maker: Orca, Fusion, Raydium, etc..."
+              "Market maker: Orca, Fusion, etc..."
             ],
             "type": {
               "defined": {
@@ -4099,6 +4077,13 @@
             "type": "u32"
           },
           {
+            "name": "rebalance_protocol_fee",
+            "docs": [
+              "The protocol fee taken from yield when a position is re-balanced."
+            ],
+            "type": "u32"
+          },
+          {
             "name": "reserved",
             "docs": [
               "Reserved"
@@ -4106,7 +4091,7 @@
             "type": {
               "array": [
                 "u8",
-                211
+                207
               ]
             }
           }

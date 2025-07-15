@@ -2,11 +2,16 @@ use crate::accounts::TunaPosition;
 use crate::get_tuna_position_address;
 use crate::instructions::ClosePositionOrca;
 use orca_whirlpools_client::get_position_address;
-use solana_program::instruction::Instruction;
-use solana_program::pubkey::Pubkey;
+use solana_instruction::Instruction;
+use solana_pubkey::Pubkey;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 
-pub fn close_position_orca_instruction(authority: &Pubkey, tuna_position: &TunaPosition, token_program_a: &Pubkey, token_program_b: &Pubkey) -> Instruction {
+pub fn close_position_orca_instruction(
+    authority: &Pubkey,
+    tuna_position: &TunaPosition,
+    token_program_a: &Pubkey,
+    token_program_b: &Pubkey,
+) -> Instruction {
     let tuna_position_address = get_tuna_position_address(&tuna_position.position_mint).0;
 
     let ix_builder = ClosePositionOrca {

@@ -6,7 +6,7 @@ use solana_client::{
     rpc_client::RpcClient,
     rpc_filter::{Memcmp, RpcFilterType},
 };
-use solana_program::pubkey::Pubkey;
+use solana_pubkey::Pubkey;
 
 use crate::accounts::LendingPosition;
 use crate::generated::shared::DecodedAccount;
@@ -27,7 +27,10 @@ impl From<LendingPositionFilter> for RpcFilterType {
     }
 }
 
-pub fn fetch_all_lending_position_with_filter(rpc: &RpcClient, filters: Vec<LendingPositionFilter>) -> Result<Vec<DecodedAccount<LendingPosition>>, Box<dyn Error>> {
+pub fn fetch_all_lending_position_with_filter(
+    rpc: &RpcClient,
+    filters: Vec<LendingPositionFilter>,
+) -> Result<Vec<DecodedAccount<LendingPosition>>, Box<dyn Error>> {
     let mut filters: Vec<RpcFilterType> = filters.into_iter().map(|filter| filter.into()).collect();
     filters.push(RpcFilterType::Memcmp(Memcmp::new_base58_encoded(0, LENDING_POSITION_DISCRIMINATOR)));
     fetch_decoded_program_accounts(rpc, filters)

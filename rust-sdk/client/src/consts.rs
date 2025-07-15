@@ -1,5 +1,4 @@
-use solana_program::pubkey;
-use solana_program::pubkey::Pubkey;
+use solana_pubkey::{pubkey, Pubkey};
 
 pub const HUNDRED_PERCENT: u32 = 1000000;
 pub const LEVERAGE_ONE: u32 = HUNDRED_PERCENT; // 1.0x

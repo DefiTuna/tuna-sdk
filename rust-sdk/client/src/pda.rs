@@ -1,5 +1,5 @@
 use crate::TUNA_ID;
-use solana_program::pubkey::Pubkey;
+use solana_pubkey::Pubkey;
 
 pub fn get_tuna_config_address() -> (Pubkey, u8) {
     let seeds = &[b"tuna_config".as_ref()];

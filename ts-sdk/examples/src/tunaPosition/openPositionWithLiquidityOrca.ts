@@ -10,7 +10,6 @@ import {
 import { DEFAULT_TRANSACTION_CONFIG, sendTransaction } from "@crypticdot/fusionamm-tx-sender";
 import { fetchMaybeWhirlpool } from "@orca-so/whirlpools-client";
 import { sqrtPriceToPrice } from "@orca-so/whirlpools-core";
-import { generateKeyPairSigner } from "@solana/kit";
 import { fetchAllMint } from "@solana-program/token-2022";
 
 import { loadKeypair, rpc } from "../utils/common";
@@ -49,12 +48,6 @@ export async function openPositionWithLiquidityOrca(): Promise<void> {
    * Ratio for borrowing funds, freely chosen by the user, unbound by the *position*’s liquidity range.
    */
   const borrowRatio = { a: 0.6, b: 0.4 };
-
-  /**
-   * A newly generated {@link KeyPairSigner Keypair} for the new *Position Mint*, which will be
-   * created with the position and it's used to identify it.
-   */
-  const newPositionMintKeypair = await generateKeyPairSigner();
 
   /**
    * Deriving collateral and borrow amounts for adding liquidity
@@ -200,18 +193,12 @@ export async function openPositionWithLiquidityOrca(): Promise<void> {
   /**
    * Creation of instructions for Position Accounts creation and adding liquidity.
    */
-  const instructions = await openPositionWithLiquidityOrcaInstructions(
-    rpc,
-    signer,
-    newPositionMintKeypair,
-    whirlpoolAddress,
-    args,
-  );
+  const ix = await openPositionWithLiquidityOrcaInstructions(rpc, signer, whirlpoolAddress, args);
 
   /**
    * Signing and sending the transaction with all the instructions to the Solana network.
    */
-  await sendTransaction(rpc, instructions, signer, DEFAULT_TRANSACTION_CONFIG, [market.data.addressLookupTable]);
+  await sendTransaction(rpc, ix.instructions, signer, DEFAULT_TRANSACTION_CONFIG, [market.data.addressLookupTable]);
 }
 
 openPositionWithLiquidityOrca().catch(console.error);

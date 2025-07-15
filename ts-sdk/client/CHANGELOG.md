@@ -1,5 +1,41 @@
 # @defituna/client
 
+## 2.0.14
+
+### Patch Changes
+
+- adce08b: Accounts initialization cost calculation for the position opening and rebalancing
+
+## 2.0.13
+
+### Patch Changes
+
+- 158f45e: Updated the fee model of auto-rebalanceable positions and removed raydium related code
+
+## 2.0.12
+
+### Patch Changes
+
+- 1da0fca: Updated FusionAMM packages
+
+## 2.0.11
+
+### Patch Changes
+
+- a5eddd1: Tuna program 2.0.7 (updated Whirlpool program to 0.5.0)
+
+## 2.0.10
+
+### Patch Changes
+
+- 5c5924c: Bugfix in sol wrapping code
+
+## 2.0.9
+
+### Patch Changes
+
+- 5571191: Updated fusionamm and orca dependencies
+
 ## 2.0.8
 
 ### Patch Changes

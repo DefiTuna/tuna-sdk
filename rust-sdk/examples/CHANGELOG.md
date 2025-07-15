@@ -1,5 +1,23 @@
 # @crypticdot/defituna-rust-examples
 
+## 2.0.5
+
+### Patch Changes
+
+- 3ad885c: Updated dependencies in the rust client and fixed rust examples
+
+## 2.0.4
+
+### Patch Changes
+
+- 66926b6: Use of granular solana crates instead of solana-sdk
+
+## 2.0.3
+
+### Patch Changes
+
+- 5571191: Updated fusionamm and orca dependencies
+
 ## 2.0.2
 
 ### Patch Changes

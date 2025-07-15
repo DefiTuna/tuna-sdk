@@ -7,8 +7,8 @@ use crate::{
 use anyhow::anyhow;
 use orca_whirlpools_client::fetch_whirlpool;
 use solana_client::rpc_client::RpcClient;
-use solana_program::instruction::Instruction;
-use solana_program::pubkey::Pubkey;
+use solana_instruction::Instruction;
+use solana_pubkey::Pubkey;
 
 #[derive(Default)]
 pub struct ClosePositionWithLiquidityOrcaArgs {

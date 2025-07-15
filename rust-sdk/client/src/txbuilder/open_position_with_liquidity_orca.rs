@@ -6,16 +6,35 @@ use crate::utils::orca::get_swap_tick_arrays;
 use crate::{get_market_address, get_tuna_config_address, get_tuna_position_address, get_vault_address, WP_NFT_UPDATE_AUTH};
 use anyhow::{anyhow, Result};
 use orca_whirlpools_client::{
-    fetch_whirlpool, get_oracle_address, get_position_address, get_tick_array_address, get_whirlpool_address, InitializeTickArray,
-    InitializeTickArrayInstructionArgs, Whirlpool,
+    fetch_whirlpool, get_oracle_address, get_position_address, get_tick_array_address, get_whirlpool_address, DynamicTickArray,
+    InitializeDynamicTickArray, InitializeDynamicTickArrayInstructionArgs, Whirlpool,
 };
 use orca_whirlpools_core::get_tick_array_start_tick_index;
 use solana_client::rpc_client::RpcClient;
-use solana_program::instruction::{AccountMeta, Instruction};
-use solana_program::pubkey::Pubkey;
-use solana_program::system_program;
+use solana_instruction::{AccountMeta, Instruction};
+use solana_keypair::Keypair;
+use solana_pubkey::Pubkey;
+use solana_sdk_ids::system_program;
+use solana_signer::Signer;
+use solana_sysvar::rent::Rent;
+use solana_sysvar::slot_hashes::SysvarId;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 use spl_associated_token_account::instruction::create_associated_token_account_idempotent;
+
+#[derive(Debug)]
+pub struct OpenPositionWithLiquidityOrcaInstruction {
+    /// The public key of the position NFT that represents ownership of the newly opened position.
+    pub position_mint: Pubkey,
+
+    /// A vector of `Instruction` objects required to execute the position opening.
+    pub instructions: Vec<Instruction>,
+
+    /// A vector of `Keypair` objects representing additional signers required for the instructions.
+    pub additional_signers: Vec<Keypair>,
+
+    /// The cost of initializing the position, measured in lamports.
+    pub initialization_cost: u64,
+}
 
 #[derive(Default)]
 pub struct OpenPositionWithLiquidityOrcaArgs {
@@ -36,10 +55,12 @@ pub struct OpenPositionWithLiquidityOrcaArgs {
 pub fn open_position_with_liquidity_orca_instructions(
     rpc: &RpcClient,
     authority: &Pubkey,
-    position_mint: &Pubkey,
     whirlpool_address: &Pubkey,
     args: OpenPositionWithLiquidityOrcaArgs,
-) -> Result<Vec<Instruction>> {
+) -> Result<OpenPositionWithLiquidityOrcaInstruction> {
+    let rent = rpc.get_account(&Rent::id())?;
+    let rent: Rent = bincode::deserialize(&rent.data)?;
+
     let whirlpool = fetch_whirlpool(rpc, whirlpool_address)?;
     let mint_a_address = whirlpool.data.token_mint_a;
     let mint_b_address = whirlpool.data.token_mint_b;
@@ -57,6 +78,12 @@ pub fn open_position_with_liquidity_orca_instructions(
     let authority_ata_b_instructions = get_create_ata_instructions(&mint_b_address, authority, authority, &mint_b_account.owner, args.collateral_b);
 
     let mut instructions = vec![];
+    let mut non_refundable_rent: u64 = 0;
+    let mut additional_signers: Vec<Keypair> = Vec::new();
+
+    additional_signers.push(Keypair::new());
+    let position_mint = additional_signers[0].pubkey();
+
     instructions.extend(authority_ata_a_instructions.create);
     instructions.extend(authority_ata_b_instructions.create);
     instructions.push(create_associated_token_account_idempotent(
@@ -83,35 +110,39 @@ pub fn open_position_with_liquidity_orca_instructions(
 
     if tick_array_infos[0].is_none() {
         instructions.push(
-            InitializeTickArray {
+            InitializeDynamicTickArray {
                 whirlpool: whirlpool.address,
                 funder: *authority,
                 tick_array: lower_tick_array_address,
                 system_program: system_program::id(),
             }
-            .instruction(InitializeTickArrayInstructionArgs {
+            .instruction(InitializeDynamicTickArrayInstructionArgs {
                 start_tick_index: lower_tick_array_start_index,
+                idempotent: false,
             }),
         );
+        non_refundable_rent += rent.minimum_balance(DynamicTickArray::MIN_LEN);
     }
 
     if tick_array_infos[1].is_none() && lower_tick_array_start_index != upper_tick_array_start_index {
         instructions.push(
-            InitializeTickArray {
+            InitializeDynamicTickArray {
                 whirlpool: whirlpool.address,
                 funder: *authority,
                 tick_array: upper_tick_array_address,
                 system_program: system_program::id(),
             }
-            .instruction(InitializeTickArrayInstructionArgs {
+            .instruction(InitializeDynamicTickArrayInstructionArgs {
                 start_tick_index: upper_tick_array_start_index,
+                idempotent: false,
             }),
         );
+        non_refundable_rent += rent.minimum_balance(DynamicTickArray::MIN_LEN);
     }
 
     instructions.push(open_position_with_liquidity_orca_instruction(
         authority,
-        position_mint,
+        &position_mint,
         &tuna_config.data,
         &vault_a.data,
         &vault_b.data,
@@ -123,7 +154,12 @@ pub fn open_position_with_liquidity_orca_instructions(
     instructions.extend(authority_ata_a_instructions.cleanup);
     instructions.extend(authority_ata_b_instructions.cleanup);
 
-    Ok(instructions)
+    Ok(OpenPositionWithLiquidityOrcaInstruction {
+        position_mint,
+        instructions,
+        additional_signers,
+        initialization_cost: non_refundable_rent,
+    })
 }
 
 pub fn open_position_with_liquidity_orca_instruction(

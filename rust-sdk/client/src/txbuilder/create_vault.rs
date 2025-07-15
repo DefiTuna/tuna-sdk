@@ -1,9 +1,9 @@
 use crate::instructions::{CreateVault, CreateVaultInstructionArgs};
 use crate::utils::get_create_ata_instructions;
 use crate::{get_tuna_config_address, get_vault_address};
-use solana_program::instruction::Instruction;
-use solana_program::pubkey::Pubkey;
-use solana_program::system_program;
+use solana_instruction::Instruction;
+use solana_pubkey::Pubkey;
+use solana_sdk_ids::system_program;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 
 pub fn create_vault_instructions(authority: &Pubkey, mint: &Pubkey, token_program: &Pubkey, args: CreateVaultInstructionArgs) -> Vec<Instruction> {

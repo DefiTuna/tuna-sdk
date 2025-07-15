@@ -1,23 +1,27 @@
-import { sendTransaction } from "./mockRpc.ts";
+import { FusionPool } from "@crypticdot/fusionamm-client";
+import { Whirlpool } from "@orca-so/whirlpools-client";
+import { Account, Address, IInstruction, Rpc, SolanaRpcApi, TransactionSigner } from "@solana/kit";
+import { fetchMaybeToken, fetchMint, fetchToken, findAssociatedTokenPda } from "@solana-program/token-2022";
+import { assert, expect } from "vitest";
+
 import {
   fetchMarket,
+  fetchTunaConfig,
   fetchTunaPosition,
   fetchVault,
   getLendingVaultAddress,
   getMarketAddress,
+  getTunaConfigAddress,
   getTunaPositionAddress,
   HUNDRED_PERCENT,
-  liquidatePositionOrcaInstructions,
-  TunaPositionState,
   liquidatePositionFusionInstructions,
+  liquidatePositionOrcaInstructions,
   MarketMaker,
+  TunaPositionState,
 } from "../../src";
-import { Whirlpool } from "@orca-so/whirlpools-client";
-import { assert, expect } from "vitest";
-import { fetchMint, fetchToken, findAssociatedTokenPda } from "@solana-program/token-2022";
-import { Account, Address, IInstruction, Rpc, SolanaRpcApi, TransactionSigner } from "@solana/kit";
+
 import { fetchPool, fetchPosition, getPositionAddress } from "./fetch.ts";
-import { FusionPool } from "@crypticdot/fusionamm-client";
+import { sendTransaction } from "./mockRpc.ts";
 
 export type LiquidatePositionTestArgs = {
   rpc: Rpc<SolanaRpcApi>;
@@ -25,6 +29,7 @@ export type LiquidatePositionTestArgs = {
   positionMint: Address;
   withdrawPercent?: number;
 };
+
 export type LiquidatePositionTestResults = {
   vaultBalanceDeltaA: bigint;
   vaultBalanceDeltaB: bigint;
@@ -32,8 +37,11 @@ export type LiquidatePositionTestResults = {
   poolBalanceDeltaB: bigint;
   badDebtDeltaA: bigint;
   badDebtDeltaB: bigint;
+  liquidatorRewardA: bigint;
+  liquidatorRewardB: bigint;
   tunaPositionState: TunaPositionState;
 };
+
 export type LiquidatePositionTestExpectations = {
   vaultBalanceDeltaA?: bigint;
   vaultBalanceDeltaB?: bigint;
@@ -41,6 +49,8 @@ export type LiquidatePositionTestExpectations = {
   poolBalanceDeltaB?: bigint;
   badDebtDeltaA?: bigint;
   badDebtDeltaB?: bigint;
+  liquidatorRewardA?: bigint;
+  liquidatorRewardB?: bigint;
   tunaPositionState?: TunaPositionState;
 };
 
@@ -58,6 +68,10 @@ export function assertLiquidatePosition(
     expect(results.poolBalanceDeltaB).toEqual(expectations.poolBalanceDeltaB);
   if (expectations.badDebtDeltaA !== undefined) expect(results.badDebtDeltaA).toEqual(expectations.badDebtDeltaA);
   if (expectations.badDebtDeltaB !== undefined) expect(results.badDebtDeltaB).toEqual(expectations.badDebtDeltaB);
+  if (expectations.liquidatorRewardA !== undefined)
+    expect(results.liquidatorRewardA).toEqual(expectations.liquidatorRewardA);
+  if (expectations.liquidatorRewardB !== undefined)
+    expect(results.liquidatorRewardB).toEqual(expectations.liquidatorRewardB);
   if (expectations.tunaPositionState !== undefined)
     expect(results.tunaPositionState).toEqual(expectations.tunaPositionState);
 }
@@ -68,6 +82,8 @@ export async function liquidatePosition({
   positionMint,
   withdrawPercent,
 }: LiquidatePositionTestArgs): Promise<LiquidatePositionTestResults> {
+  const tunaConfigAddress = (await getTunaConfigAddress())[0];
+  const tunaConfig = await fetchTunaConfig(rpc, tunaConfigAddress);
   const tunaPositionAddress = (await getTunaPositionAddress(positionMint))[0];
   const tunaPosition = await fetchTunaPosition(rpc, tunaPositionAddress);
 
@@ -116,6 +132,21 @@ export async function liquidatePosition({
   )[0];
   const vaultB = await fetchVault(rpc, vaultBAddress);
 
+  const liquidatorAAta = (
+    await findAssociatedTokenPda({
+      owner: tunaConfig.data.liquidatorAuthority,
+      mint: mintA.address,
+      tokenProgram: mintA.programAddress,
+    })
+  )[0];
+  const liquidatorBAta = (
+    await findAssociatedTokenPda({
+      owner: tunaConfig.data.liquidatorAuthority,
+      mint: mintB.address,
+      tokenProgram: mintB.programAddress,
+    })
+  )[0];
+
   let instructions: IInstruction[];
   if (market.data.marketMaker == MarketMaker.Orca) {
     instructions = await liquidatePositionOrcaInstructions(
@@ -145,6 +176,10 @@ export async function liquidatePosition({
   const vaultBBalanceBefore = (await fetchToken(rpc, vaultBAta)).data.amount;
   const poolBalanceABefore = (await fetchToken(rpc, pool.data.tokenVaultA)).data.amount;
   const poolBalanceBBefore = (await fetchToken(rpc, pool.data.tokenVaultB)).data.amount;
+  const liquidatorTokenABefore = await fetchMaybeToken(rpc, liquidatorAAta);
+  const liquidatorBalanceABefore = liquidatorTokenABefore.exists ? liquidatorTokenABefore.data.amount : 0n;
+  const liquidatorTokenBBefore = await fetchMaybeToken(rpc, liquidatorBAta);
+  const liquidatorBalanceBBefore = liquidatorTokenBBefore.exists ? liquidatorTokenBBefore.data.amount : 0n;
 
   // Liquidate the position!
   await sendTransaction(instructions);
@@ -163,6 +198,10 @@ export async function liquidatePosition({
   const vaultBBalanceAfter = (await fetchToken(rpc, vaultBAta)).data.amount;
   const poolBalanceAAfter = (await fetchToken(rpc, pool.data.tokenVaultA)).data.amount;
   const poolBalanceBAfter = (await fetchToken(rpc, pool.data.tokenVaultB)).data.amount;
+  const liquidatorTokenAAfter = await fetchMaybeToken(rpc, liquidatorAAta);
+  const liquidatorBalanceAAfter = liquidatorTokenAAfter.exists ? liquidatorTokenAAfter.data.amount : 0n;
+  const liquidatorTokenBAfter = await fetchMaybeToken(rpc, liquidatorBAta);
+  const liquidatorBalanceBAfter = liquidatorTokenBAfter.exists ? liquidatorTokenBAfter.data.amount : 0n;
 
   const vaultAAfter = await fetchVault(rpc, vaultAAddress);
   const vaultBAfter = await fetchVault(rpc, vaultBAddress);
@@ -174,6 +213,8 @@ export async function liquidatePosition({
     vaultBalanceDeltaB: vaultBBalanceAfter - vaultBBalanceBefore,
     badDebtDeltaA: vaultAAfter.data.unpaidDebtShares - vaultA.data.unpaidDebtShares,
     badDebtDeltaB: vaultBAfter.data.unpaidDebtShares - vaultB.data.unpaidDebtShares,
+    liquidatorRewardA: liquidatorBalanceAAfter - liquidatorBalanceABefore,
+    liquidatorRewardB: liquidatorBalanceBAfter - liquidatorBalanceBBefore,
     tunaPositionState: tunaPositionAfter.data.state,
   };
 }

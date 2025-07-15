@@ -7,11 +7,12 @@ use crate::{
     create_market_instruction, create_tuna_config_instruction, create_vault_instructions, deposit_instruction, get_lending_position_address,
     get_market_address, open_lending_position_instruction,
 };
+use fusionamm_sdk::PriceOrTickIndex;
 use orca_whirlpools_core::price_to_sqrt_price;
-use solana_sdk::pubkey::Pubkey;
-use solana_sdk::signature::Signer;
+use solana_pubkey::Pubkey;
 use spl_token_2022::state::Mint;
 use std::error::Error;
+use solana_signer::Signer;
 
 pub struct TestMarket {
     pub market_maker: MarketMaker,
@@ -104,8 +105,8 @@ pub async fn setup_test_market(
         let open_position_result = fusionamm_sdk::open_position_instructions(
             &ctx.rpc.get_inner_client(),
             pool,
-            20.0,
-            2000.0,
+            PriceOrTickIndex::Price(20.0),
+            PriceOrTickIndex::Price(2000.0),
             fusionamm_sdk::IncreaseLiquidityParam::Liquidity(1_000_000_000_000),
             None,
             Some(ctx.signer.pubkey()),

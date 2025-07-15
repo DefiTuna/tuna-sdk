@@ -3,9 +3,9 @@ use crate::{get_market_address, get_tuna_position_address, WP_NFT_UPDATE_AUTH};
 use anyhow::{anyhow, Result};
 use orca_whirlpools_client::{fetch_whirlpool, get_position_address};
 use solana_client::rpc_client::RpcClient;
-use solana_program::instruction::Instruction;
-use solana_program::pubkey::Pubkey;
-use solana_program::system_program;
+use solana_instruction::Instruction;
+use solana_pubkey::Pubkey;
+use solana_sdk_ids::system_program;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 
 pub fn open_position_orca_instruction(

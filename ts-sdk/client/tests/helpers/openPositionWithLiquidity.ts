@@ -25,7 +25,6 @@ import { sendTransaction } from "./mockRpc.ts";
 export type OpenPositionWithLiquidityTestArgs = {
   rpc: Rpc<SolanaRpcApi>;
   signer?: TransactionSigner;
-  positionMint: TransactionSigner;
   pool: Address;
   tickLowerIndex: number;
   tickUpperIndex: number;
@@ -42,7 +41,6 @@ export type OpenPositionWithLiquidityTestArgs = {
 
 export async function openPositionWithLiquidity({
   rpc,
-  positionMint,
   pool: poolAddress,
   collateralA,
   collateralB,
@@ -99,19 +97,19 @@ export async function openPositionWithLiquidity({
     maxSwapSlippage: maxSwapSlippage ?? HUNDRED_PERCENT / 10,
     maxAmountSlippage: maxAmountSlippage ?? HUNDRED_PERCENT / 4,
   };
-  const instructions =
+  const ix =
     market.data.marketMaker == MarketMaker.Orca
-      ? await openPositionWithLiquidityOrcaInstructions(rpc, signer, positionMint, poolAddress, liquidateArgs)
-      : await openPositionWithLiquidityFusionInstructions(rpc, signer, positionMint, poolAddress, liquidateArgs);
+      ? await openPositionWithLiquidityOrcaInstructions(rpc, signer, poolAddress, liquidateArgs)
+      : await openPositionWithLiquidityFusionInstructions(rpc, signer, poolAddress, liquidateArgs);
 
-  instructions.unshift(getSetComputeUnitLimitInstruction({ units: 1_400_000 }));
+  ix.instructions.unshift(getSetComputeUnitLimitInstruction({ units: 1_400_000 }));
 
   const feeRecipientTokenABefore = await fetchMaybeToken(rpc, feeRecipientAtaA);
   const feeRecipientBalanceABefore = feeRecipientTokenABefore.exists ? feeRecipientTokenABefore.data.amount : 0n;
   const feeRecipientTokenBBefore = await fetchMaybeToken(rpc, feeRecipientAtaB);
   const feeRecipientBalanceBBefore = feeRecipientTokenBBefore.exists ? feeRecipientTokenBBefore.data.amount : 0n;
 
-  await sendTransaction(instructions);
+  await sendTransaction(ix.instructions);
 
   const marketAfter = await fetchMarket(rpc, marketAddress);
   expect(marketAfter.data.borrowedSharesA - market.data.borrowedSharesA).toEqual(borrowA);
@@ -135,4 +133,6 @@ export async function openPositionWithLiquidity({
     (borrowB * BigInt(market.data.protocolFee)) / BigInt(HUNDRED_PERCENT);
   expect(feeRecipientBalanceAAfter - feeRecipientBalanceABefore).toEqual(feeA);
   expect(feeRecipientBalanceBAfter - feeRecipientBalanceBBefore).toEqual(feeB);
+
+  return ix.positionMint;
 }

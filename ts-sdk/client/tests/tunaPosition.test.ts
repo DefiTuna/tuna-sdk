@@ -23,6 +23,8 @@ import {
   TUNA_ERROR__POSITION_NOT_EMPTY,
   TUNA_ERROR__REBALANCE_CONDITIONS_NOT_MET,
   TUNA_POSITION_FLAGS_ALLOW_REBALANCING,
+  TUNA_POSITION_FLAGS_STOP_LOSS_SWAP_TO_TOKEN_B,
+  TUNA_POSITION_FLAGS_TAKE_PROFIT_SWAP_TO_TOKEN_A,
   TunaPositionState,
 } from "../src";
 
@@ -65,6 +67,7 @@ describe("Tuna Position", () => {
       protocolFee: 1000, // 0.1%
       protocolFeeOnCollateral: 1000, // 0.1%
       limitOrderExecutionFee: 1000, // 0.1%
+      rebalanceProtocolFee: HUNDRED_PERCENT / 10,
     };
     testOrcaMarket = await setupTestMarket({ marketMaker: MarketMaker.Orca, ...marketArgs });
     testFusionMarket = await setupTestMarket({ marketMaker: MarketMaker.Fusion, ...marketArgs });
@@ -222,6 +225,7 @@ describe("Tuna Position", () => {
         protocolFee: 1000, // 0.1%
         protocolFeeOnCollateral: 1000, // 0.1%
         limitOrderExecutionFee: 1000, // 0.1%
+        rebalanceProtocolFee: HUNDRED_PERCENT / 10,
       },
       true,
     );
@@ -1248,6 +1252,7 @@ describe("Tuna Position", () => {
       protocolFee: 1000, // 0.1%
       protocolFeeOnCollateral: 1000, // 0.1%
       limitOrderExecutionFee: 1000, // 0.1%
+      rebalanceProtocolFee: HUNDRED_PERCENT / 10,
     });
 
     const positionMintKeypair = await generateKeyPairSigner();
@@ -1377,14 +1382,11 @@ describe("Tuna Position", () => {
   for (const marketMaker of marketMakers) {
     it(`Liquidates a position due to an unhealthy state (no bad debt) (${MarketMaker[marketMaker]})`, async () => {
       const market = markets.find(m => m.marketMaker == marketMaker)!;
-      const positionMintKeypair = await generateKeyPairSigner();
-      const positionMint = positionMintKeypair.address;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
 
-      await openPositionWithLiquidity({
+      const positionMint = await openPositionWithLiquidity({
         rpc,
-        positionMint: positionMintKeypair,
         tickLowerIndex: actualTickIndex - pool.data.tickSpacing * 3,
         tickUpperIndex: actualTickIndex + pool.data.tickSpacing * 3,
         pool: pool.address,
@@ -1579,14 +1581,11 @@ describe("Tuna Position", () => {
   for (const marketMaker of marketMakers) {
     it(`Fails to remove liquidity from an unhealthy position (${MarketMaker[marketMaker]})`, async () => {
       const market = markets.find(m => m.marketMaker == marketMaker)!;
-      const positionMintKeypair = await generateKeyPairSigner();
-      const positionMint = positionMintKeypair.address;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
 
-      await openPositionWithLiquidity({
+      const positionMint = await openPositionWithLiquidity({
         rpc,
-        positionMint: positionMintKeypair,
         tickLowerIndex: actualTickIndex - pool.data.tickSpacing * 3,
         tickUpperIndex: actualTickIndex + pool.data.tickSpacing * 3,
         pool: pool.address,
@@ -1638,13 +1637,11 @@ describe("Tuna Position", () => {
   for (const marketMaker of marketMakers) {
     it(`Can execute openPositionWithLiquidity instruction (${MarketMaker[marketMaker]})`, async () => {
       const market = markets.find(m => m.marketMaker == marketMaker)!;
-      const positionMintKeypair = await generateKeyPairSigner();
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
 
       await openPositionWithLiquidity({
         rpc,
-        positionMint: positionMintKeypair,
         tickLowerIndex: actualTickIndex + pool.data.tickSpacing,
         tickUpperIndex: actualTickIndex + pool.data.tickSpacing * 5,
         pool: pool.address,
@@ -1659,14 +1656,11 @@ describe("Tuna Position", () => {
   for (const marketMaker of marketMakers) {
     it(`Adds liquidity to a two-sided position and withdraw the entire amount in token A (${MarketMaker[marketMaker]})`, async () => {
       const market = markets.find(m => m.marketMaker == marketMaker)!;
-      const positionMintKeypair = await generateKeyPairSigner();
-      const positionMint = positionMintKeypair.address;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
 
-      await openPositionWithLiquidity({
+      const positionMint = await openPositionWithLiquidity({
         rpc,
-        positionMint: positionMintKeypair,
         tickLowerIndex: actualTickIndex - pool.data.tickSpacing * 5,
         tickUpperIndex: actualTickIndex + pool.data.tickSpacing * 5,
         pool: pool.address,
@@ -1700,14 +1694,11 @@ describe("Tuna Position", () => {
   for (const marketMaker of marketMakers) {
     it(`Adds liquidity to a two-sided position and withdraw the entire amount in token B (${MarketMaker[marketMaker]})`, async () => {
       const market = markets.find(m => m.marketMaker == marketMaker)!;
-      const positionMintKeypair = await generateKeyPairSigner();
-      const positionMint = positionMintKeypair.address;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
 
-      await openPositionWithLiquidity({
+      const positionMint = await openPositionWithLiquidity({
         rpc,
-        positionMint: positionMintKeypair,
         tickLowerIndex: actualTickIndex - pool.data.tickSpacing * 5,
         tickUpperIndex: actualTickIndex + pool.data.tickSpacing * 5,
         pool: pool.address,
@@ -1741,14 +1732,11 @@ describe("Tuna Position", () => {
   for (const marketMaker of marketMakers) {
     it(`S/L limit order (${MarketMaker[marketMaker]})`, async () => {
       const market = markets.find(m => m.marketMaker == marketMaker)!;
-      const positionMintKeypair = await generateKeyPairSigner();
-      const positionMint = positionMintKeypair.address;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
 
-      await openPositionWithLiquidity({
+      const positionMint = await openPositionWithLiquidity({
         rpc,
-        positionMint: positionMintKeypair,
         tickLowerIndex: actualTickIndex - pool.data.tickSpacing,
         tickUpperIndex: actualTickIndex + pool.data.tickSpacing,
         tickStopLossIndex: actualTickIndex - pool.data.tickSpacing * 2,
@@ -1759,18 +1747,43 @@ describe("Tuna Position", () => {
         borrowB: 200_000_000n,
       });
 
-      //const whirlpoolBefore = await fetchWhirlpool(rpc, testMarket.pool);
+      // Move the price.
+      await swapExactInput(rpc, signer, pool.address, 100_000_000_000n, pool.data.tokenMintA);
+
+      assertLiquidatePosition(await liquidatePosition({ rpc, signer: LIQUIDATOR_KEYPAIR, positionMint }), {
+        tunaPositionState: TunaPositionState.ClosedByLimitOrder,
+        liquidatorRewardA: 4497643n,
+        liquidatorRewardB: 0n,
+      });
+    });
+  }
+
+  for (const marketMaker of marketMakers) {
+    it(`S/L limit order, swap to token B (${MarketMaker[marketMaker]})`, async () => {
+      const market = markets.find(m => m.marketMaker == marketMaker)!;
+      const pool = await fetchPool(rpc, market.pool, market.marketMaker);
+      const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
+
+      const positionMint = await openPositionWithLiquidity({
+        rpc,
+        tickLowerIndex: actualTickIndex - pool.data.tickSpacing,
+        tickUpperIndex: actualTickIndex + pool.data.tickSpacing,
+        tickStopLossIndex: actualTickIndex - pool.data.tickSpacing * 2,
+        pool: pool.address,
+        collateralA: 1_000_000_000n,
+        collateralB: 100_000_000n,
+        borrowA: 2_000_000_000n,
+        borrowB: 200_000_000n,
+        flags: TUNA_POSITION_FLAGS_STOP_LOSS_SWAP_TO_TOKEN_B,
+      });
 
       // Move the price.
       await swapExactInput(rpc, signer, pool.address, 100_000_000_000n, pool.data.tokenMintA);
 
-      //const whirlpoolAfter = await fetchWhirlpool(rpc, testMarket.pool);
-      //console.log(
-      //`Price moved from ${sqrtPriceToPrice(whirlpoolBefore.data.sqrtPrice, 9, 6)} to ${sqrtPriceToPrice(whirlpoolAfter.data.sqrtPrice, 9, 6)}`,
-      //);
-
       assertLiquidatePosition(await liquidatePosition({ rpc, signer: LIQUIDATOR_KEYPAIR, positionMint }), {
         tunaPositionState: TunaPositionState.ClosedByLimitOrder,
+        liquidatorRewardA: 4497643n,
+        liquidatorRewardB: 0n,
       });
     });
   }
@@ -1778,14 +1791,11 @@ describe("Tuna Position", () => {
   for (const marketMaker of marketMakers) {
     it(`T/P limit order (${MarketMaker[marketMaker]})`, async () => {
       const market = markets.find(m => m.marketMaker == marketMaker)!;
-      const positionMintKeypair = await generateKeyPairSigner();
-      const positionMint = positionMintKeypair.address;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
 
-      await openPositionWithLiquidity({
+      const positionMint = await openPositionWithLiquidity({
         rpc,
-        positionMint: positionMintKeypair,
         tickLowerIndex: actualTickIndex - pool.data.tickSpacing,
         tickUpperIndex: actualTickIndex + pool.data.tickSpacing,
         tickTakeProfitIndex: actualTickIndex + pool.data.tickSpacing * 2,
@@ -1796,18 +1806,43 @@ describe("Tuna Position", () => {
         borrowB: 200_000_000n,
       });
 
-      //const whirlpoolBefore = await fetchWhirlpool(rpc, testMarket.pool);
+      // Move the price.
+      await swapExactInput(rpc, signer, pool.address, 10_000_000_000n, pool.data.tokenMintB);
+
+      assertLiquidatePosition(await liquidatePosition({ rpc, signer: LIQUIDATOR_KEYPAIR, positionMint }), {
+        tunaPositionState: TunaPositionState.ClosedByLimitOrder,
+        liquidatorRewardA: 0n,
+        liquidatorRewardB: 902458n,
+      });
+    });
+  }
+
+  for (const marketMaker of marketMakers) {
+    it(`T/P limit order, swap to token A (${MarketMaker[marketMaker]})`, async () => {
+      const market = markets.find(m => m.marketMaker == marketMaker)!;
+      const pool = await fetchPool(rpc, market.pool, market.marketMaker);
+      const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
+
+      const positionMint = await openPositionWithLiquidity({
+        rpc,
+        tickLowerIndex: actualTickIndex - pool.data.tickSpacing,
+        tickUpperIndex: actualTickIndex + pool.data.tickSpacing,
+        tickTakeProfitIndex: actualTickIndex + pool.data.tickSpacing * 2,
+        pool: pool.address,
+        collateralA: 1_000_000_000n,
+        collateralB: 100_000_000n,
+        borrowA: 2_000_000_000n,
+        borrowB: 200_000_000n,
+        flags: TUNA_POSITION_FLAGS_TAKE_PROFIT_SWAP_TO_TOKEN_A,
+      });
 
       // Move the price.
       await swapExactInput(rpc, signer, pool.address, 10_000_000_000n, pool.data.tokenMintB);
 
-      //const whirlpoolAfter = await fetchWhirlpool(rpc, testMarket.pool);
-      //console.log(
-      //`Price moved from ${sqrtPriceToPrice(whirlpoolBefore.data.sqrtPrice, 9, 6)} to ${sqrtPriceToPrice(whirlpoolAfter.data.sqrtPrice, 9, 6)}`,
-      //);
-
       assertLiquidatePosition(await liquidatePosition({ rpc, signer: LIQUIDATOR_KEYPAIR, positionMint }), {
         tunaPositionState: TunaPositionState.ClosedByLimitOrder,
+        liquidatorRewardA: 0n,
+        liquidatorRewardB: 902458n,
       });
     });
   }
@@ -1906,19 +1941,18 @@ describe("Tuna Position", () => {
         protocolFee: 1000, // 0.1%
         protocolFeeOnCollateral: 1000, // 0.1%
         limitOrderExecutionFee: 1000, // 0.1%
+        rebalanceProtocolFee: HUNDRED_PERCENT / 10,
       },
       false,
       true,
     );
 
-    const positionMintKeypair = await generateKeyPairSigner();
     const whirlpool = await fetchWhirlpool(rpc, testOrcaMarket.pool);
     const actualTickIndex =
       whirlpool.data.tickCurrentIndex - (whirlpool.data.tickCurrentIndex % whirlpool.data.tickSpacing);
 
-    await openPositionWithLiquidity({
+    const positionMint = await openPositionWithLiquidity({
       rpc,
-      positionMint: positionMintKeypair,
       tickLowerIndex: actualTickIndex - whirlpool.data.tickSpacing * 5,
       tickUpperIndex: actualTickIndex + whirlpool.data.tickSpacing * 5,
       pool: testOrcaMarket.pool,
@@ -1941,14 +1975,14 @@ describe("Tuna Position", () => {
       ),
     );
 
-    const orcaPositionAddress = (await getPositionAddress(positionMintKeypair.address))[0];
+    const orcaPositionAddress = (await getPositionAddress(positionMint))[0];
     await updateFeesAndRewards(orcaPositionAddress);
 
     assertRemoveLiquidity(
       await removeLiquidity({
         rpc,
         signer,
-        positionMint: positionMintKeypair.address,
+        positionMint,
         pool: testOrcaMarket.pool,
         closePosition: true,
       }),
@@ -1964,14 +1998,11 @@ describe("Tuna Position", () => {
   for (const marketMaker of marketMakers) {
     it(`Can run openPositionWithLiquidity and closePositionWithLiquidity (${MarketMaker[marketMaker]})`, async () => {
       const market = markets.find(m => m.marketMaker == marketMaker)!;
-      const positionMintKeypair = await generateKeyPairSigner();
-      const positionMint = positionMintKeypair.address;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
 
-      await openPositionWithLiquidity({
+      const positionMint = await openPositionWithLiquidity({
         rpc,
-        positionMint: positionMintKeypair,
         tickLowerIndex: actualTickIndex - pool.data.tickSpacing * 3,
         tickUpperIndex: actualTickIndex + pool.data.tickSpacing * 3,
         pool: pool.address,
@@ -1986,14 +2017,12 @@ describe("Tuna Position", () => {
   }
 
   it("Repay debt", async () => {
-    const positionMintKeypair = await generateKeyPairSigner();
     const whirlpool = await fetchWhirlpool(rpc, testOrcaMarket.pool);
     const actualTickIndex =
       whirlpool.data.tickCurrentIndex - (whirlpool.data.tickCurrentIndex % whirlpool.data.tickSpacing);
 
-    await openPositionWithLiquidity({
+    const positionMint = await openPositionWithLiquidity({
       rpc,
-      positionMint: positionMintKeypair,
       tickLowerIndex: actualTickIndex - whirlpool.data.tickSpacing * 3,
       tickUpperIndex: actualTickIndex + whirlpool.data.tickSpacing * 3,
       pool: testOrcaMarket.pool,
@@ -2003,20 +2032,17 @@ describe("Tuna Position", () => {
       borrowB: 1_000_000_000n,
     });
 
-    await repayDebt({ rpc, positionMint: positionMintKeypair.address, collateralA: 10000n, collateralB: 20000n });
+    await repayDebt({ rpc, positionMint, collateralA: 10000n, collateralB: 20000n });
   });
 
   for (const marketMaker of marketMakers) {
     it(`Re-balance a two-sided position (${MarketMaker[marketMaker]})`, async () => {
       const market = markets.find(m => m.marketMaker == marketMaker)!;
-      const positionMintKeypair = await generateKeyPairSigner();
-      const positionMint = positionMintKeypair.address;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
 
-      await openPositionWithLiquidity({
+      const positionMint = await openPositionWithLiquidity({
         rpc,
-        positionMint: positionMintKeypair,
         tickLowerIndex: actualTickIndex - pool.data.tickSpacing * 5,
         tickUpperIndex: actualTickIndex + pool.data.tickSpacing * 5,
         pool: pool.address,
@@ -2054,8 +2080,8 @@ describe("Tuna Position", () => {
           pool: pool.address,
         }),
         {
-          newTickLowerIndex: -17280,
-          newTickUpperIndex: -16640,
+          newTickLowerIndex: -17344,
+          newTickUpperIndex: -16704,
         },
       );
     });

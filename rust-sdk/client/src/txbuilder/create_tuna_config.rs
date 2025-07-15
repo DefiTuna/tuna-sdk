@@ -1,8 +1,9 @@
 use crate::get_tuna_config_address;
 use crate::instructions::{CreateTunaConfig, CreateTunaConfigInstructionArgs};
-use solana_program::instruction::Instruction;
-use solana_program::pubkey::Pubkey;
-use solana_program::system_program;
+use solana_instruction::Instruction;
+use solana_pubkey::Pubkey;
+use solana_sdk_ids::system_program;
+use solana_sdk_ids::sysvar::rent;
 
 pub fn create_tuna_config_instruction(
     authority: &Pubkey,
@@ -17,7 +18,7 @@ pub fn create_tuna_config_instruction(
         authority: *authority,
         tuna_config: tuna_config_address,
         system_program: system_program::ID,
-        rent: solana_program::sysvar::rent::ID,
+        rent: rent::ID,
     };
 
     ix_builder.instruction(CreateTunaConfigInstructionArgs {

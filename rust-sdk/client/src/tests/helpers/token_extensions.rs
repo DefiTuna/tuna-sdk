@@ -9,7 +9,9 @@
 //
 
 use crate::tests::helpers::rpc::RpcContext;
-use solana_sdk::{pubkey::Pubkey, signer::Signer, system_instruction};
+use solana_pubkey::Pubkey;
+use solana_signer::Signer;
+use solana_system_interface::instruction::create_account;
 use spl_associated_token_account::{get_associated_token_address_with_program_id, instruction::create_associated_token_account_idempotent};
 use spl_token_2022::{
     extension::{
@@ -17,11 +19,11 @@ use spl_token_2022::{
         ExtensionType,
     },
     instruction::{initialize_mint2, mint_to},
-    solana_program::program_pack::Pack,
     state::Mint,
     ID as TOKEN_2022_PROGRAM_ID,
 };
 use std::error::Error;
+use spl_token_2022::solana_program::program_pack::Pack;
 
 #[derive(Default)]
 pub struct SetupAtaConfig {
@@ -36,7 +38,7 @@ pub async fn setup_mint_te(ctx: &RpcContext, decimals: u8, extensions: &[Extensi
     let space = ExtensionType::try_calculate_account_len::<Mint>(extensions)?;
     let rent = ctx.rpc.get_minimum_balance_for_rent_exemption(space)?;
 
-    instructions.push(system_instruction::create_account(&ctx.signer.pubkey(), &mint.pubkey(), rent, space as u64, &TOKEN_2022_PROGRAM_ID));
+    instructions.push(create_account(&ctx.signer.pubkey(), &mint.pubkey(), rent, space as u64, &TOKEN_2022_PROGRAM_ID));
 
     // 2. Initialize extensions first
     for extension in extensions {

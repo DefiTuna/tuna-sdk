@@ -89,17 +89,13 @@ export async function rebalancePosition({
 
   if (isOrcaMarket) {
     instructions.push(
-      ...(await rebalancePositionOrcaInstructions(rpc, signer, positionMint, createInstructions, cleanupInstructions)),
+      ...(await rebalancePositionOrcaInstructions(rpc, signer, positionMint, createInstructions, cleanupInstructions))
+        .instructions,
     );
   } else {
     instructions.push(
-      ...(await rebalancePositionFusionInstructions(
-        rpc,
-        signer,
-        positionMint,
-        createInstructions,
-        cleanupInstructions,
-      )),
+      ...(await rebalancePositionFusionInstructions(rpc, signer, positionMint, createInstructions, cleanupInstructions))
+        .instructions,
     );
   }
 

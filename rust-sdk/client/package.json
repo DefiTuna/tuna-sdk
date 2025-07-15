@@ -1,7 +1,7 @@
 {
   "name": "@crypticdot/defituna-rust-client",
   "description": "Rust client to interact with DefiTuna's on-chain program.",
-  "version": "2.0.3",
+  "version": "2.0.13",
   "private": true,
   "license": "SEE LICENSE IN LICENSE",
   "sideEffects": false,
@@ -13,11 +13,10 @@
   "devDependencies": {
     "@crypticdot/defituna-program": "workspace:*",
     "@codama/nodes": "^1.2.13",
-    "@codama/renderers-rust": "^1.0.22",
     "@codama/visitors-core": "^1.2.13",
     "@codama/nodes-from-anchor": "^1.1.14",
-    "@codama/renderers": "^1.0.23",
-    "codama": "^1.2.12",
+    "@codama/renderers": "^1.0.24",
+    "codama": "^1.2.14",
     "rimraf": "^6.0.1"
   }
 }

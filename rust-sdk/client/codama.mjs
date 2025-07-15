@@ -14,29 +14,6 @@ function readIdl() {
 const idl = JSON.parse(readIdl());
 const codama = createFromRoot(rootNodeFromAnchor(idl));
 
-// Resolve the account name duplicates in Orca and Raydium.
-// Not used now. Please, DO NOT delete!
-/*
-codama.update(
-    bottomUpTransformerVisitor([
-        {
-            select: (node) => isNode(node, "definedTypeNode") || isNode(node, "definedTypeLinkNode"),
-            transform: (node) => {
-                if (isNode(node, "definedTypeNode") && node.name.includes("::")) {
-                    return definedTypeNode({
-                        ...node,
-                        name: camelCase(node.name.replaceAll("::", " ")),
-                    });
-                } else if (isNode(node, "definedTypeLinkNode") && node.name.includes("::")) {
-                    return definedTypeLinkNode(camelCase(node.name.replaceAll("::", " ")), node.program);
-                }
-                return node;
-            },
-        },
-    ]),
-);
-*/
-
 // Delete Orca and fusion accounts
 codama.update(
   updateAccountsVisitor({

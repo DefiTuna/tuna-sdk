@@ -12,11 +12,12 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::{error::Error, str::FromStr};
 
 use async_trait::async_trait;
-use base64::Engine;
 use base64::engine::general_purpose::STANDARD;
+use base64::Engine;
 use fusionamm_client::FUSIONAMM_ID;
 use orca_whirlpools_client::WHIRLPOOL_ID;
 use serde_json::{from_value, to_value, Value};
+use solana_account::Account;
 use solana_account_decoder::{encode_ui_account, UiAccountEncoding};
 use solana_client::client_error::Result as ClientResult;
 use solana_client::{
@@ -27,21 +28,19 @@ use solana_client::{
     rpc_response::{Response, RpcBlockhash, RpcResponseContext, RpcVersionInfo},
     rpc_sender::{RpcSender, RpcTransportStats},
 };
+use solana_commitment_config::CommitmentLevel;
+use solana_epoch_info::EpochInfo;
+use solana_instruction::Instruction;
+use solana_keypair::Keypair;
+use solana_message::v0::Message;
+use solana_message::VersionedMessage;
 use solana_program_test::tokio::sync::Mutex;
 use solana_program_test::{ProgramTest, ProgramTestContext};
-use solana_sdk::bs58;
-use solana_sdk::epoch_info::EpochInfo;
-use solana_sdk::{
-    account::Account,
-    commitment_config::CommitmentLevel,
-    instruction::Instruction,
-    message::{v0::Message, VersionedMessage},
-    pubkey::Pubkey,
-    signature::{Keypair, Signature},
-    signer::Signer,
-    system_program,
-    transaction::VersionedTransaction,
-};
+use solana_pubkey::Pubkey;
+use solana_sdk_ids::system_program;
+use solana_signature::Signature;
+use solana_signer::Signer;
+use solana_transaction::versioned::VersionedTransaction;
 use solana_version::Version;
 use spl_memo::build_memo;
 

@@ -1,8 +1,7 @@
-use anyhow::{bail, Result};
-use solana_sdk::pubkey::Pubkey;
-use std::str::FromStr;
-
 use crate::constants::VALID_METHODS;
+use anyhow::{bail, Result};
+use solana_pubkey::Pubkey;
+use std::str::FromStr;
 
 #[derive(PartialEq)]
 pub enum Method {
@@ -23,7 +22,7 @@ impl Method {
       "open_position_with_liquidity_orca" => Ok(Self::OpenPositionWithLiquidityOrca),
       "collect_fees_orca" => Ok(Self::CollectFeesOrca),
       "collect_and_compound_fees_orca" => Ok(Self::CollectAndCompoundFeesOrca),
-      "remove_liquidity_and_close_orca" => Ok(Self::ClosePositionWithLiquidityOrca),
+      "close_position_with_liquidity_orca" => Ok(Self::ClosePositionWithLiquidityOrca),
       "retrieve_lending_positions" => Ok(Self::RetrieveLendingPositions),
       "retrieve_tuna_positions" => Ok(Self::RetrieveTunaPositions),
       _ => bail!("Unknown method: {}. Valid options: {}", s, VALID_METHODS.join(", ")),

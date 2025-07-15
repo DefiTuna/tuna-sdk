@@ -89,6 +89,12 @@ export default class UpdateMarket extends BaseCommand {
       min: 0,
       max: HUNDRED_PERCENT,
     }),
+    rebalanceProtocolFee: percentFlag({
+      description: "Protocol fee taken from yield on position re-balancing (hundredths of a basis point or %)",
+      default: 0,
+      min: 0,
+      max: HUNDRED_PERCENT / 2,
+    }),
   };
   static override description = "Update a tuna market";
   static override examples = [
@@ -188,6 +194,7 @@ export default class UpdateMarket extends BaseCommand {
       borrowLimitB: newData.borrowLimitB,
       oraclePriceDeviationThreshold: newData.oraclePriceDeviationThreshold,
       maxSwapSlippage: newData.maxSwapSlippage,
+      rebalanceProtocolFee: flags.rebalanceProtocolFee,
     });
 
     console.log("");

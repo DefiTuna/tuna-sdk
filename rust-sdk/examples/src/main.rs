@@ -9,8 +9,8 @@ use lending::{
   open_lending_position_and_deposit::open_lending_position_and_deposit,
   retrieve_lending_positions::retrieve_user_lending_positions, withdraw::withdraw,
 };
-use solana_client::rpc_client::RpcClient;
-use solana_sdk::signature::Signer;
+use solana_rpc_client::rpc_client::RpcClient;
+use solana_signer::Signer;
 use tuna_position::{
   close_position_with_liquidity_orca::close_position_with_liquidity_orca,
   collect_and_compound_fees_orca::collect_and_compound_fees_orca, collect_fees_orca::collect_fees_orca,

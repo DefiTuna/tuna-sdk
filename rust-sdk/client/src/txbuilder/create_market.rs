@@ -1,8 +1,8 @@
 use crate::instructions::{CreateMarket, CreateMarketInstructionArgs};
 use crate::{get_market_address, get_tuna_config_address};
-use solana_program::instruction::Instruction;
-use solana_program::pubkey::Pubkey;
-use solana_program::system_program;
+use solana_instruction::Instruction;
+use solana_pubkey::Pubkey;
+use solana_sdk_ids::system_program;
 
 pub fn create_market_instruction(authority: &Pubkey, pool: &Pubkey, args: CreateMarketInstructionArgs) -> Instruction {
     let tuna_config_address = get_tuna_config_address().0;

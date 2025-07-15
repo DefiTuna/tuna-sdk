@@ -7,12 +7,17 @@ use anyhow::{anyhow, Result};
 use orca_whirlpools_client::{fetch_whirlpool, get_oracle_address, get_position_address, get_tick_array_address, Whirlpool};
 use orca_whirlpools_core::get_tick_array_start_tick_index;
 use solana_client::rpc_client::RpcClient;
-use solana_program::instruction::{AccountMeta, Instruction};
-use solana_program::pubkey::Pubkey;
+use solana_instruction::{AccountMeta, Instruction};
+use solana_pubkey::Pubkey;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 use spl_associated_token_account::instruction::create_associated_token_account_idempotent;
 
-pub fn collect_and_compound_fees_orca_instructions(rpc: &RpcClient, authority: &Pubkey, position_mint: &Pubkey, use_leverage: bool) -> Result<Vec<Instruction>> {
+pub fn collect_and_compound_fees_orca_instructions(
+    rpc: &RpcClient,
+    authority: &Pubkey,
+    position_mint: &Pubkey,
+    use_leverage: bool,
+) -> Result<Vec<Instruction>> {
     let tuna_position = fetch_tuna_position(&rpc, &get_tuna_position_address(&position_mint).0)?;
 
     let whirlpool = fetch_whirlpool(rpc, &tuna_position.data.pool)?;
@@ -55,7 +60,17 @@ pub fn _collect_and_compound_fees_orca_instructions(
     vec![
         create_associated_token_account_idempotent(authority, &tuna_config.fee_recipient, &vault_a.mint, token_program_a),
         create_associated_token_account_idempotent(authority, &tuna_config.fee_recipient, &vault_b.mint, token_program_b),
-        collect_and_compound_fees_orca_instruction(authority, tuna_config, tuna_position, vault_a, vault_b, whirlpool, token_program_a, token_program_b, use_leverage),
+        collect_and_compound_fees_orca_instruction(
+            authority,
+            tuna_config,
+            tuna_position,
+            vault_a,
+            vault_b,
+            whirlpool,
+            token_program_a,
+            token_program_b,
+            use_leverage,
+        ),
     ]
 }
 

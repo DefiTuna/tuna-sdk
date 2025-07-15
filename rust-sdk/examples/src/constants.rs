@@ -1,5 +1,4 @@
-use solana_sdk::pubkey;
-use solana_sdk::pubkey::Pubkey;
+use solana_pubkey::{pubkey, Pubkey};
 
 pub const SOL_USDC_WHIRLPOOL: Pubkey = pubkey!("Czfq3xZZDmsdGdUyrNLtRhGc47cXcZtLG4crryfu44zE");
 //pub const SOL_USDC_WHIRLPOOL: Pubkey = pubkey!("FKH7TTE7PgPPSb9SaaMRKVTGA7xTbiJjeTujXY2xTdxp");

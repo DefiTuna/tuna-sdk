@@ -65,7 +65,7 @@ export async function getCreateAtaInstructions(
     if (owner == payer.address) {
       cleanup.push(
         getCloseAccountInstruction(
-          { account: ata, destination: payer.address, owner },
+          { account: ata, destination: owner, owner: payer },
           { programAddress: tokenProgram },
         ),
       );

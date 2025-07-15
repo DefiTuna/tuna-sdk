@@ -3,8 +3,8 @@ use crate::utils::get_create_ata_instructions;
 use crate::{get_lending_position_address, get_tuna_config_address, get_vault_address};
 use anyhow::Result;
 use solana_client::rpc_client::RpcClient;
-use solana_program::instruction::Instruction;
-use solana_program::pubkey::Pubkey;
+use solana_instruction::Instruction;
+use solana_pubkey::Pubkey;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 
 pub fn deposit_instructions(rpc: &RpcClient, authority: &Pubkey, mint: &Pubkey, amount: u64) -> Result<Vec<Instruction>> {
