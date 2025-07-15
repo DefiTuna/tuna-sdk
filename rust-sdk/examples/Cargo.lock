@@ -1430,9 +1430,9 @@ dependencies = [
 
 [[package]]
 name = "fusionamm-tx-sender"
-version = "1.0.9"
+version = "1.0.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d99a80c565e2bc3a85bba9f2a10b1585d5f1e83601d6060ce3bc515cb041776d"
+checksum = "440134faab4247aa15fd212de36ab2fc418f6df443e53aced8e964fca2e53d36"
 dependencies = [
  "anyhow",
  "bincode",

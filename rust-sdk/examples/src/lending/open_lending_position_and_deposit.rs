@@ -1,6 +1,6 @@
 use anyhow::Result;
-use defituna_client::open_lending_position_and_deposit_instructions;
-use fusionamm_tx_sender::{send_smart_transaction, SmartTxConfig};
+use defituna_client::{open_lending_position_and_deposit_instructions, TUNA_ID};
+use fusionamm_tx_sender::{send_smart_transaction, PriorityFeeLevel, SmartTxConfig, SmartTxPriorityFeeConfig};
 use solana_keypair::Keypair;
 use solana_program_pack::Pack;
 use solana_rpc_client::rpc_client::RpcClient;
@@ -8,6 +8,7 @@ use solana_signer::Signer;
 use spl_token::state::Mint;
 use std::ops::Mul;
 use std::sync::Arc;
+use std::time::Duration;
 
 pub async fn open_lending_position_and_deposit(rpc: RpcClient, authority: &Keypair) -> Result<()> {
   println!("Opening a lending position...");
@@ -34,18 +35,39 @@ pub async fn open_lending_position_and_deposit(rpc: RpcClient, authority: &Keypa
   // However, it's not recommended to create the client each time—initialize it once and reuse it.
   let nonblocking_rpc = solana_rpc_client::nonblocking::rpc_client::RpcClient::new(rpc.url());
 
-  // Signing and sending the transaction with all the instructions to the Solana network.
   println!("Sending a transaction...");
+
+  // Configure the transaction to use a priority fee.
+  let tx_config = SmartTxConfig {
+    priority_fee: Some(SmartTxPriorityFeeConfig {
+      additional_addresses: vec![TUNA_ID],
+      fee_level: PriorityFeeLevel::Low,
+      fee_min: 1000,
+      fee_max: 100000000, // 0.001 SOL
+    }),
+    jito: None,
+    default_compute_unit_limit: 800_000,
+    compute_unit_margin_multiplier: 1.15,
+    ingore_simulation_error: false,
+    sig_verify_on_simulation: false,
+    transaction_timeout: Some(Duration::from_secs(60)),
+  };
+
+  // Finally send the transaction.
   let result = send_smart_transaction(
     &nonblocking_rpc,
     vec![Arc::new(authority.insecure_clone())],
     &authority.pubkey(),
     instructions,
     vec![],
-    SmartTxConfig::default(),
+    tx_config,
   )
   .await?;
 
-  println!("Transaction landed: {}", result.0);
+  println!("Transaction signature: {}", result.signature);
+  println!(
+    "Transaction priority fee: {} micro-lamports per cu",
+    result.priority_fee
+  );
   Ok(())
 }

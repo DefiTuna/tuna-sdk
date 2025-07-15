@@ -3,9 +3,9 @@ use crate::types::Amounts;
 use crate::utils::fetch_address_lookup_table;
 use anyhow::Result;
 use defituna_client::accounts::fetch_market;
-use defituna_client::{get_market_address, open_position_with_liquidity_orca_instructions, NO_TAKE_PROFIT};
+use defituna_client::{get_market_address, open_position_with_liquidity_orca_instructions, NO_TAKE_PROFIT, TUNA_ID};
 use defituna_client::{OpenPositionWithLiquidityOrcaArgs, TUNA_POSITION_FLAGS_STOP_LOSS_SWAP_TO_TOKEN_B};
-use fusionamm_tx_sender::{send_smart_transaction, SmartTxConfig};
+use fusionamm_tx_sender::{send_smart_transaction, PriorityFeeLevel, SmartTxConfig, SmartTxPriorityFeeConfig};
 use orca_whirlpools_client::{self, fetch_whirlpool};
 use orca_whirlpools_core::sqrt_price_to_price;
 use solana_keypair::Keypair;
@@ -14,6 +14,7 @@ use solana_rpc_client::rpc_client::RpcClient;
 use solana_signer::Signer;
 use spl_token_2022::state::Mint;
 use std::sync::Arc;
+use std::time::Duration;
 
 /// Opens a position in an Orca Liquidity Pool and adds liquidity using borrowed funds from Tuna Lending Pools.
 /// Uses the SOL/USDC Whirlpool with preset amounts and leverage for this example; these can be adjusted or passed through the function’s input.
@@ -157,6 +158,7 @@ pub async fn open_position_with_liquidity_orca(rpc: RpcClient, authority: &Keypa
   // - Potential swap of tokens if deposit ratio is different from the Position's range-to-price ratio.
   // - Depositing tokens to the Whirlpools vaults to increase the Position's liquidity.
   let ix = open_position_with_liquidity_orca_instructions(&rpc, &authority.pubkey(), &whirlpool_address, args)?;
+  println!("Position mint: {}", ix.position_mint);
 
   // Almost all tuna transactions require the address lookup table to make the tx size smaller.
   // The LUT address is stored in the market account.
@@ -175,19 +177,39 @@ pub async fn open_position_with_liquidity_orca(rpc: RpcClient, authority: &Keypa
   // However, it's not recommended to create the client each time—initialize it once and reuse it.
   let nonblocking_rpc = solana_rpc_client::nonblocking::rpc_client::RpcClient::new(rpc.url());
 
-  // Finally send the transaction.
   println!("Sending a transaction...");
+
+  // Configure the transaction to use a priority fee.
+  let tx_config = SmartTxConfig {
+    priority_fee: Some(SmartTxPriorityFeeConfig {
+      additional_addresses: vec![TUNA_ID],
+      fee_level: PriorityFeeLevel::Low,
+      fee_min: 1000,
+      fee_max: 100000000, // 0.001 SOL
+    }),
+    jito: None,
+    default_compute_unit_limit: 800_000,
+    compute_unit_margin_multiplier: 1.15,
+    ingore_simulation_error: false,
+    sig_verify_on_simulation: false,
+    transaction_timeout: Some(Duration::from_secs(60)),
+  };
+
+  // Finally send the transaction.
   let result = send_smart_transaction(
     &nonblocking_rpc,
     signers,
     &authority.pubkey(),
     ix.instructions,
     vec![market_lut],
-    SmartTxConfig::default(),
+    tx_config,
   )
   .await?;
 
-  println!("Transaction landed: {}", result.0);
-  println!("Position mint: {}", ix.position_mint);
+  println!("Transaction signature: {}", result.signature);
+  println!(
+    "Transaction priority fee: {} micro-lamports per cu",
+    result.priority_fee
+  );
   Ok(())
 }
