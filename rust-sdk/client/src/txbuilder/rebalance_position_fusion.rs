@@ -18,7 +18,7 @@ use spl_associated_token_account::get_associated_token_address_with_program_id;
 use spl_associated_token_account::instruction::create_associated_token_account_idempotent;
 
 #[derive(Debug)]
-pub struct RebalancePositionFusionInstruction {
+pub struct RebalancePositionInstruction {
     /// A vector of `Instruction` objects required to execute the position re-balancing.
     pub instructions: Vec<Instruction>,
 
@@ -30,7 +30,7 @@ pub fn rebalance_position_fusion_instructions(
     rpc: &RpcClient,
     authority: &Pubkey,
     position_mint: &Pubkey,
-) -> Result<RebalancePositionFusionInstruction> {
+) -> Result<RebalancePositionInstruction> {
     let rent = rpc.get_account(&Rent::id())?;
     let rent: Rent = bincode::deserialize(&rent.data)?;
 
@@ -118,7 +118,7 @@ pub fn rebalance_position_fusion_instructions(
         &mint_b_account.owner,
     ));
 
-    Ok(RebalancePositionFusionInstruction {
+    Ok(RebalancePositionInstruction {
         instructions,
         initialization_cost: non_refundable_rent,
     })

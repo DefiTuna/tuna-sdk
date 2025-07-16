@@ -12,7 +12,7 @@ use solana_instruction::{AccountMeta, Instruction};
 use solana_pubkey::Pubkey;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 
-pub struct RemoveLiquidityFusionArgs {
+pub struct RemoveLiquidityArgs {
     pub withdraw_percent: u32,
     pub swap_to_token: u8,
     pub min_removed_amount_a: u64,
@@ -20,7 +20,7 @@ pub struct RemoveLiquidityFusionArgs {
     pub max_swap_slippage: u32,
 }
 
-impl Default for RemoveLiquidityFusionArgs {
+impl Default for RemoveLiquidityArgs {
     fn default() -> Self {
         Self {
             withdraw_percent: HUNDRED_PERCENT,
@@ -36,7 +36,7 @@ pub fn remove_liquidity_fusion_instructions(
     rpc: &RpcClient,
     authority: &Pubkey,
     position_mint: &Pubkey,
-    args: RemoveLiquidityFusionArgs,
+    args: RemoveLiquidityArgs,
 ) -> Result<Vec<Instruction>> {
     let tuna_position = fetch_tuna_position(&rpc, &get_tuna_position_address(&position_mint).0)?;
 
@@ -84,7 +84,7 @@ pub fn remove_liquidity_fusion_instruction(
     fusion_pool: &FusionPool,
     token_program_a: &Pubkey,
     token_program_b: &Pubkey,
-    args: RemoveLiquidityFusionArgs,
+    args: RemoveLiquidityArgs,
 ) -> Instruction {
     let mint_a = fusion_pool.token_mint_a;
     let mint_b = fusion_pool.token_mint_b;

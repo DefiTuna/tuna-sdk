@@ -1,5 +1,11 @@
 # @defituna/rust-client
 
+## 2.0.14
+
+### Patch Changes
+
+- 92ae866: Updated instruction builders
+
 ## 2.0.13
 
 ### Patch Changes

@@ -1,29 +1,18 @@
 use crate::accounts::{fetch_all_vault, fetch_tuna_position};
 use crate::utils::get_create_ata_instructions;
-use crate::{
-    close_position_orca_instruction, get_tuna_position_address, get_vault_address, remove_liquidity_orca_instruction, RemoveLiquidityOrcaArgs,
-    HUNDRED_PERCENT,
-};
+use crate::{close_position_orca_instruction, get_tuna_position_address, get_vault_address, remove_liquidity_orca_instruction, ClosePositionWithLiquidityArgs, RemoveLiquidityArgs, HUNDRED_PERCENT};
 use anyhow::anyhow;
 use orca_whirlpools_client::fetch_whirlpool;
 use solana_client::rpc_client::RpcClient;
 use solana_instruction::Instruction;
 use solana_pubkey::Pubkey;
 
-#[derive(Default)]
-pub struct ClosePositionWithLiquidityOrcaArgs {
-    pub swap_to_token: u8,
-    pub min_removed_amount_a: u64,
-    pub min_removed_amount_b: u64,
-    pub max_swap_slippage: u32,
-}
-
 // TODO: rewards support
 pub fn close_position_with_liquidity_orca_instructions(
     rpc: &RpcClient,
     authority: &Pubkey,
     position_mint: &Pubkey,
-    args: ClosePositionWithLiquidityOrcaArgs,
+    args: ClosePositionWithLiquidityArgs,
 ) -> anyhow::Result<Vec<Instruction>> {
     let tuna_position = fetch_tuna_position(&rpc, &get_tuna_position_address(&position_mint).0)?;
 
@@ -60,7 +49,7 @@ pub fn close_position_with_liquidity_orca_instructions(
         &whirlpool.data,
         &mint_a_account.owner,
         &mint_b_account.owner,
-        RemoveLiquidityOrcaArgs {
+        RemoveLiquidityArgs {
             withdraw_percent: HUNDRED_PERCENT,
             swap_to_token: args.swap_to_token,
             min_removed_amount_a: args.min_removed_amount_a,

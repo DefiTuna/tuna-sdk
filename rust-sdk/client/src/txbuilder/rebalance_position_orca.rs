@@ -2,7 +2,7 @@ use crate::accounts::{fetch_all_vault, fetch_tuna_config, fetch_tuna_position, T
 use crate::instructions::{RebalancePositionOrca, RebalancePositionOrcaInstructionArgs};
 use crate::types::{AccountsType, RemainingAccountsInfo, RemainingAccountsSlice};
 use crate::utils::orca::{get_swap_tick_arrays, get_tick_arrays_for_rebalanced_position};
-use crate::{get_market_address, get_tuna_config_address, get_tuna_position_address, get_vault_address};
+use crate::{get_market_address, get_tuna_config_address, get_tuna_position_address, get_vault_address, RebalancePositionInstruction};
 use anyhow::{anyhow, Result};
 use orca_whirlpools_client::{
     fetch_whirlpool, get_oracle_address, get_position_address, get_tick_array_address, DynamicTickArray, InitializeDynamicTickArray,
@@ -18,16 +18,7 @@ use solana_sysvar::slot_hashes::SysvarId;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 use spl_associated_token_account::instruction::create_associated_token_account_idempotent;
 
-#[derive(Debug)]
-pub struct RebalancePositionOrcaInstruction {
-    /// A vector of `Instruction` objects required to execute the position re-balancing.
-    pub instructions: Vec<Instruction>,
-
-    /// The cost of initializing tick arrays, measured in lamports.
-    pub initialization_cost: u64,
-}
-
-pub fn rebalance_position_orca_instructions(rpc: &RpcClient, authority: &Pubkey, position_mint: &Pubkey) -> Result<RebalancePositionOrcaInstruction> {
+pub fn rebalance_position_orca_instructions(rpc: &RpcClient, authority: &Pubkey, position_mint: &Pubkey) -> Result<RebalancePositionInstruction> {
     let rent = rpc.get_account(&Rent::id())?;
     let rent: Rent = bincode::deserialize(&rent.data)?;
 
@@ -117,7 +108,7 @@ pub fn rebalance_position_orca_instructions(rpc: &RpcClient, authority: &Pubkey,
         &mint_b_account.owner,
     ));
 
-    Ok(RebalancePositionOrcaInstruction {
+    Ok(RebalancePositionInstruction {
         instructions,
         initialization_cost: non_refundable_rent,
     })

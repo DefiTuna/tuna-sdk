@@ -9,8 +9,8 @@ mod tests {
         add_liquidity_fusion_instructions, close_position_fusion_instruction, close_position_with_liquidity_fusion_instructions,
         get_tuna_position_address, get_vault_address, liquidate_position_fusion_instructions, open_position_fusion_instruction,
         open_position_with_liquidity_fusion_instructions, rebalance_position_fusion_instructions, remove_liquidity_fusion_instructions,
-        AddLiquidityFusionArgs, ClosePositionWithLiquidityFusionArgs, OpenPositionWithLiquidityFusionArgs, RemoveLiquidityFusionArgs,
-        HUNDRED_PERCENT, LEVERAGE_ONE, TUNA_POSITION_FLAGS_ALLOW_REBALANCING,
+        AddLiquidityArgs, ClosePositionWithLiquidityArgs, OpenPositionWithLiquidityArgs, RemoveLiquidityArgs, HUNDRED_PERCENT, LEVERAGE_ONE,
+        TUNA_POSITION_FLAGS_ALLOW_REBALANCING,
     };
     use fusionamm_client::fetch_fusion_pool;
     use serial_test::serial;
@@ -75,7 +75,7 @@ mod tests {
                     &ctx.rpc,
                     &ctx.signer.pubkey(),
                     &position_mint.pubkey(),
-                    AddLiquidityFusionArgs {
+                    AddLiquidityArgs {
                         collateral_a: 1_000_000_000,
                         collateral_b: 100_000_000,
                         borrow_a: 1_000_000_000,
@@ -94,7 +94,7 @@ mod tests {
                     &ctx.rpc,
                     &ctx.signer.pubkey(),
                     &position_mint.pubkey(),
-                    RemoveLiquidityFusionArgs {
+                    RemoveLiquidityArgs {
                         withdraw_percent: HUNDRED_PERCENT,
                         swap_to_token: 0,
                         min_removed_amount_a: 0,
@@ -139,7 +139,7 @@ mod tests {
                 &ctx.rpc,
                 &ctx.signer.pubkey(),
                 &test_market.pool,
-                OpenPositionWithLiquidityFusionArgs {
+                OpenPositionWithLiquidityArgs {
                     tick_lower_index: actual_tick_index - pool.data.tick_spacing as i32 * 5,
                     tick_upper_index: actual_tick_index + pool.data.tick_spacing as i32 * 5,
                     tick_stop_loss_index: 0,
@@ -164,7 +164,7 @@ mod tests {
                     &ctx.rpc,
                     &ctx.signer.pubkey(),
                     &ix.position_mint,
-                    ClosePositionWithLiquidityFusionArgs::default(),
+                    ClosePositionWithLiquidityArgs::default(),
                 )
                 .unwrap(),
             )
@@ -189,7 +189,7 @@ mod tests {
                 &ctx.rpc,
                 &ctx.signer.pubkey(),
                 &test_market.pool,
-                OpenPositionWithLiquidityFusionArgs {
+                OpenPositionWithLiquidityArgs {
                     tick_lower_index: actual_tick_index - pool.data.tick_spacing as i32 * 5,
                     tick_upper_index: actual_tick_index + pool.data.tick_spacing as i32 * 5,
                     tick_stop_loss_index: 0,
@@ -239,7 +239,7 @@ mod tests {
                 &ctx.rpc,
                 &ctx.signer.pubkey(),
                 &test_market.pool,
-                OpenPositionWithLiquidityFusionArgs {
+                OpenPositionWithLiquidityArgs {
                     tick_lower_index: actual_tick_index - pool.data.tick_spacing as i32 * 3,
                     tick_upper_index: actual_tick_index + pool.data.tick_spacing as i32 * 3,
                     tick_stop_loss_index: 0,

@@ -18,7 +18,7 @@ use spl_associated_token_account::get_associated_token_address_with_program_id;
 use spl_associated_token_account::instruction::create_associated_token_account_idempotent;
 
 #[derive(Default)]
-pub struct AddLiquidityFusionArgs {
+pub struct AddLiquidityArgs {
     pub collateral_a: u64,
     pub collateral_b: u64,
     pub borrow_a: u64,
@@ -32,7 +32,7 @@ pub fn add_liquidity_fusion_instructions(
     rpc: &RpcClient,
     authority: &Pubkey,
     position_mint: &Pubkey,
-    args: AddLiquidityFusionArgs,
+    args: AddLiquidityArgs,
 ) -> Result<Vec<Instruction>> {
     let tuna_position = fetch_tuna_position(&rpc, &get_tuna_position_address(&position_mint).0)?;
 
@@ -131,7 +131,7 @@ pub fn add_liquidity_fusion_instruction(
     fusion_pool: &FusionPool,
     token_program_a: &Pubkey,
     token_program_b: &Pubkey,
-    args: AddLiquidityFusionArgs,
+    args: AddLiquidityArgs,
 ) -> Instruction {
     let mint_a = fusion_pool.token_mint_a;
     let mint_b = fusion_pool.token_mint_b;

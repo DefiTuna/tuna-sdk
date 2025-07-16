@@ -1,7 +1,7 @@
 use crate::accounts::{fetch_all_vault, fetch_tuna_position};
 use crate::utils::get_create_ata_instructions;
 use crate::{
-    close_position_fusion_instruction, get_tuna_position_address, get_vault_address, remove_liquidity_fusion_instruction, RemoveLiquidityFusionArgs,
+    close_position_fusion_instruction, get_tuna_position_address, get_vault_address, remove_liquidity_fusion_instruction, RemoveLiquidityArgs,
     HUNDRED_PERCENT,
 };
 use anyhow::anyhow;
@@ -11,7 +11,7 @@ use solana_instruction::Instruction;
 use solana_pubkey::Pubkey;
 
 #[derive(Default)]
-pub struct ClosePositionWithLiquidityFusionArgs {
+pub struct ClosePositionWithLiquidityArgs {
     pub swap_to_token: u8,
     pub min_removed_amount_a: u64,
     pub min_removed_amount_b: u64,
@@ -22,7 +22,7 @@ pub fn close_position_with_liquidity_fusion_instructions(
     rpc: &RpcClient,
     authority: &Pubkey,
     position_mint: &Pubkey,
-    args: ClosePositionWithLiquidityFusionArgs,
+    args: ClosePositionWithLiquidityArgs,
 ) -> anyhow::Result<Vec<Instruction>> {
     let tuna_position = fetch_tuna_position(&rpc, &get_tuna_position_address(&position_mint).0)?;
 
@@ -54,7 +54,7 @@ pub fn close_position_with_liquidity_fusion_instructions(
         &fusion_pool.data,
         &mint_a_account.owner,
         &mint_b_account.owner,
-        RemoveLiquidityFusionArgs {
+        RemoveLiquidityArgs {
             withdraw_percent: HUNDRED_PERCENT,
             swap_to_token: args.swap_to_token,
             min_removed_amount_a: args.min_removed_amount_a,

@@ -3,7 +3,7 @@ use crate::instructions::{OpenPositionWithLiquidityOrca, OpenPositionWithLiquidi
 use crate::types::{AccountsType, RemainingAccountsInfo, RemainingAccountsSlice};
 use crate::utils::get_create_ata_instructions;
 use crate::utils::orca::get_swap_tick_arrays;
-use crate::{get_market_address, get_tuna_config_address, get_tuna_position_address, get_vault_address, WP_NFT_UPDATE_AUTH};
+use crate::{get_market_address, get_tuna_config_address, get_tuna_position_address, get_vault_address, OpenPositionWithLiquidityArgs, OpenPositionWithLiquidityInstruction, WP_NFT_UPDATE_AUTH};
 use anyhow::{anyhow, Result};
 use orca_whirlpools_client::{
     fetch_whirlpool, get_oracle_address, get_position_address, get_tick_array_address, get_whirlpool_address, DynamicTickArray,
@@ -21,43 +21,13 @@ use solana_sysvar::slot_hashes::SysvarId;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 use spl_associated_token_account::instruction::create_associated_token_account_idempotent;
 
-#[derive(Debug)]
-pub struct OpenPositionWithLiquidityOrcaInstruction {
-    /// The public key of the position NFT that represents ownership of the newly opened position.
-    pub position_mint: Pubkey,
-
-    /// A vector of `Instruction` objects required to execute the position opening.
-    pub instructions: Vec<Instruction>,
-
-    /// A vector of `Keypair` objects representing additional signers required for the instructions.
-    pub additional_signers: Vec<Keypair>,
-
-    /// The cost of initializing the position, measured in lamports.
-    pub initialization_cost: u64,
-}
-
-#[derive(Default)]
-pub struct OpenPositionWithLiquidityOrcaArgs {
-    pub tick_lower_index: i32,
-    pub tick_upper_index: i32,
-    pub tick_stop_loss_index: i32,
-    pub tick_take_profit_index: i32,
-    pub flags: u32,
-    pub collateral_a: u64,
-    pub collateral_b: u64,
-    pub borrow_a: u64,
-    pub borrow_b: u64,
-    pub min_added_amount_a: u64,
-    pub min_added_amount_b: u64,
-    pub max_swap_slippage: u32,
-}
 
 pub fn open_position_with_liquidity_orca_instructions(
     rpc: &RpcClient,
     authority: &Pubkey,
     whirlpool_address: &Pubkey,
-    args: OpenPositionWithLiquidityOrcaArgs,
-) -> Result<OpenPositionWithLiquidityOrcaInstruction> {
+    args: OpenPositionWithLiquidityArgs,
+) -> Result<OpenPositionWithLiquidityInstruction> {
     let rent = rpc.get_account(&Rent::id())?;
     let rent: Rent = bincode::deserialize(&rent.data)?;
 
@@ -154,7 +124,7 @@ pub fn open_position_with_liquidity_orca_instructions(
     instructions.extend(authority_ata_a_instructions.cleanup);
     instructions.extend(authority_ata_b_instructions.cleanup);
 
-    Ok(OpenPositionWithLiquidityOrcaInstruction {
+    Ok(OpenPositionWithLiquidityInstruction {
         position_mint,
         instructions,
         additional_signers,
@@ -171,7 +141,7 @@ pub fn open_position_with_liquidity_orca_instruction(
     whirlpool: &Whirlpool,
     token_program_a: &Pubkey,
     token_program_b: &Pubkey,
-    args: OpenPositionWithLiquidityOrcaArgs,
+    args: OpenPositionWithLiquidityArgs,
 ) -> Instruction {
     let mint_a = whirlpool.token_mint_a;
     let mint_b = whirlpool.token_mint_b;

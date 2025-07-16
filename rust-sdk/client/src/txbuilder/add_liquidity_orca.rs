@@ -3,7 +3,7 @@ use crate::instructions::{AddLiquidityOrca, AddLiquidityOrcaInstructionArgs};
 use crate::types::{AccountsType, RemainingAccountsInfo, RemainingAccountsSlice};
 use crate::utils::get_create_ata_instructions;
 use crate::utils::orca::get_swap_tick_arrays;
-use crate::{get_market_address, get_tuna_config_address, get_tuna_position_address, get_vault_address};
+use crate::{get_market_address, get_tuna_config_address, get_tuna_position_address, get_vault_address, AddLiquidityArgs};
 use anyhow::{anyhow, Result};
 use orca_whirlpools_client::{
     fetch_whirlpool, get_oracle_address, get_position_address, get_tick_array_address, get_whirlpool_address, InitializeDynamicTickArray,
@@ -17,22 +17,11 @@ use solana_sdk_ids::system_program;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 use spl_associated_token_account::instruction::create_associated_token_account_idempotent;
 
-#[derive(Default)]
-pub struct AddLiquidityOrcaArgs {
-    pub collateral_a: u64,
-    pub collateral_b: u64,
-    pub borrow_a: u64,
-    pub borrow_b: u64,
-    pub min_added_amount_a: u64,
-    pub min_added_amount_b: u64,
-    pub max_swap_slippage: u32,
-}
-
 pub fn add_liquidity_orca_instructions(
     rpc: &RpcClient,
     authority: &Pubkey,
     position_mint: &Pubkey,
-    args: AddLiquidityOrcaArgs,
+    args: AddLiquidityArgs,
 ) -> Result<Vec<Instruction>> {
     let tuna_position = fetch_tuna_position(&rpc, &get_tuna_position_address(&position_mint).0)?;
 
@@ -127,7 +116,7 @@ pub fn add_liquidity_orca_instruction(
     whirlpool: &Whirlpool,
     token_program_a: &Pubkey,
     token_program_b: &Pubkey,
-    args: AddLiquidityOrcaArgs,
+    args: AddLiquidityArgs,
 ) -> Instruction {
     let mint_a = whirlpool.token_mint_a;
     let mint_b = whirlpool.token_mint_b;

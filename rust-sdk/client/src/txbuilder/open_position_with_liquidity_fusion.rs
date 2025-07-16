@@ -22,7 +22,7 @@ use spl_associated_token_account::get_associated_token_address_with_program_id;
 use spl_associated_token_account::instruction::create_associated_token_account_idempotent;
 
 #[derive(Debug)]
-pub struct OpenPositionWithLiquidityFusionInstruction {
+pub struct OpenPositionWithLiquidityInstruction {
     /// The public key of the position NFT that represents ownership of the newly opened position.
     pub position_mint: Pubkey,
 
@@ -37,7 +37,7 @@ pub struct OpenPositionWithLiquidityFusionInstruction {
 }
 
 #[derive(Default)]
-pub struct OpenPositionWithLiquidityFusionArgs {
+pub struct OpenPositionWithLiquidityArgs {
     pub tick_lower_index: i32,
     pub tick_upper_index: i32,
     pub tick_stop_loss_index: i32,
@@ -56,8 +56,8 @@ pub fn open_position_with_liquidity_fusion_instructions(
     rpc: &RpcClient,
     authority: &Pubkey,
     fusion_pool_address: &Pubkey,
-    args: OpenPositionWithLiquidityFusionArgs,
-) -> Result<OpenPositionWithLiquidityFusionInstruction> {
+    args: OpenPositionWithLiquidityArgs,
+) -> Result<OpenPositionWithLiquidityInstruction> {
     let rent = rpc.get_account(&Rent::id())?;
     let rent: Rent = bincode::deserialize(&rent.data)?;
 
@@ -152,7 +152,7 @@ pub fn open_position_with_liquidity_fusion_instructions(
     instructions.extend(authority_ata_a_instructions.cleanup);
     instructions.extend(authority_ata_b_instructions.cleanup);
 
-    Ok(OpenPositionWithLiquidityFusionInstruction {
+    Ok(OpenPositionWithLiquidityInstruction {
         position_mint,
         instructions,
         additional_signers,
@@ -169,7 +169,7 @@ pub fn open_position_with_liquidity_fusion_instruction(
     fusion_pool: &FusionPool,
     token_program_a: &Pubkey,
     token_program_b: &Pubkey,
-    args: OpenPositionWithLiquidityFusionArgs,
+    args: OpenPositionWithLiquidityArgs,
 ) -> Instruction {
     let mint_a = fusion_pool.token_mint_a;
     let mint_b = fusion_pool.token_mint_b;

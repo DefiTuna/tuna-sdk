@@ -5,7 +5,7 @@ use defituna_client::accounts::{fetch_market, fetch_tuna_position};
 use defituna_client::types::MarketMaker;
 use defituna_client::{
   close_position_with_liquidity_orca_instructions, get_market_address, get_tuna_position_address,
-  ClosePositionWithLiquidityOrcaArgs, TUNA_ID,
+  ClosePositionWithLiquidityArgs, TUNA_ID,
 };
 use fusionamm_tx_sender::{send_smart_transaction, PriorityFeeLevel, SmartTxConfig, SmartTxPriorityFeeConfig};
 use solana_keypair::Keypair;
@@ -46,7 +46,7 @@ pub async fn close_position_with_liquidity_orca(
   let swap_to_token = 1;
 
   // Creation of instructions for removing liquidity and closing positions;
-  let args = ClosePositionWithLiquidityOrcaArgs {
+  let args = ClosePositionWithLiquidityArgs {
     swap_to_token,
     min_removed_amount_a: min_removed_amount.a,
     min_removed_amount_b: min_removed_amount.b,

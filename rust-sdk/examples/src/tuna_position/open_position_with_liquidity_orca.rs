@@ -4,7 +4,7 @@ use crate::utils::fetch_address_lookup_table;
 use anyhow::Result;
 use defituna_client::accounts::fetch_market;
 use defituna_client::{get_market_address, open_position_with_liquidity_orca_instructions, NO_TAKE_PROFIT, TUNA_ID};
-use defituna_client::{OpenPositionWithLiquidityOrcaArgs, TUNA_POSITION_FLAGS_STOP_LOSS_SWAP_TO_TOKEN_B};
+use defituna_client::{OpenPositionWithLiquidityArgs, TUNA_POSITION_FLAGS_STOP_LOSS_SWAP_TO_TOKEN_B};
 use fusionamm_tx_sender::{send_smart_transaction, PriorityFeeLevel, SmartTxConfig, SmartTxPriorityFeeConfig};
 use orca_whirlpools_client::{self, fetch_whirlpool};
 use orca_whirlpools_core::sqrt_price_to_price;
@@ -133,7 +133,7 @@ pub async fn open_position_with_liquidity_orca(rpc: RpcClient, authority: &Keypa
   // Computed by bitwise OR-ing the options: `stopLossSwapToToken | takeProfitSwapToToken | autoCompoundYield`.
   let flags = stop_loss_swap_to_token | take_profit_swap_to_token | auto_compound_yield;
 
-  let args = OpenPositionWithLiquidityOrcaArgs {
+  let args = OpenPositionWithLiquidityArgs {
     tick_lower_index,
     tick_upper_index,
     tick_stop_loss_index,

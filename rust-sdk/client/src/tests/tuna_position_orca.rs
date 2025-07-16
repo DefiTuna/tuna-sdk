@@ -8,8 +8,8 @@ mod tests {
     use crate::{
         add_liquidity_orca_instructions, close_position_orca_instruction, close_position_with_liquidity_orca_instructions, get_tuna_position_address,
         get_vault_address, liquidate_position_orca_instructions, open_position_orca_instruction, open_position_with_liquidity_orca_instructions,
-        rebalance_position_orca_instructions, remove_liquidity_orca_instructions, AddLiquidityOrcaArgs, ClosePositionWithLiquidityOrcaArgs,
-        OpenPositionWithLiquidityOrcaArgs, RemoveLiquidityOrcaArgs, HUNDRED_PERCENT, LEVERAGE_ONE, TUNA_POSITION_FLAGS_ALLOW_REBALANCING,
+        rebalance_position_orca_instructions, remove_liquidity_orca_instructions, AddLiquidityArgs, ClosePositionWithLiquidityArgs,
+        OpenPositionWithLiquidityArgs, RemoveLiquidityArgs, HUNDRED_PERCENT, LEVERAGE_ONE, TUNA_POSITION_FLAGS_ALLOW_REBALANCING,
     };
     use orca_whirlpools_client::fetch_whirlpool;
     use serial_test::serial;
@@ -74,7 +74,7 @@ mod tests {
                     &ctx.rpc,
                     &ctx.signer.pubkey(),
                     &position_mint.pubkey(),
-                    AddLiquidityOrcaArgs {
+                    AddLiquidityArgs {
                         collateral_a: 1_000_000_000,
                         collateral_b: 100_000_000,
                         borrow_a: 1_000_000_000,
@@ -89,8 +89,7 @@ mod tests {
             .unwrap();
 
             ctx.send_transaction(
-                remove_liquidity_orca_instructions(&ctx.rpc, &ctx.signer.pubkey(), &position_mint.pubkey(), RemoveLiquidityOrcaArgs::default())
-                    .unwrap(),
+                remove_liquidity_orca_instructions(&ctx.rpc, &ctx.signer.pubkey(), &position_mint.pubkey(), RemoveLiquidityArgs::default()).unwrap(),
             )
             .unwrap();
 
@@ -124,7 +123,7 @@ mod tests {
                 &ctx.rpc,
                 &ctx.signer.pubkey(),
                 &test_market.pool,
-                OpenPositionWithLiquidityOrcaArgs {
+                OpenPositionWithLiquidityArgs {
                     tick_lower_index: actual_tick_index - pool.data.tick_spacing as i32 * 5,
                     tick_upper_index: actual_tick_index + pool.data.tick_spacing as i32 * 5,
                     tick_stop_loss_index: 0,
@@ -149,7 +148,7 @@ mod tests {
                     &ctx.rpc,
                     &ctx.signer.pubkey(),
                     &ix.position_mint,
-                    ClosePositionWithLiquidityOrcaArgs::default(),
+                    ClosePositionWithLiquidityArgs::default(),
                 )
                 .unwrap(),
             )
@@ -174,7 +173,7 @@ mod tests {
                 &ctx.rpc,
                 &ctx.signer.pubkey(),
                 &test_market.pool,
-                OpenPositionWithLiquidityOrcaArgs {
+                OpenPositionWithLiquidityArgs {
                     tick_lower_index: actual_tick_index - pool.data.tick_spacing as i32 * 5,
                     tick_upper_index: actual_tick_index + pool.data.tick_spacing as i32 * 5,
                     tick_stop_loss_index: 0,
@@ -224,7 +223,7 @@ mod tests {
                 &ctx.rpc,
                 &ctx.signer.pubkey(),
                 &test_market.pool,
-                OpenPositionWithLiquidityOrcaArgs {
+                OpenPositionWithLiquidityArgs {
                     tick_lower_index: actual_tick_index - pool.data.tick_spacing as i32 * 3,
                     tick_upper_index: actual_tick_index + pool.data.tick_spacing as i32 * 3,
                     tick_stop_loss_index: 0,
