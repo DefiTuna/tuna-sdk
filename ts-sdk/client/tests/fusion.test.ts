@@ -171,9 +171,9 @@ describe("Tuna Position on Fusion", () => {
         userBalanceDeltaB: -30000000000n,
         vaultBalanceDeltaA: 0n,
         vaultBalanceDeltaB: -30000000000n,
-        poolBalanceDeltaA: -255n,
+        poolBalanceDeltaA: -256n,
         poolBalanceDeltaB: 59940000000n,
-        leftoversA: 255n,
+        leftoversA: 256n,
         leftoversB: 0n,
       },
     );

@@ -1,16 +1,16 @@
 #[cfg(test)]
 mod tests {
-    use crate::accounts::{fetch_all_vault, fetch_tuna_position};
+    use crate::accounts::{fetch_all_vault, fetch_tuna_config, fetch_tuna_position, TunaConfig};
     use crate::instructions::{CreateMarketInstructionArgs, OpenPositionFusionInstructionArgs};
     use crate::tests::fusion::swap_exact_in;
     use crate::tests::*;
     use crate::types::MarketMaker;
     use crate::{
         add_liquidity_fusion_instructions, close_position_fusion_instruction, close_position_with_liquidity_fusion_instructions,
-        get_tuna_position_address, get_vault_address, liquidate_position_fusion_instructions, open_position_fusion_instruction,
-        open_position_with_liquidity_fusion_instructions, rebalance_position_fusion_instructions, remove_liquidity_fusion_instructions,
-        AddLiquidityArgs, ClosePositionWithLiquidityArgs, OpenPositionWithLiquidityArgs, RemoveLiquidityArgs, HUNDRED_PERCENT, LEVERAGE_ONE,
-        TUNA_POSITION_FLAGS_ALLOW_REBALANCING,
+        get_tuna_config_address, get_tuna_position_address, get_vault_address, liquidate_position_fusion_instructions,
+        open_position_fusion_instruction, open_position_with_liquidity_fusion_instructions, rebalance_position_fusion_instructions,
+        remove_liquidity_fusion_instructions, AddLiquidityArgs, ClosePositionWithLiquidityArgs, OpenPositionWithLiquidityArgs, RemoveLiquidityArgs,
+        HUNDRED_PERCENT, LEVERAGE_ONE, TUNA_POSITION_FLAGS_ALLOW_REBALANCING,
     };
     use fusionamm_client::fetch_fusion_pool;
     use serial_test::serial;
@@ -232,6 +232,7 @@ mod tests {
             let test_market = setup_test_market(&ctx, test_market_args(), false, false, false).await.unwrap();
 
             let pool = fetch_fusion_pool(&ctx.rpc, &test_market.pool).unwrap();
+            let tuna_config = fetch_tuna_config(&ctx.rpc, &get_tuna_config_address().0).unwrap();
 
             let actual_tick_index = pool.data.tick_current_index - (pool.data.tick_current_index % pool.data.tick_spacing as i32);
 
@@ -276,6 +277,7 @@ mod tests {
             ctx.send_transaction(liquidate_position_fusion_instructions(
                 &ctx.signer.pubkey(),
                 &tuna_position.data,
+                &tuna_config.data,
                 &vaults[0].data,
                 &vaults[1].data,
                 &pool.data,

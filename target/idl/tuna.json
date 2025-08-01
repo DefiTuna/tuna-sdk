@@ -2,7 +2,7 @@
   "address": "tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD",
   "metadata": {
     "name": "tuna",
-    "version": "2.0.10",
+    "version": "2.0.11",
     "spec": "0.1.0",
     "description": "DefiTuna"
   },
@@ -1312,11 +1312,11 @@
           "writable": true
         },
         {
-          "name": "liquidation_fee_recipient_ata_a",
+          "name": "fee_recipient_ata_a",
           "writable": true
         },
         {
-          "name": "liquidation_fee_recipient_ata_b",
+          "name": "fee_recipient_ata_b",
           "writable": true
         },
         {
@@ -1429,11 +1429,11 @@
           "writable": true
         },
         {
-          "name": "liquidation_fee_recipient_ata_a",
+          "name": "fee_recipient_ata_a",
           "writable": true
         },
         {
-          "name": "liquidation_fee_recipient_ata_b",
+          "name": "fee_recipient_ata_b",
           "writable": true
         },
         {
@@ -4175,7 +4175,7 @@
           {
             "name": "admin_authority",
             "docs": [
-              "Current update authority address for both the tunaConfig and the Vault PDAs themselves - can be updated."
+              "Current update authority address for both the TunaConfig and the Vault PDAs themselves - can be updated."
             ],
             "type": "pubkey"
           },

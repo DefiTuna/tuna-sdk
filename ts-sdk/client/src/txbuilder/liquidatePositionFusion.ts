@@ -9,7 +9,7 @@ import {
   getCreateAtaInstructions,
   getLiquidatePositionFusionInstruction,
   getMarketAddress,
-  getTunaConfigAddress,
+  TunaConfig,
   TunaPosition,
   Vault,
 } from "../index.ts";
@@ -17,6 +17,7 @@ import {
 export async function liquidatePositionFusionInstructions(
   authority: TransactionSigner,
   tunaPosition: Account<TunaPosition>,
+  tunaConfig: Account<TunaConfig>,
   mintA: Account<Mint>,
   mintB: Account<Mint>,
   vaultA: Account<Vault>,
@@ -27,26 +28,26 @@ export async function liquidatePositionFusionInstructions(
   const instructions: IInstruction[] = [];
 
   //
-  // Add create liquidator's token account instructions if needed.
+  // Add create fee recipient's token account instructions if needed.
   //
 
-  const createLiquidatorAtaAInstructions = await getCreateAtaInstructions(
+  const createFeeRecipientAtaAInstructions = await getCreateAtaInstructions(
     undefined,
     authority,
     mintA.address,
-    authority.address,
+    tunaConfig.data.feeRecipient,
     mintA.programAddress,
   );
-  instructions.push(...createLiquidatorAtaAInstructions.init);
+  instructions.push(...createFeeRecipientAtaAInstructions.init);
 
-  const createLiquidatorAtaBInstructions = await getCreateAtaInstructions(
+  const createFeeRecipientAtaBInstructions = await getCreateAtaInstructions(
     undefined,
     authority,
     mintB.address,
-    authority.address,
+    tunaConfig.data.feeRecipient,
     mintB.programAddress,
   );
-  instructions.push(...createLiquidatorAtaBInstructions.init);
+  instructions.push(...createFeeRecipientAtaBInstructions.init);
 
   //
   // Finally add liquidity decrease instruction.
@@ -55,6 +56,7 @@ export async function liquidatePositionFusionInstructions(
   const ix = await liquidatePositionFusionInstruction(
     authority,
     tunaPosition,
+    tunaConfig,
     mintA,
     mintB,
     vaultA,
@@ -68,8 +70,8 @@ export async function liquidatePositionFusionInstructions(
   // Close WSOL accounts if needed.
   //
 
-  instructions.push(...createLiquidatorAtaAInstructions.cleanup);
-  instructions.push(...createLiquidatorAtaBInstructions.cleanup);
+  instructions.push(...createFeeRecipientAtaAInstructions.cleanup);
+  instructions.push(...createFeeRecipientAtaBInstructions.cleanup);
 
   return instructions;
 }
@@ -77,6 +79,7 @@ export async function liquidatePositionFusionInstructions(
 export async function liquidatePositionFusionInstruction(
   authority: TransactionSigner,
   tunaPosition: Account<TunaPosition>,
+  tunaConfig: Account<TunaConfig>,
   mintA: Account<Mint>,
   mintB: Account<Mint>,
   vaultA: Account<Vault>,
@@ -84,7 +87,6 @@ export async function liquidatePositionFusionInstruction(
   fusionPool: Account<FusionPool>,
   withdrawPercent: number,
 ): Promise<IInstruction> {
-  const tunaConfigAddress = (await getTunaConfigAddress())[0];
   const positionMint = tunaPosition.data.positionMint;
 
   const marketAddress = (await getMarketAddress(fusionPool.address))[0];
@@ -130,17 +132,17 @@ export async function liquidatePositionFusionInstruction(
     })
   )[0];
 
-  const liquidationFeeRecipientAtaA = (
+  const feeRecipientAtaA = (
     await findAssociatedTokenPda({
-      owner: authority.address,
+      owner: tunaConfig.data.feeRecipient,
       mint: mintA.address,
       tokenProgram: mintA.programAddress,
     })
   )[0];
 
-  const liquidationFeeRecipientAtaB = (
+  const feeRecipientAtaB = (
     await findAssociatedTokenPda({
-      owner: authority.address,
+      owner: tunaConfig.data.feeRecipient,
       mint: mintB.address,
       tokenProgram: mintB.programAddress,
     })
@@ -190,14 +192,14 @@ export async function liquidatePositionFusionInstruction(
     vaultB: vaultB.address,
     vaultBAta,
     authority,
-    tunaConfig: tunaConfigAddress,
+    tunaConfig: tunaConfig.address,
     tunaPositionAta,
     tunaPositionAtaA,
     tunaPositionAtaB,
     fusionPosition: fusionPositionAddress,
     tunaPosition: tunaPosition.address,
-    liquidationFeeRecipientAtaA,
-    liquidationFeeRecipientAtaB,
+    feeRecipientAtaA,
+    feeRecipientAtaB,
     fusionPool: fusionPool.address,
     fusionammProgram: FUSIONAMM_PROGRAM_ADDRESS,
     tokenProgramA: mintA.programAddress,

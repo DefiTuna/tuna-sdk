@@ -1,4 +1,4 @@
-use crate::accounts::{TunaPosition, Vault};
+use crate::accounts::{TunaConfig, TunaPosition, Vault};
 use crate::instructions::{LiquidatePositionFusion, LiquidatePositionFusionInstructionArgs};
 use crate::types::{AccountsType, RemainingAccountsInfo, RemainingAccountsSlice};
 use crate::utils::fusion::get_swap_tick_arrays;
@@ -15,6 +15,7 @@ use spl_associated_token_account::instruction::create_associated_token_account_i
 pub fn liquidate_position_fusion_instructions(
     authority: &Pubkey,
     tuna_position: &TunaPosition,
+    tuna_config: &TunaConfig,
     vault_a: &Vault,
     vault_b: &Vault,
     fusion_pool: &FusionPool,
@@ -23,11 +24,12 @@ pub fn liquidate_position_fusion_instructions(
     withdraw_percent: u32,
 ) -> Vec<Instruction> {
     vec![
-        create_associated_token_account_idempotent(authority, authority, &vault_a.mint, token_program_a),
-        create_associated_token_account_idempotent(authority, authority, &vault_b.mint, token_program_b),
+        create_associated_token_account_idempotent(authority, &tuna_config.fee_recipient, &vault_a.mint, token_program_a),
+        create_associated_token_account_idempotent(authority, &tuna_config.fee_recipient, &vault_b.mint, token_program_b),
         liquidate_position_fusion_instruction(
             authority,
             tuna_position,
+            tuna_config,
             vault_a,
             vault_b,
             fusion_pool,
@@ -41,6 +43,7 @@ pub fn liquidate_position_fusion_instructions(
 pub fn liquidate_position_fusion_instruction(
     authority: &Pubkey,
     tuna_position: &TunaPosition,
+    tuna_config: &TunaConfig,
     vault_a: &Vault,
     vault_b: &Vault,
     fusion_pool: &FusionPool,
@@ -85,8 +88,8 @@ pub fn liquidate_position_fusion_instruction(
         tuna_position_ata: get_associated_token_address_with_program_id(&tuna_position_address, &tuna_position.position_mint, &spl_token_2022::ID),
         tuna_position_ata_a: get_associated_token_address_with_program_id(&tuna_position_address, &mint_a, token_program_a),
         tuna_position_ata_b: get_associated_token_address_with_program_id(&tuna_position_address, &mint_b, token_program_b),
-        liquidation_fee_recipient_ata_a: get_associated_token_address_with_program_id(authority, &mint_a, token_program_a),
-        liquidation_fee_recipient_ata_b: get_associated_token_address_with_program_id(authority, &mint_b, token_program_b),
+        fee_recipient_ata_a: get_associated_token_address_with_program_id(&tuna_config.fee_recipient, &mint_a, token_program_a),
+        fee_recipient_ata_b: get_associated_token_address_with_program_id(&tuna_config.fee_recipient, &mint_b, token_program_b),
         pyth_oracle_price_feed_a: vault_a.pyth_oracle_price_update,
         pyth_oracle_price_feed_b: vault_b.pyth_oracle_price_update,
         fusionamm_program: fusionamm_client::ID,

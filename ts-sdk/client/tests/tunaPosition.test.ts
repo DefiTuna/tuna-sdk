@@ -1752,8 +1752,8 @@ describe("Tuna Position", () => {
 
       assertLiquidatePosition(await liquidatePosition({ rpc, signer: LIQUIDATOR_KEYPAIR, positionMint }), {
         tunaPositionState: TunaPositionState.ClosedByLimitOrder,
-        liquidatorRewardA: 4497643n,
-        liquidatorRewardB: 0n,
+        feeRecipientBalanceDeltaA: 4497643n,
+        feeRecipientBalanceDeltaB: 0n,
       });
     });
   }
@@ -1782,8 +1782,8 @@ describe("Tuna Position", () => {
 
       assertLiquidatePosition(await liquidatePosition({ rpc, signer: LIQUIDATOR_KEYPAIR, positionMint }), {
         tunaPositionState: TunaPositionState.ClosedByLimitOrder,
-        liquidatorRewardA: 4497643n,
-        liquidatorRewardB: 0n,
+        feeRecipientBalanceDeltaA: 4497643n,
+        feeRecipientBalanceDeltaB: 0n,
       });
     });
   }
@@ -1811,8 +1811,8 @@ describe("Tuna Position", () => {
 
       assertLiquidatePosition(await liquidatePosition({ rpc, signer: LIQUIDATOR_KEYPAIR, positionMint }), {
         tunaPositionState: TunaPositionState.ClosedByLimitOrder,
-        liquidatorRewardA: 0n,
-        liquidatorRewardB: 902458n,
+        feeRecipientBalanceDeltaA: 0n,
+        feeRecipientBalanceDeltaB: 902458n,
       });
     });
   }
@@ -1841,8 +1841,8 @@ describe("Tuna Position", () => {
 
       assertLiquidatePosition(await liquidatePosition({ rpc, signer: LIQUIDATOR_KEYPAIR, positionMint }), {
         tunaPositionState: TunaPositionState.ClosedByLimitOrder,
-        liquidatorRewardA: 0n,
-        liquidatorRewardB: 902458n,
+        feeRecipientBalanceDeltaA: 0n,
+        feeRecipientBalanceDeltaB: 902458n,
       });
     });
   }

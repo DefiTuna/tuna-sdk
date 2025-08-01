@@ -8,8 +8,8 @@ import {
   getCreateAtaInstructions,
   getLiquidatePositionOrcaInstruction,
   getMarketAddress,
-  getTunaConfigAddress,
   OrcaUtils,
+  TunaConfig,
   TunaPosition,
   Vault,
 } from "../index.ts";
@@ -17,6 +17,7 @@ import {
 export async function liquidatePositionOrcaInstructions(
   authority: TransactionSigner,
   tunaPosition: Account<TunaPosition>,
+  tunaConfig: Account<TunaConfig>,
   mintA: Account<Mint>,
   mintB: Account<Mint>,
   vaultA: Account<Vault>,
@@ -27,26 +28,26 @@ export async function liquidatePositionOrcaInstructions(
   const instructions: IInstruction[] = [];
 
   //
-  // Add create liquidator's token account instructions if needed.
+  // Add create fee recipient's token account instructions if needed.
   //
 
-  const createLiquidatorAtaAInstructions = await getCreateAtaInstructions(
+  const createFeeRecipientAtaAInstructions = await getCreateAtaInstructions(
     undefined,
     authority,
     mintA.address,
-    authority.address,
+    tunaConfig.data.feeRecipient,
     mintA.programAddress,
   );
-  instructions.push(...createLiquidatorAtaAInstructions.init);
+  instructions.push(...createFeeRecipientAtaAInstructions.init);
 
-  const createLiquidatorAtaBInstructions = await getCreateAtaInstructions(
+  const createFeeRecipientAtaBInstructions = await getCreateAtaInstructions(
     undefined,
     authority,
     mintB.address,
-    authority.address,
+    tunaConfig.data.feeRecipient,
     mintB.programAddress,
   );
-  instructions.push(...createLiquidatorAtaBInstructions.init);
+  instructions.push(...createFeeRecipientAtaBInstructions.init);
 
   //
   // Finally add liquidity decrease instruction.
@@ -55,6 +56,7 @@ export async function liquidatePositionOrcaInstructions(
   const ix = await liquidatePositionOrcaInstruction(
     authority,
     tunaPosition,
+    tunaConfig,
     mintA,
     mintB,
     vaultA,
@@ -68,8 +70,8 @@ export async function liquidatePositionOrcaInstructions(
   // Close WSOL accounts if needed.
   //
 
-  instructions.push(...createLiquidatorAtaAInstructions.cleanup);
-  instructions.push(...createLiquidatorAtaBInstructions.cleanup);
+  instructions.push(...createFeeRecipientAtaAInstructions.cleanup);
+  instructions.push(...createFeeRecipientAtaBInstructions.cleanup);
 
   return instructions;
 }
@@ -77,6 +79,7 @@ export async function liquidatePositionOrcaInstructions(
 export async function liquidatePositionOrcaInstruction(
   authority: TransactionSigner,
   tunaPosition: Account<TunaPosition>,
+  tunaConfig: Account<TunaConfig>,
   mintA: Account<Mint>,
   mintB: Account<Mint>,
   vaultA: Account<Vault>,
@@ -84,7 +87,6 @@ export async function liquidatePositionOrcaInstruction(
   whirlpool: Account<Whirlpool>,
   withdrawPercent: number,
 ): Promise<IInstruction> {
-  const tunaConfigAddress = (await getTunaConfigAddress())[0];
   const positionMint = tunaPosition.data.positionMint;
 
   const marketAddress = (await getMarketAddress(whirlpool.address))[0];
@@ -131,17 +133,17 @@ export async function liquidatePositionOrcaInstruction(
     })
   )[0];
 
-  const liquidationFeeRecipientAtaA = (
+  const feeRecipientAtaA = (
     await findAssociatedTokenPda({
-      owner: authority.address,
+      owner: tunaConfig.data.feeRecipient,
       mint: mintA.address,
       tokenProgram: mintA.programAddress,
     })
   )[0];
 
-  const liquidationFeeRecipientAtaB = (
+  const feeRecipientAtaB = (
     await findAssociatedTokenPda({
-      owner: authority.address,
+      owner: tunaConfig.data.feeRecipient,
       mint: mintB.address,
       tokenProgram: mintB.programAddress,
     })
@@ -193,14 +195,14 @@ export async function liquidatePositionOrcaInstruction(
     vaultB: vaultB.address,
     vaultBAta,
     authority,
-    tunaConfig: tunaConfigAddress,
+    tunaConfig: tunaConfig.address,
     tunaPositionAta,
     tunaPositionAtaA,
     tunaPositionAtaB,
     orcaPosition: orcaPositionAddress,
     tunaPosition: tunaPosition.address,
-    liquidationFeeRecipientAtaA,
-    liquidationFeeRecipientAtaB,
+    feeRecipientAtaA,
+    feeRecipientAtaB,
     whirlpool: whirlpool.address,
     whirlpoolProgram: WHIRLPOOL_PROGRAM_ADDRESS,
     tokenProgramA: mintA.programAddress,

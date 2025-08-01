@@ -113,10 +113,10 @@ export function getLiquidityIncreaseQuote(args: IncreaseLiquidityQuoteArgs): Inc
     }
   }
 
-  const protocolFeeA = calculateProtocolFee(collateralA, borrowA, protocolFeeRate, protocolFeeRateOnCollateral);
+  const protocolFeeA = calculateProtocolFee(collateralA, borrowA, protocolFeeRateOnCollateral, protocolFeeRate);
   const providedA = collateralA + borrowA - protocolFeeA;
 
-  const protocolFeeB = calculateProtocolFee(collateralB, borrowB, protocolFeeRate, protocolFeeRateOnCollateral);
+  const protocolFeeB = calculateProtocolFee(collateralB, borrowB, protocolFeeRateOnCollateral, protocolFeeRate);
   const providedB = collateralB + borrowB - protocolFeeB;
 
   let swapInput = 0n;

@@ -37,8 +37,8 @@ export type LiquidatePositionTestResults = {
   poolBalanceDeltaB: bigint;
   badDebtDeltaA: bigint;
   badDebtDeltaB: bigint;
-  liquidatorRewardA: bigint;
-  liquidatorRewardB: bigint;
+  feeRecipientBalanceDeltaA: bigint;
+  feeRecipientBalanceDeltaB: bigint;
   tunaPositionState: TunaPositionState;
 };
 
@@ -49,8 +49,8 @@ export type LiquidatePositionTestExpectations = {
   poolBalanceDeltaB?: bigint;
   badDebtDeltaA?: bigint;
   badDebtDeltaB?: bigint;
-  liquidatorRewardA?: bigint;
-  liquidatorRewardB?: bigint;
+  feeRecipientBalanceDeltaA?: bigint;
+  feeRecipientBalanceDeltaB?: bigint;
   tunaPositionState?: TunaPositionState;
 };
 
@@ -68,10 +68,10 @@ export function assertLiquidatePosition(
     expect(results.poolBalanceDeltaB).toEqual(expectations.poolBalanceDeltaB);
   if (expectations.badDebtDeltaA !== undefined) expect(results.badDebtDeltaA).toEqual(expectations.badDebtDeltaA);
   if (expectations.badDebtDeltaB !== undefined) expect(results.badDebtDeltaB).toEqual(expectations.badDebtDeltaB);
-  if (expectations.liquidatorRewardA !== undefined)
-    expect(results.liquidatorRewardA).toEqual(expectations.liquidatorRewardA);
-  if (expectations.liquidatorRewardB !== undefined)
-    expect(results.liquidatorRewardB).toEqual(expectations.liquidatorRewardB);
+  if (expectations.feeRecipientBalanceDeltaA !== undefined)
+    expect(results.feeRecipientBalanceDeltaA).toEqual(expectations.feeRecipientBalanceDeltaA);
+  if (expectations.feeRecipientBalanceDeltaB !== undefined)
+    expect(results.feeRecipientBalanceDeltaB).toEqual(expectations.feeRecipientBalanceDeltaB);
   if (expectations.tunaPositionState !== undefined)
     expect(results.tunaPositionState).toEqual(expectations.tunaPositionState);
 }
@@ -132,16 +132,16 @@ export async function liquidatePosition({
   )[0];
   const vaultB = await fetchVault(rpc, vaultBAddress);
 
-  const liquidatorAAta = (
+  const feeRecipientAAta = (
     await findAssociatedTokenPda({
-      owner: tunaConfig.data.liquidatorAuthority,
+      owner: tunaConfig.data.feeRecipient,
       mint: mintA.address,
       tokenProgram: mintA.programAddress,
     })
   )[0];
-  const liquidatorBAta = (
+  const feeRecipientBAta = (
     await findAssociatedTokenPda({
-      owner: tunaConfig.data.liquidatorAuthority,
+      owner: tunaConfig.data.feeRecipient,
       mint: mintB.address,
       tokenProgram: mintB.programAddress,
     })
@@ -152,6 +152,7 @@ export async function liquidatePosition({
     instructions = await liquidatePositionOrcaInstructions(
       signer,
       tunaPosition,
+      tunaConfig,
       mintA,
       mintB,
       vaultA,
@@ -163,6 +164,7 @@ export async function liquidatePosition({
     instructions = await liquidatePositionFusionInstructions(
       signer,
       tunaPosition,
+      tunaConfig,
       mintA,
       mintB,
       vaultA,
@@ -176,10 +178,10 @@ export async function liquidatePosition({
   const vaultBBalanceBefore = (await fetchToken(rpc, vaultBAta)).data.amount;
   const poolBalanceABefore = (await fetchToken(rpc, pool.data.tokenVaultA)).data.amount;
   const poolBalanceBBefore = (await fetchToken(rpc, pool.data.tokenVaultB)).data.amount;
-  const liquidatorTokenABefore = await fetchMaybeToken(rpc, liquidatorAAta);
-  const liquidatorBalanceABefore = liquidatorTokenABefore.exists ? liquidatorTokenABefore.data.amount : 0n;
-  const liquidatorTokenBBefore = await fetchMaybeToken(rpc, liquidatorBAta);
-  const liquidatorBalanceBBefore = liquidatorTokenBBefore.exists ? liquidatorTokenBBefore.data.amount : 0n;
+  const feeRecipientTokenABefore = await fetchMaybeToken(rpc, feeRecipientAAta);
+  const feeRecipientBalanceABefore = feeRecipientTokenABefore.exists ? feeRecipientTokenABefore.data.amount : 0n;
+  const feeRecipientTokenBBefore = await fetchMaybeToken(rpc, feeRecipientBAta);
+  const feeRecipientBalanceBBefore = feeRecipientTokenBBefore.exists ? feeRecipientTokenBBefore.data.amount : 0n;
 
   // Liquidate the position!
   await sendTransaction(instructions);
@@ -198,10 +200,10 @@ export async function liquidatePosition({
   const vaultBBalanceAfter = (await fetchToken(rpc, vaultBAta)).data.amount;
   const poolBalanceAAfter = (await fetchToken(rpc, pool.data.tokenVaultA)).data.amount;
   const poolBalanceBAfter = (await fetchToken(rpc, pool.data.tokenVaultB)).data.amount;
-  const liquidatorTokenAAfter = await fetchMaybeToken(rpc, liquidatorAAta);
-  const liquidatorBalanceAAfter = liquidatorTokenAAfter.exists ? liquidatorTokenAAfter.data.amount : 0n;
-  const liquidatorTokenBAfter = await fetchMaybeToken(rpc, liquidatorBAta);
-  const liquidatorBalanceBAfter = liquidatorTokenBAfter.exists ? liquidatorTokenBAfter.data.amount : 0n;
+  const feeRecipientTokenAAfter = await fetchMaybeToken(rpc, feeRecipientAAta);
+  const feeRecipientBalanceAAfter = feeRecipientTokenAAfter.exists ? feeRecipientTokenAAfter.data.amount : 0n;
+  const feeRecipientTokenBAfter = await fetchMaybeToken(rpc, feeRecipientBAta);
+  const feeRecipientBalanceBAfter = feeRecipientTokenBAfter.exists ? feeRecipientTokenBAfter.data.amount : 0n;
 
   const vaultAAfter = await fetchVault(rpc, vaultAAddress);
   const vaultBAfter = await fetchVault(rpc, vaultBAddress);
@@ -213,8 +215,8 @@ export async function liquidatePosition({
     vaultBalanceDeltaB: vaultBBalanceAfter - vaultBBalanceBefore,
     badDebtDeltaA: vaultAAfter.data.unpaidDebtShares - vaultA.data.unpaidDebtShares,
     badDebtDeltaB: vaultBAfter.data.unpaidDebtShares - vaultB.data.unpaidDebtShares,
-    liquidatorRewardA: liquidatorBalanceAAfter - liquidatorBalanceABefore,
-    liquidatorRewardB: liquidatorBalanceBAfter - liquidatorBalanceBBefore,
+    feeRecipientBalanceDeltaA: feeRecipientBalanceAAfter - feeRecipientBalanceABefore,
+    feeRecipientBalanceDeltaB: feeRecipientBalanceBAfter - feeRecipientBalanceBBefore,
     tunaPositionState: tunaPositionAfter.data.state,
   };
 }

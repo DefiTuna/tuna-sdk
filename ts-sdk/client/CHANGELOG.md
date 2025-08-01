@@ -1,5 +1,23 @@
 # @defituna/client
 
+## 2.0.17
+
+### Patch Changes
+
+- fdf18d1: bugfix: incorrect protocol fee calculation in getLiquidityIncreaseQuote
+
+## 2.0.16
+
+### Patch Changes
+
+- 961ae7e: bugfix: incorrect liquidation instruction builder
+
+## 2.0.15
+
+### Patch Changes
+
+- 207d79e: Changed liquidation fees recipient
+
 ## 2.0.14
 
 ### Patch Changes
