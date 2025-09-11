@@ -6,13 +6,14 @@ import {
   HUNDRED_PERCENT,
 } from "@crypticdot/defituna-client";
 import { sendTransaction } from "@crypticdot/fusionamm-tx-sender";
+import { Flags } from "@oclif/core";
 import { address } from "@solana/kit";
 import { fetchMint } from "@solana-program/token-2022";
 
 import BaseCommand, { addressArg, addressFlag, bigintFlag, percentFlag, pythFeedIdFlag } from "../base";
 import { rpc, signer } from "../rpc";
 
-export default class UpdateVault extends BaseCommand {
+export default class CreateVault extends BaseCommand {
   static override args = {
     mint: addressArg({
       description: "Token mint address",
@@ -33,6 +34,9 @@ export default class UpdateVault extends BaseCommand {
       description: "Pyth oracle price update account",
       default: address("11111111111111111111111111111111"),
     }),
+    allowUnsafeTokenExtensions: Flags.boolean({
+      description: "Allow unsafe token extensions",
+    }),
   };
   static override description = "Create a lending vault";
   static override examples = [
@@ -40,7 +44,7 @@ export default class UpdateVault extends BaseCommand {
   ];
 
   public async run() {
-    const { args, flags } = await this.parse(UpdateVault);
+    const { args, flags } = await this.parse(CreateVault);
 
     const vaultAddress = (await getLendingVaultAddress(args.mint))[0];
     console.log("Fetching vault:", vaultAddress);
@@ -59,6 +63,7 @@ export default class UpdateVault extends BaseCommand {
       supplyLimit: flags.supplyLimit,
       pythOraclePriceUpdate: flags.pythOraclePriceUpdate,
       pythOracleFeedId: flags.pythOracleFeedId,
+      allowUnsafeTokenExtensions: flags.allowUnsafeTokenExtensions,
     };
 
     const mint = await fetchMint(rpc, args.mint);

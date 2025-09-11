@@ -1,5 +1,53 @@
 # @defituna/rust-client
 
+## 3.0.7
+
+### Patch Changes
+
+- 27b2474: Updated TunaPosition trait
+
+## 3.0.6
+
+### Patch Changes
+
+- ef07f3f: Added useful getters to tuna_position trait
+
+## 3.0.5
+
+### Patch Changes
+
+- 67e390f: Added Any to TunaPosition trait
+
+## 3.0.4
+
+### Patch Changes
+
+- df53514: Updated rebalance ix builder name
+
+## 3.0.3
+
+### Patch Changes
+
+- 113f2ec: bugfix: renamed rebalance ix builder
+
+## 3.0.2
+
+### Patch Changes
+
+- 2aaee6f: Renamed t/p and s/l constants
+
+## 3.0.1
+
+### Patch Changes
+
+- 0741685: Renamed take profit/stop loss to lower/upper orders
+
+## 3.0.0
+
+### Major Changes
+
+- 5f51b19: DefiTuna 3.0
+
 ## 2.0.16
 
 ### Patch Changes

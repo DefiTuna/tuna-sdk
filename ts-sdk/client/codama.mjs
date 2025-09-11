@@ -1,5 +1,5 @@
 import { createFromRoot, updateAccountsVisitor, updateDefinedTypesVisitor } from "codama";
-import { renderJavaScriptVisitor } from "@codama/renderers";
+import { renderVisitor } from "@codama/renderers-js";
 import { rootNodeFromAnchor } from "@codama/nodes-from-anchor";
 import { readFileSync } from "fs";
 
@@ -37,6 +37,6 @@ codama.update(
   }),
 );
 
-console.log("Generating ts visitor");
-const tsVisitor = renderJavaScriptVisitor("./src/generated");
+console.log("Generating TypeScript client");
+const tsVisitor = renderVisitor("./src/generated");
 codama.accept(tsVisitor);

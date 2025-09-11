@@ -9,8 +9,8 @@ pub enum Method {
   WithdrawFromLendingPosition,
   CollectAndCompoundFeesOrca,
   CollectFeesOrca,
-  OpenPositionWithLiquidityOrca,
-  ClosePositionWithLiquidityOrca,
+  OpenAndIncreaseTunaLpPositionOrca,
+  CloseActivePositionOrca,
   RetrieveLendingPositions,
   RetrieveTunaPositions,
 }
@@ -19,10 +19,10 @@ impl Method {
     match s.to_lowercase().as_str() {
       "deposit_and_create" => Ok(Self::OpenLendingPositionAndDeposit),
       "withdraw" => Ok(Self::WithdrawFromLendingPosition),
-      "open_position_with_liquidity_orca" => Ok(Self::OpenPositionWithLiquidityOrca),
+      "open_position_with_liquidity_orca" => Ok(Self::OpenAndIncreaseTunaLpPositionOrca),
       "collect_fees_orca" => Ok(Self::CollectFeesOrca),
       "collect_and_compound_fees_orca" => Ok(Self::CollectAndCompoundFeesOrca),
-      "close_position_with_liquidity_orca" => Ok(Self::ClosePositionWithLiquidityOrca),
+      "close_active_tuna_lp_position_orca" => Ok(Self::CloseActivePositionOrca),
       "retrieve_lending_positions" => Ok(Self::RetrieveLendingPositions),
       "retrieve_tuna_positions" => Ok(Self::RetrieveTunaPositions),
       _ => bail!("Unknown method: {}. Valid options: {}", s, VALID_METHODS.join(", ")),
@@ -32,7 +32,7 @@ impl Method {
 fn is_tuna_position_mint_dependent(m: &Method) -> bool {
   matches!(
     m,
-    Method::CollectAndCompoundFeesOrca | Method::CollectFeesOrca | Method::ClosePositionWithLiquidityOrca
+    Method::CollectAndCompoundFeesOrca | Method::CollectFeesOrca | Method::CloseActivePositionOrca
   )
 }
 fn is_positions_retrieval(m: &Method) -> bool {

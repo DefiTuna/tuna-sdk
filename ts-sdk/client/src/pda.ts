@@ -31,9 +31,16 @@ export async function getLendingPositionAddress(wallet: Address, mint: Address):
   });
 }
 
-export async function getTunaPositionAddress(position_mint: Address): Promise<ProgramDerivedAddress> {
+export async function getTunaLpPositionAddress(positionMint: Address): Promise<ProgramDerivedAddress> {
   return await getProgramDerivedAddress({
     programAddress: TUNA_PROGRAM_ADDRESS,
-    seeds: ["tuna_position", getAddressEncoder().encode(position_mint)],
+    seeds: ["tuna_position", getAddressEncoder().encode(positionMint)],
+  });
+}
+
+export async function getTunaSpotPositionAddress(positionMint: Address): Promise<ProgramDerivedAddress> {
+  return await getProgramDerivedAddress({
+    programAddress: TUNA_PROGRAM_ADDRESS,
+    seeds: ["tuna_spot_position", getAddressEncoder().encode(positionMint)],
   });
 }

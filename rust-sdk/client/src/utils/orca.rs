@@ -1,5 +1,6 @@
 use orca_whirlpools_client::get_tick_array_address;
-use orca_whirlpools_core::{get_initializable_tick_index, get_tick_array_start_tick_index, TICK_ARRAY_SIZE};
+use orca_whirlpools_core::{get_tick_array_start_tick_index, TICK_ARRAY_SIZE};
+use orca_whirlpools_core::{MAX_TICK_INDEX, MIN_TICK_INDEX};
 use solana_pubkey::Pubkey;
 
 pub fn get_swap_tick_arrays(tick_current_index: i32, tick_spacing: u16, whirlpool_address: &Pubkey) -> [Pubkey; 5] {
@@ -24,8 +25,14 @@ pub fn get_tick_arrays_for_rebalanced_position(
 ) -> [(Pubkey, i32); 2] {
     // Calculate the new position's range.
     let position_range = position_tick_upper_index - position_tick_lower_index;
-    let new_tick_lower_index = get_initializable_tick_index(tick_current_index - position_range / 2, tick_spacing, None);
-    let new_tick_upper_index = new_tick_lower_index + position_range;
+    let half_range = position_range / (2 * tick_spacing as i32) * tick_spacing as i32;
+    let position_center = tick_current_index.div_euclid(tick_spacing as i32) * tick_spacing as i32;
+
+    let mut new_tick_lower_index = (position_center - half_range).max(MIN_TICK_INDEX);
+    let new_tick_upper_index = (new_tick_lower_index + position_range).min(MAX_TICK_INDEX);
+    if new_tick_upper_index == MAX_TICK_INDEX {
+        new_tick_lower_index = MAX_TICK_INDEX - position_range;
+    }
 
     let lower_tick_array_start_index = get_tick_array_start_tick_index(new_tick_lower_index, tick_spacing);
     let lower_tick_array_address = get_tick_array_address(&whirlpool_address, lower_tick_array_start_index).unwrap().0;

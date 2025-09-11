@@ -2,22 +2,22 @@
   "address": "tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD",
   "metadata": {
     "name": "tuna",
-    "version": "2.0.11",
+    "version": "3.0.0",
     "spec": "0.1.0",
     "description": "DefiTuna"
   },
   "instructions": [
     {
-      "name": "add_liquidity_fusion",
+      "name": "close_active_tuna_spot_position_fusion",
       "discriminator": [
-        186,
-        221,
-        60,
-        139,
-        153,
-        11,
-        193,
-        11
+        124,
+        162,
+        91,
+        100,
+        76,
+        94,
+        242,
+        82
       ],
       "accounts": [
         {
@@ -70,10 +70,6 @@
           "writable": true
         },
         {
-          "name": "tuna_position_ata",
-          "writable": true
-        },
-        {
           "name": "tuna_position_ata_a",
           "writable": true
         },
@@ -83,19 +79,13 @@
         },
         {
           "name": "tuna_position_owner_ata_a",
-          "writable": true
+          "writable": true,
+          "optional": true
         },
         {
           "name": "tuna_position_owner_ata_b",
-          "writable": true
-        },
-        {
-          "name": "fee_recipient_ata_a",
-          "writable": true
-        },
-        {
-          "name": "fee_recipient_ata_b",
-          "writable": true
+          "writable": true,
+          "optional": true
         },
         {
           "name": "pyth_oracle_price_feed_a"
@@ -116,38 +106,10 @@
           "writable": true
         },
         {
-          "name": "fusion_position",
-          "writable": true
-        },
-        {
           "name": "memo_program"
         }
       ],
       "args": [
-        {
-          "name": "collateral_a",
-          "type": "u64"
-        },
-        {
-          "name": "collateral_b",
-          "type": "u64"
-        },
-        {
-          "name": "borrow_a",
-          "type": "u64"
-        },
-        {
-          "name": "borrow_b",
-          "type": "u64"
-        },
-        {
-          "name": "min_added_amount_a",
-          "type": "u64"
-        },
-        {
-          "name": "min_added_amount_b",
-          "type": "u64"
-        },
         {
           "name": "max_swap_slippage",
           "type": "u32"
@@ -163,16 +125,16 @@
       ]
     },
     {
-      "name": "add_liquidity_orca",
+      "name": "close_active_tuna_spot_position_orca",
       "discriminator": [
+        198,
         185,
-        68,
-        41,
-        204,
-        33,
-        179,
-        12,
-        78
+        205,
+        125,
+        184,
+        130,
+        90,
+        82
       ],
       "accounts": [
         {
@@ -193,6 +155,12 @@
         },
         {
           "name": "mint_b"
+        },
+        {
+          "name": "token_program_a"
+        },
+        {
+          "name": "token_program_b"
         },
         {
           "name": "market",
@@ -219,10 +187,6 @@
           "writable": true
         },
         {
-          "name": "tuna_position_ata",
-          "writable": true
-        },
-        {
           "name": "tuna_position_ata_a",
           "writable": true
         },
@@ -232,19 +196,13 @@
         },
         {
           "name": "tuna_position_owner_ata_a",
-          "writable": true
+          "writable": true,
+          "optional": true
         },
         {
           "name": "tuna_position_owner_ata_b",
-          "writable": true
-        },
-        {
-          "name": "fee_recipient_ata_a",
-          "writable": true
-        },
-        {
-          "name": "fee_recipient_ata_b",
-          "writable": true
+          "writable": true,
+          "optional": true
         },
         {
           "name": "pyth_oracle_price_feed_a"
@@ -256,7 +214,7 @@
           "name": "whirlpool_program",
           "docs": [
             "",
-            "ORCA accounts",
+            "Orca accounts",
             ""
           ]
         },
@@ -265,44 +223,10 @@
           "writable": true
         },
         {
-          "name": "orca_position",
-          "writable": true
-        },
-        {
-          "name": "token_program_a"
-        },
-        {
-          "name": "token_program_b"
-        },
-        {
           "name": "memo_program"
         }
       ],
       "args": [
-        {
-          "name": "collateral_a",
-          "type": "u64"
-        },
-        {
-          "name": "collateral_b",
-          "type": "u64"
-        },
-        {
-          "name": "borrow_a",
-          "type": "u64"
-        },
-        {
-          "name": "borrow_b",
-          "type": "u64"
-        },
-        {
-          "name": "min_added_amount_a",
-          "type": "u64"
-        },
-        {
-          "name": "min_added_amount_b",
-          "type": "u64"
-        },
         {
           "name": "max_swap_slippage",
           "type": "u32"
@@ -318,7 +242,7 @@
       ]
     },
     {
-      "name": "close_position_fusion",
+      "name": "close_tuna_lp_position_fusion",
       "discriminator": [
         91,
         149,
@@ -396,7 +320,7 @@
       "args": []
     },
     {
-      "name": "close_position_orca",
+      "name": "close_tuna_lp_position_orca",
       "discriminator": [
         253,
         98,
@@ -469,6 +393,56 @@
             "Other accounts",
             ""
           ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "close_tuna_spot_position",
+      "discriminator": [
+        4,
+        189,
+        171,
+        84,
+        110,
+        220,
+        10,
+        8
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "docs": [
+            "",
+            "TUNA accounts",
+            ""
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "mint_a"
+        },
+        {
+          "name": "mint_b"
+        },
+        {
+          "name": "token_program_a"
+        },
+        {
+          "name": "token_program_b"
+        },
+        {
+          "name": "tuna_position",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_a",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_b",
+          "writable": true
         }
       ],
       "args": []
@@ -1180,6 +1154,558 @@
         {
           "name": "pyth_oracle_feed_id",
           "type": "pubkey"
+        },
+        {
+          "name": "allow_unsafe_token_extensions",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "decrease_tuna_lp_position_fusion",
+      "discriminator": [
+        175,
+        74,
+        205,
+        238,
+        4,
+        123,
+        166,
+        35
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "docs": [
+            "",
+            "TUNA accounts",
+            ""
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tuna_config"
+        },
+        {
+          "name": "market",
+          "writable": true
+        },
+        {
+          "name": "mint_a"
+        },
+        {
+          "name": "mint_b"
+        },
+        {
+          "name": "token_program_a"
+        },
+        {
+          "name": "token_program_b"
+        },
+        {
+          "name": "vault_a",
+          "writable": true
+        },
+        {
+          "name": "vault_b",
+          "writable": true
+        },
+        {
+          "name": "vault_a_ata",
+          "writable": true
+        },
+        {
+          "name": "vault_b_ata",
+          "writable": true
+        },
+        {
+          "name": "tuna_position",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_a",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_b",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_owner_ata_a",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_owner_ata_b",
+          "writable": true
+        },
+        {
+          "name": "pyth_oracle_price_feed_a"
+        },
+        {
+          "name": "pyth_oracle_price_feed_b"
+        },
+        {
+          "name": "fusionamm_program",
+          "docs": [
+            "",
+            "Fusion accounts",
+            ""
+          ]
+        },
+        {
+          "name": "fusion_pool",
+          "writable": true
+        },
+        {
+          "name": "fusion_position",
+          "writable": true
+        },
+        {
+          "name": "memo_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "withdraw_percent",
+          "type": "u32"
+        },
+        {
+          "name": "swap_to_token",
+          "type": {
+            "option": {
+              "defined": {
+                "name": "PoolToken"
+              }
+            }
+          }
+        },
+        {
+          "name": "min_removed_amount_a",
+          "type": "u64"
+        },
+        {
+          "name": "min_removed_amount_b",
+          "type": "u64"
+        },
+        {
+          "name": "max_swap_slippage",
+          "type": "u32"
+        },
+        {
+          "name": "remaining_accounts_info",
+          "type": {
+            "defined": {
+              "name": "RemainingAccountsInfo"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "decrease_tuna_lp_position_orca",
+      "discriminator": [
+        30,
+        69,
+        45,
+        170,
+        183,
+        195,
+        12,
+        119
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "docs": [
+            "",
+            "TUNA accounts",
+            ""
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tuna_config"
+        },
+        {
+          "name": "market",
+          "writable": true
+        },
+        {
+          "name": "mint_a"
+        },
+        {
+          "name": "mint_b"
+        },
+        {
+          "name": "vault_a",
+          "writable": true
+        },
+        {
+          "name": "vault_b",
+          "writable": true
+        },
+        {
+          "name": "vault_a_ata",
+          "writable": true
+        },
+        {
+          "name": "vault_b_ata",
+          "writable": true
+        },
+        {
+          "name": "tuna_position",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_a",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_b",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_owner_ata_a",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_owner_ata_b",
+          "writable": true
+        },
+        {
+          "name": "pyth_oracle_price_feed_a"
+        },
+        {
+          "name": "pyth_oracle_price_feed_b"
+        },
+        {
+          "name": "whirlpool_program",
+          "docs": [
+            "",
+            "ORCA accounts",
+            ""
+          ]
+        },
+        {
+          "name": "whirlpool",
+          "writable": true
+        },
+        {
+          "name": "orca_position",
+          "writable": true
+        },
+        {
+          "name": "token_program_a"
+        },
+        {
+          "name": "token_program_b"
+        },
+        {
+          "name": "memo_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "withdraw_percent",
+          "type": "u32"
+        },
+        {
+          "name": "swap_to_token",
+          "type": {
+            "option": {
+              "defined": {
+                "name": "PoolToken"
+              }
+            }
+          }
+        },
+        {
+          "name": "min_removed_amount_a",
+          "type": "u64"
+        },
+        {
+          "name": "min_removed_amount_b",
+          "type": "u64"
+        },
+        {
+          "name": "max_swap_slippage",
+          "type": "u32"
+        },
+        {
+          "name": "remaining_accounts_info",
+          "type": {
+            "defined": {
+              "name": "RemainingAccountsInfo"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "decrease_tuna_spot_position_fusion",
+      "discriminator": [
+        112,
+        163,
+        159,
+        45,
+        176,
+        140,
+        190,
+        166
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "docs": [
+            "",
+            "TUNA accounts",
+            ""
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tuna_config"
+        },
+        {
+          "name": "mint_a"
+        },
+        {
+          "name": "mint_b"
+        },
+        {
+          "name": "token_program_a"
+        },
+        {
+          "name": "token_program_b"
+        },
+        {
+          "name": "market",
+          "writable": true
+        },
+        {
+          "name": "vault_a",
+          "writable": true
+        },
+        {
+          "name": "vault_b",
+          "writable": true
+        },
+        {
+          "name": "vault_a_ata",
+          "writable": true
+        },
+        {
+          "name": "vault_b_ata",
+          "writable": true
+        },
+        {
+          "name": "tuna_position",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_a",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_b",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_owner_ata_a",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "tuna_position_owner_ata_b",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "pyth_oracle_price_feed_a"
+        },
+        {
+          "name": "pyth_oracle_price_feed_b"
+        },
+        {
+          "name": "fusionamm_program",
+          "docs": [
+            "",
+            "Fusion accounts",
+            ""
+          ]
+        },
+        {
+          "name": "fusion_pool",
+          "writable": true
+        },
+        {
+          "name": "memo_program"
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "",
+            "Other accounts",
+            ""
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "withdraw_percent",
+          "type": "u32"
+        },
+        {
+          "name": "max_swap_slippage",
+          "type": "u32"
+        },
+        {
+          "name": "remaining_accounts_info",
+          "type": {
+            "defined": {
+              "name": "RemainingAccountsInfo"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "decrease_tuna_spot_position_orca",
+      "discriminator": [
+        150,
+        167,
+        205,
+        151,
+        246,
+        78,
+        181,
+        198
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "docs": [
+            "",
+            "TUNA accounts",
+            ""
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tuna_config"
+        },
+        {
+          "name": "mint_a"
+        },
+        {
+          "name": "mint_b"
+        },
+        {
+          "name": "token_program_a"
+        },
+        {
+          "name": "token_program_b"
+        },
+        {
+          "name": "market",
+          "writable": true
+        },
+        {
+          "name": "vault_a",
+          "writable": true
+        },
+        {
+          "name": "vault_b",
+          "writable": true
+        },
+        {
+          "name": "vault_a_ata",
+          "writable": true
+        },
+        {
+          "name": "vault_b_ata",
+          "writable": true
+        },
+        {
+          "name": "tuna_position",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_a",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_b",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_owner_ata_a",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "tuna_position_owner_ata_b",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "pyth_oracle_price_feed_a"
+        },
+        {
+          "name": "pyth_oracle_price_feed_b"
+        },
+        {
+          "name": "whirlpool_program",
+          "docs": [
+            "",
+            "Orca accounts",
+            ""
+          ]
+        },
+        {
+          "name": "whirlpool",
+          "writable": true
+        },
+        {
+          "name": "memo_program"
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "",
+            "Other accounts",
+            ""
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "withdraw_percent",
+          "type": "u32"
+        },
+        {
+          "name": "max_swap_slippage",
+          "type": "u32"
+        },
+        {
+          "name": "remaining_accounts_info",
+          "type": {
+            "defined": {
+              "name": "RemainingAccountsInfo"
+            }
+          }
         }
       ]
     },
@@ -1238,7 +1764,599 @@
       ]
     },
     {
-      "name": "liquidate_position_fusion",
+      "name": "increase_tuna_lp_position_fusion",
+      "discriminator": [
+        186,
+        221,
+        60,
+        139,
+        153,
+        11,
+        193,
+        11
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "docs": [
+            "",
+            "TUNA accounts",
+            ""
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tuna_config"
+        },
+        {
+          "name": "mint_a"
+        },
+        {
+          "name": "mint_b"
+        },
+        {
+          "name": "token_program_a"
+        },
+        {
+          "name": "token_program_b"
+        },
+        {
+          "name": "market",
+          "writable": true
+        },
+        {
+          "name": "vault_a",
+          "writable": true
+        },
+        {
+          "name": "vault_b",
+          "writable": true
+        },
+        {
+          "name": "vault_a_ata",
+          "writable": true
+        },
+        {
+          "name": "vault_b_ata",
+          "writable": true
+        },
+        {
+          "name": "tuna_position",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_a",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_b",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_owner_ata_a",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_owner_ata_b",
+          "writable": true
+        },
+        {
+          "name": "fee_recipient_ata_a",
+          "writable": true
+        },
+        {
+          "name": "fee_recipient_ata_b",
+          "writable": true
+        },
+        {
+          "name": "pyth_oracle_price_feed_a"
+        },
+        {
+          "name": "pyth_oracle_price_feed_b"
+        },
+        {
+          "name": "fusionamm_program",
+          "docs": [
+            "",
+            "Fusion accounts",
+            ""
+          ]
+        },
+        {
+          "name": "fusion_pool",
+          "writable": true
+        },
+        {
+          "name": "fusion_position",
+          "writable": true
+        },
+        {
+          "name": "memo_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "collateral_a",
+          "type": "u64"
+        },
+        {
+          "name": "collateral_b",
+          "type": "u64"
+        },
+        {
+          "name": "borrow_a",
+          "type": "u64"
+        },
+        {
+          "name": "borrow_b",
+          "type": "u64"
+        },
+        {
+          "name": "min_added_amount_a",
+          "type": "u64"
+        },
+        {
+          "name": "min_added_amount_b",
+          "type": "u64"
+        },
+        {
+          "name": "max_swap_slippage",
+          "type": "u32"
+        },
+        {
+          "name": "remaining_accounts_info",
+          "type": {
+            "defined": {
+              "name": "RemainingAccountsInfo"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "increase_tuna_lp_position_orca",
+      "discriminator": [
+        185,
+        68,
+        41,
+        204,
+        33,
+        179,
+        12,
+        78
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "docs": [
+            "",
+            "TUNA accounts",
+            ""
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tuna_config"
+        },
+        {
+          "name": "mint_a"
+        },
+        {
+          "name": "mint_b"
+        },
+        {
+          "name": "market",
+          "writable": true
+        },
+        {
+          "name": "vault_a",
+          "writable": true
+        },
+        {
+          "name": "vault_b",
+          "writable": true
+        },
+        {
+          "name": "vault_a_ata",
+          "writable": true
+        },
+        {
+          "name": "vault_b_ata",
+          "writable": true
+        },
+        {
+          "name": "tuna_position",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_a",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_b",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_owner_ata_a",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_owner_ata_b",
+          "writable": true
+        },
+        {
+          "name": "fee_recipient_ata_a",
+          "writable": true
+        },
+        {
+          "name": "fee_recipient_ata_b",
+          "writable": true
+        },
+        {
+          "name": "pyth_oracle_price_feed_a"
+        },
+        {
+          "name": "pyth_oracle_price_feed_b"
+        },
+        {
+          "name": "whirlpool_program",
+          "docs": [
+            "",
+            "ORCA accounts",
+            ""
+          ]
+        },
+        {
+          "name": "whirlpool",
+          "writable": true
+        },
+        {
+          "name": "orca_position",
+          "writable": true
+        },
+        {
+          "name": "token_program_a"
+        },
+        {
+          "name": "token_program_b"
+        },
+        {
+          "name": "memo_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "collateral_a",
+          "type": "u64"
+        },
+        {
+          "name": "collateral_b",
+          "type": "u64"
+        },
+        {
+          "name": "borrow_a",
+          "type": "u64"
+        },
+        {
+          "name": "borrow_b",
+          "type": "u64"
+        },
+        {
+          "name": "min_added_amount_a",
+          "type": "u64"
+        },
+        {
+          "name": "min_added_amount_b",
+          "type": "u64"
+        },
+        {
+          "name": "max_swap_slippage",
+          "type": "u32"
+        },
+        {
+          "name": "remaining_accounts_info",
+          "type": {
+            "defined": {
+              "name": "RemainingAccountsInfo"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "increase_tuna_spot_position_fusion",
+      "discriminator": [
+        85,
+        198,
+        12,
+        67,
+        88,
+        102,
+        152,
+        49
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "docs": [
+            "",
+            "TUNA accounts",
+            ""
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tuna_config"
+        },
+        {
+          "name": "mint_a"
+        },
+        {
+          "name": "mint_b"
+        },
+        {
+          "name": "token_program_a"
+        },
+        {
+          "name": "token_program_b"
+        },
+        {
+          "name": "market",
+          "writable": true
+        },
+        {
+          "name": "vault_a",
+          "writable": true
+        },
+        {
+          "name": "vault_b",
+          "writable": true
+        },
+        {
+          "name": "vault_a_ata",
+          "writable": true
+        },
+        {
+          "name": "vault_b_ata",
+          "writable": true
+        },
+        {
+          "name": "tuna_position",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_a",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_b",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_owner_ata_a",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "tuna_position_owner_ata_b",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "fee_recipient_ata_a",
+          "writable": true
+        },
+        {
+          "name": "fee_recipient_ata_b",
+          "writable": true
+        },
+        {
+          "name": "pyth_oracle_price_feed_a"
+        },
+        {
+          "name": "pyth_oracle_price_feed_b"
+        },
+        {
+          "name": "fusionamm_program",
+          "docs": [
+            "",
+            "Fusion accounts",
+            ""
+          ]
+        },
+        {
+          "name": "fusion_pool",
+          "writable": true
+        },
+        {
+          "name": "memo_program"
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "",
+            "Other accounts",
+            ""
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "collateral_amount",
+          "type": "u64"
+        },
+        {
+          "name": "borrow_amount",
+          "type": "u64"
+        },
+        {
+          "name": "max_swap_slippage",
+          "type": "u32"
+        },
+        {
+          "name": "remaining_accounts_info",
+          "type": {
+            "defined": {
+              "name": "RemainingAccountsInfo"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "increase_tuna_spot_position_orca",
+      "discriminator": [
+        102,
+        25,
+        145,
+        236,
+        106,
+        248,
+        139,
+        116
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "docs": [
+            "",
+            "TUNA accounts",
+            ""
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tuna_config"
+        },
+        {
+          "name": "mint_a"
+        },
+        {
+          "name": "mint_b"
+        },
+        {
+          "name": "token_program_a"
+        },
+        {
+          "name": "token_program_b"
+        },
+        {
+          "name": "market",
+          "writable": true
+        },
+        {
+          "name": "vault_a",
+          "writable": true
+        },
+        {
+          "name": "vault_b",
+          "writable": true
+        },
+        {
+          "name": "vault_a_ata",
+          "writable": true
+        },
+        {
+          "name": "vault_b_ata",
+          "writable": true
+        },
+        {
+          "name": "tuna_position",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_a",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_b",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_owner_ata_a",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "tuna_position_owner_ata_b",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "fee_recipient_ata_a",
+          "writable": true
+        },
+        {
+          "name": "fee_recipient_ata_b",
+          "writable": true
+        },
+        {
+          "name": "pyth_oracle_price_feed_a"
+        },
+        {
+          "name": "pyth_oracle_price_feed_b"
+        },
+        {
+          "name": "whirlpool_program",
+          "docs": [
+            "",
+            "Orca accounts",
+            ""
+          ]
+        },
+        {
+          "name": "whirlpool",
+          "writable": true
+        },
+        {
+          "name": "memo_program"
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "",
+            "Other accounts",
+            ""
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "collateral_amount",
+          "type": "u64"
+        },
+        {
+          "name": "borrow_amount",
+          "type": "u64"
+        },
+        {
+          "name": "max_swap_slippage",
+          "type": "u32"
+        },
+        {
+          "name": "remaining_accounts_info",
+          "type": {
+            "defined": {
+              "name": "RemainingAccountsInfo"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "liquidate_tuna_lp_position_fusion",
       "discriminator": [
         57,
         160,
@@ -1361,7 +2479,7 @@
       ]
     },
     {
-      "name": "liquidate_position_orca",
+      "name": "liquidate_tuna_lp_position_orca",
       "discriminator": [
         62,
         92,
@@ -1484,20 +2602,25 @@
       ]
     },
     {
-      "name": "open_lending_position",
+      "name": "liquidate_tuna_spot_position_fusion",
       "discriminator": [
-        174,
-        227,
-        181,
-        127,
-        78,
-        227,
-        244,
-        19
+        143,
+        103,
+        22,
+        123,
+        180,
+        119,
+        148,
+        37
       ],
       "accounts": [
         {
           "name": "authority",
+          "docs": [
+            "",
+            "TUNA accounts",
+            ""
+          ],
           "writable": true,
           "signer": true
         },
@@ -1505,45 +2628,6 @@
           "name": "tuna_config"
         },
         {
-          "name": "vault"
-        },
-        {
-          "name": "lending_position",
-          "writable": true
-        },
-        {
-          "name": "pool_mint"
-        },
-        {
-          "name": "system_program"
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "open_position_fusion",
-      "discriminator": [
-        78,
-        68,
-        77,
-        41,
-        132,
-        42,
-        34,
-        238
-      ],
-      "accounts": [
-        {
-          "name": "authority",
-          "docs": [
-            "",
-            "TUNA accounts",
-            ""
-          ],
-          "writable": true,
-          "signer": true
-        },
-        {
           "name": "mint_a"
         },
         {
@@ -1556,19 +2640,27 @@
           "name": "token_program_b"
         },
         {
-          "name": "market"
-        },
-        {
-          "name": "tuna_position",
+          "name": "market",
           "writable": true
         },
         {
-          "name": "tuna_position_mint",
-          "writable": true,
-          "signer": true
+          "name": "vault_a",
+          "writable": true
         },
         {
-          "name": "tuna_position_ata",
+          "name": "vault_b",
+          "writable": true
+        },
+        {
+          "name": "vault_a_ata",
+          "writable": true
+        },
+        {
+          "name": "vault_b_ata",
+          "writable": true
+        },
+        {
+          "name": "tuna_position",
           "writable": true
         },
         {
@@ -1578,74 +2670,71 @@
         {
           "name": "tuna_position_ata_b",
           "writable": true
+        },
+        {
+          "name": "fee_recipient_ata_a",
+          "writable": true
+        },
+        {
+          "name": "fee_recipient_ata_b",
+          "writable": true
+        },
+        {
+          "name": "pyth_oracle_price_feed_a"
+        },
+        {
+          "name": "pyth_oracle_price_feed_b"
         },
         {
           "name": "fusionamm_program",
           "docs": [
             "",
-            "Fusion AMM accounts",
+            "Fusion accounts",
             ""
           ]
         },
         {
-          "name": "fusion_pool"
-        },
-        {
-          "name": "fusion_position",
+          "name": "fusion_pool",
           "writable": true
         },
         {
-          "name": "metadata_update_auth"
+          "name": "memo_program"
         },
         {
-          "name": "token_2022_program",
+          "name": "system_program",
           "docs": [
             "",
             "Other accounts",
             ""
           ]
-        },
-        {
-          "name": "system_program"
-        },
-        {
-          "name": "associated_token_program"
         }
       ],
       "args": [
         {
-          "name": "tick_lower_index",
-          "type": "i32"
-        },
-        {
-          "name": "tick_upper_index",
-          "type": "i32"
-        },
-        {
-          "name": "tick_stop_loss_index",
-          "type": "i32"
-        },
-        {
-          "name": "tick_take_profit_index",
-          "type": "i32"
-        },
-        {
-          "name": "flags",
+          "name": "withdraw_percent",
           "type": "u32"
+        },
+        {
+          "name": "remaining_accounts_info",
+          "type": {
+            "defined": {
+              "name": "RemainingAccountsInfo"
+            }
+          }
         }
       ]
     },
     {
-      "name": "open_position_orca",
+      "name": "liquidate_tuna_spot_position_orca",
       "discriminator": [
-        201,
-        85,
-        45,
-        226,
-        182,
-        208,
-        246,
-        115
+        4,
+        211,
+        103,
+        145,
+        6,
+        1,
+        243,
+        162
       ],
       "accounts": [
         {
@@ -1659,25 +2748,42 @@
           "signer": true
         },
         {
+          "name": "tuna_config"
+        },
+        {
           "name": "mint_a"
         },
         {
           "name": "mint_b"
         },
         {
-          "name": "market"
+          "name": "token_program_a"
         },
         {
-          "name": "tuna_position",
+          "name": "token_program_b"
+        },
+        {
+          "name": "market",
           "writable": true
         },
         {
-          "name": "tuna_position_mint",
-          "writable": true,
-          "signer": true
+          "name": "vault_a",
+          "writable": true
         },
         {
-          "name": "tuna_position_ata",
+          "name": "vault_b",
+          "writable": true
+        },
+        {
+          "name": "vault_a_ata",
+          "writable": true
+        },
+        {
+          "name": "vault_b_ata",
+          "writable": true
+        },
+        {
+          "name": "tuna_position",
           "writable": true
         },
         {
@@ -1689,69 +2795,60 @@
           "writable": true
         },
         {
+          "name": "fee_recipient_ata_a",
+          "writable": true
+        },
+        {
+          "name": "fee_recipient_ata_b",
+          "writable": true
+        },
+        {
+          "name": "pyth_oracle_price_feed_a"
+        },
+        {
+          "name": "pyth_oracle_price_feed_b"
+        },
+        {
           "name": "whirlpool_program",
           "docs": [
             "",
-            "ORCA accounts",
+            "Orca accounts",
             ""
           ]
         },
         {
-          "name": "whirlpool"
-        },
-        {
-          "name": "orca_position",
+          "name": "whirlpool",
           "writable": true
         },
         {
-          "name": "metadata_update_auth"
+          "name": "memo_program"
         },
         {
-          "name": "token_program_a"
-        },
-        {
-          "name": "token_program_b"
-        },
-        {
-          "name": "token_2022_program",
+          "name": "system_program",
           "docs": [
             "",
             "Other accounts",
             ""
           ]
-        },
-        {
-          "name": "system_program"
-        },
-        {
-          "name": "associated_token_program"
         }
       ],
       "args": [
         {
-          "name": "tick_lower_index",
-          "type": "i32"
-        },
-        {
-          "name": "tick_upper_index",
-          "type": "i32"
-        },
-        {
-          "name": "tick_stop_loss_index",
-          "type": "i32"
-        },
-        {
-          "name": "tick_take_profit_index",
-          "type": "i32"
-        },
-        {
-          "name": "flags",
+          "name": "withdraw_percent",
           "type": "u32"
+        },
+        {
+          "name": "remaining_accounts_info",
+          "type": {
+            "defined": {
+              "name": "RemainingAccountsInfo"
+            }
+          }
         }
       ]
     },
     {
-      "name": "open_position_with_liquidity_fusion",
+      "name": "open_and_increase_tuna_lp_position_fusion",
       "discriminator": [
         123,
         115,
@@ -1898,12 +2995,12 @@
           "type": "i32"
         },
         {
-          "name": "tick_stop_loss_index",
-          "type": "i32"
+          "name": "lower_limit_order_sqrt_price",
+          "type": "u128"
         },
         {
-          "name": "tick_take_profit_index",
-          "type": "i32"
+          "name": "upper_limit_order_sqrt_price",
+          "type": "u128"
         },
         {
           "name": "flags",
@@ -1948,7 +3045,7 @@
       ]
     },
     {
-      "name": "open_position_with_liquidity_orca",
+      "name": "open_and_increase_tuna_lp_position_orca",
       "discriminator": [
         163,
         21,
@@ -2095,12 +3192,12 @@
           "type": "i32"
         },
         {
-          "name": "tick_stop_loss_index",
-          "type": "i32"
+          "name": "lower_limit_order_sqrt_price",
+          "type": "u128"
         },
         {
-          "name": "tick_take_profit_index",
-          "type": "i32"
+          "name": "upper_limit_order_sqrt_price",
+          "type": "u128"
         },
         {
           "name": "flags",
@@ -2145,7 +3242,832 @@
       ]
     },
     {
-      "name": "rebalance_position_fusion",
+      "name": "open_and_increase_tuna_spot_position_fusion",
+      "discriminator": [
+        242,
+        25,
+        184,
+        131,
+        250,
+        142,
+        138,
+        191
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "docs": [
+            "",
+            "TUNA accounts",
+            ""
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tuna_config"
+        },
+        {
+          "name": "mint_a"
+        },
+        {
+          "name": "mint_b"
+        },
+        {
+          "name": "token_program_a"
+        },
+        {
+          "name": "token_program_b"
+        },
+        {
+          "name": "market",
+          "writable": true
+        },
+        {
+          "name": "vault_a",
+          "writable": true
+        },
+        {
+          "name": "vault_b",
+          "writable": true
+        },
+        {
+          "name": "vault_a_ata",
+          "writable": true
+        },
+        {
+          "name": "vault_b_ata",
+          "writable": true
+        },
+        {
+          "name": "tuna_position",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_mint",
+          "signer": true
+        },
+        {
+          "name": "tuna_position_ata_a",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_b",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_owner_ata_a",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "tuna_position_owner_ata_b",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "fee_recipient_ata_a",
+          "writable": true
+        },
+        {
+          "name": "fee_recipient_ata_b",
+          "writable": true
+        },
+        {
+          "name": "pyth_oracle_price_feed_a"
+        },
+        {
+          "name": "pyth_oracle_price_feed_b"
+        },
+        {
+          "name": "fusionamm_program",
+          "docs": [
+            "",
+            "Fusion accounts",
+            ""
+          ]
+        },
+        {
+          "name": "fusion_pool",
+          "writable": true
+        },
+        {
+          "name": "memo_program"
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "",
+            "Other accounts",
+            ""
+          ]
+        },
+        {
+          "name": "associated_token_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "position_token",
+          "type": {
+            "defined": {
+              "name": "PoolToken"
+            }
+          }
+        },
+        {
+          "name": "collateral_token",
+          "type": {
+            "defined": {
+              "name": "PoolToken"
+            }
+          }
+        },
+        {
+          "name": "collateral_amount",
+          "type": "u64"
+        },
+        {
+          "name": "borrow_amount",
+          "type": "u64"
+        },
+        {
+          "name": "lower_limit_order_sqrt_price",
+          "type": "u128"
+        },
+        {
+          "name": "upper_limit_order_sqrt_price",
+          "type": "u128"
+        },
+        {
+          "name": "flags",
+          "type": "u32"
+        },
+        {
+          "name": "max_swap_slippage",
+          "type": "u32"
+        },
+        {
+          "name": "remaining_accounts_info",
+          "type": {
+            "defined": {
+              "name": "RemainingAccountsInfo"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "open_and_increase_tuna_spot_position_orca",
+      "discriminator": [
+        124,
+        15,
+        205,
+        162,
+        7,
+        88,
+        34,
+        177
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "docs": [
+            "",
+            "TUNA accounts",
+            ""
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tuna_config"
+        },
+        {
+          "name": "mint_a"
+        },
+        {
+          "name": "mint_b"
+        },
+        {
+          "name": "token_program_a"
+        },
+        {
+          "name": "token_program_b"
+        },
+        {
+          "name": "market",
+          "writable": true
+        },
+        {
+          "name": "vault_a",
+          "writable": true
+        },
+        {
+          "name": "vault_b",
+          "writable": true
+        },
+        {
+          "name": "vault_a_ata",
+          "writable": true
+        },
+        {
+          "name": "vault_b_ata",
+          "writable": true
+        },
+        {
+          "name": "tuna_position",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_mint",
+          "signer": true
+        },
+        {
+          "name": "tuna_position_ata_a",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_b",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_owner_ata_a",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "tuna_position_owner_ata_b",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "fee_recipient_ata_a",
+          "writable": true
+        },
+        {
+          "name": "fee_recipient_ata_b",
+          "writable": true
+        },
+        {
+          "name": "pyth_oracle_price_feed_a"
+        },
+        {
+          "name": "pyth_oracle_price_feed_b"
+        },
+        {
+          "name": "whirlpool_program",
+          "docs": [
+            "",
+            "Orca accounts",
+            ""
+          ]
+        },
+        {
+          "name": "whirlpool",
+          "writable": true
+        },
+        {
+          "name": "memo_program"
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "",
+            "Other accounts",
+            ""
+          ]
+        },
+        {
+          "name": "associated_token_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "position_token",
+          "type": {
+            "defined": {
+              "name": "PoolToken"
+            }
+          }
+        },
+        {
+          "name": "collateral_token",
+          "type": {
+            "defined": {
+              "name": "PoolToken"
+            }
+          }
+        },
+        {
+          "name": "collateral_amount",
+          "type": "u64"
+        },
+        {
+          "name": "borrow_amount",
+          "type": "u64"
+        },
+        {
+          "name": "lower_limit_order_sqrt_price",
+          "type": "u128"
+        },
+        {
+          "name": "upper_limit_order_sqrt_price",
+          "type": "u128"
+        },
+        {
+          "name": "flags",
+          "type": "u32"
+        },
+        {
+          "name": "max_swap_slippage",
+          "type": "u32"
+        },
+        {
+          "name": "remaining_accounts_info",
+          "type": {
+            "defined": {
+              "name": "RemainingAccountsInfo"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "open_lending_position",
+      "discriminator": [
+        174,
+        227,
+        181,
+        127,
+        78,
+        227,
+        244,
+        19
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tuna_config"
+        },
+        {
+          "name": "vault"
+        },
+        {
+          "name": "lending_position",
+          "writable": true
+        },
+        {
+          "name": "pool_mint"
+        },
+        {
+          "name": "system_program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "open_tuna_lp_position_fusion",
+      "discriminator": [
+        78,
+        68,
+        77,
+        41,
+        132,
+        42,
+        34,
+        238
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "docs": [
+            "",
+            "TUNA accounts",
+            ""
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "mint_a"
+        },
+        {
+          "name": "mint_b"
+        },
+        {
+          "name": "token_program_a"
+        },
+        {
+          "name": "token_program_b"
+        },
+        {
+          "name": "market"
+        },
+        {
+          "name": "tuna_position",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_mint",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tuna_position_ata",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_a",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_b",
+          "writable": true
+        },
+        {
+          "name": "fusionamm_program",
+          "docs": [
+            "",
+            "Fusion AMM accounts",
+            ""
+          ]
+        },
+        {
+          "name": "fusion_pool"
+        },
+        {
+          "name": "fusion_position",
+          "writable": true
+        },
+        {
+          "name": "metadata_update_auth"
+        },
+        {
+          "name": "token_2022_program",
+          "docs": [
+            "",
+            "Other accounts",
+            ""
+          ]
+        },
+        {
+          "name": "system_program"
+        },
+        {
+          "name": "associated_token_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "tick_lower_index",
+          "type": "i32"
+        },
+        {
+          "name": "tick_upper_index",
+          "type": "i32"
+        },
+        {
+          "name": "lower_limit_order_sqrt_price",
+          "type": "u128"
+        },
+        {
+          "name": "upper_limit_order_sqrt_price",
+          "type": "u128"
+        },
+        {
+          "name": "flags",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "open_tuna_lp_position_orca",
+      "discriminator": [
+        201,
+        85,
+        45,
+        226,
+        182,
+        208,
+        246,
+        115
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "docs": [
+            "",
+            "TUNA accounts",
+            ""
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "mint_a"
+        },
+        {
+          "name": "mint_b"
+        },
+        {
+          "name": "market"
+        },
+        {
+          "name": "tuna_position",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_mint",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tuna_position_ata",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_a",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_b",
+          "writable": true
+        },
+        {
+          "name": "whirlpool_program",
+          "docs": [
+            "",
+            "ORCA accounts",
+            ""
+          ]
+        },
+        {
+          "name": "whirlpool"
+        },
+        {
+          "name": "orca_position",
+          "writable": true
+        },
+        {
+          "name": "metadata_update_auth"
+        },
+        {
+          "name": "token_program_a"
+        },
+        {
+          "name": "token_program_b"
+        },
+        {
+          "name": "token_2022_program",
+          "docs": [
+            "",
+            "Other accounts",
+            ""
+          ]
+        },
+        {
+          "name": "system_program"
+        },
+        {
+          "name": "associated_token_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "tick_lower_index",
+          "type": "i32"
+        },
+        {
+          "name": "tick_upper_index",
+          "type": "i32"
+        },
+        {
+          "name": "lower_limit_order_sqrt_price",
+          "type": "u128"
+        },
+        {
+          "name": "upper_limit_order_sqrt_price",
+          "type": "u128"
+        },
+        {
+          "name": "flags",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "open_tuna_spot_position_fusion",
+      "discriminator": [
+        110,
+        65,
+        149,
+        32,
+        32,
+        51,
+        135,
+        243
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "docs": [
+            "",
+            "TUNA accounts",
+            ""
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "mint_a"
+        },
+        {
+          "name": "mint_b"
+        },
+        {
+          "name": "token_program_a"
+        },
+        {
+          "name": "token_program_b"
+        },
+        {
+          "name": "tuna_position",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_mint",
+          "signer": true
+        },
+        {
+          "name": "tuna_position_ata_a",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_b",
+          "writable": true
+        },
+        {
+          "name": "fusion_pool",
+          "docs": [
+            "",
+            "Fusion accounts",
+            ""
+          ],
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "",
+            "Other accounts",
+            ""
+          ]
+        },
+        {
+          "name": "associated_token_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "position_token",
+          "type": {
+            "defined": {
+              "name": "PoolToken"
+            }
+          }
+        },
+        {
+          "name": "collateral_token",
+          "type": {
+            "defined": {
+              "name": "PoolToken"
+            }
+          }
+        },
+        {
+          "name": "lower_limit_order_sqrt_price",
+          "type": "u128"
+        },
+        {
+          "name": "upper_limit_order_sqrt_price",
+          "type": "u128"
+        },
+        {
+          "name": "flags",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "open_tuna_spot_position_orca",
+      "discriminator": [
+        90,
+        70,
+        21,
+        186,
+        147,
+        80,
+        191,
+        94
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "docs": [
+            "",
+            "TUNA accounts",
+            ""
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "mint_a"
+        },
+        {
+          "name": "mint_b"
+        },
+        {
+          "name": "token_program_a"
+        },
+        {
+          "name": "token_program_b"
+        },
+        {
+          "name": "tuna_position",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_mint",
+          "signer": true
+        },
+        {
+          "name": "tuna_position_ata_a",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_b",
+          "writable": true
+        },
+        {
+          "name": "whirlpool",
+          "docs": [
+            "",
+            "Fusion accounts",
+            ""
+          ],
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "",
+            "Other accounts",
+            ""
+          ]
+        },
+        {
+          "name": "associated_token_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "position_token",
+          "type": {
+            "defined": {
+              "name": "PoolToken"
+            }
+          }
+        },
+        {
+          "name": "collateral_token",
+          "type": {
+            "defined": {
+              "name": "PoolToken"
+            }
+          }
+        },
+        {
+          "name": "lower_limit_order_sqrt_price",
+          "type": "u128"
+        },
+        {
+          "name": "upper_limit_order_sqrt_price",
+          "type": "u128"
+        },
+        {
+          "name": "flags",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "rebalance_tuna_lp_position_fusion",
       "discriminator": [
         190,
         86,
@@ -2256,7 +4178,7 @@
       ]
     },
     {
-      "name": "rebalance_position_orca",
+      "name": "rebalance_tuna_lp_position_orca",
       "discriminator": [
         124,
         212,
@@ -2370,284 +4292,6 @@
       ]
     },
     {
-      "name": "remove_liquidity_fusion",
-      "discriminator": [
-        175,
-        74,
-        205,
-        238,
-        4,
-        123,
-        166,
-        35
-      ],
-      "accounts": [
-        {
-          "name": "authority",
-          "docs": [
-            "",
-            "TUNA accounts",
-            ""
-          ],
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "tuna_config"
-        },
-        {
-          "name": "market",
-          "writable": true
-        },
-        {
-          "name": "mint_a"
-        },
-        {
-          "name": "mint_b"
-        },
-        {
-          "name": "token_program_a"
-        },
-        {
-          "name": "token_program_b"
-        },
-        {
-          "name": "vault_a",
-          "writable": true
-        },
-        {
-          "name": "vault_b",
-          "writable": true
-        },
-        {
-          "name": "vault_a_ata",
-          "writable": true
-        },
-        {
-          "name": "vault_b_ata",
-          "writable": true
-        },
-        {
-          "name": "tuna_position",
-          "writable": true
-        },
-        {
-          "name": "tuna_position_ata",
-          "writable": true
-        },
-        {
-          "name": "tuna_position_ata_a",
-          "writable": true
-        },
-        {
-          "name": "tuna_position_ata_b",
-          "writable": true
-        },
-        {
-          "name": "tuna_position_owner_ata_a",
-          "writable": true
-        },
-        {
-          "name": "tuna_position_owner_ata_b",
-          "writable": true
-        },
-        {
-          "name": "pyth_oracle_price_feed_a"
-        },
-        {
-          "name": "pyth_oracle_price_feed_b"
-        },
-        {
-          "name": "fusionamm_program",
-          "docs": [
-            "",
-            "Fusion accounts",
-            ""
-          ]
-        },
-        {
-          "name": "fusion_pool",
-          "writable": true
-        },
-        {
-          "name": "fusion_position",
-          "writable": true
-        },
-        {
-          "name": "memo_program"
-        }
-      ],
-      "args": [
-        {
-          "name": "withdraw_percent",
-          "type": "u32"
-        },
-        {
-          "name": "swap_to_token",
-          "type": "u8"
-        },
-        {
-          "name": "min_removed_amount_a",
-          "type": "u64"
-        },
-        {
-          "name": "min_removed_amount_b",
-          "type": "u64"
-        },
-        {
-          "name": "max_swap_slippage",
-          "type": "u32"
-        },
-        {
-          "name": "remaining_accounts_info",
-          "type": {
-            "defined": {
-              "name": "RemainingAccountsInfo"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "remove_liquidity_orca",
-      "discriminator": [
-        30,
-        69,
-        45,
-        170,
-        183,
-        195,
-        12,
-        119
-      ],
-      "accounts": [
-        {
-          "name": "authority",
-          "docs": [
-            "",
-            "TUNA accounts",
-            ""
-          ],
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "tuna_config"
-        },
-        {
-          "name": "market",
-          "writable": true
-        },
-        {
-          "name": "mint_a"
-        },
-        {
-          "name": "mint_b"
-        },
-        {
-          "name": "vault_a",
-          "writable": true
-        },
-        {
-          "name": "vault_b",
-          "writable": true
-        },
-        {
-          "name": "vault_a_ata",
-          "writable": true
-        },
-        {
-          "name": "vault_b_ata",
-          "writable": true
-        },
-        {
-          "name": "tuna_position",
-          "writable": true
-        },
-        {
-          "name": "tuna_position_ata",
-          "writable": true
-        },
-        {
-          "name": "tuna_position_ata_a",
-          "writable": true
-        },
-        {
-          "name": "tuna_position_ata_b",
-          "writable": true
-        },
-        {
-          "name": "tuna_position_owner_ata_a",
-          "writable": true
-        },
-        {
-          "name": "tuna_position_owner_ata_b",
-          "writable": true
-        },
-        {
-          "name": "pyth_oracle_price_feed_a"
-        },
-        {
-          "name": "pyth_oracle_price_feed_b"
-        },
-        {
-          "name": "whirlpool_program",
-          "docs": [
-            "",
-            "ORCA accounts",
-            ""
-          ]
-        },
-        {
-          "name": "whirlpool",
-          "writable": true
-        },
-        {
-          "name": "orca_position",
-          "writable": true
-        },
-        {
-          "name": "token_program_a"
-        },
-        {
-          "name": "token_program_b"
-        },
-        {
-          "name": "memo_program"
-        }
-      ],
-      "args": [
-        {
-          "name": "withdraw_percent",
-          "type": "u32"
-        },
-        {
-          "name": "swap_to_token",
-          "type": "u8"
-        },
-        {
-          "name": "min_removed_amount_a",
-          "type": "u64"
-        },
-        {
-          "name": "min_removed_amount_b",
-          "type": "u64"
-        },
-        {
-          "name": "max_swap_slippage",
-          "type": "u32"
-        },
-        {
-          "name": "remaining_accounts_info",
-          "type": {
-            "defined": {
-              "name": "RemainingAccountsInfo"
-            }
-          }
-        }
-      ]
-    },
-    {
       "name": "repay_bad_debt",
       "discriminator": [
         112,
@@ -2701,7 +4345,7 @@
       ]
     },
     {
-      "name": "repay_debt",
+      "name": "repay_tuna_lp_position_debt",
       "discriminator": [
         79,
         200,
@@ -2945,43 +4589,6 @@
       ]
     },
     {
-      "name": "set_limit_orders",
-      "discriminator": [
-        65,
-        128,
-        90,
-        161,
-        171,
-        133,
-        122,
-        255
-      ],
-      "accounts": [
-        {
-          "name": "authority",
-          "signer": true
-        },
-        {
-          "name": "tuna_position",
-          "writable": true
-        }
-      ],
-      "args": [
-        {
-          "name": "tick_stop_loss_index",
-          "type": "i32"
-        },
-        {
-          "name": "tick_take_profit_index",
-          "type": "i32"
-        },
-        {
-          "name": "swap_to_token_on_limit_order",
-          "type": "u8"
-        }
-      ]
-    },
-    {
       "name": "set_liquidator_authority",
       "discriminator": [
         246,
@@ -3084,7 +4691,7 @@
       ]
     },
     {
-      "name": "set_tuna_position_flags",
+      "name": "set_tuna_lp_position_flags",
       "discriminator": [
         110,
         73,
@@ -3113,15 +4720,52 @@
       ]
     },
     {
-      "name": "set_tuna_position_rebalance_threshold",
+      "name": "set_tuna_lp_position_limit_orders",
       "discriminator": [
-        108,
-        170,
-        86,
-        159,
+        65,
+        128,
+        90,
+        161,
         171,
-        164,
-        28,
+        133,
+        122,
+        255
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "signer": true
+        },
+        {
+          "name": "tuna_position",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "lower_limit_order_sqrt_price",
+          "type": "u128"
+        },
+        {
+          "name": "upper_limit_order_sqrt_price",
+          "type": "u128"
+        },
+        {
+          "name": "swap_to_token_on_limit_order",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "set_tuna_lp_position_rebalance_threshold",
+      "discriminator": [
+        244,
+        174,
+        185,
+        58,
+        90,
+        150,
+        162,
         51
       ],
       "accounts": [
@@ -3138,6 +4782,39 @@
         {
           "name": "rebalance_threshold_ticks",
           "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "set_tuna_spot_position_limit_orders",
+      "discriminator": [
+        10,
+        180,
+        19,
+        205,
+        169,
+        133,
+        52,
+        118
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "signer": true
+        },
+        {
+          "name": "tuna_position",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "lower_limit_order_sqrt_price",
+          "type": "u128"
+        },
+        {
+          "name": "upper_limit_order_sqrt_price",
+          "type": "u128"
         }
       ]
     },
@@ -3380,7 +5057,7 @@
       ]
     },
     {
-      "name": "TunaPosition",
+      "name": "TunaLpPosition",
       "discriminator": [
         76,
         197,
@@ -3390,6 +5067,19 @@
         15,
         137,
         220
+      ]
+    },
+    {
+      "name": "TunaSpotPosition",
+      "discriminator": [
+        118,
+        56,
+        124,
+        104,
+        178,
+        205,
+        174,
+        77
       ]
     },
     {
@@ -3533,12 +5223,12 @@
     {
       "code": 6022,
       "name": "OraclePriceDeviationThresholdExceeded",
-      "msg": "OraclePriceDeviationThresholdExceeded"
+      "msg": "Oracle price deviation threshold exceeded"
     },
     {
       "code": 6023,
       "name": "OraclePriceDeviationThresholdOutOfRange",
-      "msg": "OraclePriceDeviationThresholdOutOfRange"
+      "msg": "Oracle price deviation threshold out of range"
     },
     {
       "code": 6024,
@@ -3702,8 +5392,28 @@
     },
     {
       "code": 6056,
+      "name": "ZeroAmount",
+      "msg": "Position amount is zero"
+    },
+    {
+      "code": 6057,
       "name": "PositionIsAutoRebalanceable",
       "msg": "Unable to claim yield for auto re-balanceable positions"
+    },
+    {
+      "code": 6058,
+      "name": "IncorrectPositionDirection",
+      "msg": "Incorrect position direction"
+    },
+    {
+      "code": 6059,
+      "name": "RecipientAccountIsNotSet",
+      "msg": "Optional recipient account is not set"
+    },
+    {
+      "code": 6060,
+      "name": "MAPriceDeviationThresholdExceeded",
+      "msg": "Moving Average price deviation threshold exceeded"
     }
   ],
   "types": [
@@ -3858,11 +5568,19 @@
             "type": "u64"
           },
           {
+            "name": "ma_sqrt_price",
+            "type": "u128"
+          },
+          {
+            "name": "last_swap_timestamp",
+            "type": "u64"
+          },
+          {
             "name": "reserved",
             "type": {
               "array": [
                 "u8",
-                140
+                116
               ]
             }
           }
@@ -4116,6 +5834,23 @@
       }
     },
     {
+      "name": "PoolToken",
+      "repr": {
+        "kind": "rust"
+      },
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "A"
+          },
+          {
+            "name": "B"
+          }
+        ]
+      }
+    },
+    {
       "name": "RemainingAccountsInfo",
       "type": {
         "kind": "struct",
@@ -4265,7 +6000,7 @@
       }
     },
     {
-      "name": "TunaPosition",
+      "name": "TunaLpPosition",
       "type": {
         "kind": "struct",
         "fields": [
@@ -4389,21 +6124,21 @@
           {
             "name": "tick_entry_index",
             "docs": [
-              "Position entry tick index."
+              "OBSOLETE: Position entry tick index. (For position version <= 6)"
             ],
             "type": "i32"
           },
           {
             "name": "tick_stop_loss_index",
             "docs": [
-              "Position stop loss tick index."
+              "OBSOLETE: Position stop loss tick index (for position version <= 6)."
             ],
             "type": "i32"
           },
           {
             "name": "tick_take_profit_index",
             "docs": [
-              "Position stop loss tick index."
+              "OBSOLETE: Position stop loss tick index (for position version <= 6)."
             ],
             "type": "i32"
           },
@@ -4419,11 +6154,9 @@
             }
           },
           {
-            "name": "swap_to_token_on_limit_order",
+            "name": "unused_1",
             "docs": [
-              "OBSOLETE: Which token to swap collateral to when a limit order is executed. Used for position ver 4 or older.",
-              "bits 0..1: Stop loss swap. 0 - no swap, 1 - swap to token A, 2 - swap to token B",
-              "bits 2..3: Take profit swap. 0 - no swap, 1 - swap to token A, 2 - swap to token B"
+              "OBSOLETE: Which token to swap collateral to when a limit order is executed. (For position version <= 4)"
             ],
             "type": "u8"
           },
@@ -4463,6 +6196,27 @@
             }
           },
           {
+            "name": "entry_sqrt_price",
+            "docs": [
+              "Position entry sqrt price."
+            ],
+            "type": "u128"
+          },
+          {
+            "name": "lower_limit_order_sqrt_price",
+            "docs": [
+              "Position lower limit order sqrt price (stop loss for a LONG position)."
+            ],
+            "type": "u128"
+          },
+          {
+            "name": "upper_limit_order_sqrt_price",
+            "docs": [
+              "Position upper limit order sqrt price (take profit for a LONG position)."
+            ],
+            "type": "u128"
+          },
+          {
             "name": "rebalance_threshold_ticks",
             "docs": [
               "The position might be re-balanced if the current tick is lower than tick_lower_index or",
@@ -4478,7 +6232,7 @@
             "type": {
               "array": [
                 "u8",
-                57
+                9
               ]
             }
           }
@@ -4501,6 +6255,173 @@
           },
           {
             "name": "ClosedByLimitOrder"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TunaSpotPosition",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "version",
+            "docs": [
+              "Struct version"
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "Bump seed for the tuna position account"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                1
+              ]
+            }
+          },
+          {
+            "name": "authority",
+            "docs": [
+              "The authority address used for managing the position"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "pool",
+            "docs": [
+              "Liquidity pool address this position belongs to"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "mint_a",
+            "docs": [
+              "The mint address for token A"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "mint_b",
+            "docs": [
+              "The mint address for token B"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "position_mint",
+            "docs": [
+              "The unique address of a position"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "market_maker",
+            "docs": [
+              "Market maker (Orca, Fusion)"
+            ],
+            "type": {
+              "defined": {
+                "name": "MarketMaker"
+              }
+            }
+          },
+          {
+            "name": "position_token",
+            "docs": [
+              "Position token: A (LONG, B is borrowed), B (SHORT, A is borrowed)"
+            ],
+            "type": {
+              "defined": {
+                "name": "PoolToken"
+              }
+            }
+          },
+          {
+            "name": "collateral_token",
+            "docs": [
+              "The token used as collateral."
+            ],
+            "type": {
+              "defined": {
+                "name": "PoolToken"
+              }
+            }
+          },
+          {
+            "name": "flags",
+            "docs": [
+              "Position options"
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "state",
+            "docs": [
+              "Position state: normal, liquidated, closed by limit order"
+            ],
+            "type": {
+              "defined": {
+                "name": "TunaPositionState"
+              }
+            }
+          },
+          {
+            "name": "amount",
+            "docs": [
+              "The total amount of the position in token A (long) or B (short)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "loan_shares",
+            "docs": [
+              "The amount of shares borrowed by user from vault B (long) or A (short)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "loan_funds",
+            "docs": [
+              "The amount of funds borrowed by user from vault B (long) or A (short). Doesn't include accrued interest."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "entry_sqrt_price",
+            "docs": [
+              "Position entry sqrt price."
+            ],
+            "type": "u128"
+          },
+          {
+            "name": "lower_limit_order_sqrt_price",
+            "docs": [
+              "Position lower limit order sqrt price (stop loss for a LONG position)."
+            ],
+            "type": "u128"
+          },
+          {
+            "name": "upper_limit_order_sqrt_price",
+            "docs": [
+              "Position upper limit order sqrt price (take profit for a LONG position)."
+            ],
+            "type": "u128"
+          },
+          {
+            "name": "reserved",
+            "docs": [
+              "Reserved"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                128
+              ]
+            }
           }
         ]
       }
@@ -4588,7 +6509,7 @@
           {
             "name": "supply_limit",
             "docs": [
-              "The maximum allowed supply for this pool. The default value 0 is unlimited supply."
+              "The maximum allowed supply for this vault."
             ],
             "type": "u64"
           },

@@ -16,7 +16,7 @@ pub trait FixedExtra {
     fn to_bps<Dst: FromFixed>(&self) -> Option<Dst>;
     fn from_bps<Src: ToFixed>(bps: Src) -> Self;
 
-    fn to_display(&self) -> FixedSingleDisplay;
+    fn to_display(&self) -> FixedSingleDisplay<'_>;
 }
 
 impl FixedExtra for Fixed128 {
@@ -32,7 +32,7 @@ impl FixedExtra for Fixed128 {
     }
 
     #[inline]
-    fn to_display(&self) -> FixedSingleDisplay {
+    fn to_display(&self) -> FixedSingleDisplay<'_> {
         FixedSingleDisplay(self)
     }
 }

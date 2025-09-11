@@ -26,13 +26,13 @@ import assert from "assert";
 
 import {
   AccountsType,
-  fetchMaybeTunaPosition,
+  fetchMaybeTunaLpPosition,
   getCollectFeesOrcaInstruction,
   getCreateAtaInstructions,
   getTunaConfigAddress,
-  getTunaPositionAddress,
+  getTunaLpPositionAddress,
   OrcaUtils,
-  TunaPosition,
+  TunaLpPosition,
 } from "../index.ts";
 
 export async function collectFeesOrcaInstructions(
@@ -46,7 +46,7 @@ export async function collectFeesOrcaInstructions(
   if (!createInstructions) createInstructions = instructions;
   if (!cleanupInstructions) cleanupInstructions = instructions;
 
-  const tunaPosition = await fetchMaybeTunaPosition(rpc, (await getTunaPositionAddress(positionMint))[0]);
+  const tunaPosition = await fetchMaybeTunaLpPosition(rpc, (await getTunaLpPositionAddress(positionMint))[0]);
   if (!tunaPosition.exists) throw new Error("Tuna position account not found");
 
   const whirlpool = await fetchMaybeWhirlpool(rpc, tunaPosition.data.pool);
@@ -97,7 +97,7 @@ export async function collectFeesOrcaInstructions(
 
 export async function collectFeesOrcaInstruction(
   authority: TransactionSigner,
-  tunaPosition: Account<TunaPosition>,
+  tunaPosition: Account<TunaLpPosition>,
   mintA: Account<Mint>,
   mintB: Account<Mint>,
   whirlpool: Account<Whirlpool>,
@@ -106,7 +106,7 @@ export async function collectFeesOrcaInstruction(
 
   const tunaConfig = (await getTunaConfigAddress())[0];
   const orcaPositionAddress = (await getPositionAddress(positionMint))[0];
-  const tunaPositionAddress = (await getTunaPositionAddress(positionMint))[0];
+  const tunaPositionAddress = (await getTunaLpPositionAddress(positionMint))[0];
 
   const tunaPositionAta = (
     await findAssociatedTokenPda({

@@ -125,6 +125,9 @@ export default abstract class BaseCommand extends Command {
       console.log(solanaError.context);
     } else {
       console.log(err.message);
+      if (err.cause) {
+        console.log(err.cause);
+      }
     }
   }
 

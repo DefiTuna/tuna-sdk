@@ -6,9 +6,9 @@ import {
   collectFeesFusionInstructions,
   collectFeesOrcaInstructions,
   fetchMarket,
-  fetchTunaPosition,
+  fetchTunaLpPosition,
   getMarketAddress,
-  getTunaPositionAddress,
+  getTunaLpPositionAddress,
   MarketMaker,
 } from "../../src";
 
@@ -60,7 +60,7 @@ export async function collectFees({
   const mintB = await fetchMint(rpc, pool.data.tokenMintB);
 
   const positionAddress = (await getPositionAddress(positionMint, market.data.marketMaker))[0];
-  const tunaPositionAddress = (await getTunaPositionAddress(positionMint))[0];
+  const tunaPositionAddress = (await getTunaLpPositionAddress(positionMint))[0];
 
   const tunaPositionOwnerAtaA = (
     await findAssociatedTokenPda({
@@ -123,7 +123,7 @@ export async function collectFees({
   await sendTransaction(instructions);
 
   const positionAfter = await fetchPosition(rpc, positionAddress, market.data.marketMaker);
-  const tunaPositionAfter = await fetchTunaPosition(rpc, tunaPositionAddress);
+  const tunaPositionAfter = await fetchTunaLpPosition(rpc, tunaPositionAddress);
   expect(positionAfter.data.liquidity).toEqual(tunaPositionAfter.data.liquidity);
 
   const tunaPositionBalanceAAfter = (await fetchToken(rpc, tunaPositionAtaA)).data.amount;

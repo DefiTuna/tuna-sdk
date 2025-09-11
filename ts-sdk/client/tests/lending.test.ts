@@ -1,24 +1,26 @@
-import { beforeAll, describe, expect, it } from "vitest";
 import { Account, Address } from "@solana/kit";
-import { setupAta, setupMint } from "./helpers/token";
-import { rpc, sendTransaction, signer } from "./helpers/mockRpc";
+import { fetchMint, fetchToken, findAssociatedTokenPda, Mint } from "@solana-program/token-2022";
+import assert from "assert";
+import { beforeAll, describe, expect, it } from "vitest";
+
 import {
+  DEFAULT_ADDRESS,
+  depositInstruction,
+  depositInstructions,
   fetchLendingPosition,
   fetchVault,
   getLendingPositionAddress,
   getLendingVaultAddress,
-  openLendingPositionInstruction,
-  depositInstruction,
-  withdrawInstruction,
-  repayBadDebtInstruction,
-  depositInstructions,
-  withdrawInstructions,
   openLendingPositionAndDepositInstructions,
-  DEFAULT_ADDRESS,
+  openLendingPositionInstruction,
+  repayBadDebtInstruction,
+  withdrawInstruction,
+  withdrawInstructions,
 } from "../src";
+
+import { rpc, sendTransaction, signer } from "./helpers/mockRpc";
 import { setupVault } from "./helpers/setup";
-import assert from "assert";
-import { fetchMint, fetchToken, findAssociatedTokenPda, Mint } from "@solana-program/token-2022";
+import { setupAta, setupMint } from "./helpers/token";
 
 describe("Lending", () => {
   let mint: Account<Mint>;
@@ -48,6 +50,7 @@ describe("Lending", () => {
       pythOraclePriceUpdate: DEFAULT_ADDRESS,
       interestRate: 3655890108n,
       supplyLimit,
+      allowUnsafeTokenExtensions: true,
     });
   });
 
@@ -148,6 +151,7 @@ describe("Lending", () => {
       pythOraclePriceUpdate: DEFAULT_ADDRESS,
       interestRate: 3655890108n,
       supplyLimit,
+      allowUnsafeTokenExtensions: true,
     });
 
     // Open a position and deposit

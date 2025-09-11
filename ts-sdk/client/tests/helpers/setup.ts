@@ -19,6 +19,7 @@ import {
   MarketMaker,
   NATIVE_MINT,
   openLendingPositionInstruction,
+  UNLIMITED_SUPPLY_LIMIT,
 } from "../../src";
 
 import { FEE_RECIPIENT_KEYPAIR, LIQUIDATOR_KEYPAIR, TUNA_ADMIN_KEYPAIR } from "./addresses.ts";
@@ -161,14 +162,16 @@ export async function setupTestMarket(
     pythOracleFeedId: DEFAULT_ADDRESS,
     pythOraclePriceUpdate: DEFAULT_ADDRESS,
     interestRate: 3655890108n,
-    supplyLimit: 0n,
+    supplyLimit: UNLIMITED_SUPPLY_LIMIT,
+    allowUnsafeTokenExtensions: true,
   });
 
   const vaultB = await setupVault(mintB, {
     pythOracleFeedId: DEFAULT_ADDRESS,
     pythOraclePriceUpdate: DEFAULT_ADDRESS,
     interestRate: 3655890108n,
-    supplyLimit: 0n,
+    supplyLimit: UNLIMITED_SUPPLY_LIMIT,
+    allowUnsafeTokenExtensions: true,
   });
 
   await sendTransaction([

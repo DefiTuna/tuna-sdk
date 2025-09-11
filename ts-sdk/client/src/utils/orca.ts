@@ -1,9 +1,14 @@
 import { getInitializableTickIndex } from "@crypticdot/fusionamm-core";
 import { getTickArrayAddress, Whirlpool } from "@orca-so/whirlpools-client";
-import { _TICK_ARRAY_SIZE, getTickArrayStartTickIndex } from "@orca-so/whirlpools-core";
+import {
+  _MAX_TICK_INDEX,
+  _MIN_TICK_INDEX,
+  _TICK_ARRAY_SIZE,
+  getTickArrayStartTickIndex,
+} from "@orca-so/whirlpools-core";
 import { Account, type Address } from "@solana/kit";
 
-import { TunaPosition } from "../generated";
+import { TunaLpPosition } from "../generated";
 
 export class OrcaUtils {
   static async getTickArrayAddressFromTickIndex(whirlpool: Account<Whirlpool>, tickIndex: number) {
@@ -26,14 +31,21 @@ export class OrcaUtils {
     );
   }
 
-  static async getTickArraysForRebalancedPosition(whirlpool: Account<Whirlpool>, tunaPosition: Account<TunaPosition>) {
+  static async getTickArraysForRebalancedPosition(
+    whirlpool: Account<Whirlpool>,
+    tunaPosition: Account<TunaLpPosition>,
+  ) {
     // Calculate the new position's range.
     const positionRange = tunaPosition.data.tickUpperIndex - tunaPosition.data.tickLowerIndex;
-    const newTickLowerIndex = getInitializableTickIndex(
-      whirlpool.data.tickCurrentIndex - Math.trunc(positionRange / 2),
-      whirlpool.data.tickSpacing,
+    let newTickLowerIndex = Math.max(
+      getInitializableTickIndex(
+        whirlpool.data.tickCurrentIndex - Math.trunc(positionRange / 2),
+        whirlpool.data.tickSpacing,
+      ),
+      _MIN_TICK_INDEX(),
     );
-    const newTickUpperIndex = newTickLowerIndex + positionRange;
+    const newTickUpperIndex = Math.min(newTickLowerIndex + positionRange, _MAX_TICK_INDEX());
+    if (newTickUpperIndex == _MAX_TICK_INDEX()) newTickLowerIndex = _MAX_TICK_INDEX() - positionRange;
 
     const lowerTickArrayStartIndex = getTickArrayStartTickIndex(newTickLowerIndex, whirlpool.data.tickSpacing);
     const [lowerTickArrayAddress] = await getTickArrayAddress(whirlpool.address, lowerTickArrayStartIndex);

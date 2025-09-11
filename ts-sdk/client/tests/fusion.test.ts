@@ -4,10 +4,10 @@ import { beforeEach, describe, it } from "vitest";
 
 import { DEFAULT_ADDRESS, HUNDRED_PERCENT, LEVERAGE_ONE, MarketMaker } from "../src";
 
-import { addLiquidity, assertAddLiquidity } from "./helpers/addLiquidity.ts";
+import { increaseTunaLpPosition, assertIncreaseTunaLpPosition } from "./helpers/increaseTunaLpPosition.ts";
 import { fetchPool } from "./helpers/fetch.ts";
 import { rpc, sendTransaction, signer } from "./helpers/mockRpc.ts";
-import { openPosition } from "./helpers/openPosition.ts";
+import { openTunaLpPosition } from "./helpers/openTunaLpPosition.ts";
 import { setupTestMarket, TestMarket } from "./helpers/setup.ts";
 
 describe("Tuna Position on Fusion", () => {
@@ -47,7 +47,7 @@ describe("Tuna Position on Fusion", () => {
     );
     await sendTransaction(openOrderInstructions.instructions);
 
-    await openPosition({
+    await openTunaLpPosition({
       signer,
       positionMint: positionMintKeypair,
       pool: pool.address,
@@ -58,8 +58,8 @@ describe("Tuna Position on Fusion", () => {
     //console.log("actualTickIndex", actualTickIndex);
     //console.log("TICK BEFORE", pool.data.tickCurrentIndex);
 
-    assertAddLiquidity(
-      await addLiquidity({
+    assertIncreaseTunaLpPosition(
+      await increaseTunaLpPosition({
         rpc,
         positionMint: positionMintKeypair.address,
         pool: pool.address,
@@ -100,7 +100,7 @@ describe("Tuna Position on Fusion", () => {
     );
     await sendTransaction(openOrderInstructions.instructions);
 
-    await openPosition({
+    await openTunaLpPosition({
       signer,
       positionMint: positionMintKeypair,
       pool: pool.address,
@@ -108,8 +108,8 @@ describe("Tuna Position on Fusion", () => {
       tickUpperIndex: actualTickIndex + pool.data.tickSpacing * 5,
     });
 
-    assertAddLiquidity(
-      await addLiquidity({
+    assertIncreaseTunaLpPosition(
+      await increaseTunaLpPosition({
         rpc,
         positionMint: positionMintKeypair.address,
         pool: pool.address,
@@ -147,7 +147,7 @@ describe("Tuna Position on Fusion", () => {
     );
     await sendTransaction(openOrderInstructions.instructions);
 
-    await openPosition({
+    await openTunaLpPosition({
       signer,
       positionMint: positionMintKeypair,
       pool: pool.address,
@@ -155,8 +155,8 @@ describe("Tuna Position on Fusion", () => {
       tickUpperIndex: actualTickIndex + pool.data.tickSpacing * 5,
     });
 
-    assertAddLiquidity(
-      await addLiquidity({
+    assertIncreaseTunaLpPosition(
+      await increaseTunaLpPosition({
         rpc,
         positionMint: positionMintKeypair.address,
         pool: pool.address,
@@ -194,7 +194,7 @@ describe("Tuna Position on Fusion", () => {
     );
     await sendTransaction(openOrderInstructions.instructions);
 
-    await openPosition({
+    await openTunaLpPosition({
       signer,
       positionMint: positionMintKeypair,
       pool: pool.address,
@@ -202,8 +202,8 @@ describe("Tuna Position on Fusion", () => {
       tickUpperIndex: actualTickIndex + pool.data.tickSpacing * 5,
     });
 
-    assertAddLiquidity(
-      await addLiquidity({
+    assertIncreaseTunaLpPosition(
+      await increaseTunaLpPosition({
         rpc,
         positionMint: positionMintKeypair.address,
         pool: pool.address,

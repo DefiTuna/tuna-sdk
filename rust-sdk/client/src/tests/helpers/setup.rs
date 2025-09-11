@@ -10,9 +10,9 @@ use crate::{
 use fusionamm_sdk::PriceOrTickIndex;
 use orca_whirlpools_core::price_to_sqrt_price;
 use solana_pubkey::Pubkey;
+use solana_signer::Signer;
 use spl_token_2022::state::Mint;
 use std::error::Error;
-use solana_signer::Signer;
 
 pub struct TestMarket {
     pub market_maker: MarketMaker,
@@ -124,9 +124,10 @@ pub async fn setup_test_market(
             &token_program,
             CreateVaultInstructionArgs {
                 interest_rate: 3655890108,
-                supply_limit: 0,
+                supply_limit: u64::MAX,
                 pyth_oracle_price_update: Default::default(),
                 pyth_oracle_feed_id: Default::default(),
+                allow_unsafe_token_extensions: true,
             },
         );
         instructions.push(open_lending_position_instruction(&ctx.signer.pubkey(), &mint_address));

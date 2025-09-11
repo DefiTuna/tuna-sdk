@@ -1,5 +1,23 @@
 # @defituna/client
 
+## 3.0.2
+
+### Patch Changes
+
+- 2aaee6f: Renamed t/p and s/l constants
+
+## 3.0.1
+
+### Patch Changes
+
+- 0741685: Renamed take profit/stop loss to lower/upper orders
+
+## 3.0.0
+
+### Major Changes
+
+- 5f51b19: DefiTuna 3.0
+
 ## 2.0.17
 
 ### Patch Changes
@@ -89,7 +107,7 @@
 
 ### Patch Changes
 
-- 3c8aab0: Bugfix: openPositionWithLiquidityFusionInstructions/openPositionWithLiquidityOrcaInstructions incorrect amount slippage calculation
+- 3c8aab0: Bugfix: openAndIncreaseTunaLpPositionFusionInstructions/openAndIncreaseTunaLpPositionOrcaInstructions incorrect amount slippage calculation
 
 ## 2.0.2
 
@@ -101,7 +119,7 @@
 
 ### Patch Changes
 
-- 64a4415: Changed input arguments of addLiquidity and openPositionWithLiquidity instructions.
+- 64a4415: Changed input arguments of addLiquidity and openAndIncreaseTunaLpPosition instructions.
   Added getLiquidityIncreaseQuote function.
 
 ## 2.0.0
@@ -132,7 +150,7 @@
 
 ### Patch Changes
 
-- 388ee7d: Added closePositionWithLiquidityOrca transaction helper
+- 388ee7d: Added closeActiveTunaLpPositionOrca transaction helper
 
 ## 1.0.26
 
@@ -192,20 +210,20 @@
 
 ### Patch Changes
 
-- edfc1b8: Bugfix in openPositionWithLiquidity instruction
+- edfc1b8: Bugfix in openAndIncreaseTunaLpPosition instruction
 
 ## 1.0.16
 
 ### Patch Changes
 
 - f86e213: Fixed the broken build
-- 089c5a5: Added openPositionWithLiquidity instruction. Updated tuna to 1.0.63.
+- 089c5a5: Added openAndIncreaseTunaLpPosition instruction. Updated tuna to 1.0.63.
 
 ## 1.0.15
 
 ### Patch Changes
 
-- aae6898: Changed addLiquidityOrca instruction helper
+- aae6898: Changed increaseTunaLpPositionOrca instruction helper
 
 ## 1.0.14
 

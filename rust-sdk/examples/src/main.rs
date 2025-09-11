@@ -1,6 +1,6 @@
 mod constants;
 mod lending;
-mod tuna_position;
+mod tuna_lp_position;
 mod types;
 mod utils;
 use anyhow::{anyhow, Result};
@@ -11,11 +11,9 @@ use lending::{
 };
 use solana_rpc_client::rpc_client::RpcClient;
 use solana_signer::Signer;
-use tuna_position::{
-  close_position_with_liquidity_orca::close_position_with_liquidity_orca,
-  collect_and_compound_fees_orca::collect_and_compound_fees_orca, collect_fees_orca::collect_fees_orca,
-  open_position_with_liquidity_orca::open_position_with_liquidity_orca,
-  retrieve_tuna_positions::retrieve_user_tuna_positions,
+use tuna_lp_position::{
+  close_active_position_orca, collect_and_compound_fees_orca, collect_fees_orca, open_position_with_liquidity_orca,
+  retrieve_user_tuna_positions,
 };
 
 use utils::cli::{Args, Method};
@@ -38,14 +36,12 @@ async fn main() -> Result<()> {
   match method {
     Method::OpenLendingPositionAndDeposit => open_lending_position_and_deposit(rpc, &keypair).await,
     Method::WithdrawFromLendingPosition => withdraw(rpc, &keypair).await,
-    Method::OpenPositionWithLiquidityOrca => open_position_with_liquidity_orca(rpc, &keypair).await,
+    Method::OpenAndIncreaseTunaLpPositionOrca => open_position_with_liquidity_orca(rpc, &keypair).await,
     Method::CollectFeesOrca => collect_fees_orca(rpc, &keypair, tuna_position_mint.unwrap()).await,
     Method::CollectAndCompoundFeesOrca => {
       collect_and_compound_fees_orca(rpc, &keypair, tuna_position_mint.unwrap()).await
     }
-    Method::ClosePositionWithLiquidityOrca => {
-      close_position_with_liquidity_orca(rpc, &keypair, tuna_position_mint.unwrap()).await
-    }
+    Method::CloseActivePositionOrca => close_active_position_orca(rpc, &keypair, tuna_position_mint.unwrap()).await,
     Method::RetrieveLendingPositions => retrieve_user_lending_positions(rpc, user_address).await,
     Method::RetrieveTunaPositions => retrieve_user_tuna_positions(rpc, user_address).await,
   }

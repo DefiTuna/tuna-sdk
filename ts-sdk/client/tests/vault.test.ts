@@ -1,11 +1,13 @@
-import { beforeAll, describe, expect, it } from "vitest";
 import { Account, Address, generateKeyPairSigner } from "@solana/kit";
-import { setupMint } from "./helpers/token.ts";
-import { rpc, sendTransaction, signer } from "./helpers/mockRpc.ts";
-import { fetchVault, getLendingVaultAddress, createVaultInstructions, updateVaultInstruction } from "../src";
-import { TUNA_ADMIN_KEYPAIR } from "./helpers/addresses.ts";
-import assert from "assert";
 import { fetchMint, Mint } from "@solana-program/token-2022";
+import assert from "assert";
+import { beforeAll, describe, expect, it } from "vitest";
+
+import { createVaultInstructions, fetchVault, getLendingVaultAddress, updateVaultInstruction } from "../src";
+
+import { TUNA_ADMIN_KEYPAIR } from "./helpers/addresses.ts";
+import { rpc, sendTransaction, signer } from "./helpers/mockRpc.ts";
+import { setupMint } from "./helpers/token.ts";
 
 describe("Tuna Vault", () => {
   let mint: Account<Mint>;
@@ -28,6 +30,7 @@ describe("Tuna Vault", () => {
       pythOraclePriceUpdate,
       interestRate,
       supplyLimit,
+      allowUnsafeTokenExtensions: true,
     });
     await sendTransaction(instructions);
 

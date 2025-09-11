@@ -1,8 +1,8 @@
-use crate::accounts::{fetch_all_vault, fetch_tuna_config, fetch_tuna_position, TunaConfig, TunaPosition, Vault};
+use crate::accounts::{fetch_all_vault, fetch_tuna_config, fetch_tuna_lp_position, TunaConfig, TunaLpPosition, Vault};
 use crate::instructions::{CollectAndCompoundFeesFusion, CollectAndCompoundFeesFusionInstructionArgs};
 use crate::types::{AccountsType, RemainingAccountsInfo, RemainingAccountsSlice};
 use crate::utils::fusion::get_swap_tick_arrays;
-use crate::{get_market_address, get_tuna_config_address, get_tuna_position_address, get_vault_address};
+use crate::{get_market_address, get_tuna_config_address, get_tuna_liquidity_position_address, get_vault_address};
 use anyhow::{anyhow, Result};
 use fusionamm_client::{fetch_fusion_pool, get_position_address, get_tick_array_address, FusionPool};
 use fusionamm_core::get_tick_array_start_tick_index;
@@ -18,7 +18,7 @@ pub fn collect_and_compound_fees_fusion_instructions(
     position_mint: &Pubkey,
     use_leverage: bool,
 ) -> Result<Vec<Instruction>> {
-    let tuna_position = fetch_tuna_position(&rpc, &get_tuna_position_address(&position_mint).0)?;
+    let tuna_position = fetch_tuna_lp_position(&rpc, &get_tuna_liquidity_position_address(&position_mint).0)?;
 
     let fusion_pool = fetch_fusion_pool(rpc, &tuna_position.data.pool)?;
     let mint_a_address = fusion_pool.data.token_mint_a;
@@ -49,7 +49,7 @@ pub fn collect_and_compound_fees_fusion_instructions(
 pub fn _collect_and_compound_fees_fusion_instructions(
     authority: &Pubkey,
     tuna_config: &TunaConfig,
-    tuna_position: &TunaPosition,
+    tuna_position: &TunaLpPosition,
     vault_a: &Vault,
     vault_b: &Vault,
     fusion_pool: &FusionPool,
@@ -77,7 +77,7 @@ pub fn _collect_and_compound_fees_fusion_instructions(
 pub fn collect_and_compound_fees_fusion_instruction(
     authority: &Pubkey,
     tuna_config: &TunaConfig,
-    tuna_position: &TunaPosition,
+    tuna_position: &TunaLpPosition,
     vault_a: &Vault,
     vault_b: &Vault,
     fusion_pool: &FusionPool,
@@ -96,7 +96,7 @@ pub fn collect_and_compound_fees_fusion_instruction(
 
     let tuna_config_address = get_tuna_config_address().0;
     let market_address = get_market_address(&fusion_pool_address).0;
-    let tuna_position_address = get_tuna_position_address(&tuna_position.position_mint).0;
+    let tuna_position_address = get_tuna_liquidity_position_address(&tuna_position.position_mint).0;
     let vault_a_address = get_vault_address(&mint_a).0;
     let vault_b_address = get_vault_address(&mint_b).0;
     let fusion_position_address = get_position_address(&tuna_position.position_mint).unwrap().0;

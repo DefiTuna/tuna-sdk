@@ -10,6 +10,11 @@ Install
 - Solana 2.1.21
 - Anchor 0.31.1
 
+```
+curl --proto '=https' --tlsv1.2 -sSfL https://solana-install.solana.workers.dev | bash
+agave-install init 2.1.21
+```
+
 Run
 ```
 pnpm i

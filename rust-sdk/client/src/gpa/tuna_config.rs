@@ -1,1 +1,0 @@
-pub const TUNA_CONFIG_DISCRIMINATOR: &[u8] = &[124, 149, 24, 7, 195, 168, 153, 58];

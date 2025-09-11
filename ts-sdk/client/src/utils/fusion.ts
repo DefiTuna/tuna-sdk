@@ -1,8 +1,14 @@
 import { FusionPool, getTickArrayAddress } from "@crypticdot/fusionamm-client";
-import { _TICK_ARRAY_SIZE, getInitializableTickIndex, getTickArrayStartTickIndex } from "@crypticdot/fusionamm-core";
+import {
+  _MAX_TICK_INDEX,
+  _MIN_TICK_INDEX,
+  _TICK_ARRAY_SIZE,
+  getInitializableTickIndex,
+  getTickArrayStartTickIndex,
+} from "@crypticdot/fusionamm-core";
 import { Account, type Address } from "@solana/kit";
 
-import { TunaPosition } from "../generated";
+import { TunaLpPosition } from "../generated";
 
 export class FusionUtils {
   static async getTickArrayAddressFromTickIndex(fusionPool: Account<FusionPool>, tickIndex: number) {
@@ -27,15 +33,19 @@ export class FusionUtils {
 
   static async getTickArraysForRebalancedPosition(
     fusionPool: Account<FusionPool>,
-    tunaPosition: Account<TunaPosition>,
+    tunaPosition: Account<TunaLpPosition>,
   ) {
     // Calculate the new position's range.
     const positionRange = tunaPosition.data.tickUpperIndex - tunaPosition.data.tickLowerIndex;
-    const newTickLowerIndex = getInitializableTickIndex(
-      fusionPool.data.tickCurrentIndex - Math.trunc(positionRange / 2),
-      fusionPool.data.tickSpacing,
+    let newTickLowerIndex = Math.max(
+      getInitializableTickIndex(
+        fusionPool.data.tickCurrentIndex - Math.trunc(positionRange / 2),
+        fusionPool.data.tickSpacing,
+      ),
+      _MIN_TICK_INDEX(),
     );
-    const newTickUpperIndex = newTickLowerIndex + positionRange;
+    const newTickUpperIndex = Math.min(newTickLowerIndex + positionRange, _MAX_TICK_INDEX());
+    if (newTickUpperIndex == _MAX_TICK_INDEX()) newTickLowerIndex = _MAX_TICK_INDEX() - positionRange;
 
     const lowerTickArrayStartIndex = getTickArrayStartTickIndex(newTickLowerIndex, fusionPool.data.tickSpacing);
     const [lowerTickArrayAddress] = await getTickArrayAddress(fusionPool.address, lowerTickArrayStartIndex);

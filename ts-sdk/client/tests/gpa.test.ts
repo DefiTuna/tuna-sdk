@@ -6,24 +6,25 @@ import {
   getBase58Encoder,
 } from "@solana/kit";
 import { afterEach, assert, beforeEach, describe, it, vi } from "vitest";
-import { fetchDecodedProgramAccounts } from "../src/gpa/utils";
+
 import {
   fetchAllLendingPositionWithFilter,
-  fetchAllTunaPositionWithFilter,
+  fetchAllTunaLpPositionWithFilter,
   getLendingPositionEncoder,
-  getTunaPositionEncoder,
+  getTunaLpPositionEncoder,
   LendingPositionArgs,
   lendingPositionAuthorityFilter,
   lendingPositionMintFilter,
-  TunaPositionArgs,
-  tunaPositionAuthorityFilter,
-  tunaPositionMarketMakerFilter,
-  tunaPositionMintAFilter,
-  tunaPositionMintBFilter,
-  tunaPositionMintFilter,
-  tunaPositionPoolFilter,
+  TunaLpPositionArgs,
+  tunaLpPositionAuthorityFilter,
+  tunaLpPositionMarketMakerFilter,
+  tunaLpPositionMintAFilter,
+  tunaLpPositionMintBFilter,
+  tunaLpPositionMintFilter,
+  tunaLpPositionPoolFilter,
   TunaPositionState,
 } from "../src";
+import { fetchDecodedProgramAccounts } from "../src/gpa/utils";
 
 describe("Get program account memcmp filters", () => {
   const mockRpc = createSolanaRpcFromTransport(createDefaultRpcTransport({ url: "" }));
@@ -72,8 +73,8 @@ describe("Get program account memcmp filters", () => {
     assertFilters(data);
   });
 
-  it("TunaPosition", async () => {
-    const positionStruct: TunaPositionArgs = {
+  it("TunaLpPosition", async () => {
+    const positionStruct: TunaLpPositionArgs = {
       version: 1,
       bump: new Uint8Array(),
       authority: addresses[0],
@@ -93,25 +94,28 @@ describe("Get program account memcmp filters", () => {
       loanSharesB: 372268,
       marketMaker: 1,
       state: TunaPositionState.Liquidated,
-      swapToTokenOnLimitOrder: 6,
-      tickEntryIndex: 4253,
       tickLowerIndex: 3112,
       tickUpperIndex: 8010,
-      tickStopLossIndex: 2301,
-      tickTakeProfitIndex: 1023,
+      tickEntryIndex: 0,
+      tickStopLossIndex: 0,
+      tickTakeProfitIndex: 0,
+      entrySqrtPrice: 2333252n,
+      lowerLimitOrderSqrtPrice: 4575467535n,
+      upperLimitOrderSqrtPrice: 85523525n,
+      unused1: 0,
       rebalanceThresholdTicks: 0,
       reserved: new Uint8Array(),
     };
-    await fetchAllTunaPositionWithFilter(
+    await fetchAllTunaLpPositionWithFilter(
       mockRpc,
-      tunaPositionAuthorityFilter(positionStruct.authority),
-      tunaPositionPoolFilter(positionStruct.pool),
-      tunaPositionMintAFilter(positionStruct.mintA),
-      tunaPositionMintBFilter(positionStruct.mintB),
-      tunaPositionMintFilter(positionStruct.positionMint),
-      tunaPositionMarketMakerFilter(positionStruct.marketMaker),
+      tunaLpPositionAuthorityFilter(positionStruct.authority),
+      tunaLpPositionPoolFilter(positionStruct.pool),
+      tunaLpPositionMintAFilter(positionStruct.mintA),
+      tunaLpPositionMintBFilter(positionStruct.mintB),
+      tunaLpPositionMintFilter(positionStruct.positionMint),
+      tunaLpPositionMarketMakerFilter(positionStruct.marketMaker),
     );
-    const data = getTunaPositionEncoder().encode(positionStruct);
+    const data = getTunaLpPositionEncoder().encode(positionStruct);
     assertFilters(data);
   });
 });

@@ -21,7 +21,12 @@ pub fn get_lending_position_address(wallet: &Pubkey, mint: &Pubkey) -> (Pubkey, 
     Pubkey::find_program_address(seeds, &TUNA_ID)
 }
 
-pub fn get_tuna_position_address(position_mint: &Pubkey) -> (Pubkey, u8) {
+pub fn get_tuna_liquidity_position_address(position_mint: &Pubkey) -> (Pubkey, u8) {
     let seeds = &[b"tuna_position", position_mint.as_ref()];
+    Pubkey::find_program_address(seeds, &TUNA_ID)
+}
+
+pub fn get_tuna_spot_position_address(position_mint: &Pubkey) -> (Pubkey, u8) {
+    let seeds = &[b"tuna_spot_position", position_mint.as_ref()];
     Pubkey::find_program_address(seeds, &TUNA_ID)
 }

@@ -3,7 +3,7 @@ import {
   updateAccountsVisitor,
   updateDefinedTypesVisitor,
 } from "codama";
-import { renderRustVisitor } from "@codama/renderers";
+import { renderVisitor } from "@codama/renderers-rust";
 import { rootNodeFromAnchor } from "@codama/nodes-from-anchor";
 import { readFileSync } from "fs";
 
@@ -41,6 +41,6 @@ codama.update(
   }),
 );
 
-console.log("Generating rust visitor");
-const rustVisitor = renderRustVisitor("./src/generated");
+console.log("Generating Rust client");
+const rustVisitor = renderVisitor("./src/generated");
 codama.accept(rustVisitor);

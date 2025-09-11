@@ -8,7 +8,7 @@ pub const VALID_METHODS: &[&str] = &[
   "withdraw",
   "collect_and_compound_fees_orca",
   "collect_fees_orca",
-  "open_and_add_liquidity_orca",
+  "open_and_increase_tuna_lp_position_orca",
   "remove_liquidity_and_close_orca",
   "retrieve_lending_positions",
   "retrieve_tuna_positions",

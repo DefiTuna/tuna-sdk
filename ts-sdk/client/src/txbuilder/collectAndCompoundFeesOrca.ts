@@ -28,17 +28,17 @@ import assert from "assert";
 import {
   AccountsType,
   fetchAllVault,
-  fetchMaybeTunaPosition,
+  fetchMaybeTunaLpPosition,
   fetchTunaConfig,
   getCollectAndCompoundFeesOrcaInstruction,
   getCreateAtaInstructions,
   getLendingVaultAddress,
   getMarketAddress,
   getTunaConfigAddress,
-  getTunaPositionAddress,
+  getTunaLpPositionAddress,
   OrcaUtils,
   TunaConfig,
-  TunaPosition,
+  TunaLpPosition,
   Vault,
 } from "../index.ts";
 
@@ -52,7 +52,7 @@ export async function collectAndCompoundFeesOrcaInstructions(
 
   const tunaConfig = await fetchTunaConfig(rpc, (await getTunaConfigAddress())[0]);
 
-  const tunaPosition = await fetchMaybeTunaPosition(rpc, (await getTunaPositionAddress(positionMint))[0]);
+  const tunaPosition = await fetchMaybeTunaLpPosition(rpc, (await getTunaLpPositionAddress(positionMint))[0]);
   if (!tunaPosition.exists) throw new Error("Tuna position account not found");
 
   const whirlpool = await fetchMaybeWhirlpool(rpc, tunaPosition.data.pool);
@@ -106,20 +106,13 @@ export async function collectAndCompoundFeesOrcaInstructions(
   );
   instructions.push(ix);
 
-  //
-  // Close WSOL accounts if needed.
-  //
-
-  instructions.push(...createFeeRecipientAtaAInstructions.cleanup);
-  instructions.push(...createFeeRecipientAtaBInstructions.cleanup);
-
   return instructions;
 }
 
 export async function collectAndCompoundFeesOrcaInstruction(
   authority: TransactionSigner,
   tunaConfig: Account<TunaConfig>,
-  tunaPosition: Account<TunaPosition>,
+  tunaPosition: Account<TunaLpPosition>,
   mintA: Account<Mint>,
   mintB: Account<Mint>,
   vaultA: Account<Vault>,

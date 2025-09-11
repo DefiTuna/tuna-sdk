@@ -1,8 +1,8 @@
-use crate::accounts::{fetch_tuna_position, TunaPosition};
+use crate::accounts::{fetch_tuna_lp_position, TunaLpPosition};
 use crate::instructions::{CollectFeesFusion, CollectFeesFusionInstructionArgs};
 use crate::types::{AccountsType, RemainingAccountsInfo, RemainingAccountsSlice};
 use crate::utils::get_create_ata_instructions;
-use crate::{get_tuna_config_address, get_tuna_position_address};
+use crate::{get_tuna_config_address, get_tuna_liquidity_position_address};
 use anyhow::{anyhow, Result};
 use fusionamm_client::{fetch_fusion_pool, get_position_address, get_tick_array_address, FusionPool};
 use fusionamm_core::get_tick_array_start_tick_index;
@@ -12,7 +12,7 @@ use solana_pubkey::Pubkey;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 
 pub fn collect_fees_fusion_instructions(rpc: &RpcClient, authority: &Pubkey, position_mint: &Pubkey) -> Result<Vec<Instruction>> {
-    let tuna_position = fetch_tuna_position(&rpc, &get_tuna_position_address(&position_mint).0)?;
+    let tuna_position = fetch_tuna_lp_position(&rpc, &get_tuna_liquidity_position_address(&position_mint).0)?;
 
     let fusion_pool = fetch_fusion_pool(rpc, &tuna_position.data.pool)?;
     let mint_a_address = fusion_pool.data.token_mint_a;
@@ -45,7 +45,7 @@ pub fn collect_fees_fusion_instructions(rpc: &RpcClient, authority: &Pubkey, pos
 
 pub fn collect_fees_fusion_instruction(
     authority: &Pubkey,
-    tuna_position: &TunaPosition,
+    tuna_position: &TunaLpPosition,
     fusion_pool: &FusionPool,
     token_program_a: &Pubkey,
     token_program_b: &Pubkey,
@@ -58,7 +58,7 @@ pub fn collect_fees_fusion_instruction(
     assert_eq!(tuna_position.mint_b, mint_b);
 
     let tuna_config_address = get_tuna_config_address().0;
-    let tuna_position_address = get_tuna_position_address(&tuna_position.position_mint).0;
+    let tuna_position_address = get_tuna_liquidity_position_address(&tuna_position.position_mint).0;
     let tuna_position_owner_ata_a = get_associated_token_address_with_program_id(&authority, &mint_a, token_program_a);
     let tuna_position_owner_ata_b = get_associated_token_address_with_program_id(&authority, &mint_b, token_program_b);
 

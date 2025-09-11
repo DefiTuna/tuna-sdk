@@ -3,11 +3,11 @@ import { beforeEach, describe, it } from "vitest";
 
 import { DEFAULT_ADDRESS, HUNDRED_PERCENT, LEVERAGE_ONE, MarketMaker } from "../src";
 
-import { addLiquidity, assertAddLiquidity } from "./helpers/addLiquidity.ts";
+import { increaseTunaLpPosition, assertIncreaseTunaLpPosition } from "./helpers/increaseTunaLpPosition.ts";
 import { fetchPool } from "./helpers/fetch.ts";
 import { rpc, signer } from "./helpers/mockRpc.ts";
-import { openPosition } from "./helpers/openPosition.ts";
-import { assertRemoveLiquidity, removeLiquidity } from "./helpers/removeLiquidity.ts";
+import { openTunaLpPosition } from "./helpers/openTunaLpPosition.ts";
+import { assertDecreaseTunaLpPositionLiquidity, decreaseTunaLpPosition } from "./helpers/decreaseTunaLpPosition.ts";
 import { setupTestMarket, TestMarket } from "./helpers/setup.ts";
 import { swapExactInput } from "./helpers/swap.ts";
 
@@ -43,7 +43,7 @@ describe("Tuna Position on Orca", () => {
     const pool = await fetchPool(rpc, testMarket.pool, testMarket.marketMaker);
     const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
 
-    await openPosition({
+    await openTunaLpPosition({
       signer,
       positionMint: positionMintKeypair,
       pool: pool.address,
@@ -54,8 +54,8 @@ describe("Tuna Position on Orca", () => {
     //console.log("actualTickIndex", actualTickIndex);
     //console.log("TICK BEFORE", pool.data.tickCurrentIndex);
 
-    assertAddLiquidity(
-      await addLiquidity({
+    assertIncreaseTunaLpPosition(
+      await increaseTunaLpPosition({
         rpc,
         positionMint: positionMintKeypair.address,
         pool: pool.address,
@@ -83,14 +83,13 @@ describe("Tuna Position on Orca", () => {
     // Move the price.
     await swapExactInput(rpc, signer, pool.address, 10_000_000_000n, pool.data.tokenMintB);
 
-    assertRemoveLiquidity(
-      await removeLiquidity({
+    assertDecreaseTunaLpPositionLiquidity(
+      await decreaseTunaLpPosition({
         rpc,
         signer,
         positionMint: positionMintKeypair.address,
         pool: pool.address,
-        swapToToken: 0,
-        closePosition: true,
+        closeTunaLpPosition: true,
       }),
       {
         userBalanceDeltaA: 0n,
@@ -108,7 +107,7 @@ describe("Tuna Position on Orca", () => {
     const pool = await fetchPool(rpc, testMarket.pool, testMarket.marketMaker);
     const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
 
-    await openPosition({
+    await openTunaLpPosition({
       signer,
       positionMint: positionMintKeypair,
       pool: pool.address,
@@ -116,8 +115,8 @@ describe("Tuna Position on Orca", () => {
       tickUpperIndex: actualTickIndex + pool.data.tickSpacing * 5,
     });
 
-    assertAddLiquidity(
-      await addLiquidity({
+    assertIncreaseTunaLpPosition(
+      await increaseTunaLpPosition({
         rpc,
         positionMint: positionMintKeypair.address,
         pool: pool.address,
@@ -142,14 +141,13 @@ describe("Tuna Position on Orca", () => {
     // Move the price.
     await swapExactInput(rpc, signer, pool.address, 200_000_000_000n, pool.data.tokenMintA);
 
-    assertRemoveLiquidity(
-      await removeLiquidity({
+    assertDecreaseTunaLpPositionLiquidity(
+      await decreaseTunaLpPosition({
         rpc,
         signer,
         positionMint: positionMintKeypair.address,
         pool: pool.address,
-        swapToToken: 0,
-        closePosition: true,
+        closeTunaLpPosition: true,
       }),
       {
         userBalanceDeltaA: 146419960983n,
