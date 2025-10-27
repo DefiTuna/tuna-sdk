@@ -13,6 +13,7 @@ import {
   createVaultInstructions,
   DEFAULT_ADDRESS,
   depositInstruction,
+  fetchMaybeVault,
   getLendingPositionAddress,
   getLendingVaultAddress,
   getMarketAddress,
@@ -20,6 +21,7 @@ import {
   NATIVE_MINT,
   openLendingPositionInstruction,
   UNLIMITED_SUPPLY_LIMIT,
+  Vault,
 } from "../../src";
 
 import { FEE_RECIPIENT_KEYPAIR, LIQUIDATOR_KEYPAIR, TUNA_ADMIN_KEYPAIR } from "./addresses.ts";
@@ -47,9 +49,11 @@ export async function setup() {
   await setupFusionPoolsConfig();
 }
 
-export async function setupVault(mint: Account<Mint>, args: CreateVaultInstructionDataArgs) {
-  const instructions = await createVaultInstructions(TUNA_ADMIN_KEYPAIR, mint, args);
-  await sendTransaction(instructions);
+export async function setupVault(mint: Account<Mint>, args: CreateVaultInstructionDataArgs, skipCreate = false) {
+  if (!skipCreate) {
+    const instructions = await createVaultInstructions(TUNA_ADMIN_KEYPAIR, mint, args);
+    await sendTransaction(instructions);
+  }
 
   const vaultAddress = (await getLendingVaultAddress(mint.address))[0];
   const vaultAtaAddress = (
@@ -96,7 +100,7 @@ export async function setupTestMarket(
   initializeRewards?: boolean,
   adaptiveFee?: boolean,
 ): Promise<TestMarket> {
-  if (args.marketMaker > 0) assert(!initializeRewards, "Rewards are supported by this liquidity provider");
+  if (args.marketMaker > 0) assert(!initializeRewards, "Rewards are not supported by this liquidity provider");
 
   const lendingPositionAAmount = 1000_000_000_000n;
   const lendingPositionBAmount = 100000_000_000n;
@@ -158,13 +162,27 @@ export async function setupTestMarket(
   const lendingPositionAAddress = (await getLendingPositionAddress(signer.address, mintA.address))[0];
   const lendingPositionBAddress = (await getLendingPositionAddress(signer.address, mintB.address))[0];
 
-  const vaultA = await setupVault(mintA, {
-    pythOracleFeedId: DEFAULT_ADDRESS,
-    pythOraclePriceUpdate: DEFAULT_ADDRESS,
-    interestRate: 3655890108n,
-    supplyLimit: UNLIMITED_SUPPLY_LIMIT,
-    allowUnsafeTokenExtensions: true,
-  });
+  const vaultAAddress = (await getLendingVaultAddress(mintA.address))[0];
+  const vaultAAccount = await fetchMaybeVault(rpc, vaultAAddress);
+
+  const vaultA = await setupVault(
+    mintA,
+    {
+      pythOracleFeedId: DEFAULT_ADDRESS,
+      pythOraclePriceUpdate: DEFAULT_ADDRESS,
+      interestRate: 3655890108n,
+      supplyLimit: UNLIMITED_SUPPLY_LIMIT,
+      allowUnsafeTokenExtensions: true,
+    },
+    vaultAAccount.exists,
+  );
+
+  if (!vaultAAccount.exists) {
+    await sendTransaction([
+      await openLendingPositionInstruction(signer, mintA.address),
+      await depositInstruction(signer, mintA, lendingPositionAAmount),
+    ]);
+  }
 
   const vaultB = await setupVault(mintB, {
     pythOracleFeedId: DEFAULT_ADDRESS,
@@ -174,10 +192,6 @@ export async function setupTestMarket(
     allowUnsafeTokenExtensions: true,
   });
 
-  await sendTransaction([
-    await openLendingPositionInstruction(signer, mintA.address),
-    await depositInstruction(signer, mintA, lendingPositionAAmount),
-  ]);
   await sendTransaction([
     await openLendingPositionInstruction(signer, mintB.address),
     await depositInstruction(signer, mintB, lendingPositionBAmount),

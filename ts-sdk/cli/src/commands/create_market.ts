@@ -82,6 +82,14 @@ export default class CreateMarket extends BaseCommand {
       description: "Borrow limit B. Set to zero for unlimited borrowing",
       default: 0n,
     }),
+    spotPositionSizeLimitA: bigintFlag({
+      description: "Position size limit in token A. Set to zero for unlimited size",
+      default: 0n,
+    }),
+    spotPositionSizeLimitB: bigintFlag({
+      description: "Position size limit in token B. Set to zero for unlimited size",
+      default: 0n,
+    }),
     oraclePriceDeviationThreshold: percentFlag({
       description: "Oracle price deviation threshold from the spot price (hundredths of a basis point or %)",
       default: 0,
@@ -155,6 +163,8 @@ export default class CreateMarket extends BaseCommand {
       oraclePriceDeviationThreshold: flags.oraclePriceDeviationThreshold,
       maxSwapSlippage: flags.maxSwapSlippage,
       rebalanceProtocolFee: flags.rebalanceProtocolFee,
+      spotPositionSizeLimitA: flags.spotPositionSizeLimitA,
+      spotPositionSizeLimitB: flags.spotPositionSizeLimitB,
     });
 
     console.log("");

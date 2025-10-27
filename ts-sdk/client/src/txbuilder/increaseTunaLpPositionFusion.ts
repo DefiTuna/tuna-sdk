@@ -46,7 +46,7 @@ import {
   TunaLpPosition,
   Vault,
 } from "../index.ts";
-import { getLiquidityIncreaseQuote } from "../utils";
+import { getIncreaseLpPositionQuote } from "../utils";
 
 export type IncreaseTunaLpPositionFusionInstructionsArgs = Omit<
   IncreaseTunaLpPositionFusionInstructionDataArgs,
@@ -85,7 +85,7 @@ export async function increaseTunaLpPositionFusionInstructions(
   assert(mintA.exists, "Token A not found");
   assert(mintB.exists, "Token B not found");
 
-  const increaseAmounts = getLiquidityIncreaseQuote({
+  const increaseAmounts = getIncreaseLpPositionQuote({
     collateralA: BigInt(args.collateralA),
     collateralB: BigInt(args.collateralB),
     borrowA: BigInt(args.borrowA),

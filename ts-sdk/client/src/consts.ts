@@ -29,6 +29,8 @@ export const TUNA_POSITION_FLAGS_ALLOW_REBALANCING = 1 << 6;
 
 export const WP_NFT_UPDATE_AUTH = address("3axbTs2z5GBy6usVbNVoqEgZMng3vZvMnAoX29BFfwhr");
 
+export const DEFAULT_PUSH_ORACLE_PROGRAM_ID = address("pythWSnswVUd12oZpeFP8e9CVaEqJg25g1Vtc2biRsT");
+
 /// The minimum sqrt price for an orca/fusion pool.
 export const MIN_SQRT_PRICE = 4295048016n;
 /// The maximum sqrt price for an orca/fusion pool.

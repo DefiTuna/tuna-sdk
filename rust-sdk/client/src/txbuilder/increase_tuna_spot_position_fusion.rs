@@ -16,16 +16,17 @@ use spl_associated_token_account::instruction::create_associated_token_account_i
 pub struct IncreaseTunaSpotPositionArgs {
     pub collateral_amount: u64,
     pub borrow_amount: u64,
-    pub max_swap_slippage: u32,
+    pub min_swap_amount_out: u64,
 }
 
 pub fn increase_tuna_spot_position_fusion_instructions(
     rpc: &RpcClient,
     authority: &Pubkey,
-    position_mint: &Pubkey,
+    fusion_pool_address: &Pubkey,
     args: IncreaseTunaSpotPositionArgs,
 ) -> Result<Vec<Instruction>> {
-    let tuna_position = fetch_tuna_spot_position(&rpc, &get_tuna_spot_position_address(&position_mint).0)?;
+    let tuna_position_address = get_tuna_spot_position_address(authority, fusion_pool_address).0;
+    let tuna_position = fetch_tuna_spot_position(&rpc, &tuna_position_address)?;
 
     let fusion_pool = fetch_fusion_pool(rpc, &tuna_position.data.pool)?;
     let mint_a_address = fusion_pool.data.token_mint_a;
@@ -73,12 +74,10 @@ pub fn increase_tuna_spot_position_fusion_instructions(
 
     instructions.push(increase_tuna_spot_position_fusion_instruction(
         authority,
-        &tuna_position.address,
         &tuna_position.data,
         &tuna_config.data,
         &vault_a.data,
         &vault_b.data,
-        &fusion_pool.address,
         &fusion_pool.data,
         &mint_a_account.owner,
         &mint_b_account.owner,
@@ -92,12 +91,10 @@ pub fn increase_tuna_spot_position_fusion_instructions(
 
 pub fn increase_tuna_spot_position_fusion_instruction(
     authority: &Pubkey,
-    tuna_position_address: &Pubkey,
     tuna_position: &TunaSpotPosition,
     tuna_config: &TunaConfig,
     vault_a: &Vault,
     vault_b: &Vault,
-    fusion_pool_address: &Pubkey,
     fusion_pool: &FusionPool,
     token_program_a: &Pubkey,
     token_program_b: &Pubkey,
@@ -113,14 +110,15 @@ pub fn increase_tuna_spot_position_fusion_instruction(
     assert_eq!(vault_b.mint, mint_b);
 
     let tuna_config_address = get_tuna_config_address().0;
-    let market_address = get_market_address(&fusion_pool_address).0;
-    let tuna_position_owner_ata_a = get_associated_token_address_with_program_id(&authority, &mint_a, token_program_a);
-    let tuna_position_owner_ata_b = get_associated_token_address_with_program_id(&authority, &mint_b, token_program_b);
+    let market_address = get_market_address(&tuna_position.pool).0;
+    let tuna_position_address = get_tuna_spot_position_address(&tuna_position.authority, &tuna_position.pool).0;
+    let tuna_position_owner_ata_a = get_associated_token_address_with_program_id(&tuna_position.authority, &mint_a, token_program_a);
+    let tuna_position_owner_ata_b = get_associated_token_address_with_program_id(&tuna_position.authority, &mint_b, token_program_b);
 
     let vault_a_address = get_vault_address(&mint_a).0;
     let vault_b_address = get_vault_address(&mint_b).0;
 
-    let swap_ticks_arrays = get_swap_tick_arrays(fusion_pool.tick_current_index, tick_spacing, &fusion_pool_address);
+    let swap_ticks_arrays = get_swap_tick_arrays(fusion_pool.tick_current_index, tick_spacing, &tuna_position.pool);
 
     let ix_builder = IncreaseTunaSpotPositionFusion {
         authority: *authority,
@@ -132,7 +130,7 @@ pub fn increase_tuna_spot_position_fusion_instruction(
         vault_b: vault_b_address,
         vault_a_ata: get_associated_token_address_with_program_id(&vault_a_address, &mint_a, token_program_a),
         vault_b_ata: get_associated_token_address_with_program_id(&vault_b_address, &mint_b, token_program_b),
-        tuna_position: *tuna_position_address,
+        tuna_position: tuna_position_address,
         tuna_position_ata_a: get_associated_token_address_with_program_id(&tuna_position_address, &mint_a, token_program_a),
         tuna_position_ata_b: get_associated_token_address_with_program_id(&tuna_position_address, &mint_b, token_program_b),
         tuna_position_owner_ata_a: if tuna_position.collateral_token == PoolToken::A {
@@ -150,7 +148,7 @@ pub fn increase_tuna_spot_position_fusion_instruction(
         pyth_oracle_price_feed_a: vault_a.pyth_oracle_price_update,
         pyth_oracle_price_feed_b: vault_b.pyth_oracle_price_update,
         fusionamm_program: fusionamm_client::ID,
-        fusion_pool: *fusion_pool_address,
+        fusion_pool: tuna_position.pool,
         token_program_a: *token_program_a,
         token_program_b: *token_program_b,
         memo_program: spl_memo::ID,
@@ -161,7 +159,7 @@ pub fn increase_tuna_spot_position_fusion_instruction(
         IncreaseTunaSpotPositionFusionInstructionArgs {
             collateral_amount: args.collateral_amount,
             borrow_amount: args.borrow_amount,
-            max_swap_slippage: args.max_swap_slippage,
+            min_swap_amount_out: args.min_swap_amount_out,
             remaining_accounts_info: RemainingAccountsInfo {
                 slices: vec![
                     RemainingAccountsSlice {

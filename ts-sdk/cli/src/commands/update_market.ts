@@ -1,5 +1,6 @@
 import {
   createAddressLookupTableForMarketInstructions,
+  extendAddressLookupTableForMarketInstructions,
   fetchMarket,
   getMarketAddress,
   HUNDRED_PERCENT,
@@ -43,6 +44,9 @@ export default class UpdateMarket extends BaseCommand {
     recreateAddressLookupTable: Flags.boolean({
       description: "Creates a new address lookup table for the market",
     }),
+    updateAddressLookupTable: Flags.boolean({
+      description: "Updates/extends the existing address lookup table for the market",
+    }),
     maxLeverage: percentFlag({
       description: "Maximum allowed leverage for the market (hundredths of a basis point or %)",
       min: LEVERAGE_ONE,
@@ -78,6 +82,14 @@ export default class UpdateMarket extends BaseCommand {
     }),
     borrowLimitB: bigintFlag({
       description: "Borrow limit B. Set to zero for unlimited borrowing",
+    }),
+    spotPositionSizeLimitA: bigintFlag({
+      description: "Position size limit in token A. Set to zero for unlimited size",
+      default: 0n,
+    }),
+    spotPositionSizeLimitB: bigintFlag({
+      description: "Position size limit in token B. Set to zero for unlimited size",
+      default: 0n,
     }),
     oraclePriceDeviationThreshold: percentFlag({
       description: "Oracle price deviation threshold from the spot price (hundredths of a basis point or %)",
@@ -151,12 +163,42 @@ export default class UpdateMarket extends BaseCommand {
       newData.borrowLimitB = flags.borrowLimitB;
     }
 
+    if (flags.spotPositionSizeLimitA !== undefined) {
+      newData.spotPositionSizeLimitA = flags.spotPositionSizeLimitA;
+    }
+
+    if (flags.spotPositionSizeLimitB !== undefined) {
+      newData.spotPositionSizeLimitB = flags.spotPositionSizeLimitB;
+    }
+
     if (flags.oraclePriceDeviationThreshold !== undefined) {
       newData.oraclePriceDeviationThreshold = flags.oraclePriceDeviationThreshold;
     }
 
     if (flags.maxSwapSlippage !== undefined) {
       newData.maxSwapSlippage = flags.maxSwapSlippage;
+    }
+
+    if (flags.updateAddressLookupTable) {
+      const lookupTable = await extendAddressLookupTableForMarketInstructions(
+        rpc,
+        args.pool,
+        market.data.marketMaker,
+        signer,
+        market.data.addressLookupTable,
+      );
+      console.log(
+        `Extending the market LUT ${newData.addressLookupTable} with ${lookupTable.addresses.length} addresses:`,
+      );
+      for (const address of lookupTable.addresses) {
+        console.log(address);
+      }
+
+      console.log("");
+      console.log("Sending a transaction...");
+      const signature = await sendTransaction(rpc, lookupTable.instructions, signer);
+      console.log("Transaction landed:", signature);
+      return;
     }
 
     if (flags.recreateAddressLookupTable) {
@@ -195,6 +237,8 @@ export default class UpdateMarket extends BaseCommand {
       oraclePriceDeviationThreshold: newData.oraclePriceDeviationThreshold,
       maxSwapSlippage: newData.maxSwapSlippage,
       rebalanceProtocolFee: flags.rebalanceProtocolFee,
+      spotPositionSizeLimitA: flags.spotPositionSizeLimitA,
+      spotPositionSizeLimitB: flags.spotPositionSizeLimitB,
     });
 
     console.log("");

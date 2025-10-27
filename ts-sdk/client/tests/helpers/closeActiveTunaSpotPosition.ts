@@ -7,6 +7,7 @@ import {
   closeActiveTunaSpotPositionFusionInstructions,
   closeActiveTunaSpotPositionOrcaInstructions,
   fetchMarket,
+  fetchMaybeTunaSpotPosition,
   fetchTunaSpotPosition,
   getLendingVaultAddress,
   getMarketAddress,
@@ -18,15 +19,14 @@ import {
 
 import { FUNDER } from "./addresses.ts";
 import { fetchPool } from "./fetch.ts";
-import { IncreaseTunaLpPositionTestArgs } from "./increaseTunaLpPosition.ts";
 import { sendTransaction } from "./mockRpc.ts";
 
 export type CloseActiveTunaSpotPositionTestArgs = {
   rpc: Rpc<SolanaRpcApi>;
   signer?: TransactionSigner;
-  positionMint: Address;
+  pool: Address;
   swapToToken?: number;
-  maxSwapSlippage?: number;
+  maxSwapAmountIn?: bigint;
 };
 
 export type CloseActiveTunaSpotPositionTestResults = {
@@ -59,11 +59,11 @@ export function assertCloseActiveTunaSpotPosition(
 
 export async function closeActiveTunaSpotPosition({
   rpc,
-  positionMint,
-  maxSwapSlippage,
+  pool: poolAddress,
+  maxSwapAmountIn,
   signer = FUNDER,
 }: CloseActiveTunaSpotPositionTestArgs): Promise<CloseActiveTunaSpotPositionTestResults> {
-  const tunaPositionAddress = (await getTunaSpotPositionAddress(positionMint))[0];
+  const tunaPositionAddress = (await getTunaSpotPositionAddress(signer.address, poolAddress))[0];
   const tunaPosition = await fetchTunaSpotPosition(rpc, tunaPositionAddress);
   const marketAddress = (await getMarketAddress(tunaPosition.data.pool))[0];
   const market = await fetchMarket(rpc, marketAddress);
@@ -108,7 +108,7 @@ export async function closeActiveTunaSpotPosition({
   const cleanupInstructions: IInstruction[] = [];
 
   const closeTunaLpPositionArgs = {
-    maxSwapSlippage: maxSwapSlippage ?? HUNDRED_PERCENT / 10,
+    maxSwapAmountIn: maxSwapAmountIn ?? 0n,
   };
 
   const instructions =
@@ -116,7 +116,7 @@ export async function closeActiveTunaSpotPosition({
       ? await closeActiveTunaSpotPositionOrcaInstructions(
           rpc,
           signer,
-          positionMint,
+          poolAddress,
           closeTunaLpPositionArgs,
           createInstructions,
           cleanupInstructions,
@@ -124,7 +124,7 @@ export async function closeActiveTunaSpotPosition({
       : await closeActiveTunaSpotPositionFusionInstructions(
           rpc,
           signer,
-          positionMint,
+          poolAddress,
           closeTunaLpPositionArgs,
           createInstructions,
           cleanupInstructions,
@@ -143,8 +143,11 @@ export async function closeActiveTunaSpotPosition({
   const vaultABalanceBefore = (await fetchToken(rpc, vaultAAta)).data.amount;
   const vaultBBalanceBefore = (await fetchToken(rpc, vaultBAta)).data.amount;
 
-  // Add liquidity!
+  // Decrease and close the position.
   await sendTransaction(instructions);
+
+  const tunaPositionAfter = await fetchMaybeTunaSpotPosition(rpc, tunaPositionAddress);
+  expect(tunaPositionAfter.exists).toBeFalsy();
 
   const marketAfter = await fetchMarket(rpc, marketAddress);
   if (tunaPosition.data.positionToken == PoolToken.B) {

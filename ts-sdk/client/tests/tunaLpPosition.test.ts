@@ -70,6 +70,8 @@ describe("Tuna Liquidity Position", () => {
       protocolFeeOnCollateral: 1000, // 0.1%
       limitOrderExecutionFee: 1000, // 0.1%
       rebalanceProtocolFee: HUNDRED_PERCENT / 10,
+      spotPositionSizeLimitA: 1000_000_000_000,
+      spotPositionSizeLimitB: 100000_000_000,
     };
     testOrcaMarket = await setupTestMarket({ marketMaker: MarketMaker.Orca, ...marketArgs });
     testFusionMarket = await setupTestMarket({ marketMaker: MarketMaker.Fusion, ...marketArgs });
@@ -228,6 +230,8 @@ describe("Tuna Liquidity Position", () => {
         protocolFeeOnCollateral: 1000, // 0.1%
         limitOrderExecutionFee: 1000, // 0.1%
         rebalanceProtocolFee: HUNDRED_PERCENT / 10,
+        spotPositionSizeLimitA: 1000_000_000_000,
+        spotPositionSizeLimitB: 100000_000_000,
       },
       true,
     );
@@ -1255,6 +1259,8 @@ describe("Tuna Liquidity Position", () => {
       protocolFeeOnCollateral: 1000, // 0.1%
       limitOrderExecutionFee: 1000, // 0.1%
       rebalanceProtocolFee: HUNDRED_PERCENT / 10,
+      spotPositionSizeLimitA: 1000_000_000_000,
+      spotPositionSizeLimitB: 100000_000_000,
     });
 
     const positionMintKeypair = await generateKeyPairSigner();
@@ -2053,6 +2059,8 @@ describe("Tuna Liquidity Position", () => {
         protocolFeeOnCollateral: 1000, // 0.1%
         limitOrderExecutionFee: 1000, // 0.1%
         rebalanceProtocolFee: HUNDRED_PERCENT / 10,
+        spotPositionSizeLimitA: 1000_000_000_000,
+        spotPositionSizeLimitB: 100000_000_000,
       },
       false,
       true,
@@ -2197,7 +2205,7 @@ describe("Tuna Liquidity Position", () => {
       );
     });
   }
-  /*
+
   for (const marketMaker of marketMakers) {
     it(`Entry price change on the position increase (${MarketMaker[marketMaker]})`, async () => {
       const market = markets.find(m => m.marketMaker == marketMaker)!;
@@ -2367,5 +2375,5 @@ describe("Tuna Liquidity Position", () => {
         },
       );
     });
-  }*/
+  }
 });

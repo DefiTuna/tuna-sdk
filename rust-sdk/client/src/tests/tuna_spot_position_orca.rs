@@ -8,11 +8,11 @@ mod tests {
     use crate::{
         close_active_tuna_spot_position_orca_instructions, close_tuna_spot_position_instructions, decrease_tuna_spot_position_orca_instructions,
         get_tuna_config_address, get_tuna_spot_position_address, get_vault_address, increase_tuna_spot_position_orca_instructions,
-        liquidate_spot_position_orca_instructions, open_and_increase_tuna_spot_position_orca_instructions, open_tuna_spot_position_orca_instructions,
-        DecreaseTunaSpotPositionArgs, IncreaseTunaSpotPositionArgs, OpenAndIncreaseTunaSpotPositionArgs, HUNDRED_PERCENT, LEVERAGE_ONE,
+        liquidate_tuna_spot_position_orca_instructions, open_and_increase_tuna_spot_position_orca_instructions,
+        open_tuna_spot_position_orca_instructions, DecreaseTunaSpotPositionArgs, IncreaseTunaSpotPositionArgs, OpenAndIncreaseTunaSpotPositionArgs,
+        HUNDRED_PERCENT, LEVERAGE_ONE,
     };
     use orca_whirlpools_client::fetch_whirlpool;
-    use orca_whirlpools_core::{MAX_SQRT_PRICE, MIN_SQRT_PRICE};
     use serial_test::serial;
     use solana_keypair::Keypair;
     use solana_program_test::tokio;
@@ -34,6 +34,8 @@ mod tests {
             borrow_limit_b: 0,
             max_swap_slippage: 0,
             rebalance_protocol_fee: 0,
+            spot_position_size_limit_a: 1000_000_000_000,
+            spot_position_size_limit_b: 100000_000_000,
         }
     }
 
@@ -46,33 +48,28 @@ mod tests {
             let ctx = RpcContext::new(&signer, orca::get_whirlpool_config_accounts(&signer.pubkey())).await;
             let test_market = setup_test_market(&ctx, test_market_args(), false, false, false).await.unwrap();
 
-            let ix = open_tuna_spot_position_orca_instructions(
+            let instructions = open_tuna_spot_position_orca_instructions(
                 &ctx.rpc,
                 &ctx.signer.pubkey(),
                 &test_market.pool,
                 OpenTunaSpotPositionOrcaInstructionArgs {
                     position_token: PoolToken::A,
                     collateral_token: PoolToken::A,
-                    lower_limit_order_sqrt_price: MIN_SQRT_PRICE,
-                    upper_limit_order_sqrt_price: MAX_SQRT_PRICE,
-                    flags: 0,
                 },
             )
             .unwrap();
-            let position_mint = ix.position_mint;
 
-            ctx.send_transaction_with_signers(ix.instructions, ix.additional_signers.iter().collect())
-                .unwrap();
+            ctx.send_transaction(instructions).unwrap();
 
             ctx.send_transaction(
                 increase_tuna_spot_position_orca_instructions(
                     &ctx.rpc,
                     &ctx.signer.pubkey(),
-                    &position_mint,
+                    &test_market.pool,
                     IncreaseTunaSpotPositionArgs {
                         collateral_amount: 1_000_000_000,
                         borrow_amount: 1_000_000_000,
-                        max_swap_slippage: 0,
+                        min_swap_amount_out: 0,
                     },
                 )
                 .unwrap(),
@@ -83,17 +80,17 @@ mod tests {
                 decrease_tuna_spot_position_orca_instructions(
                     &ctx.rpc,
                     &ctx.signer.pubkey(),
-                    &position_mint,
+                    &test_market.pool,
                     DecreaseTunaSpotPositionArgs {
                         withdraw_percent: HUNDRED_PERCENT,
-                        max_swap_slippage: 0,
+                        max_swap_amount_in: 0,
                     },
                 )
                 .unwrap(),
             )
             .unwrap();
 
-            ctx.send_transaction(close_tuna_spot_position_instructions(&ctx.rpc, &ctx.signer.pubkey(), &ix.position_mint).unwrap())
+            ctx.send_transaction(close_tuna_spot_position_instructions(&ctx.rpc, &ctx.signer.pubkey(), &test_market.pool).unwrap())
                 .unwrap();
         });
     }
@@ -107,27 +104,23 @@ mod tests {
             let ctx = RpcContext::new(&signer, orca::get_whirlpool_config_accounts(&signer.pubkey())).await;
             let test_market = setup_test_market(&ctx, test_market_args(), false, false, false).await.unwrap();
 
-            let ix = open_and_increase_tuna_spot_position_orca_instructions(
+            let instructions = open_and_increase_tuna_spot_position_orca_instructions(
                 &ctx.rpc,
                 &ctx.signer.pubkey(),
                 &test_market.pool,
                 OpenAndIncreaseTunaSpotPositionArgs {
                     position_token: PoolToken::A,
                     collateral_token: PoolToken::A,
-                    lower_limit_order_sqrt_price: MIN_SQRT_PRICE,
-                    upper_limit_order_sqrt_price: MAX_SQRT_PRICE,
-                    flags: 0,
                     collateral_amount: 1_000_000_000,
                     borrow_amount: 1_000_000_000,
-                    max_swap_slippage: 0,
+                    min_swap_amount_out: 0,
                 },
             )
             .unwrap();
 
-            ctx.send_transaction_with_signers(ix.instructions, ix.additional_signers.iter().collect())
-                .unwrap();
+            ctx.send_transaction(instructions).unwrap();
 
-            ctx.send_transaction(close_active_tuna_spot_position_orca_instructions(&ctx.rpc, &ctx.signer.pubkey(), &ix.position_mint, 0).unwrap())
+            ctx.send_transaction(close_active_tuna_spot_position_orca_instructions(&ctx.rpc, &ctx.signer.pubkey(), &test_market.pool, 0).unwrap())
                 .unwrap();
         });
     }
@@ -144,31 +137,28 @@ mod tests {
             let pool = fetch_whirlpool(&ctx.rpc, &test_market.pool).unwrap();
             let tuna_config = fetch_tuna_config(&ctx.rpc, &get_tuna_config_address().0).unwrap();
 
-            let ix = open_and_increase_tuna_spot_position_orca_instructions(
+            let instructions = open_and_increase_tuna_spot_position_orca_instructions(
                 &ctx.rpc,
                 &ctx.signer.pubkey(),
                 &test_market.pool,
                 OpenAndIncreaseTunaSpotPositionArgs {
                     position_token: PoolToken::A,
                     collateral_token: PoolToken::A,
-                    lower_limit_order_sqrt_price: MIN_SQRT_PRICE,
-                    upper_limit_order_sqrt_price: MAX_SQRT_PRICE,
-                    flags: 0,
                     collateral_amount: 1_000_000_000,
                     borrow_amount: 1_500_000_000,
-                    max_swap_slippage: 0,
+                    min_swap_amount_out: 0,
                 },
             )
             .unwrap();
 
-            ctx.send_transaction_with_signers(ix.instructions, ix.additional_signers.iter().collect())
-                .unwrap();
+            ctx.send_transaction(instructions).unwrap();
 
             swap_exact_in(&ctx, &pool.address, 500000000000, &pool.data.token_mint_a, None)
                 .await
                 .unwrap();
 
-            let tuna_position = fetch_tuna_spot_position(&ctx.rpc, &get_tuna_spot_position_address(&ix.position_mint).0).unwrap();
+            let tuna_position_address = get_tuna_spot_position_address(&signer.pubkey(), &test_market.pool).0;
+            let tuna_position = fetch_tuna_spot_position(&ctx.rpc, &tuna_position_address).unwrap();
             let vaults = fetch_all_vault(
                 &ctx.rpc,
                 &[
@@ -178,7 +168,7 @@ mod tests {
             )
             .unwrap();
 
-            ctx.send_transaction(liquidate_spot_position_orca_instructions(
+            ctx.send_transaction(liquidate_tuna_spot_position_orca_instructions(
                 &ctx.signer.pubkey(),
                 &tuna_position.data,
                 &tuna_config.data,
@@ -187,6 +177,7 @@ mod tests {
                 &pool.data,
                 &test_market.token_program_a,
                 &test_market.token_program_b,
+                true,
                 None,
             ))
             .unwrap();

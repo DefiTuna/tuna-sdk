@@ -15,12 +15,13 @@ use spl_associated_token_account::get_associated_token_address_with_program_id;
 pub fn decrease_tuna_spot_position_orca_instructions(
     rpc: &RpcClient,
     authority: &Pubkey,
-    position_mint: &Pubkey,
+    whirlpool_address: &Pubkey,
     args: DecreaseTunaSpotPositionArgs,
 ) -> Result<Vec<Instruction>> {
-    let tuna_position = fetch_tuna_spot_position(&rpc, &get_tuna_spot_position_address(&position_mint).0)?;
+    let tuna_position_address = get_tuna_spot_position_address(authority, whirlpool_address).0;
+    let tuna_position = fetch_tuna_spot_position(&rpc, &tuna_position_address)?;
 
-    let whirlpool = fetch_whirlpool(rpc, &tuna_position.data.pool)?;
+    let whirlpool = fetch_whirlpool(rpc, whirlpool_address)?;
     let mint_a_address = whirlpool.data.token_mint_a;
     let mint_b_address = whirlpool.data.token_mint_b;
 
@@ -80,9 +81,9 @@ pub fn decrease_tuna_spot_position_orca_instruction(
 
     let tuna_config_address = get_tuna_config_address().0;
     let market_address = get_market_address(&tuna_position.pool).0;
-    let tuna_position_address = get_tuna_spot_position_address(&tuna_position.position_mint).0;
-    let tuna_position_owner_ata_a = get_associated_token_address_with_program_id(&authority, &mint_a, token_program_a);
-    let tuna_position_owner_ata_b = get_associated_token_address_with_program_id(&authority, &mint_b, token_program_b);
+    let tuna_position_address = get_tuna_spot_position_address(&tuna_position.authority, &tuna_position.pool).0;
+    let tuna_position_owner_ata_a = get_associated_token_address_with_program_id(&tuna_position.authority, &mint_a, token_program_a);
+    let tuna_position_owner_ata_b = get_associated_token_address_with_program_id(&tuna_position.authority, &mint_b, token_program_b);
     let oracle_address = get_oracle_address(&tuna_position.pool).unwrap().0;
 
     let vault_a_address = get_vault_address(&mint_a).0;
@@ -126,7 +127,7 @@ pub fn decrease_tuna_spot_position_orca_instruction(
     ix_builder.instruction_with_remaining_accounts(
         DecreaseTunaSpotPositionOrcaInstructionArgs {
             withdraw_percent: args.withdraw_percent,
-            max_swap_slippage: args.max_swap_slippage,
+            max_swap_amount_in: args.max_swap_amount_in,
             remaining_accounts_info: RemainingAccountsInfo {
                 slices: vec![
                     RemainingAccountsSlice {

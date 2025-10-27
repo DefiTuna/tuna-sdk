@@ -7,13 +7,13 @@ import { expect } from "vitest";
 
 import {
   fetchMarket,
+  fetchMaybeTunaSpotPosition,
   fetchTunaConfig,
   fetchTunaSpotPosition,
   fetchVault,
   getLendingVaultAddress,
   getMarketAddress,
   getTunaConfigAddress,
-  getTunaSpotPositionAddress,
   HUNDRED_PERCENT,
   liquidateTunaSpotPositionFusionInstructions,
   liquidateTunaSpotPositionOrcaInstructions,
@@ -29,39 +29,43 @@ import { sendTransaction } from "./mockRpc.ts";
 export type LiquidateTunaSpotPositionTestArgs = {
   rpc: Rpc<SolanaRpcApi>;
   signer?: TransactionSigner;
-  positionMint: Address;
+  tunaPositionAddress: Address;
   withdrawPercent?: number;
   maxSwapSlippage?: number;
 };
 
 export type LiquidateTunaSpotPositionTestResults = {
-  amountA: bigint;
-  amountB: bigint;
+  userNativeBalanceDelta: bigint;
+  userBalanceDeltaA: bigint;
+  userBalanceDeltaB: bigint;
   vaultBalanceDeltaA: bigint;
   vaultBalanceDeltaB: bigint;
   badDebtDeltaA: bigint;
   badDebtDeltaB: bigint;
   feeRecipientBalanceDelta: bigint;
-  tunaPositionState?: TunaPositionState;
 };
 
 export type LiquidateTunaSpotPositionTestExpectations = {
-  amountA?: bigint;
-  amountB?: bigint;
+  userNativeBalanceDelta?: bigint;
+  userBalanceDeltaA?: bigint;
+  userBalanceDeltaB?: bigint;
   vaultBalanceDeltaA?: bigint;
   vaultBalanceDeltaB?: bigint;
   badDebtDeltaA?: bigint;
   badDebtDeltaB?: bigint;
   feeRecipientBalanceDelta?: bigint;
-  tunaPositionState?: TunaPositionState;
 };
 
 export function assertLiquidateTunaSpotPosition(
   results: LiquidateTunaSpotPositionTestResults,
   expectations: LiquidateTunaSpotPositionTestExpectations,
 ) {
-  if (expectations.amountA !== undefined) expect(results.amountA).toEqual(expectations.amountA);
-  if (expectations.amountB !== undefined) expect(results.amountB).toEqual(expectations.amountB);
+  if (expectations.userNativeBalanceDelta !== undefined)
+    expect(results.userNativeBalanceDelta).toEqual(expectations.userNativeBalanceDelta);
+  if (expectations.userBalanceDeltaA !== undefined)
+    expect(results.userBalanceDeltaA).toEqual(expectations.userBalanceDeltaA);
+  if (expectations.userBalanceDeltaB !== undefined)
+    expect(results.userBalanceDeltaB).toEqual(expectations.userBalanceDeltaB);
   if (expectations.vaultBalanceDeltaA !== undefined)
     expect(results.vaultBalanceDeltaA).toEqual(expectations.vaultBalanceDeltaA);
   if (expectations.vaultBalanceDeltaB !== undefined)
@@ -70,19 +74,16 @@ export function assertLiquidateTunaSpotPosition(
   if (expectations.badDebtDeltaB !== undefined) expect(results.badDebtDeltaB).toEqual(expectations.badDebtDeltaB);
   if (expectations.feeRecipientBalanceDelta !== undefined)
     expect(results.feeRecipientBalanceDelta).toEqual(expectations.feeRecipientBalanceDelta);
-  if (expectations.tunaPositionState !== undefined)
-    expect(results.tunaPositionState).toEqual(expectations.tunaPositionState);
 }
 
 export async function liquidateTunaSpotPosition({
   rpc,
-  positionMint,
+  tunaPositionAddress,
   withdrawPercent,
   signer = FUNDER,
 }: LiquidateTunaSpotPositionTestArgs): Promise<LiquidateTunaSpotPositionTestResults> {
   const tunaConfigAddress = (await getTunaConfigAddress())[0];
   const tunaConfig = await fetchTunaConfig(rpc, tunaConfigAddress);
-  const tunaPositionAddress = (await getTunaSpotPositionAddress(positionMint))[0];
   const tunaPosition = await fetchTunaSpotPosition(rpc, tunaPositionAddress);
   const marketAddress = (await getMarketAddress(tunaPosition.data.pool))[0];
   const market = await fetchMarket(rpc, marketAddress);
@@ -126,6 +127,22 @@ export async function liquidateTunaSpotPosition({
   )[0];
   const vaultB = await fetchVault(rpc, vaultBAddress);
 
+  const tunaPositionOwnerAtaA = (
+    await findAssociatedTokenPda({
+      owner: tunaPosition.data.authority,
+      mint: mintA.address,
+      tokenProgram: mintA.programAddress,
+    })
+  )[0];
+
+  const tunaPositionOwnerAtaB = (
+    await findAssociatedTokenPda({
+      owner: tunaPosition.data.authority,
+      mint: mintB.address,
+      tokenProgram: mintB.programAddress,
+    })
+  )[0];
+
   const feeRecipientAAta = (
     await findAssociatedTokenPda({
       owner: tunaConfig.data.feeRecipient,
@@ -153,6 +170,7 @@ export async function liquidateTunaSpotPosition({
           vaultA,
           vaultB,
           pool as Account<Whirlpool, Address>,
+          true,
           withdrawPercent ?? HUNDRED_PERCENT,
         )
       : await liquidateTunaSpotPositionFusionInstructions(
@@ -164,10 +182,18 @@ export async function liquidateTunaSpotPosition({
           vaultA,
           vaultB,
           pool as Account<FusionPool, Address>,
+          true,
           withdrawPercent ?? HUNDRED_PERCENT,
         );
 
   instructions.unshift(getSetComputeUnitLimitInstruction({ units: 1_400_000 }));
+
+  const userTokenABefore = await fetchMaybeToken(rpc, tunaPositionOwnerAtaA);
+  const userBalanceABefore = userTokenABefore.exists ? userTokenABefore.data.amount : 0n;
+  const userNativeBalanceBefore = (await rpc.getBalance(tunaPosition.data.authority).send()).value;
+
+  const userTokenBBefore = await fetchMaybeToken(rpc, tunaPositionOwnerAtaB);
+  const userBalanceBBefore = userTokenBBefore.exists ? userTokenBBefore.data.amount : 0n;
 
   const feeRecipientTokenABefore = await fetchMaybeToken(rpc, feeRecipientAAta);
   const feeRecipientBalanceABefore = feeRecipientTokenABefore.exists ? feeRecipientTokenABefore.data.amount : 0n;
@@ -181,11 +207,11 @@ export async function liquidateTunaSpotPosition({
   const tunaPositionBalanceABefore = (await fetchToken(rpc, tunaPositionAtaA)).data.amount;
   const tunaPositionBalanceBBefore = (await fetchToken(rpc, tunaPositionAtaB)).data.amount;
 
-  const directlyTranseferredAmountA =
+  const directlyTransferredAmountA =
     tunaPosition.data.positionToken == PoolToken.A
       ? tunaPositionBalanceABefore - tunaPositionBefore.data.amount
       : tunaPositionBalanceABefore;
-  const directlyTranseferredAmountB =
+  const directlyTransferredAmountB =
     tunaPosition.data.positionToken == PoolToken.B
       ? tunaPositionBalanceBBefore - tunaPositionBefore.data.amount
       : tunaPositionBalanceBBefore;
@@ -193,15 +219,27 @@ export async function liquidateTunaSpotPosition({
   // Liquidate the position
   await sendTransaction(instructions);
 
-  const tunaPositionAfter = await fetchTunaSpotPosition(rpc, tunaPositionAddress);
+  const tunaPositionAfter = await fetchMaybeTunaSpotPosition(rpc, tunaPositionAddress);
 
-  const tunaPositionBalanceAAfter = (await fetchToken(rpc, tunaPositionAtaA)).data.amount;
-  const tunaPositionBalanceBAfter = (await fetchToken(rpc, tunaPositionAtaB)).data.amount;
+  if (withdrawPercent == undefined || withdrawPercent == HUNDRED_PERCENT) {
+    expect((await fetchMaybeToken(rpc, tunaPositionAtaA)).exists).toBeFalsy();
+    expect((await fetchMaybeToken(rpc, tunaPositionAtaB)).exists).toBeFalsy();
+    expect(tunaPositionAfter.exists).toBeFalsy();
+  } else {
+    const newAmount =
+      (tunaPositionBefore.data.amount * BigInt(HUNDRED_PERCENT - (withdrawPercent ?? HUNDRED_PERCENT))) /
+      BigInt(HUNDRED_PERCENT);
+    expect(tunaPositionAfter.exists).toBeTruthy();
+    if (tunaPositionAfter.exists) expect(tunaPositionAfter.data.amount).toEqual(newAmount);
+  }
 
-  const newAmount =
-    (tunaPositionAfter.data.amount * BigInt(HUNDRED_PERCENT - (withdrawPercent ?? HUNDRED_PERCENT))) /
-    BigInt(HUNDRED_PERCENT);
-  expect(tunaPositionAfter.data.amount).toEqual(newAmount);
+  const userTokenAAfter = await fetchMaybeToken(rpc, tunaPositionOwnerAtaA);
+  const userBalanceAAfter = userTokenAAfter.exists ? userTokenAAfter.data.amount : 0n;
+
+  const userNativeBalanceAfter = (await rpc.getBalance(tunaPosition.data.authority).send()).value;
+
+  const userTokenBAfter = await fetchMaybeToken(rpc, tunaPositionOwnerAtaB);
+  const userBalanceBAfter = userTokenBAfter.exists ? userTokenBAfter.data.amount : 0n;
 
   const feeRecipientTokenAAfter = await fetchMaybeToken(rpc, feeRecipientAAta);
   const feeRecipientBalanceAAfter = feeRecipientTokenAAfter.exists ? feeRecipientTokenAAfter.data.amount : 0n;
@@ -217,20 +255,20 @@ export async function liquidateTunaSpotPosition({
   const feeRecipientBalanceDeltaB = feeRecipientBalanceBAfter - feeRecipientBalanceBBefore;
 
   if (tunaPosition.data.positionToken == PoolToken.A) {
-    expect(feeRecipientBalanceDeltaB).toEqual(directlyTranseferredAmountB);
+    expect(feeRecipientBalanceDeltaB).toEqual(directlyTransferredAmountB);
   } else {
-    expect(feeRecipientBalanceDeltaA).toEqual(directlyTranseferredAmountA);
+    expect(feeRecipientBalanceDeltaA).toEqual(directlyTransferredAmountA);
   }
 
   return {
-    amountA: tunaPositionBalanceAAfter,
-    amountB: tunaPositionBalanceBAfter,
+    userNativeBalanceDelta: userNativeBalanceAfter - userNativeBalanceBefore,
+    userBalanceDeltaA: userBalanceAAfter - userBalanceABefore,
+    userBalanceDeltaB: userBalanceBAfter - userBalanceBBefore,
     vaultBalanceDeltaA: vaultABalanceAfter - vaultABalanceBefore,
     vaultBalanceDeltaB: vaultBBalanceAfter - vaultBBalanceBefore,
     badDebtDeltaA: vaultAAfter.data.unpaidDebtShares - vaultA.data.unpaidDebtShares,
     badDebtDeltaB: vaultBAfter.data.unpaidDebtShares - vaultB.data.unpaidDebtShares,
     feeRecipientBalanceDelta:
       tunaPosition.data.positionToken == PoolToken.A ? feeRecipientBalanceDeltaA : feeRecipientBalanceDeltaB,
-    tunaPositionState: tunaPositionAfter.data.state,
   };
 }

@@ -24,6 +24,9 @@ export default class FetchPool extends BaseCommand {
       const whirlpool = await fetchMaybeWhirlpool(rpc, whirlpoolAddress);
       if (whirlpool.exists) {
         console.log("Whirlpool:", whirlpool);
+        console.log("RewardInfos[0]:", whirlpool.data.rewardInfos[0]);
+        console.log("RewardInfos[1]:", whirlpool.data.rewardInfos[1]);
+        console.log("RewardInfos[2]:", whirlpool.data.rewardInfos[2]);
 
         const [mintA, mintB] = await fetchAllMint(rpc, [whirlpool.data.tokenMintA, whirlpool.data.tokenMintB]);
         console.log(

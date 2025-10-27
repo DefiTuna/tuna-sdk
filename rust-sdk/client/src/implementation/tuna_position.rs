@@ -20,7 +20,6 @@ pub enum TunaLimitOrderType {
 pub trait TunaPosition: Any {
     fn kind(&self) -> TunaPositionKind;
     fn get_version(&self) -> u16;
-    fn get_position_mint(&self) -> Pubkey;
     fn get_pool(&self) -> Pubkey;
     fn get_authority(&self) -> Pubkey;
     fn get_mint_a(&self) -> Pubkey;
@@ -39,10 +38,6 @@ pub trait TunaPosition: Any {
 macro_rules! impl_tuna_position {
     ($t:ty) => {
         impl $t {
-            pub fn is_liquidated_or_closed(&self) -> bool {
-                self.state != TunaPositionState::Normal
-            }
-
             /// Returns the current position total and debt size.
             pub fn compute_total_and_debt(&self, sqrt_price: u128, vault_a: &Vault, vault_b: &Vault) -> Result<(u64, u64), ErrorCode> {
                 let (mut total_a, mut total_b) = self.get_total_balance(sqrt_price)?;

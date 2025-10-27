@@ -3,7 +3,6 @@ import {
   type Account,
   AccountRole,
   Address,
-  generateKeyPairSigner,
   GetAccountInfoApi,
   GetMultipleAccountsApi,
   IAccountMeta,
@@ -37,14 +36,6 @@ import {
   Vault,
 } from "../index.ts";
 
-export type OpenAndIncreaseTunaSpotPosition = {
-  /** The mint address of the position NFT. */
-  positionMint: Address;
-
-  /** List of Solana transaction instructions to execute. */
-  instructions: IInstruction[];
-};
-
 export type OpenAndIncreaseTunaSpotPositionFusionInstructionsArgs = Omit<
   OpenAndIncreaseTunaSpotPositionFusionInstructionDataArgs,
   "remainingAccountsInfo"
@@ -57,12 +48,10 @@ export async function openAndIncreaseTunaSpotPositionFusionInstructions(
   args: OpenAndIncreaseTunaSpotPositionFusionInstructionsArgs,
   createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
-): Promise<OpenAndIncreaseTunaSpotPosition> {
+): Promise<IInstruction[]> {
   const instructions: IInstruction[] = [];
   if (!createInstructions) createInstructions = instructions;
   if (!cleanupInstructions) cleanupInstructions = instructions;
-
-  const positionMint = await generateKeyPairSigner();
 
   const tunaConfig = await fetchTunaConfig(rpc, (await getTunaConfigAddress())[0]);
 
@@ -121,7 +110,6 @@ export async function openAndIncreaseTunaSpotPositionFusionInstructions(
 
   const ix = await openAndIncreaseTunaSpotPositionFusionInstruction(
     authority,
-    positionMint,
     tunaConfig,
     mintA,
     mintB,
@@ -138,15 +126,11 @@ export async function openAndIncreaseTunaSpotPositionFusionInstructions(
 
   cleanupInstructions.push(...createUserAtaInstructions.cleanup);
 
-  return {
-    instructions,
-    positionMint: positionMint.address,
-  };
+  return instructions;
 }
 
 export async function openAndIncreaseTunaSpotPositionFusionInstruction(
   authority: TransactionSigner,
-  positionMint: TransactionSigner,
   tunaConfig: Account<TunaConfig>,
   mintA: Account<Mint>,
   mintB: Account<Mint>,
@@ -155,7 +139,7 @@ export async function openAndIncreaseTunaSpotPositionFusionInstruction(
   fusionPool: Account<FusionPool>,
   args: Omit<OpenAndIncreaseTunaSpotPositionFusionInstructionDataArgs, "remainingAccountsInfo">,
 ): Promise<IInstruction> {
-  const tunaPositionAddress = (await getTunaSpotPositionAddress(positionMint.address))[0];
+  const tunaPositionAddress = (await getTunaSpotPositionAddress(authority.address, fusionPool.address))[0];
   const marketAddress = (await getMarketAddress(fusionPool.address))[0];
 
   const tunaPositionOwnerAtaA = (
@@ -257,7 +241,6 @@ export async function openAndIncreaseTunaSpotPositionFusionInstruction(
     vaultB: vaultB.address,
     vaultBAta,
     tunaPosition: tunaPositionAddress,
-    tunaPositionMint: positionMint,
     tunaPositionAtaA,
     tunaPositionAtaB,
     tunaPositionOwnerAtaA: args.collateralToken == PoolToken.A ? tunaPositionOwnerAtaA : undefined,

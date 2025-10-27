@@ -1,6 +1,6 @@
 use crate::accounts::{TunaConfig, TunaSpotPosition, Vault};
 use crate::instructions::{LiquidateTunaSpotPositionOrca, LiquidateTunaSpotPositionOrcaInstructionArgs};
-use crate::types::{AccountsType, RemainingAccountsInfo, RemainingAccountsSlice};
+use crate::types::{AccountsType, PoolToken, RemainingAccountsInfo, RemainingAccountsSlice};
 use crate::utils::orca::get_swap_tick_arrays;
 use crate::{get_market_address, get_tuna_config_address, get_tuna_spot_position_address, get_vault_address, HUNDRED_PERCENT};
 use orca_whirlpools_client::{get_oracle_address, Whirlpool};
@@ -10,7 +10,7 @@ use solana_sdk_ids::system_program;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 use spl_associated_token_account::instruction::create_associated_token_account_idempotent;
 
-pub fn liquidate_spot_position_orca_instructions(
+pub fn liquidate_tuna_spot_position_orca_instructions(
     authority: &Pubkey,
     tuna_position: &TunaSpotPosition,
     tuna_config: &TunaConfig,
@@ -19,12 +19,13 @@ pub fn liquidate_spot_position_orca_instructions(
     whirlpool: &Whirlpool,
     token_program_a: &Pubkey,
     token_program_b: &Pubkey,
+    create_tuna_position_owner_ata: bool,
     withdraw_percent: Option<u32>,
 ) -> Vec<Instruction> {
-    vec![
+    let mut instructions = vec![
         create_associated_token_account_idempotent(authority, &tuna_config.fee_recipient, &vault_a.mint, token_program_a),
         create_associated_token_account_idempotent(authority, &tuna_config.fee_recipient, &vault_b.mint, token_program_b),
-        liquidate_spot_position_orca_instruction(
+        liquidate_tuna_spot_position_orca_instruction(
             authority,
             tuna_position,
             tuna_config,
@@ -35,10 +36,30 @@ pub fn liquidate_spot_position_orca_instructions(
             token_program_b,
             withdraw_percent,
         ),
-    ]
+    ];
+
+    if create_tuna_position_owner_ata {
+        if tuna_position.collateral_token == PoolToken::A {
+            if tuna_position.mint_a != spl_token::native_mint::ID {
+                instructions.insert(
+                    0,
+                    create_associated_token_account_idempotent(authority, &tuna_position.authority, &tuna_position.mint_a, token_program_a),
+                );
+            }
+        } else {
+            if tuna_position.mint_a != spl_token::native_mint::ID {
+                instructions.insert(
+                    0,
+                    create_associated_token_account_idempotent(authority, &tuna_position.authority, &tuna_position.mint_b, token_program_b),
+                );
+            }
+        }
+    }
+
+    instructions
 }
 
-pub fn liquidate_spot_position_orca_instruction(
+pub fn liquidate_tuna_spot_position_orca_instruction(
     authority: &Pubkey,
     tuna_position: &TunaSpotPosition,
     tuna_config: &TunaConfig,
@@ -60,9 +81,10 @@ pub fn liquidate_spot_position_orca_instruction(
 
     let tuna_config_address = get_tuna_config_address().0;
     let market_address = get_market_address(&tuna_position.pool).0;
-    let tuna_position_address = get_tuna_spot_position_address(&tuna_position.position_mint).0;
+    let tuna_position_address = get_tuna_spot_position_address(&tuna_position.authority, &tuna_position.pool).0;
+    let tuna_position_owner_ata_a = get_associated_token_address_with_program_id(&tuna_position.authority, &mint_a, token_program_a);
+    let tuna_position_owner_ata_b = get_associated_token_address_with_program_id(&tuna_position.authority, &mint_b, token_program_b);
     let oracle_address = get_oracle_address(&tuna_position.pool).unwrap().0;
-
     let vault_a_address = get_vault_address(&mint_a).0;
     let vault_b_address = get_vault_address(&mint_b).0;
 
@@ -79,8 +101,19 @@ pub fn liquidate_spot_position_orca_instruction(
         vault_a_ata: get_associated_token_address_with_program_id(&vault_a_address, &mint_a, token_program_a),
         vault_b_ata: get_associated_token_address_with_program_id(&vault_b_address, &mint_b, token_program_b),
         tuna_position: tuna_position_address,
+        tuna_position_owner: tuna_position.authority,
         tuna_position_ata_a: get_associated_token_address_with_program_id(&tuna_position_address, &mint_a, token_program_a),
         tuna_position_ata_b: get_associated_token_address_with_program_id(&tuna_position_address, &mint_b, token_program_b),
+        tuna_position_owner_ata_a: if tuna_position.collateral_token == PoolToken::A && mint_a != spl_token::native_mint::ID {
+            Some(tuna_position_owner_ata_a)
+        } else {
+            None
+        },
+        tuna_position_owner_ata_b: if tuna_position.collateral_token == PoolToken::B && mint_b != spl_token::native_mint::ID {
+            Some(tuna_position_owner_ata_b)
+        } else {
+            None
+        },
         fee_recipient_ata_a: get_associated_token_address_with_program_id(&tuna_config.fee_recipient, &mint_a, token_program_a),
         fee_recipient_ata_b: get_associated_token_address_with_program_id(&tuna_config.fee_recipient, &mint_b, token_program_b),
         pyth_oracle_price_feed_a: vault_a.pyth_oracle_price_update,

@@ -52,7 +52,7 @@ import {
   Vault,
   WP_NFT_UPDATE_AUTH,
 } from "../index.ts";
-import { getLiquidityIncreaseQuote } from "../utils";
+import { getIncreaseLpPositionQuote } from "../utils";
 import { calculateMinimumBalanceForRentExemption } from "../utils/sysvar";
 
 export type OpenAndIncreaseTunaLpPositionOrca = {
@@ -105,7 +105,7 @@ export async function openAndIncreaseTunaLpPositionOrcaInstructions(
     (await getLendingVaultAddress(whirlpool.data.tokenMintB))[0],
   ]);
 
-  const increaseAmounts = getLiquidityIncreaseQuote({
+  const increaseAmounts = getIncreaseLpPositionQuote({
     collateralA: BigInt(args.collateralA),
     collateralB: BigInt(args.collateralB),
     borrowA: BigInt(args.borrowA),

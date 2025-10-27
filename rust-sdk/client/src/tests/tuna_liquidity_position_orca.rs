@@ -34,6 +34,8 @@ mod tests {
             borrow_limit_b: 0,
             max_swap_slippage: 0,
             rebalance_protocol_fee: 0,
+            spot_position_size_limit_a: 1000_000_000_000,
+            spot_position_size_limit_b: 100000_000_000,
         }
     }
 

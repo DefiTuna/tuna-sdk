@@ -18,7 +18,7 @@ import { getInitializableTickIndex, priceToTickIndex } from "@crypticdot/fusiona
 import { DEFAULT_TRANSACTION_CONFIG, sendTransaction } from "@crypticdot/fusionamm-tx-sender";
 import { fetchWhirlpool } from "@orca-so/whirlpools-client";
 import { Address, IInstruction } from "@solana/kit";
-import { fetchMint } from "@solana-program/token-2022";
+import { fetchAllMint } from "@solana-program/token-2022";
 
 import BaseCommand, { addressFlag, bigintFlag, percentFlag, priceFlag } from "../base";
 import { rpc, signer } from "../rpc";
@@ -151,7 +151,7 @@ export default class IncreaseLpPosition extends BaseCommand {
 
       const marketAddress = (await getMarketAddress(flags.pool))[0];
 
-      console.log("Fetching market...");
+      console.log("Fetching market and pool...");
       const market = await fetchMaybeMarket(rpc, marketAddress);
       if (!market.exists) {
         throw new Error("Market for the provided pool address is not found");
@@ -164,8 +164,7 @@ export default class IncreaseLpPosition extends BaseCommand {
           ? await fetchFusionPool(rpc, flags.pool)
           : await fetchWhirlpool(rpc, flags.pool);
 
-      const mintA = await fetchMint(rpc, pool.data.tokenMintA);
-      const mintB = await fetchMint(rpc, pool.data.tokenMintB);
+      const [mintA, mintB] = await fetchAllMint(rpc, [pool.data.tokenMintA, pool.data.tokenMintB]);
 
       const initializableLowerTickIndex = getInitializableTickIndex(
         priceToTickIndex(flags.lowerPrice, mintA.data.decimals, mintB.data.decimals),

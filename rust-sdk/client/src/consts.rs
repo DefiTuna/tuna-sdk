@@ -24,3 +24,4 @@ pub const TUNA_POSITION_FLAGS_ALLOW_REBALANCING: u32 = 1 << 6;
 pub const TUNA_POSITION_FLAGS_MASK: u32 = (1 << 7) - 1;
 
 pub const WP_NFT_UPDATE_AUTH: Pubkey = pubkey!("3axbTs2z5GBy6usVbNVoqEgZMng3vZvMnAoX29BFfwhr");
+pub const DEFAULT_PUSH_ORACLE_PROGRAM_ID: Pubkey = pubkey!("pythWSnswVUd12oZpeFP8e9CVaEqJg25g1Vtc2biRsT");

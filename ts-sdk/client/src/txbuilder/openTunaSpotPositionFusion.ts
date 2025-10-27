@@ -25,7 +25,6 @@ import {
 export async function openTunaSpotPositionFusionInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
-  positionMint: TransactionSigner,
   fusionPoolAddress: Address,
   args: OpenTunaSpotPositionFusionInstructionDataArgs,
 ): Promise<IInstruction[]> {
@@ -36,26 +35,18 @@ export async function openTunaSpotPositionFusionInstructions(
   assert(mintA.exists, "Token A account not found");
   assert(mintB.exists, "Token B account not found");
 
-  const ix = await openTunaSpotPositionFusionInstruction(
-    authority,
-    positionMint,
-    mintA,
-    mintB,
-    fusionPoolAddress,
-    args,
-  );
+  const ix = await openTunaSpotPositionFusionInstruction(authority, mintA, mintB, fusionPoolAddress, args);
   return [ix];
 }
 
 export async function openTunaSpotPositionFusionInstruction(
   authority: TransactionSigner,
-  positionMint: TransactionSigner,
   mintA: Account<Mint>,
   mintB: Account<Mint>,
   fusionPoolAddress: Address,
   args: OpenTunaSpotPositionFusionInstructionDataArgs,
 ): Promise<IInstruction> {
-  const tunaPositionAddress = (await getTunaSpotPositionAddress(positionMint.address))[0];
+  const tunaPositionAddress = (await getTunaSpotPositionAddress(authority.address, fusionPoolAddress))[0];
 
   const tunaPositionAtaA = (
     await findAssociatedTokenPda({
@@ -80,7 +71,6 @@ export async function openTunaSpotPositionFusionInstruction(
     tokenProgramA: mintA.programAddress,
     tokenProgramB: mintB.programAddress,
     tunaPosition: tunaPositionAddress,
-    tunaPositionMint: positionMint,
     tunaPositionAtaA,
     tunaPositionAtaB,
     fusionPool: fusionPoolAddress,

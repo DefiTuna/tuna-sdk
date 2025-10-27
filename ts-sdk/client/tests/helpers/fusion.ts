@@ -41,8 +41,6 @@ export async function setupFusionPoolsConfig() {
       feeAuthority: signer.address,
       collectProtocolFeesAuthority: signer.address,
       defaultProtocolFeeRate: 100,
-      defaultClpRewardRate: 0,
-      defaultOrderProtocolFeeRate: 100,
     }),
   );
 

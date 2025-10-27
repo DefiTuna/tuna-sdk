@@ -61,16 +61,6 @@ export function tunaSpotPositionMintBFilter(address: Address): TunaSpotPositionF
   } as TunaSpotPositionFilter;
 }
 
-export function tunaSpotPositionMintFilter(address: Address): TunaSpotPositionFilter {
-  return {
-    memcmp: {
-      offset: 139n,
-      bytes: getBase58Decoder().decode(getAddressEncoder().encode(address)),
-      encoding: "base58",
-    },
-  } as TunaSpotPositionFilter;
-}
-
 export async function fetchAllTunaSpotPositionWithFilter(
   rpc: Rpc<GetProgramAccountsApi>,
   ...filters: TunaSpotPositionFilter[]

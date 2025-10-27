@@ -1,11 +1,11 @@
 import { priceToSqrtPrice, priceToTickIndex } from "@crypticdot/fusionamm-core";
 import { describe, expect, it } from "vitest";
 
-import { COMPUTED_AMOUNT, getLiquidityIncreaseQuote, HUNDRED_PERCENT } from "../src";
+import { COMPUTED_AMOUNT, getIncreaseLpPositionQuote, HUNDRED_PERCENT } from "../src";
 
-describe("Liquidity Position Math", () => {
+describe("Lp Position Math", () => {
   it("Liquidity increase quote", async () => {
-    const quote = getLiquidityIncreaseQuote({
+    const quote = getIncreaseLpPositionQuote({
       collateralA: 1000000n,
       collateralB: 1000000n,
       borrowA: 2000000n,
@@ -35,7 +35,7 @@ describe("Liquidity Position Math", () => {
   });
 
   it("Liquidity increase quote (A is provided)", async () => {
-    const quote = getLiquidityIncreaseQuote({
+    const quote = getIncreaseLpPositionQuote({
       collateralA: 10000000n,
       collateralB: 0n,
       borrowA: 0n,
@@ -65,7 +65,7 @@ describe("Liquidity Position Math", () => {
   });
 
   it("Liquidity increase quote with auto deposit ratio (A is provided)", async () => {
-    const quote = getLiquidityIncreaseQuote({
+    const quote = getIncreaseLpPositionQuote({
       collateralA: 1000000n,
       collateralB: COMPUTED_AMOUNT,
       borrowA: 2000000n,
@@ -94,7 +94,7 @@ describe("Liquidity Position Math", () => {
   });
 
   it("Liquidity increase quote with auto deposit ratio (B is provided)", async () => {
-    const quote = getLiquidityIncreaseQuote({
+    const quote = getIncreaseLpPositionQuote({
       collateralA: COMPUTED_AMOUNT,
       collateralB: 1000000n,
       borrowA: COMPUTED_AMOUNT,
@@ -123,7 +123,7 @@ describe("Liquidity Position Math", () => {
   });
 
   it("Liquidity increase quote with auto deposit ratio, one-sided, token A", async () => {
-    const quote = getLiquidityIncreaseQuote({
+    const quote = getIncreaseLpPositionQuote({
       collateralA: 1000000n,
       collateralB: COMPUTED_AMOUNT,
       borrowA: 2000000n,
@@ -152,7 +152,7 @@ describe("Liquidity Position Math", () => {
   });
 
   it("Liquidity increase quote with auto deposit ratio, one-sided, token B", async () => {
-    const quote = getLiquidityIncreaseQuote({
+    const quote = getIncreaseLpPositionQuote({
       collateralA: COMPUTED_AMOUNT,
       collateralB: 1000000n,
       borrowA: COMPUTED_AMOUNT,

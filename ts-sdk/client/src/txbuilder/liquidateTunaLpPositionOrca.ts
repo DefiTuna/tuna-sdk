@@ -50,7 +50,7 @@ export async function liquidateTunaLpPositionOrcaInstructions(
   instructions.push(...createFeeRecipientAtaBInstructions.init);
 
   //
-  // Finally add liquidity decrease instruction.
+  // Finally, add liquidity decrease instruction.
   //
 
   const ix = await liquidateTunaLpPositionOrcaInstruction(

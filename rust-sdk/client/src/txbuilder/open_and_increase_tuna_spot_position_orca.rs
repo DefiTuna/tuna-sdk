@@ -3,18 +3,13 @@ use crate::instructions::{OpenAndIncreaseTunaSpotPositionOrca, OpenAndIncreaseTu
 use crate::types::{AccountsType, PoolToken, RemainingAccountsInfo, RemainingAccountsSlice};
 use crate::utils::get_create_ata_instructions;
 use crate::utils::orca::get_swap_tick_arrays;
-use crate::{
-    get_market_address, get_tuna_config_address, get_tuna_spot_position_address, get_vault_address, OpenAndIncreaseTunaSpotPositionArgs,
-    OpenAndIncreaseTunaSpotPositionInstruction,
-};
+use crate::{get_market_address, get_tuna_config_address, get_tuna_spot_position_address, get_vault_address, OpenAndIncreaseTunaSpotPositionArgs};
 use anyhow::{anyhow, Result};
 use orca_whirlpools_client::{fetch_whirlpool, get_oracle_address, Whirlpool};
 use solana_client::rpc_client::RpcClient;
 use solana_instruction::{AccountMeta, Instruction};
-use solana_keypair::Keypair;
 use solana_pubkey::Pubkey;
 use solana_sdk_ids::system_program;
-use solana_signer::Signer;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 use spl_associated_token_account::instruction::create_associated_token_account_idempotent;
 
@@ -23,7 +18,7 @@ pub fn open_and_increase_tuna_spot_position_orca_instructions(
     authority: &Pubkey,
     whirlpool_address: &Pubkey,
     args: OpenAndIncreaseTunaSpotPositionArgs,
-) -> Result<OpenAndIncreaseTunaSpotPositionInstruction> {
+) -> Result<Vec<Instruction>> {
     let whirlpool = fetch_whirlpool(rpc, whirlpool_address)?;
     let mint_a_address = whirlpool.data.token_mint_a;
     let mint_b_address = whirlpool.data.token_mint_b;
@@ -51,10 +46,6 @@ pub fn open_and_increase_tuna_spot_position_orca_instructions(
     );
 
     let mut instructions = vec![];
-    let mut additional_signers: Vec<Keypair> = Vec::new();
-
-    additional_signers.push(Keypair::new());
-    let position_mint = additional_signers[0].pubkey();
 
     instructions.extend(authority_ata_instructions.create);
     instructions.push(create_associated_token_account_idempotent(
@@ -72,7 +63,6 @@ pub fn open_and_increase_tuna_spot_position_orca_instructions(
 
     instructions.push(open_and_increase_tuna_spot_position_orca_instruction(
         authority,
-        &position_mint,
         &tuna_config.data,
         &vault_a.data,
         &vault_b.data,
@@ -84,16 +74,11 @@ pub fn open_and_increase_tuna_spot_position_orca_instructions(
     ));
     instructions.extend(authority_ata_instructions.cleanup);
 
-    Ok(OpenAndIncreaseTunaSpotPositionInstruction {
-        position_mint,
-        instructions,
-        additional_signers,
-    })
+    Ok(instructions)
 }
 
 pub fn open_and_increase_tuna_spot_position_orca_instruction(
     authority: &Pubkey,
-    position_mint: &Pubkey,
     tuna_config: &TunaConfig,
     vault_a: &Vault,
     vault_b: &Vault,
@@ -112,7 +97,7 @@ pub fn open_and_increase_tuna_spot_position_orca_instruction(
 
     let tuna_config_address = get_tuna_config_address().0;
     let market_address = get_market_address(&whirlpool_address).0;
-    let tuna_position_address = get_tuna_spot_position_address(&position_mint).0;
+    let tuna_position_address = get_tuna_spot_position_address(authority, whirlpool_address).0;
     let tuna_position_owner_ata_a = get_associated_token_address_with_program_id(&authority, &mint_a, token_program_a);
     let tuna_position_owner_ata_b = get_associated_token_address_with_program_id(&authority, &mint_b, token_program_b);
     let oracle_address = get_oracle_address(&whirlpool_address).unwrap().0;
@@ -133,7 +118,6 @@ pub fn open_and_increase_tuna_spot_position_orca_instruction(
         vault_a_ata: get_associated_token_address_with_program_id(&vault_a_address, &mint_a, token_program_a),
         vault_b_ata: get_associated_token_address_with_program_id(&vault_b_address, &mint_b, token_program_b),
         tuna_position: tuna_position_address,
-        tuna_position_mint: *position_mint,
         tuna_position_ata_a: get_associated_token_address_with_program_id(&tuna_position_address, &mint_a, token_program_a),
         tuna_position_ata_b: get_associated_token_address_with_program_id(&tuna_position_address, &mint_b, token_program_b),
         tuna_position_owner_ata_a: if args.collateral_token == PoolToken::A {
@@ -165,10 +149,7 @@ pub fn open_and_increase_tuna_spot_position_orca_instruction(
             collateral_token: args.collateral_token,
             collateral_amount: args.collateral_amount,
             borrow_amount: args.borrow_amount,
-            lower_limit_order_sqrt_price: args.lower_limit_order_sqrt_price,
-            upper_limit_order_sqrt_price: args.upper_limit_order_sqrt_price,
-            flags: args.flags,
-            max_swap_slippage: args.max_swap_slippage,
+            min_swap_amount_out: args.min_swap_amount_out,
             remaining_accounts_info: RemainingAccountsInfo {
                 slices: vec![
                     RemainingAccountsSlice {

@@ -1,11 +1,9 @@
-import { Address, generateKeyPairSigner, Rpc, SolanaRpcApi, TransactionSigner } from "@solana/kit";
+import { Address, Rpc, SolanaRpcApi, TransactionSigner } from "@solana/kit";
 
 import {
   fetchMarket,
   getMarketAddress,
   MarketMaker,
-  MAX_SQRT_PRICE,
-  MIN_SQRT_PRICE,
   openTunaSpotPositionFusionInstructions,
   openTunaSpotPositionOrcaInstructions,
   PoolToken,
@@ -20,9 +18,6 @@ export type OpenTunaSpotPositionTestArgs = {
   pool: Address;
   positionToken: PoolToken;
   collateralToken: PoolToken;
-  lowerLimitOrderSqrtPrice?: bigint;
-  upperLimitOrderSqrtPrice?: bigint;
-  flags?: number;
 };
 
 export async function openTunaSpotPosition({
@@ -30,28 +25,19 @@ export async function openTunaSpotPosition({
   pool: poolAddress,
   positionToken,
   collateralToken,
-  lowerLimitOrderSqrtPrice,
-  upperLimitOrderSqrtPrice,
-  flags,
   signer = FUNDER,
-}: OpenTunaSpotPositionTestArgs): Promise<Address> {
+}: OpenTunaSpotPositionTestArgs) {
   const marketAddress = (await getMarketAddress(poolAddress))[0];
   const market = await fetchMarket(rpc, marketAddress);
-  const positionMint = await generateKeyPairSigner();
 
   const openTunaLpPositionArgs = {
     positionToken,
     collateralToken,
-    lowerLimitOrderSqrtPrice: lowerLimitOrderSqrtPrice ?? MIN_SQRT_PRICE,
-    upperLimitOrderSqrtPrice: upperLimitOrderSqrtPrice ?? MAX_SQRT_PRICE,
-    flags: flags ?? 0,
   };
   const instructions =
     market.data.marketMaker == MarketMaker.Orca
-      ? await openTunaSpotPositionOrcaInstructions(rpc, signer, positionMint, poolAddress, openTunaLpPositionArgs)
-      : await openTunaSpotPositionFusionInstructions(rpc, signer, positionMint, poolAddress, openTunaLpPositionArgs);
+      ? await openTunaSpotPositionOrcaInstructions(rpc, signer, poolAddress, openTunaLpPositionArgs)
+      : await openTunaSpotPositionFusionInstructions(rpc, signer, poolAddress, openTunaLpPositionArgs);
 
   await sendTransaction(instructions);
-
-  return positionMint.address;
 }

@@ -2,7 +2,7 @@
   "address": "tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD",
   "metadata": {
     "name": "tuna",
-    "version": "3.0.0",
+    "version": "3.1.5",
     "spec": "0.1.0",
     "description": "DefiTuna"
   },
@@ -111,8 +111,8 @@
       ],
       "args": [
         {
-          "name": "max_swap_slippage",
-          "type": "u32"
+          "name": "max_swap_amount_in",
+          "type": "u64"
         },
         {
           "name": "remaining_accounts_info",
@@ -228,8 +228,8 @@
       ],
       "args": [
         {
-          "name": "max_swap_slippage",
-          "type": "u32"
+          "name": "max_swap_amount_in",
+          "type": "u64"
         },
         {
           "name": "remaining_accounts_info",
@@ -1048,6 +1048,14 @@
         {
           "name": "rebalance_protocol_fee",
           "type": "u32"
+        },
+        {
+          "name": "spot_position_size_limit_a",
+          "type": "u64"
+        },
+        {
+          "name": "spot_position_size_limit_b",
+          "type": "u64"
         }
       ]
     },
@@ -1567,8 +1575,8 @@
           "type": "u32"
         },
         {
-          "name": "max_swap_slippage",
-          "type": "u32"
+          "name": "max_swap_amount_in",
+          "type": "u64"
         },
         {
           "name": "remaining_accounts_info",
@@ -1696,8 +1704,8 @@
           "type": "u32"
         },
         {
-          "name": "max_swap_slippage",
-          "type": "u32"
+          "name": "max_swap_amount_in",
+          "type": "u64"
         },
         {
           "name": "remaining_accounts_info",
@@ -2201,8 +2209,8 @@
           "type": "u64"
         },
         {
-          "name": "max_swap_slippage",
-          "type": "u32"
+          "name": "min_swap_amount_out",
+          "type": "u64"
         },
         {
           "name": "remaining_accounts_info",
@@ -2342,8 +2350,8 @@
           "type": "u64"
         },
         {
-          "name": "max_swap_slippage",
-          "type": "u32"
+          "name": "min_swap_amount_out",
+          "type": "u64"
         },
         {
           "name": "remaining_accounts_info",
@@ -2680,6 +2688,20 @@
           "writable": true
         },
         {
+          "name": "tuna_position_owner",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_owner_ata_a",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "tuna_position_owner_ata_b",
+          "writable": true,
+          "optional": true
+        },
+        {
           "name": "pyth_oracle_price_feed_a"
         },
         {
@@ -2801,6 +2823,20 @@
         {
           "name": "fee_recipient_ata_b",
           "writable": true
+        },
+        {
+          "name": "tuna_position_owner",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_owner_ata_a",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "tuna_position_owner_ata_b",
+          "writable": true,
+          "optional": true
         },
         {
           "name": "pyth_oracle_price_feed_a"
@@ -3304,10 +3340,6 @@
           "writable": true
         },
         {
-          "name": "tuna_position_mint",
-          "signer": true
-        },
-        {
           "name": "tuna_position_ata_a",
           "writable": true
         },
@@ -3392,20 +3424,8 @@
           "type": "u64"
         },
         {
-          "name": "lower_limit_order_sqrt_price",
-          "type": "u128"
-        },
-        {
-          "name": "upper_limit_order_sqrt_price",
-          "type": "u128"
-        },
-        {
-          "name": "flags",
-          "type": "u32"
-        },
-        {
-          "name": "max_swap_slippage",
-          "type": "u32"
+          "name": "min_swap_amount_out",
+          "type": "u64"
         },
         {
           "name": "remaining_accounts_info",
@@ -3478,10 +3498,6 @@
         {
           "name": "tuna_position",
           "writable": true
-        },
-        {
-          "name": "tuna_position_mint",
-          "signer": true
         },
         {
           "name": "tuna_position_ata_a",
@@ -3568,20 +3584,8 @@
           "type": "u64"
         },
         {
-          "name": "lower_limit_order_sqrt_price",
-          "type": "u128"
-        },
-        {
-          "name": "upper_limit_order_sqrt_price",
-          "type": "u128"
-        },
-        {
-          "name": "flags",
-          "type": "u32"
-        },
-        {
-          "name": "max_swap_slippage",
-          "type": "u32"
+          "name": "min_swap_amount_out",
+          "type": "u64"
         },
         {
           "name": "remaining_accounts_info",
@@ -3900,10 +3904,6 @@
           "writable": true
         },
         {
-          "name": "tuna_position_mint",
-          "signer": true
-        },
-        {
           "name": "tuna_position_ata_a",
           "writable": true
         },
@@ -3948,18 +3948,6 @@
               "name": "PoolToken"
             }
           }
-        },
-        {
-          "name": "lower_limit_order_sqrt_price",
-          "type": "u128"
-        },
-        {
-          "name": "upper_limit_order_sqrt_price",
-          "type": "u128"
-        },
-        {
-          "name": "flags",
-          "type": "u32"
         }
       ]
     },
@@ -4001,10 +3989,6 @@
         {
           "name": "tuna_position",
           "writable": true
-        },
-        {
-          "name": "tuna_position_mint",
-          "signer": true
         },
         {
           "name": "tuna_position_ata_a",
@@ -4051,18 +4035,6 @@
               "name": "PoolToken"
             }
           }
-        },
-        {
-          "name": "lower_limit_order_sqrt_price",
-          "type": "u128"
-        },
-        {
-          "name": "upper_limit_order_sqrt_price",
-          "type": "u128"
-        },
-        {
-          "name": "flags",
-          "type": "u32"
         }
       ]
     },
@@ -4435,6 +4407,61 @@
         {
           "name": "collateral_funds_b",
           "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "reset_tuna_spot_position",
+      "discriminator": [
+        194,
+        68,
+        113,
+        71,
+        103,
+        77,
+        29,
+        127
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "signer": true
+        },
+        {
+          "name": "mint_a"
+        },
+        {
+          "name": "mint_b"
+        },
+        {
+          "name": "tuna_position",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_a",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_b",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "position_token",
+          "type": {
+            "defined": {
+              "name": "PoolToken"
+            }
+          }
+        },
+        {
+          "name": "collateral_token",
+          "type": {
+            "defined": {
+              "name": "PoolToken"
+            }
+          }
         }
       ]
     },
@@ -4896,6 +4923,14 @@
         {
           "name": "rebalance_protocol_fee",
           "type": "u32"
+        },
+        {
+          "name": "spot_position_size_limit_a",
+          "type": "u64"
+        },
+        {
+          "name": "spot_position_size_limit_b",
+          "type": "u64"
         }
       ]
     },
@@ -5414,6 +5449,11 @@
       "code": 6060,
       "name": "MAPriceDeviationThresholdExceeded",
       "msg": "Moving Average price deviation threshold exceeded"
+    },
+    {
+      "code": 6061,
+      "name": "PositionSizeLimitExceeded",
+      "msg": "Position size exceeds the maximum allowed value"
     }
   ],
   "types": [
@@ -5508,12 +5548,8 @@
             "type": "u16"
           },
           {
-            "name": "clp_reward_rate",
-            "type": "u16"
-          },
-          {
-            "name": "order_protocol_fee_rate",
-            "type": "u16"
+            "name": "unused_0",
+            "type": "u32"
           },
           {
             "name": "liquidity",
@@ -5802,6 +5838,20 @@
             "type": "u32"
           },
           {
+            "name": "spot_position_size_limit_a",
+            "docs": [
+              "Maximum allowed position size in token A. 0 means no limit."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "spot_position_size_limit_b",
+            "docs": [
+              "Maximum allowed position size in token B. 0 means no limit."
+            ],
+            "type": "u64"
+          },
+          {
             "name": "reserved",
             "docs": [
               "Reserved"
@@ -5809,7 +5859,7 @@
             "type": {
               "array": [
                 "u8",
-                207
+                191
               ]
             }
           }
@@ -6312,13 +6362,6 @@
             "type": "pubkey"
           },
           {
-            "name": "position_mint",
-            "docs": [
-              "The unique address of a position"
-            ],
-            "type": "pubkey"
-          },
-          {
             "name": "market_maker",
             "docs": [
               "Market maker (Orca, Fusion)"
@@ -6354,20 +6397,9 @@
           {
             "name": "flags",
             "docs": [
-              "Position options"
+              "Position options (unused)"
             ],
             "type": "u32"
-          },
-          {
-            "name": "state",
-            "docs": [
-              "Position state: normal, liquidated, closed by limit order"
-            ],
-            "type": {
-              "defined": {
-                "name": "TunaPositionState"
-              }
-            }
           },
           {
             "name": "amount",
@@ -6379,14 +6411,14 @@
           {
             "name": "loan_shares",
             "docs": [
-              "The amount of shares borrowed by user from vault B (long) or A (short)."
+              "The amount of shares borrowed by the user from vault B (long) or A (short)."
             ],
             "type": "u64"
           },
           {
             "name": "loan_funds",
             "docs": [
-              "The amount of funds borrowed by user from vault B (long) or A (short). Doesn't include accrued interest."
+              "The amount of funds borrowed by the user from vault B (long) or A (short). Doesn't include accrued interest."
             ],
             "type": "u64"
           },

@@ -10,6 +10,7 @@ import {
   Slot,
   TransactionSigner,
 } from "@solana/kit";
+import { fetchAddressLookupTable, getExtendLookupTableInstruction } from "@solana-program/address-lookup-table";
 import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
 import { SYSTEM_PROGRAM_ADDRESS } from "@solana-program/system";
 import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
@@ -133,4 +134,28 @@ export async function createAddressLookupTableForMarketInstructions(
 ): Promise<CreateAddressLookupTableResult> {
   const addresses = await getAddressesForMarketLookupTable(rpc, poolAddress, marketMaker);
   return createAddressLookupTableInstructions(authority, addresses, recentSlot);
+}
+
+export async function extendAddressLookupTableForMarketInstructions(
+  rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
+  poolAddress: Address,
+  marketMaker: MarketMaker,
+  authority: TransactionSigner,
+  lookupTableAddress: Address,
+): Promise<CreateAddressLookupTableResult> {
+  const marketAddresses = await getAddressesForMarketLookupTable(rpc, poolAddress, marketMaker);
+
+  const lookupTable = await fetchAddressLookupTable(rpc, lookupTableAddress);
+  const existingAddresses = lookupTable.data.addresses;
+
+  const addresses = marketAddresses.filter(addr => !existingAddresses.includes(addr));
+
+  const extendInstruction = getExtendLookupTableInstruction({
+    address: lookupTableAddress,
+    addresses,
+    authority,
+    payer: authority,
+  });
+
+  return { instructions: [extendInstruction], lookupTableAddress, addresses };
 }

@@ -3,14 +3,15 @@ import {
   createVaultInstructions,
   fetchMaybeVault,
   getLendingVaultAddress,
+  getPythPriceUpdateAccountAddress,
   HUNDRED_PERCENT,
 } from "@crypticdot/defituna-client";
 import { sendTransaction } from "@crypticdot/fusionamm-tx-sender";
 import { Flags } from "@oclif/core";
-import { address } from "@solana/kit";
+import { Address, address, getBase58Codec, ReadonlyUint8Array } from "@solana/kit";
 import { fetchMint } from "@solana-program/token-2022";
 
-import BaseCommand, { addressArg, addressFlag, bigintFlag, percentFlag, pythFeedIdFlag } from "../base";
+import BaseCommand, { addressArg, bigintFlag, percentFlag, pythFeedIdFlag } from "../base";
 import { rpc, signer } from "../rpc";
 
 export default class CreateVault extends BaseCommand {
@@ -26,12 +27,8 @@ export default class CreateVault extends BaseCommand {
       default: 400000,
     }),
     supplyLimit: bigintFlag({ description: "Supply limit", default: 0n }),
-    pythOracleFeedId: pythFeedIdFlag({
-      description: "Pyth oracle feed id",
-      default: address("11111111111111111111111111111111"),
-    }),
-    pythOraclePriceUpdate: addressFlag({
-      description: "Pyth oracle price update account",
+    priceFeedId: pythFeedIdFlag({
+      description: "Pyth oracle price feed id",
       default: address("11111111111111111111111111111111"),
     }),
     allowUnsafeTokenExtensions: Flags.boolean({
@@ -40,8 +37,14 @@ export default class CreateVault extends BaseCommand {
   };
   static override description = "Create a lending vault";
   static override examples = [
-    "<%= config.bin %> <%= command.id %> So11111111111111111111111111111111111111112 --interestRate=30% --supplyLimit 100000000000 --pythOracleFeedId=0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d --pythOraclePriceUpdate=7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE",
+    "<%= config.bin %> <%= command.id %> So11111111111111111111111111111111111111112 --interestRate=30% --supplyLimit 100000000000 --priceFeedId=0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d",
   ];
+
+  private uint8ArrayToHex(array: ReadonlyUint8Array): string {
+    return Array.from(array)
+      .map(byte => byte.toString(16).padStart(2, "0"))
+      .join("");
+  }
 
   public async run() {
     const { args, flags } = await this.parse(CreateVault);
@@ -56,13 +59,20 @@ export default class CreateVault extends BaseCommand {
       console.log("Vault not found. Creating a new one.");
     }
 
+    let pythOraclePriceUpdateAddress: Address = address("11111111111111111111111111111111");
+    if (flags.priceFeedId) {
+      const priceFeedId = Buffer.from(this.uint8ArrayToHex(getBase58Codec().encode(flags.priceFeedId)), "hex");
+      pythOraclePriceUpdateAddress = (await getPythPriceUpdateAccountAddress(0, priceFeedId))[0];
+      console.log("Pyth price update account:", pythOraclePriceUpdateAddress);
+    }
+
     const INTEREST_RATE_100_PERCENT = (1n << 60n) / 31536000n; // 100% annually
 
     const ixArgs: CreateVaultInstructionDataArgs = {
       interestRate: (INTEREST_RATE_100_PERCENT * BigInt(flags.interestRate)) / BigInt(HUNDRED_PERCENT),
       supplyLimit: flags.supplyLimit,
-      pythOraclePriceUpdate: flags.pythOraclePriceUpdate,
-      pythOracleFeedId: flags.pythOracleFeedId,
+      pythOraclePriceUpdate: pythOraclePriceUpdateAddress,
+      pythOracleFeedId: flags.priceFeedId,
       allowUnsafeTokenExtensions: flags.allowUnsafeTokenExtensions,
     };
 

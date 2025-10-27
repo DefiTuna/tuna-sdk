@@ -39,7 +39,7 @@ export default class FetchSpotPosition extends BaseCommand {
         throw new Error(`Tuna position is not found at address ${positionAddress}`);
       }
     } else {
-      console.log("Fetching positions...");
+      console.log("Fetching spot positions...");
       if (flags.pool && flags.owner) {
         const positions = await fetchAllTunaSpotPositionWithFilter(
           rpc,

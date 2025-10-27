@@ -51,7 +51,7 @@ import {
   TunaConfig,
   Vault,
 } from "../index.ts";
-import { getLiquidityIncreaseQuote } from "../utils";
+import { getIncreaseLpPositionQuote } from "../utils";
 import { calculateMinimumBalanceForRentExemption } from "../utils/sysvar";
 
 export type OpenAndIncreaseTunaLpPositionFusion = {
@@ -104,7 +104,7 @@ export async function openAndIncreaseTunaLpPositionFusionInstructions(
     (await getLendingVaultAddress(fusionPool.data.tokenMintB))[0],
   ]);
 
-  const increaseAmounts = getLiquidityIncreaseQuote({
+  const increaseAmounts = getIncreaseLpPositionQuote({
     collateralA: BigInt(args.collateralA),
     collateralB: BigInt(args.collateralB),
     borrowA: BigInt(args.borrowA),

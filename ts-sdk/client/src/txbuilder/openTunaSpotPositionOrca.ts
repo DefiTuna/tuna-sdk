@@ -26,7 +26,6 @@ import {
 export async function openTunaSpotPositionOrcaInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
-  positionMint: TransactionSigner,
   whirlpoolAddress: Address,
   args: OpenTunaSpotPositionFusionInstructionDataArgs,
 ): Promise<IInstruction[]> {
@@ -37,19 +36,18 @@ export async function openTunaSpotPositionOrcaInstructions(
   assert(mintA.exists, "Token A account not found");
   assert(mintB.exists, "Token B account not found");
 
-  const ix = await openTunaSpotPositionOrcaInstruction(authority, positionMint, mintA, mintB, whirlpoolAddress, args);
+  const ix = await openTunaSpotPositionOrcaInstruction(authority, mintA, mintB, whirlpoolAddress, args);
   return [ix];
 }
 
 export async function openTunaSpotPositionOrcaInstruction(
   authority: TransactionSigner,
-  positionMint: TransactionSigner,
   mintA: Account<Mint>,
   mintB: Account<Mint>,
   whirlpoolAddress: Address,
   args: OpenTunaSpotPositionOrcaInstructionDataArgs,
 ): Promise<IInstruction> {
-  const tunaPositionAddress = (await getTunaSpotPositionAddress(positionMint.address))[0];
+  const tunaPositionAddress = (await getTunaSpotPositionAddress(authority.address, whirlpoolAddress))[0];
 
   const tunaPositionAtaA = (
     await findAssociatedTokenPda({
@@ -74,7 +72,6 @@ export async function openTunaSpotPositionOrcaInstruction(
     tokenProgramA: mintA.programAddress,
     tokenProgramB: mintB.programAddress,
     tunaPosition: tunaPositionAddress,
-    tunaPositionMint: positionMint,
     tunaPositionAtaA,
     tunaPositionAtaB,
     whirlpool: whirlpoolAddress,

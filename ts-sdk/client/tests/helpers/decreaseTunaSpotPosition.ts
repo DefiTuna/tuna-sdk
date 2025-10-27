@@ -11,7 +11,6 @@ import {
   getLendingVaultAddress,
   getMarketAddress,
   getTunaSpotPositionAddress,
-  HUNDRED_PERCENT,
   MarketMaker,
   PoolToken,
 } from "../../src";
@@ -23,9 +22,9 @@ import { sendTransaction } from "./mockRpc.ts";
 export type DecreaseTunaSpotPositionTestArgs = {
   rpc: Rpc<SolanaRpcApi>;
   signer?: TransactionSigner;
-  positionMint: Address;
+  pool: Address;
   withdrawPercent: number;
-  maxSwapSlippage?: number;
+  maxSwapAmountIn?: bigint;
 };
 
 export type DecreaseTunaSpotPositionTestResults = {
@@ -64,12 +63,12 @@ export function assertDecreaseTunaSpotPosition(
 
 export async function decreaseTunaSpotPosition({
   rpc,
-  positionMint,
+  pool: poolAddress,
   withdrawPercent,
-  maxSwapSlippage,
+  maxSwapAmountIn,
   signer = FUNDER,
 }: DecreaseTunaSpotPositionTestArgs): Promise<DecreaseTunaSpotPositionTestResults> {
-  const tunaPositionAddress = (await getTunaSpotPositionAddress(positionMint))[0];
+  const tunaPositionAddress = (await getTunaSpotPositionAddress(signer.address, poolAddress))[0];
   const tunaPosition = await fetchTunaSpotPosition(rpc, tunaPositionAddress);
   const marketAddress = (await getMarketAddress(tunaPosition.data.pool))[0];
   const market = await fetchMarket(rpc, marketAddress);
@@ -96,7 +95,7 @@ export async function decreaseTunaSpotPosition({
 
   const tunaPositionOwnerAtaA = (
     await findAssociatedTokenPda({
-      owner: signer.address,
+      owner: tunaPosition.data.authority,
       mint: mintA.address,
       tokenProgram: mintA.programAddress,
     })
@@ -104,7 +103,7 @@ export async function decreaseTunaSpotPosition({
 
   const tunaPositionOwnerAtaB = (
     await findAssociatedTokenPda({
-      owner: signer.address,
+      owner: tunaPosition.data.authority,
       mint: mintB.address,
       tokenProgram: mintB.programAddress,
     })
@@ -115,14 +114,14 @@ export async function decreaseTunaSpotPosition({
 
   const decreasePositionArgs = {
     withdrawPercent,
-    maxSwapSlippage: maxSwapSlippage ?? HUNDRED_PERCENT / 10,
+    maxSwapAmountIn: maxSwapAmountIn ?? 0n,
   };
   const instructions =
     market.data.marketMaker == MarketMaker.Orca
       ? await decreaseTunaSpotPositionOrcaInstructions(
           rpc,
           signer,
-          positionMint,
+          poolAddress,
           decreasePositionArgs,
           createInstructions,
           cleanupInstructions,
@@ -130,7 +129,7 @@ export async function decreaseTunaSpotPosition({
       : await decreaseTunaSpotPositionFusionInstructions(
           rpc,
           signer,
-          positionMint,
+          poolAddress,
           decreasePositionArgs,
           createInstructions,
           cleanupInstructions,

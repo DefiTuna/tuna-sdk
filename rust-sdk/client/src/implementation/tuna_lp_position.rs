@@ -21,10 +21,6 @@ impl TunaPosition for TunaLpPosition {
         self.version
     }
 
-    fn get_position_mint(&self) -> Pubkey {
-        self.position_mint
-    }
-
     fn get_pool(&self) -> Pubkey {
         self.pool
     }
@@ -98,7 +94,7 @@ impl TunaPosition for TunaLpPosition {
     }
 
     fn is_liquidated_or_closed(&self) -> bool {
-        TunaLpPosition::is_liquidated_or_closed(self)
+        self.state != TunaPositionState::Normal
     }
 
     fn is_healthy(&self, sqrt_price: u128, market: &Market, vault_a: &Vault, vault_b: &Vault) -> Result<(bool, u32), ErrorCode> {

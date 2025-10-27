@@ -8,6 +8,7 @@ import {
 export type CreateAddressLookupTableResult = {
   instructions: IInstruction[];
   lookupTableAddress: Address;
+  addresses: Address[];
 };
 
 export async function createAddressLookupTableInstructions(
@@ -31,5 +32,5 @@ export async function createAddressLookupTableInstructions(
     payer: authority,
   });
 
-  return { instructions: [createInstruction, extendInstruction], lookupTableAddress: pda[0] };
+  return { instructions: [createInstruction, extendInstruction], lookupTableAddress: pda[0], addresses };
 }

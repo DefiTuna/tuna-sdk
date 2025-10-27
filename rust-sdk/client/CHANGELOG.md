@@ -1,5 +1,65 @@
 # @defituna/rust-client
 
+## 3.1.6
+
+### Patch Changes
+
+- 7db3a70: Updated spot instructions: added min/max swap amounts, removed flags and limit order prices at position opening
+
+## 3.1.5
+
+### Patch Changes
+
+- c72a986: Updated Anchor to 0.32.1
+
+## 3.1.4
+
+### Patch Changes
+
+- a8cd97a: Updated fusionamm sdk
+
+## 3.1.3
+
+### Patch Changes
+
+- d6c65bf: Added spot position limit, added getIncreaseSpotPositionQuote()
+
+## 3.1.2
+
+### Patch Changes
+
+- ce3cc97: Fixed incorrect TunaSpotPosition account length
+
+## 3.1.1
+
+### Patch Changes
+
+- b1555dc: Transfer tokens directly to the spot position owner on liquidation/closing by an order
+
+## 3.1.0
+
+### Minor Changes
+
+- 7e965d3: Single spot position per pool
+
+## 3.0.10
+
+### Patch Changes
+
+- 3f4fdc0: Added pyth price feed account derivation
+
+## 3.0.9
+
+### Patch Changes
+
+- 4cb4302: Added reset_tuna_spot_position ix
+
+## 3.0.8
+
+### Patch Changes
+
+- 99a5d95: Renamed liquidate instructions
+
 ## 3.0.7
 
 ### Patch Changes

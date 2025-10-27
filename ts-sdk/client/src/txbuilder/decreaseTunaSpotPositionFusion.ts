@@ -41,7 +41,7 @@ export type DecreaseTunaSpotPositionFusionInstructionsArgs = Omit<
 export async function decreaseTunaSpotPositionFusionInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
-  positionMint: Address,
+  fusionPoolAddress: Address,
   args: DecreaseTunaSpotPositionFusionInstructionsArgs,
   createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
@@ -50,7 +50,8 @@ export async function decreaseTunaSpotPositionFusionInstructions(
   if (!createInstructions) createInstructions = instructions;
   if (!cleanupInstructions) cleanupInstructions = instructions;
 
-  const tunaPosition = await fetchMaybeTunaSpotPosition(rpc, (await getTunaSpotPositionAddress(positionMint))[0]);
+  const tunaPositionAddress = (await getTunaSpotPositionAddress(authority.address, fusionPoolAddress))[0];
+  const tunaPosition = await fetchMaybeTunaSpotPosition(rpc, tunaPositionAddress);
   if (!tunaPosition.exists) throw new Error("Tuna position account not found");
 
   const tunaConfig = await fetchTunaConfig(rpc, (await getTunaConfigAddress())[0]);
@@ -69,7 +70,7 @@ export async function decreaseTunaSpotPositionFusionInstructions(
   // Add user's token account creation instructions if needed.
   //
 
-  const tunaPositionAtaA = (
+  const tunaPositionAtaAAddress = (
     await findAssociatedTokenPda({
       owner: tunaPosition.address,
       mint: mintA.address,
@@ -77,7 +78,7 @@ export async function decreaseTunaSpotPositionFusionInstructions(
     })
   )[0];
 
-  const tunaPositionAtaB = (
+  const tunaPositionAtaBAddress = (
     await findAssociatedTokenPda({
       owner: tunaPosition.address,
       mint: mintB.address,
@@ -85,39 +86,24 @@ export async function decreaseTunaSpotPositionFusionInstructions(
     })
   )[0];
 
-  const tunaPositionTokenAccounts = await fetchAllToken(rpc, [tunaPositionAtaA, tunaPositionAtaB]);
+  const [tunaPositionAtaA, tunaPositionAtaB] = await fetchAllToken(rpc, [
+    tunaPositionAtaAAddress,
+    tunaPositionAtaBAddress,
+  ]);
 
-  let createUserAtaAInstructions: { init: IInstruction[]; cleanup: IInstruction[] } | undefined = undefined;
-  if (
+  const createUserAtaAInstructions =
     tunaPosition.data.collateralToken == PoolToken.A ||
-    tunaPositionTokenAccounts[0].data.amount >
-      (tunaPosition.data.positionToken == PoolToken.A ? tunaPosition.data.amount : 0n)
-  ) {
-    createUserAtaAInstructions = await getCreateAtaInstructions(
-      rpc,
-      authority,
-      mintA.address,
-      authority.address,
-      mintA.programAddress,
-    );
-    createInstructions.push(...createUserAtaAInstructions.init);
-  }
+    tunaPositionAtaA.data.amount > (tunaPosition.data.positionToken == PoolToken.A ? tunaPosition.data.amount : 0n)
+      ? await getCreateAtaInstructions(rpc, authority, mintA.address, authority.address, mintA.programAddress)
+      : undefined;
+  if (createUserAtaAInstructions) createInstructions.push(...createUserAtaAInstructions.init);
 
-  let createUserAtaBInstructions: { init: IInstruction[]; cleanup: IInstruction[] } | undefined = undefined;
-  if (
+  const createUserAtaBInstructions =
     tunaPosition.data.collateralToken == PoolToken.B ||
-    tunaPositionTokenAccounts[1].data.amount >
-      (tunaPosition.data.positionToken == PoolToken.B ? tunaPosition.data.amount : 0n)
-  ) {
-    createUserAtaBInstructions = await getCreateAtaInstructions(
-      rpc,
-      authority,
-      mintB.address,
-      authority.address,
-      mintB.programAddress,
-    );
-    createInstructions.push(...createUserAtaBInstructions.init);
-  }
+    tunaPositionAtaB.data.amount > (tunaPosition.data.positionToken == PoolToken.B ? tunaPosition.data.amount : 0n)
+      ? await getCreateAtaInstructions(rpc, authority, mintB.address, authority.address, mintB.programAddress)
+      : undefined;
+  if (createUserAtaBInstructions) createInstructions.push(...createUserAtaBInstructions.init);
 
   //
   // Finally, add liquidity decrease instruction.
@@ -157,8 +143,8 @@ export async function decreaseTunaSpotPositionFusionInstruction(
   vaultA: Account<Vault>,
   vaultB: Account<Vault>,
   fusionPool: Account<FusionPool>,
-  passTunaPositionOwnerAtaA: boolean,
-  passTunaPositionOwnerAtaB: boolean,
+  setTunaPositionOwnerAtaA: boolean,
+  setTunaPositionOwnerAtaB: boolean,
   args: DecreaseTunaSpotPositionFusionInstructionsArgs,
 ): Promise<IInstruction> {
   const marketAddress = (await getMarketAddress(fusionPool.address))[0];
@@ -248,8 +234,8 @@ export async function decreaseTunaSpotPositionFusionInstruction(
     tunaPosition: tunaPosition.address,
     tunaPositionAtaA,
     tunaPositionAtaB,
-    tunaPositionOwnerAtaA: passTunaPositionOwnerAtaA ? tunaPositionOwnerAtaA : undefined,
-    tunaPositionOwnerAtaB: passTunaPositionOwnerAtaB ? tunaPositionOwnerAtaB : undefined,
+    ...(setTunaPositionOwnerAtaA && { tunaPositionOwnerAtaA }),
+    ...(setTunaPositionOwnerAtaB && { tunaPositionOwnerAtaB }),
     fusionPool: fusionPool.address,
     fusionammProgram: FUSIONAMM_PROGRAM_ADDRESS,
     memoProgram: MEMO_PROGRAM_ADDRESS,

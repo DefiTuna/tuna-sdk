@@ -8,7 +8,6 @@ import {
   type Account,
   AccountRole,
   Address,
-  generateKeyPairSigner,
   GetAccountInfoApi,
   GetMultipleAccountsApi,
   IAccountMeta,
@@ -35,7 +34,6 @@ import {
   getOpenAndIncreaseTunaSpotPositionOrcaInstruction,
   getTunaConfigAddress,
   getTunaSpotPositionAddress,
-  OpenAndIncreaseTunaSpotPosition,
   OpenAndIncreaseTunaSpotPositionOrcaInstructionDataArgs,
   OrcaUtils,
   PoolToken,
@@ -55,12 +53,10 @@ export async function openAndIncreaseTunaSpotPositionOrcaInstructions(
   args: OpenAndIncreaseTunaSpotPositionOrcaInstructionsArgs,
   createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
-): Promise<OpenAndIncreaseTunaSpotPosition> {
+): Promise<IInstruction[]> {
   const instructions: IInstruction[] = [];
   if (!createInstructions) createInstructions = instructions;
   if (!cleanupInstructions) cleanupInstructions = instructions;
-
-  const positionMint = await generateKeyPairSigner();
 
   const tunaConfig = await fetchTunaConfig(rpc, (await getTunaConfigAddress())[0]);
 
@@ -119,7 +115,6 @@ export async function openAndIncreaseTunaSpotPositionOrcaInstructions(
 
   const ix = await openAndIncreaseTunaSpotPositionOrcaInstruction(
     authority,
-    positionMint,
     tunaConfig,
     mintA,
     mintB,
@@ -136,15 +131,11 @@ export async function openAndIncreaseTunaSpotPositionOrcaInstructions(
 
   cleanupInstructions.push(...createUserAtaInstructions.cleanup);
 
-  return {
-    instructions,
-    positionMint: positionMint.address,
-  };
+  return instructions;
 }
 
 export async function openAndIncreaseTunaSpotPositionOrcaInstruction(
   authority: TransactionSigner,
-  positionMint: TransactionSigner,
   tunaConfig: Account<TunaConfig>,
   mintA: Account<Mint>,
   mintB: Account<Mint>,
@@ -153,7 +144,7 @@ export async function openAndIncreaseTunaSpotPositionOrcaInstruction(
   whirlpool: Account<Whirlpool>,
   args: Omit<OpenAndIncreaseTunaSpotPositionOrcaInstructionDataArgs, "remainingAccountsInfo">,
 ): Promise<IInstruction> {
-  const tunaPositionAddress = (await getTunaSpotPositionAddress(positionMint.address))[0];
+  const tunaPositionAddress = (await getTunaSpotPositionAddress(authority.address, whirlpool.address))[0];
   const marketAddress = (await getMarketAddress(whirlpool.address))[0];
   const orcaOracleAddress = (await getOracleAddress(whirlpool.address))[0];
 
@@ -258,7 +249,6 @@ export async function openAndIncreaseTunaSpotPositionOrcaInstruction(
     vaultB: vaultB.address,
     vaultBAta,
     tunaPosition: tunaPositionAddress,
-    tunaPositionMint: positionMint,
     tunaPositionAtaA,
     tunaPositionAtaB,
     tunaPositionOwnerAtaA: args.collateralToken == PoolToken.A ? tunaPositionOwnerAtaA : undefined,

@@ -41,7 +41,7 @@ export type IncreaseTunaSpotPositionOrcaInstructionsArgs = Omit<
 export async function increaseTunaSpotPositionOrcaInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
-  positionMint: Address,
+  whirlpoolAddress: Address,
   args: IncreaseTunaSpotPositionOrcaInstructionsArgs,
   createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
@@ -50,7 +50,8 @@ export async function increaseTunaSpotPositionOrcaInstructions(
   if (!createInstructions) createInstructions = instructions;
   if (!cleanupInstructions) cleanupInstructions = instructions;
 
-  const tunaPosition = await fetchMaybeTunaSpotPosition(rpc, (await getTunaSpotPositionAddress(positionMint))[0]);
+  const tunaPositionAddress = (await getTunaSpotPositionAddress(authority.address, whirlpoolAddress))[0];
+  const tunaPosition = await fetchMaybeTunaSpotPosition(rpc, tunaPositionAddress);
   if (!tunaPosition.exists) throw new Error("Tuna position account not found");
 
   const tunaConfig = await fetchTunaConfig(rpc, (await getTunaConfigAddress())[0]);

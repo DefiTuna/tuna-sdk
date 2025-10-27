@@ -3,11 +3,11 @@ import { beforeEach, describe, it } from "vitest";
 
 import { DEFAULT_ADDRESS, HUNDRED_PERCENT, LEVERAGE_ONE, MarketMaker } from "../src";
 
-import { increaseTunaLpPosition, assertIncreaseTunaLpPosition } from "./helpers/increaseTunaLpPosition.ts";
+import { assertDecreaseTunaLpPositionLiquidity, decreaseTunaLpPosition } from "./helpers/decreaseTunaLpPosition.ts";
 import { fetchPool } from "./helpers/fetch.ts";
+import { assertIncreaseTunaLpPosition, increaseTunaLpPosition } from "./helpers/increaseTunaLpPosition.ts";
 import { rpc, signer } from "./helpers/mockRpc.ts";
 import { openTunaLpPosition } from "./helpers/openTunaLpPosition.ts";
-import { assertDecreaseTunaLpPositionLiquidity, decreaseTunaLpPosition } from "./helpers/decreaseTunaLpPosition.ts";
 import { setupTestMarket, TestMarket } from "./helpers/setup.ts";
 import { swapExactInput } from "./helpers/swap.ts";
 
@@ -31,6 +31,8 @@ describe("Tuna Position on Orca", () => {
         protocolFeeOnCollateral: 1000, // 0.1%
         limitOrderExecutionFee: 1000, // 0.1%
         rebalanceProtocolFee: HUNDRED_PERCENT / 10,
+        spotPositionSizeLimitA: 1000_000_000_000,
+        spotPositionSizeLimitB: 100000_000_000,
       },
       false,
       false,

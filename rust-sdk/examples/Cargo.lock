@@ -946,7 +946,7 @@ checksum = "2a2330da5de22e8a3cb63252ce2abb30116bf5265e89c0e01bc17015ce30a476"
 
 [[package]]
 name = "defituna-client"
-version = "2.0.0"
+version = "3.1.0"
 dependencies = [
  "anyhow",
  "bincode",
@@ -958,7 +958,7 @@ dependencies = [
  "num-derive",
  "num-traits",
  "orca_whirlpools",
- "orca_whirlpools_client 4.0.0",
+ "orca_whirlpools_client 5.0.1",
  "orca_whirlpools_core",
  "solana-account",
  "solana-account-decoder",
@@ -2611,12 +2611,12 @@ checksum = "04744f49eae99ab78e0d5c0b603ab218f515ea8cfe5a456d7629ad883a3b6e7d"
 
 [[package]]
 name = "orca_whirlpools"
-version = "4.0.0"
+version = "5.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5f44ac4f0f5ae81a3029029d537fa545f9a18a04385bfdfbf37e1e1b6d48ea30"
+checksum = "b8604a304b9f77fafbc26dafc086414fdb926077a896cfa5252f25c7778fa6d4"
 dependencies = [
  "bincode",
- "orca_whirlpools_client 4.0.0",
+ "orca_whirlpools_client 5.0.1",
  "orca_whirlpools_core",
  "serde",
  "serde_json",
@@ -2649,9 +2649,9 @@ dependencies = [
 
 [[package]]
 name = "orca_whirlpools_client"
-version = "4.0.0"
+version = "5.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d55d4da840557f9c6c89cd602be051099a3cbd8f3f88650fdb0a5276edca3e9"
+checksum = "e480eb0dab85414263e0f5f4655b9a449281fa7c6eb317b25551676c8b836b76"
 dependencies = [
  "borsh 0.10.4",
  "num-derive",

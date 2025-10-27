@@ -6,13 +6,10 @@ use crate::utils::get_create_ata_instructions;
 use crate::{get_market_address, get_tuna_config_address, get_tuna_spot_position_address, get_vault_address};
 use anyhow::{anyhow, Result};
 use fusionamm_client::{fetch_fusion_pool, FusionPool};
-use fusionamm_core::{MAX_SQRT_PRICE, MIN_SQRT_PRICE};
 use solana_client::rpc_client::RpcClient;
 use solana_instruction::{AccountMeta, Instruction};
-use solana_keypair::Keypair;
 use solana_pubkey::Pubkey;
 use solana_sdk_ids::system_program;
-use solana_signer::Signer;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 use spl_associated_token_account::instruction::create_associated_token_account_idempotent;
 
@@ -21,10 +18,7 @@ pub struct OpenAndIncreaseTunaSpotPositionArgs {
     pub collateral_token: PoolToken,
     pub collateral_amount: u64,
     pub borrow_amount: u64,
-    pub lower_limit_order_sqrt_price: u128,
-    pub upper_limit_order_sqrt_price: u128,
-    pub flags: u32,
-    pub max_swap_slippage: u32,
+    pub min_swap_amount_out: u64,
 }
 
 impl Default for OpenAndIncreaseTunaSpotPositionArgs {
@@ -34,24 +28,9 @@ impl Default for OpenAndIncreaseTunaSpotPositionArgs {
             collateral_token: PoolToken::A,
             collateral_amount: 0,
             borrow_amount: 0,
-            lower_limit_order_sqrt_price: MIN_SQRT_PRICE,
-            upper_limit_order_sqrt_price: MAX_SQRT_PRICE,
-            flags: 0,
-            max_swap_slippage: 0,
+            min_swap_amount_out: 0,
         }
     }
-}
-
-#[derive(Debug)]
-pub struct OpenAndIncreaseTunaSpotPositionInstruction {
-    /// The public key of the position NFT that represents ownership of the newly opened position.
-    pub position_mint: Pubkey,
-
-    /// A vector of `Instruction` objects required to execute the position opening.
-    pub instructions: Vec<Instruction>,
-
-    /// A vector of `Keypair` objects representing additional signers required for the instructions.
-    pub additional_signers: Vec<Keypair>,
 }
 
 pub fn open_and_increase_tuna_spot_position_fusion_instructions(
@@ -59,7 +38,7 @@ pub fn open_and_increase_tuna_spot_position_fusion_instructions(
     authority: &Pubkey,
     fusion_pool_address: &Pubkey,
     args: OpenAndIncreaseTunaSpotPositionArgs,
-) -> Result<OpenAndIncreaseTunaSpotPositionInstruction> {
+) -> Result<Vec<Instruction>> {
     let fusion_pool = fetch_fusion_pool(rpc, fusion_pool_address)?;
     let mint_a_address = fusion_pool.data.token_mint_a;
     let mint_b_address = fusion_pool.data.token_mint_b;
@@ -87,10 +66,6 @@ pub fn open_and_increase_tuna_spot_position_fusion_instructions(
     );
 
     let mut instructions = vec![];
-    let mut additional_signers: Vec<Keypair> = Vec::new();
-
-    additional_signers.push(Keypair::new());
-    let position_mint = additional_signers[0].pubkey();
 
     instructions.extend(authority_ata_instructions.create);
     instructions.push(create_associated_token_account_idempotent(
@@ -108,7 +83,6 @@ pub fn open_and_increase_tuna_spot_position_fusion_instructions(
 
     instructions.push(open_and_increase_tuna_spot_position_fusion_instruction(
         authority,
-        &position_mint,
         &tuna_config.data,
         &vault_a.data,
         &vault_b.data,
@@ -120,16 +94,11 @@ pub fn open_and_increase_tuna_spot_position_fusion_instructions(
     ));
     instructions.extend(authority_ata_instructions.cleanup);
 
-    Ok(OpenAndIncreaseTunaSpotPositionInstruction {
-        position_mint,
-        instructions,
-        additional_signers,
-    })
+    Ok(instructions)
 }
 
 pub fn open_and_increase_tuna_spot_position_fusion_instruction(
     authority: &Pubkey,
-    position_mint: &Pubkey,
     tuna_config: &TunaConfig,
     vault_a: &Vault,
     vault_b: &Vault,
@@ -148,7 +117,7 @@ pub fn open_and_increase_tuna_spot_position_fusion_instruction(
 
     let tuna_config_address = get_tuna_config_address().0;
     let market_address = get_market_address(&fusion_pool_address).0;
-    let tuna_position_address = get_tuna_spot_position_address(&position_mint).0;
+    let tuna_position_address = get_tuna_spot_position_address(authority, fusion_pool_address).0;
     let tuna_position_owner_ata_a = get_associated_token_address_with_program_id(&authority, &mint_a, token_program_a);
     let tuna_position_owner_ata_b = get_associated_token_address_with_program_id(&authority, &mint_b, token_program_b);
 
@@ -168,7 +137,6 @@ pub fn open_and_increase_tuna_spot_position_fusion_instruction(
         vault_a_ata: get_associated_token_address_with_program_id(&vault_a_address, &mint_a, token_program_a),
         vault_b_ata: get_associated_token_address_with_program_id(&vault_b_address, &mint_b, token_program_b),
         tuna_position: tuna_position_address,
-        tuna_position_mint: *position_mint,
         tuna_position_ata_a: get_associated_token_address_with_program_id(&tuna_position_address, &mint_a, token_program_a),
         tuna_position_ata_b: get_associated_token_address_with_program_id(&tuna_position_address, &mint_b, token_program_b),
         tuna_position_owner_ata_a: if args.collateral_token == PoolToken::A {
@@ -200,10 +168,7 @@ pub fn open_and_increase_tuna_spot_position_fusion_instruction(
             collateral_token: args.collateral_token,
             collateral_amount: args.collateral_amount,
             borrow_amount: args.borrow_amount,
-            lower_limit_order_sqrt_price: args.lower_limit_order_sqrt_price,
-            upper_limit_order_sqrt_price: args.upper_limit_order_sqrt_price,
-            flags: args.flags,
-            max_swap_slippage: args.max_swap_slippage,
+            min_swap_amount_out: args.min_swap_amount_out,
             remaining_accounts_info: RemainingAccountsInfo {
                 slices: vec![
                     RemainingAccountsSlice {

@@ -41,7 +41,7 @@ export type IncreaseTunaSpotPositionFusionInstructionsArgs = Omit<
 export async function increaseTunaSpotPositionFusionInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
-  positionMint: Address,
+  fusionPoolAddress: Address,
   args: IncreaseTunaSpotPositionFusionInstructionsArgs,
   createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
@@ -50,7 +50,8 @@ export async function increaseTunaSpotPositionFusionInstructions(
   if (!createInstructions) createInstructions = instructions;
   if (!cleanupInstructions) cleanupInstructions = instructions;
 
-  const tunaPosition = await fetchMaybeTunaSpotPosition(rpc, (await getTunaSpotPositionAddress(positionMint))[0]);
+  const tunaPositionAddress = (await getTunaSpotPositionAddress(authority.address, fusionPoolAddress))[0];
+  const tunaPosition = await fetchMaybeTunaSpotPosition(rpc, tunaPositionAddress);
   if (!tunaPosition.exists) throw new Error("Tuna position account not found");
 
   const tunaConfig = await fetchTunaConfig(rpc, (await getTunaConfigAddress())[0]);
@@ -81,7 +82,7 @@ export async function increaseTunaSpotPositionFusionInstructions(
   createInstructions.push(...createUserAtaInstructions.init);
 
   //
-  // Add create fee recipient's token account instructions if needed.
+  // Add create fee recipient's token account instructions.
   //
 
   const createFeeRecipientAtaAInstructions = await getCreateAtaInstructions(
@@ -103,7 +104,7 @@ export async function increaseTunaSpotPositionFusionInstructions(
   createInstructions.push(...createFeeRecipientAtaBInstructions.init);
 
   //
-  // Finally add liquidity increase instruction.
+  // Finally, add liquidity increase instruction.
   //
 
   const ix = await increaseTunaSpotPositionFusionInstruction(

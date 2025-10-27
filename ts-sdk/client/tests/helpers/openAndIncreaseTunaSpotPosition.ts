@@ -14,8 +14,6 @@ import {
   getTunaSpotPositionAddress,
   HUNDRED_PERCENT,
   MarketMaker,
-  MAX_SQRT_PRICE,
-  MIN_SQRT_PRICE,
   openAndIncreaseTunaSpotPositionFusionInstructions,
   openAndIncreaseTunaSpotPositionOrcaInstructions,
   PoolToken,
@@ -32,17 +30,13 @@ export type OpenAndIncreaseTunaSpotPositionTestArgs = {
   positionToken: PoolToken;
   collateralToken: PoolToken;
   collateralAmount: bigint;
-  lowerLimitOrderSqrtPrice?: bigint;
-  upperLimitOrderSqrtPrice?: bigint;
-  flags?: number;
   borrowAmount: bigint;
-  maxSwapSlippage?: number;
+  minSwapAmountOut?: bigint;
 };
 
 export type OpenAndIncreaseSpotPositionTestResults = {
   amountA: bigint;
   amountB: bigint;
-  positionMint: Address;
 };
 
 export type OpenAndIncreaseSpotPositionTestExpectations = {
@@ -53,10 +47,9 @@ export type OpenAndIncreaseSpotPositionTestExpectations = {
 export function assertOpenAndIncreaseSpotPosition(
   results: OpenAndIncreaseSpotPositionTestResults,
   expectations: OpenAndIncreaseSpotPositionTestExpectations,
-): Address {
+) {
   if (expectations.amountA !== undefined) expect(results.amountA).toEqual(expectations.amountA);
   if (expectations.amountB !== undefined) expect(results.amountB).toEqual(expectations.amountB);
-  return results.positionMint;
 }
 
 export async function openAndIncreaseTunaSpotPosition({
@@ -66,10 +59,7 @@ export async function openAndIncreaseTunaSpotPosition({
   collateralToken,
   collateralAmount,
   borrowAmount,
-  maxSwapSlippage,
-  lowerLimitOrderSqrtPrice,
-  upperLimitOrderSqrtPrice,
-  flags,
+  minSwapAmountOut,
   signer = FUNDER,
 }: OpenAndIncreaseTunaSpotPositionTestArgs): Promise<OpenAndIncreaseSpotPositionTestResults> {
   const tunaConfigAddress = (await getTunaConfigAddress())[0];
@@ -79,6 +69,7 @@ export async function openAndIncreaseTunaSpotPosition({
   const pool = await fetchPool(rpc, poolAddress, market.data.marketMaker);
   const mintA = await fetchMint(rpc, pool.data.tokenMintA);
   const mintB = await fetchMint(rpc, pool.data.tokenMintB);
+  const tunaPositionAddress = (await getTunaSpotPositionAddress(signer.address, poolAddress))[0];
 
   const borrowAmountA = positionToken == PoolToken.B ? borrowAmount : 0n;
   const borrowAmountB = positionToken == PoolToken.A ? borrowAmount : 0n;
@@ -137,15 +128,12 @@ export async function openAndIncreaseTunaSpotPosition({
 
   const openTunaLpPositionArgs = {
     positionToken: positionToken,
-    lowerLimitOrderSqrtPrice: lowerLimitOrderSqrtPrice ?? MIN_SQRT_PRICE,
-    upperLimitOrderSqrtPrice: upperLimitOrderSqrtPrice ?? MAX_SQRT_PRICE,
-    flags: flags ?? 0,
-    borrowAmount,
     collateralToken,
+    borrowAmount,
     collateralAmount,
-    maxSwapSlippage: maxSwapSlippage ?? HUNDRED_PERCENT / 10,
+    minSwapAmountOut: minSwapAmountOut ?? 0n,
   };
-  const ix =
+  const instructions =
     market.data.marketMaker == MarketMaker.Orca
       ? await openAndIncreaseTunaSpotPositionOrcaInstructions(
           rpc,
@@ -164,7 +152,7 @@ export async function openAndIncreaseTunaSpotPosition({
           cleanupInstructions,
         );
 
-  ix.instructions.unshift(getSetComputeUnitLimitInstruction({ units: 1_400_000 }));
+  instructions.unshift(getSetComputeUnitLimitInstruction({ units: 1_400_000 }));
 
   // Setup instructions create ATAs and WSOL account if needed.
   await sendTransaction(createInstructions);
@@ -185,9 +173,8 @@ export async function openAndIncreaseTunaSpotPosition({
   const vaultBBalanceBefore = (await fetchToken(rpc, vaultBAta)).data.amount;
 
   // Add liquidity!
-  await sendTransaction(ix.instructions);
+  await sendTransaction(instructions);
 
-  const tunaPositionAddress = (await getTunaSpotPositionAddress(ix.positionMint))[0];
   const tunaPosition = await fetchTunaSpotPosition(rpc, tunaPositionAddress);
 
   const tunaPositionAtaA = (
@@ -254,7 +241,6 @@ export async function openAndIncreaseTunaSpotPosition({
   await sendTransaction(cleanupInstructions);
 
   return {
-    positionMint: ix.positionMint,
     amountA: tunaPositionBalanceAAfter,
     amountB: tunaPositionBalanceBAfter,
   };

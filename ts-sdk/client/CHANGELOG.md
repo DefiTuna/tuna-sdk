@@ -1,5 +1,137 @@
 # @defituna/client
 
+## 3.1.19
+
+### Patch Changes
+
+- 7db3a70: Updated spot instructions: added min/max swap amounts, removed flags and limit order prices at position opening
+
+## 3.1.18
+
+### Patch Changes
+
+- 84df975: Fixed getTradableAmount() function
+
+## 3.1.17
+
+### Patch Changes
+
+- 63a9e0f: Bugfix in getTradableAmount function
+
+## 3.1.16
+
+### Patch Changes
+
+- 3812220: Added getTradableAmount function
+
+## 3.1.15
+
+### Patch Changes
+
+- 712a9d5: Fixed bug in getDecreaseSpotPositionQuote
+
+## 3.1.14
+
+### Patch Changes
+
+- 56ff7d8: Updated getPositionSizeByCollateralAndLeverage arguments
+
+## 3.1.13
+
+### Patch Changes
+
+- f33d5a3: Improved getDecreaseSpotPositionQuote math
+
+## 3.1.12
+
+### Patch Changes
+
+- b209391: Improved getIncreaseSpotPositionQuote math, added getPositionSizeByCollateralAndLeverage
+
+## 3.1.11
+
+### Patch Changes
+
+- a8cd97a: Updated fusionamm sdk
+
+## 3.1.10
+
+### Patch Changes
+
+- 91616d2: Fixed a bug in getDecreaseSpotPositionQuote function for positions without leverage
+
+## 3.1.9
+
+### Patch Changes
+
+- 2cbe483: Fixed bugs in getDecreaseSpotPositionQuote function
+
+## 3.1.8
+
+### Patch Changes
+
+- 9b313c0: Fixed bugs in getDecreaseSpotPositionQuote function
+
+## 3.1.7
+
+### Patch Changes
+
+- 13b09fb: Fixed bugs in getIncrease(Decrease)SpotPositionQuote functions
+
+## 3.1.6
+
+### Patch Changes
+
+- 77320a2: Added liquidation price calculation
+
+## 3.1.5
+
+### Patch Changes
+
+- ae2626b: Fixed creation of the user's token account on position close
+
+## 3.1.4
+
+### Patch Changes
+
+- 354588a: Added getDecreaseSpotPositionQuote
+
+## 3.1.3
+
+### Patch Changes
+
+- d6c65bf: Added spot position limit, added getIncreaseSpotPositionQuote()
+
+## 3.1.2
+
+### Patch Changes
+
+- ce3cc97: Fixed incorrect TunaSpotPosition account length
+
+## 3.1.1
+
+### Patch Changes
+
+- b1555dc: Transfer tokens directly to the spot position owner on liquidation/closing by an order
+
+## 3.1.0
+
+### Minor Changes
+
+- 7e965d3: Single spot position per pool
+
+## 3.0.4
+
+### Patch Changes
+
+- 3f4fdc0: Added pyth price feed account derivation
+
+## 3.0.3
+
+### Patch Changes
+
+- 4cb4302: Added reset_tuna_spot_position ix
+
 ## 3.0.2
 
 ### Patch Changes
@@ -22,7 +154,7 @@
 
 ### Patch Changes
 
-- fdf18d1: bugfix: incorrect protocol fee calculation in getLiquidityIncreaseQuote
+- fdf18d1: bugfix: incorrect protocol fee calculation in getIncreaseLpPositionQuote
 
 ## 2.0.16
 
@@ -89,13 +221,13 @@
 
 ### Patch Changes
 
-- 5b3552e: Fixed liquidity getLiquidityIncreaseQuote overflow issue (updated fusionamm packages)
+- 5b3552e: Fixed liquidity getIncreaseLpPositionQuote overflow issue (updated fusionamm packages)
 
 ## 2.0.5
 
 ### Patch Changes
 
-- 5857597: Bugfix: Incorrect results returned by getLiquidityIncreaseQuote
+- 5857597: Bugfix: Incorrect results returned by getIncreaseLpPositionQuote
 
 ## 2.0.4
 
@@ -113,14 +245,14 @@
 
 ### Patch Changes
 
-- 3bbd108: Bugfix: getLiquidityIncreaseQuote returns incorrect results for auto position ratio
+- 3bbd108: Bugfix: getIncreaseLpPositionQuote returns incorrect results for auto position ratio
 
 ## 2.0.1
 
 ### Patch Changes
 
 - 64a4415: Changed input arguments of addLiquidity and openAndIncreaseTunaLpPosition instructions.
-  Added getLiquidityIncreaseQuote function.
+  Added getIncreaseLpPositionQuote function.
 
 ## 2.0.0
 

@@ -17,9 +17,9 @@
   },
   "dependencies": {
     "@crypticdot/defituna-client": "workspace:*",
-    "@crypticdot/fusionamm-core": "^1.0.54",
-    "@crypticdot/fusionamm-client": "^1.0.54",
-    "@crypticdot/fusionamm-sdk": "^1.0.54",
+    "@crypticdot/fusionamm-core": "^1.0.67",
+    "@crypticdot/fusionamm-client": "^1.0.67",
+    "@crypticdot/fusionamm-sdk": "^1.0.67",
     "@crypticdot/fusionamm-tx-sender": "^1.0.11",
     "@oclif/core": "^4.2.10",
     "@solana/kit": "^2.1.0",

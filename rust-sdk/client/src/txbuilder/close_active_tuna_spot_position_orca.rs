@@ -4,7 +4,7 @@ use crate::types::{AccountsType, PoolToken, RemainingAccountsInfo, RemainingAcco
 use crate::utils::get_create_ata_instructions;
 use crate::utils::orca::get_swap_tick_arrays;
 use crate::{get_market_address, get_tuna_config_address, get_tuna_spot_position_address, get_vault_address};
-use anyhow::anyhow;
+use anyhow::{anyhow, Result};
 use orca_whirlpools_client::{fetch_whirlpool, get_oracle_address, Whirlpool};
 use solana_client::rpc_client::RpcClient;
 use solana_instruction::{AccountMeta, Instruction};
@@ -14,10 +14,11 @@ use spl_associated_token_account::get_associated_token_address_with_program_id;
 pub fn close_active_tuna_spot_position_orca_instructions(
     rpc: &RpcClient,
     authority: &Pubkey,
-    position_mint: &Pubkey,
-    max_swap_slippage: u32,
-) -> anyhow::Result<Vec<Instruction>> {
-    let tuna_position = fetch_tuna_spot_position(&rpc, &get_tuna_spot_position_address(&position_mint).0)?;
+    whirlpool_address: &Pubkey,
+    max_swap_amount_in: u64,
+) -> Result<Vec<Instruction>> {
+    let tuna_position_address = get_tuna_spot_position_address(authority, whirlpool_address).0;
+    let tuna_position = fetch_tuna_spot_position(&rpc, &tuna_position_address)?;
 
     let whirlpool = fetch_whirlpool(rpc, &tuna_position.data.pool)?;
     let mint_a_address = whirlpool.data.token_mint_a;
@@ -50,7 +51,7 @@ pub fn close_active_tuna_spot_position_orca_instructions(
         &whirlpool.data,
         &mint_a_account.owner,
         &mint_b_account.owner,
-        max_swap_slippage,
+        max_swap_amount_in,
     ));
 
     instructions.extend(authority_ata_instructions.cleanup);
@@ -67,7 +68,7 @@ pub fn close_active_tuna_spot_position_orca_instruction(
     whirlpool: &Whirlpool,
     token_program_a: &Pubkey,
     token_program_b: &Pubkey,
-    max_swap_slippage: u32,
+    max_swap_amount_in: u64,
 ) -> Instruction {
     let mint_a = whirlpool.token_mint_a;
     let mint_b = whirlpool.token_mint_b;
@@ -78,7 +79,7 @@ pub fn close_active_tuna_spot_position_orca_instruction(
 
     let tuna_config_address = get_tuna_config_address().0;
     let market_address = get_market_address(&whirlpool_address).0;
-    let tuna_position_address = get_tuna_spot_position_address(&tuna_position.position_mint).0;
+    let tuna_position_address = get_tuna_spot_position_address(authority, whirlpool_address).0;
     let tuna_position_owner_ata_a = get_associated_token_address_with_program_id(&authority, &mint_a, token_program_a);
     let tuna_position_owner_ata_b = get_associated_token_address_with_program_id(&authority, &mint_b, token_program_b);
     let oracle_address = get_oracle_address(&whirlpool_address).unwrap().0;
@@ -122,7 +123,7 @@ pub fn close_active_tuna_spot_position_orca_instruction(
 
     ix_builder.instruction_with_remaining_accounts(
         CloseActiveTunaSpotPositionOrcaInstructionArgs {
-            max_swap_slippage,
+            max_swap_amount_in,
             remaining_accounts_info: RemainingAccountsInfo {
                 slices: vec![
                     RemainingAccountsSlice {

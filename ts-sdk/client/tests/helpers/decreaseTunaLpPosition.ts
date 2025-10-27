@@ -102,11 +102,11 @@ export async function decreaseTunaLpPosition({
   const positionAddress = (await getPositionAddress(positionMint, market.data.marketMaker))[0];
 
   const tunaPositionAddress = (await getTunaLpPositionAddress(positionMint))[0];
-  //const tunaPosition = await fetchTunaLpPosition(rpc, tunaPositionAddress);
+  const tunaPosition = await fetchTunaLpPosition(rpc, tunaPositionAddress);
 
   const tunaPositionOwnerAtaA = (
     await findAssociatedTokenPda({
-      owner: signer.address,
+      owner: tunaPosition.data.authority,
       mint: mintA.address,
       tokenProgram: mintA.programAddress,
     })
@@ -114,7 +114,7 @@ export async function decreaseTunaLpPosition({
 
   const tunaPositionOwnerAtaB = (
     await findAssociatedTokenPda({
-      owner: signer.address,
+      owner: tunaPosition.data.authority,
       mint: mintB.address,
       tokenProgram: mintB.programAddress,
     })

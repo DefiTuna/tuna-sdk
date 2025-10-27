@@ -37,6 +37,8 @@ export * from "./decreaseTunaLpPositionOrca";
 export * from "./decreaseTunaLpPositionFusion";
 export * from "./repayBadDebt";
 export * from "./setTunaLpPositionLimitOrders";
+export * from "./setTunaSpotPositionLimitOrders";
+export * from "./resetTunaSpotPosition";
 export * from "./updateMarket";
 export * from "./updateVault";
 export * from "./withdraw";

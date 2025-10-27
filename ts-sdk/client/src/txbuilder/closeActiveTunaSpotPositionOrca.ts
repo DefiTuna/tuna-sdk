@@ -16,7 +16,7 @@ import {
   TransactionSigner,
 } from "@solana/kit";
 import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
-import { fetchAllMaybeMint, findAssociatedTokenPda, Mint } from "@solana-program/token-2022";
+import { fetchAllMaybeMint, fetchAllToken, findAssociatedTokenPda, Mint } from "@solana-program/token-2022";
 import assert from "assert";
 
 import {
@@ -32,6 +32,7 @@ import {
   getTunaSpotPositionAddress,
   OrcaUtils,
   PoolToken,
+  TunaSpotPosition,
   Vault,
 } from "../index.ts";
 
@@ -43,12 +44,13 @@ export type CloseActiveTunaSpotPositionOrcaInstructionsArgs = Omit<
 export async function closeActiveTunaSpotPositionOrcaInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
-  positionMint: Address,
+  whirlpoolAddress: Address,
   args: CloseActiveTunaSpotPositionOrcaInstructionsArgs,
   createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
 ): Promise<IInstruction[]> {
-  const tunaPosition = await fetchMaybeTunaSpotPosition(rpc, (await getTunaSpotPositionAddress(positionMint))[0]);
+  const tunaPositionAddress = (await getTunaSpotPositionAddress(authority.address, whirlpoolAddress))[0];
+  const tunaPosition = await fetchMaybeTunaSpotPosition(rpc, tunaPositionAddress);
   if (!tunaPosition.exists) throw new Error("Tuna position account not found");
 
   const whirlpool = await fetchMaybeWhirlpool(rpc, tunaPosition.data.pool);
@@ -72,31 +74,58 @@ export async function closeActiveTunaSpotPositionOrcaInstructions(
   if (!cleanupInstructions) cleanupInstructions = instructions;
 
   //
-  // Add create user's collateral token account instruction if needed.
+  // Add user's token account creation instructions if needed.
   //
 
-  const collateralTokenMint = tunaPosition.data.collateralToken == PoolToken.A ? mintA : mintB;
-  const createUserAtaInstructions = await getCreateAtaInstructions(
-    rpc,
-    authority,
-    collateralTokenMint.address,
-    authority.address,
-    collateralTokenMint.programAddress,
-  );
-  createInstructions.push(...createUserAtaInstructions.init);
+  const tunaPositionAtaAAddress = (
+    await findAssociatedTokenPda({
+      owner: tunaPosition.address,
+      mint: mintA.address,
+      tokenProgram: mintA.programAddress,
+    })
+  )[0];
+
+  const tunaPositionAtaBAddress = (
+    await findAssociatedTokenPda({
+      owner: tunaPosition.address,
+      mint: mintB.address,
+      tokenProgram: mintB.programAddress,
+    })
+  )[0];
+
+  const [tunaPositionAtaA, tunaPositionAtaB] = await fetchAllToken(rpc, [
+    tunaPositionAtaAAddress,
+    tunaPositionAtaBAddress,
+  ]);
+
+  const createUserAtaAInstructions =
+    tunaPosition.data.collateralToken == PoolToken.A ||
+    tunaPositionAtaA.data.amount > (tunaPosition.data.positionToken == PoolToken.A ? tunaPosition.data.amount : 0n)
+      ? await getCreateAtaInstructions(rpc, authority, mintA.address, authority.address, mintA.programAddress)
+      : undefined;
+  if (createUserAtaAInstructions) createInstructions.push(...createUserAtaAInstructions.init);
+
+  const createUserAtaBInstructions =
+    tunaPosition.data.collateralToken == PoolToken.B ||
+    tunaPositionAtaB.data.amount > (tunaPosition.data.positionToken == PoolToken.B ? tunaPosition.data.amount : 0n)
+      ? await getCreateAtaInstructions(rpc, authority, mintB.address, authority.address, mintB.programAddress)
+      : undefined;
+  if (createUserAtaBInstructions) createInstructions.push(...createUserAtaBInstructions.init);
 
   //
-  // Finally add liquidity decrease instruction.
+  // Finally, add the position close instruction.
   //
 
   const ix = await closeActiveTunaSpotPositionOrcaInstruction(
     authority,
-    tunaPosition.address,
+    tunaPosition,
     mintA,
     mintB,
     vaultA,
     vaultB,
     whirlpool,
+    createUserAtaAInstructions != undefined,
+    createUserAtaBInstructions != undefined,
     { ...args },
   );
   instructions.push(ix);
@@ -105,19 +134,22 @@ export async function closeActiveTunaSpotPositionOrcaInstructions(
   // Close WSOL accounts if needed.
   //
 
-  cleanupInstructions.push(...createUserAtaInstructions.cleanup);
+  if (createUserAtaAInstructions) cleanupInstructions.push(...createUserAtaAInstructions.cleanup);
+  if (createUserAtaBInstructions) cleanupInstructions.push(...createUserAtaBInstructions.cleanup);
 
   return instructions;
 }
 
 export async function closeActiveTunaSpotPositionOrcaInstruction(
   authority: TransactionSigner,
-  tunaPositionAddress: Address,
+  tunaPosition: Account<TunaSpotPosition>,
   mintA: Account<Mint>,
   mintB: Account<Mint>,
   vaultA: Account<Vault>,
   vaultB: Account<Vault>,
   whirlpool: Account<Whirlpool>,
+  setTunaPositionOwnerAtaA: boolean,
+  setTunaPositionOwnerAtaB: boolean,
   args: CloseActiveTunaSpotPositionOrcaInstructionsArgs,
 ): Promise<IInstruction> {
   const tunaConfig = (await getTunaConfigAddress())[0];
@@ -142,7 +174,7 @@ export async function closeActiveTunaSpotPositionOrcaInstruction(
 
   const tunaPositionAtaA = (
     await findAssociatedTokenPda({
-      owner: tunaPositionAddress,
+      owner: tunaPosition.address,
       mint: mintA.address,
       tokenProgram: mintA.programAddress,
     })
@@ -150,7 +182,7 @@ export async function closeActiveTunaSpotPositionOrcaInstruction(
 
   const tunaPositionAtaB = (
     await findAssociatedTokenPda({
-      owner: tunaPositionAddress,
+      owner: tunaPosition.address,
       mint: mintB.address,
       tokenProgram: mintB.programAddress,
     })
@@ -208,9 +240,9 @@ export async function closeActiveTunaSpotPositionOrcaInstruction(
     tunaConfig,
     tunaPositionAtaA,
     tunaPositionAtaB,
-    tunaPositionOwnerAtaA,
-    tunaPositionOwnerAtaB,
-    tunaPosition: tunaPositionAddress,
+    ...(setTunaPositionOwnerAtaA && { tunaPositionOwnerAtaA }),
+    ...(setTunaPositionOwnerAtaB && { tunaPositionOwnerAtaB }),
+    tunaPosition: tunaPosition.address,
     whirlpool: whirlpool.address,
     whirlpoolProgram: WHIRLPOOL_PROGRAM_ADDRESS,
     tokenProgramA: mintA.programAddress,

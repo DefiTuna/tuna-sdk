@@ -110,7 +110,7 @@ export async function increaseTunaLpPosition({
 
   const tunaPositionOwnerAtaA = (
     await findAssociatedTokenPda({
-      owner: signer.address,
+      owner: tunaPosition.data.authority,
       mint: mintA.address,
       tokenProgram: mintA.programAddress,
     })
@@ -118,7 +118,7 @@ export async function increaseTunaLpPosition({
 
   const tunaPositionOwnerAtaB = (
     await findAssociatedTokenPda({
-      owner: signer.address,
+      owner: tunaPosition.data.authority,
       mint: mintB.address,
       tokenProgram: mintB.programAddress,
     })

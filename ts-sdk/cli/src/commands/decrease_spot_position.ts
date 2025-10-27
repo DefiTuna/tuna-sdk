@@ -11,19 +11,16 @@ import {
   MarketMaker,
 } from "@crypticdot/defituna-client";
 import { DEFAULT_TRANSACTION_CONFIG, sendTransaction } from "@crypticdot/fusionamm-tx-sender";
-import { Address, IInstruction } from "@solana/kit";
+import { IInstruction } from "@solana/kit";
 
 import BaseCommand, { addressFlag, percentFlag } from "../base";
 import { rpc, signer } from "../rpc";
 
 export default class DecreaseSpotPosition extends BaseCommand {
   static override flags = {
-    positionMint: addressFlag({
-      description: "Position mint address",
-    }),
-
-    positionAddress: addressFlag({
-      description: "Position address",
+    pool: addressFlag({
+      description: "Pool address",
+      required: true,
     }),
 
     withdrawPercent: percentFlag({
@@ -32,10 +29,8 @@ export default class DecreaseSpotPosition extends BaseCommand {
       max: HUNDRED_PERCENT,
     }),
 
-    maxSwapSlippage: percentFlag({
-      description: "Maximum swap slippage",
-      min: 0,
-      max: HUNDRED_PERCENT,
+    maxSwapAmountIn: percentFlag({
+      description: "Maximum swap amount input",
     }),
   };
   static override description = "Decreases a tuna spot position and closes it if all liquidity is withdrawn";
@@ -45,20 +40,11 @@ export default class DecreaseSpotPosition extends BaseCommand {
     const { flags } = await this.parse(DecreaseSpotPosition);
     const instructions: IInstruction[] = [];
 
-    if (!flags.positionMint && !flags.positionAddress)
-      throw new Error("At least one argument: positionMint or positionAddress must be provided");
+    const tunaPositionAddress = (await getTunaSpotPositionAddress(signer.address, flags.pool))[0];
+    console.log("Position address:", tunaPositionAddress);
 
     console.log("Fetching tuna position...");
-    let positionMint = flags.positionMint;
-    let tunaPositionAddress: Address;
-    if (positionMint) {
-      tunaPositionAddress = (await getTunaSpotPositionAddress(positionMint))[0];
-    } else {
-      tunaPositionAddress = flags.positionAddress!;
-    }
-
     const tunaPosition = await fetchTunaSpotPosition(rpc, tunaPositionAddress);
-    positionMint = tunaPosition.data.positionMint;
     console.log("Tuna position:", tunaPosition);
 
     const marketAddress = (await getMarketAddress(tunaPosition.data.pool))[0];
@@ -66,31 +52,29 @@ export default class DecreaseSpotPosition extends BaseCommand {
 
     const addressLookupTable = market.data.addressLookupTable;
 
-    const maxSwapSlippage = flags.maxSwapSlippage ?? HUNDRED_PERCENT / 10;
-
     if (!flags.withdrawPercent || flags.withdrawPercent == HUNDRED_PERCENT) {
       const args = {
-        maxSwapSlippage,
+        maxSwapAmountIn: flags.maxSwapAmountIn ?? 0n,
       };
 
       if (market.data.marketMaker == MarketMaker.Fusion) {
-        const ixs = await closeActiveTunaSpotPositionFusionInstructions(rpc, signer, positionMint, args);
+        const ixs = await closeActiveTunaSpotPositionFusionInstructions(rpc, signer, tunaPosition.data.pool, args);
         instructions.push(...ixs);
       } else {
-        const ixs = await closeActiveTunaSpotPositionOrcaInstructions(rpc, signer, positionMint, args);
+        const ixs = await closeActiveTunaSpotPositionOrcaInstructions(rpc, signer, tunaPosition.data.pool, args);
         instructions.push(...ixs);
       }
     } else {
       const args = {
-        maxSwapSlippage,
+        maxSwapAmountIn: flags.maxSwapAmountIn ?? 0n,
         withdrawPercent: flags.withdrawPercent,
       };
 
       if (market.data.marketMaker == MarketMaker.Fusion) {
-        const ixs = await decreaseTunaSpotPositionFusionInstructions(rpc, signer, positionMint, args);
+        const ixs = await decreaseTunaSpotPositionFusionInstructions(rpc, signer, tunaPosition.data.pool, args);
         instructions.push(...ixs);
       } else {
-        const ixs = await decreaseTunaSpotPositionOrcaInstructions(rpc, signer, positionMint, args);
+        const ixs = await decreaseTunaSpotPositionOrcaInstructions(rpc, signer, tunaPosition.data.pool, args);
         instructions.push(...ixs);
       }
     }

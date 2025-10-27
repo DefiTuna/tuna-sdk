@@ -10,32 +10,33 @@ import {
 import { fetchAllMaybeMint, findAssociatedTokenPda, Mint } from "@solana-program/token-2022";
 import assert from "assert";
 
-import { fetchTunaSpotPosition, getCloseTunaSpotPositionInstruction } from "../generated";
+import { fetchMaybeTunaSpotPosition, getCloseTunaSpotPositionInstruction } from "../generated";
 import { getTunaSpotPositionAddress } from "../pda.ts";
 
 export async function closeTunaSpotPositionInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
-  positionMint: Address,
+  poolAddress: Address,
 ): Promise<IInstruction[]> {
-  const tunaPositionAddress = (await getTunaSpotPositionAddress(positionMint))[0];
-  const tunaPosition = await fetchTunaSpotPosition(rpc, tunaPositionAddress);
+  const tunaPositionAddress = (await getTunaSpotPositionAddress(authority.address, poolAddress))[0];
+  const tunaPosition = await fetchMaybeTunaSpotPosition(rpc, tunaPositionAddress);
+  if (!tunaPosition.exists) throw new Error("Tuna position account not found");
 
   const [mintA, mintB] = await fetchAllMaybeMint(rpc, [tunaPosition.data.mintA, tunaPosition.data.mintB]);
   assert(mintA.exists, "Token A account not found");
   assert(mintB.exists, "Token B account not found");
 
-  const ix = await closeTunaSpotPositionInstruction(authority, positionMint, mintA, mintB);
+  const ix = await closeTunaSpotPositionInstruction(authority, poolAddress, mintA, mintB);
   return [ix];
 }
 
 export async function closeTunaSpotPositionInstruction(
   authority: TransactionSigner,
-  positionMint: Address,
+  poolAddress: Address,
   mintA: Account<Mint>,
   mintB: Account<Mint>,
 ): Promise<IInstruction> {
-  const tunaPositionAddress = (await getTunaSpotPositionAddress(positionMint))[0];
+  const tunaPositionAddress = (await getTunaSpotPositionAddress(authority.address, poolAddress))[0];
 
   const tunaPositionAtaA = (
     await findAssociatedTokenPda({
