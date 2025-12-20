@@ -3,7 +3,14 @@ import { fetchMint, Mint } from "@solana-program/token-2022";
 import assert from "assert";
 import { beforeAll, describe, expect, it } from "vitest";
 
-import { createVaultInstructions, fetchVault, getLendingVaultAddress, updateVaultInstruction } from "../src";
+import {
+  createVaultInstructions,
+  createVaultV2Instructions,
+  fetchVault,
+  getLendingVaultAddress,
+  getLendingVaultV2Address,
+  updateVaultInstruction,
+} from "../src";
 
 import { TUNA_ADMIN_KEYPAIR } from "./helpers/addresses.ts";
 import { rpc, sendTransaction, signer } from "./helpers/mockRpc.ts";
@@ -12,11 +19,13 @@ import { setupMint } from "./helpers/token.ts";
 describe("Tuna Vault", () => {
   let mint: Account<Mint>;
   let vaultAddress: Address;
+  let vaultV2Address: Address;
 
   beforeAll(async () => {
     const mintAddress = await setupMint();
     mint = await fetchMint(rpc, mintAddress);
-    vaultAddress = (await getLendingVaultAddress(mintAddress))[0];
+    vaultAddress = (await getLendingVaultAddress(mint.address))[0];
+    vaultV2Address = (await getLendingVaultV2Address(mint.address, 1))[0];
   });
 
   it("Create vault", async () => {
@@ -50,10 +59,10 @@ describe("Tuna Vault", () => {
   it("Update vault", async () => {
     const pythOracleFeedId = (await generateKeyPairSigner()).address;
     const pythOraclePriceUpdate = (await generateKeyPairSigner()).address;
-    const interestRate = 32478798n;
+    const interestRate = 3155890108n;
     const supplyLimit = 12341342344n;
 
-    const ix = await updateVaultInstruction(TUNA_ADMIN_KEYPAIR, mint.address, {
+    const ix = await updateVaultInstruction(TUNA_ADMIN_KEYPAIR, vaultAddress, {
       pythOracleFeedId,
       pythOraclePriceUpdate,
       interestRate,
@@ -70,7 +79,7 @@ describe("Tuna Vault", () => {
   });
 
   it("Cannot update vaults if not admin authority", async () => {
-    const ix = await updateVaultInstruction(signer, mint.address, {
+    const ix = await updateVaultInstruction(signer, vaultAddress, {
       pythOracleFeedId: (await generateKeyPairSigner()).address,
       pythOraclePriceUpdate: (await generateKeyPairSigner()).address,
       interestRate: 32478798n,
@@ -81,4 +90,33 @@ describe("Tuna Vault", () => {
       return true;
     });
   });
-});
+
+  it("Create vault V2", async () => {
+    const pythOracleFeedId = (await generateKeyPairSigner()).address;
+    const pythOraclePriceUpdate = (await generateKeyPairSigner()).address;
+    const interestRate = 3655890108n;
+    const supplyLimit = 1000000n;
+
+    const instructions = await createVaultV2Instructions(TUNA_ADMIN_KEYPAIR, vaultV2Address, mint, {
+      id: 1,
+      pythOracleFeedId,
+      pythOraclePriceUpdate,
+      interestRate,
+      supplyLimit,
+      allowUnsafeTokenExtensions: true,
+    });
+    await sendTransaction(instructions);
+
+    const vault = await fetchVault(rpc, vaultV2Address);
+    expect(vault.data.mint).toEqual(mint.address);
+    expect(vault.data.pythOracleFeedId).toEqual(pythOracleFeedId);
+    expect(vault.data.pythOraclePriceUpdate).toEqual(pythOraclePriceUpdate);
+    expect(vault.data.depositedFunds).toEqual(0n);
+    expect(vault.data.depositedShares).toEqual(0n);
+    expect(vault.data.borrowedFunds).toEqual(0n);
+    expect(vault.data.borrowedShares).toEqual(0n);
+    expect(vault.data.interestRate).toEqual(interestRate);
+    expect(vault.data.supplyLimit).toEqual(supplyLimit);
+    expect(vault.data.lastUpdateTimestamp).to.be.greaterThan(0);
+  });
+}, 20000);

@@ -10,11 +10,16 @@ import { afterEach, assert, beforeEach, describe, it, vi } from "vitest";
 import {
   fetchAllLendingPositionWithFilter,
   fetchAllTunaLpPositionWithFilter,
+  fetchAllTunaSpotPositionWithFilter,
   getLendingPositionEncoder,
   getTunaLpPositionEncoder,
+  getTunaSpotPositionEncoder,
   LendingPositionArgs,
   lendingPositionAuthorityFilter,
   lendingPositionMintFilter,
+  lendingPositionVaultFilter,
+  MarketMaker,
+  PoolToken,
   TunaLpPositionArgs,
   tunaLpPositionAuthorityFilter,
   tunaLpPositionMarketMakerFilter,
@@ -23,6 +28,11 @@ import {
   tunaLpPositionMintFilter,
   tunaLpPositionPoolFilter,
   TunaPositionState,
+  TunaSpotPositionArgs,
+  tunaSpotPositionAuthorityFilter,
+  tunaSpotPositionMintAFilter,
+  tunaSpotPositionMintBFilter,
+  tunaSpotPositionPoolFilter,
 } from "../src";
 import { fetchDecodedProgramAccounts } from "../src/gpa/utils";
 
@@ -59,15 +69,17 @@ describe("Get program account memcmp filters", () => {
       version: 1,
       bump: new Uint8Array(),
       authority: addresses[0],
-      poolMint: addresses[1],
+      mint: addresses[1],
       depositedFunds: 3442662,
       depositedShares: 28643,
+      vault: addresses[2],
       reserved: new Uint8Array(),
     };
     await fetchAllLendingPositionWithFilter(
       mockRpc,
       lendingPositionAuthorityFilter(positionStruct.authority),
-      lendingPositionMintFilter(positionStruct.poolMint),
+      lendingPositionMintFilter(positionStruct.mint),
+      lendingPositionVaultFilter(positionStruct.vault),
     );
     const data = getLendingPositionEncoder().encode(positionStruct);
     assertFilters(data);
@@ -116,6 +128,37 @@ describe("Get program account memcmp filters", () => {
       tunaLpPositionMarketMakerFilter(positionStruct.marketMaker),
     );
     const data = getTunaLpPositionEncoder().encode(positionStruct);
+    assertFilters(data);
+  });
+
+  it("TunaSpotPosition", async () => {
+    const positionStruct: TunaSpotPositionArgs = {
+      version: 1,
+      bump: new Uint8Array(),
+      authority: addresses[0],
+      pool: addresses[1],
+      mintA: addresses[2],
+      mintB: addresses[3],
+      amount: 243432545922n,
+      collateralToken: PoolToken.A,
+      positionToken: PoolToken.B,
+      entrySqrtPrice: 788346543523n,
+      flags: 0,
+      loanFunds: 352345827769n,
+      loanShares: 12431242454325n,
+      marketMaker: MarketMaker.Fusion,
+      lowerLimitOrderSqrtPrice: 235945354895346n,
+      upperLimitOrderSqrtPrice: 465839457485485n,
+      reserved: new Uint8Array(),
+    };
+    await fetchAllTunaSpotPositionWithFilter(
+      mockRpc,
+      tunaSpotPositionAuthorityFilter(positionStruct.authority),
+      tunaSpotPositionPoolFilter(positionStruct.pool),
+      tunaSpotPositionMintAFilter(positionStruct.mintA),
+      tunaSpotPositionMintBFilter(positionStruct.mintB),
+    );
+    const data = getTunaSpotPositionEncoder().encode(positionStruct);
     assertFilters(data);
   });
 });

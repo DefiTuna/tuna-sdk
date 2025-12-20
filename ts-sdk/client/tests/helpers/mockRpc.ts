@@ -1,4 +1,5 @@
 import { FUSIONAMM_PROGRAM_ADDRESS } from "@crypticdot/fusionamm-client";
+import { JUPITER_PROGRAM_ADDRESS } from "@crypticdot/jupiter-solana-client";
 import { WHIRLPOOL_PROGRAM_ADDRESS } from "@orca-so/whirlpools-client";
 import { Address, IInstruction, VariableSizeDecoder } from "@solana/kit";
 import {
@@ -44,6 +45,7 @@ export async function getTestContext(): Promise<ProgramTestContext> {
     const extraPrograms: Array<[string, Uint8Array]> = [
       ["../../external_programs/whirlpool", toBytes(WHIRLPOOL_PROGRAM_ADDRESS)],
       ["../../external_programs/fusionamm", toBytes(FUSIONAMM_PROGRAM_ADDRESS)],
+      ["../../external_programs/jupiter", toBytes(JUPITER_PROGRAM_ADDRESS)],
     ];
 
     const accounts: Array<[Uint8Array, Account]> = [];

@@ -2,9 +2,9 @@ packages:
   - "programs/*"
   - "ts-sdk/*"
   - "rust-sdk/*"
-minimumReleaseAge: 28800
+minimumReleaseAge: 10080
 minimumReleaseAgeExclude:
   - "@crypticdot/fusionamm-core"
   - "@crypticdot/fusionamm-client"
   - "@crypticdot/fusionamm-sdk"
-  - "@orca-so/whirlpools-client"
+  - "@crypticdot/jupiter-solana-client"

@@ -1,3 +1,4 @@
+import { getIncreaseLpPositionQuote } from "@crypticdot/defituna-core";
 import {
   fetchAllMaybeTickArray,
   fetchMaybeFusionPool,
@@ -51,7 +52,6 @@ import {
   TunaConfig,
   Vault,
 } from "../index.ts";
-import { getIncreaseLpPositionQuote } from "../utils";
 import { calculateMinimumBalanceForRentExemption } from "../utils/sysvar";
 
 export type OpenAndIncreaseTunaLpPositionFusion = {
@@ -116,6 +116,7 @@ export async function openAndIncreaseTunaLpPositionFusionInstructions(
     protocolFeeRate: market.data.protocolFee,
     protocolFeeRateOnCollateral: market.data.protocolFeeOnCollateral,
     swapFeeRate: fusionPool.data.feeRate,
+    liquidationThreshold: market.data.liquidationThreshold,
   });
 
   //

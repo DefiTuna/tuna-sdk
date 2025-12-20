@@ -14,24 +14,25 @@ describe("Tuna Position on Fusion", () => {
   let testMarket: TestMarket;
 
   beforeEach(async () => {
-    testMarket = await setupTestMarket({
-      marketMaker: MarketMaker.Fusion,
-      addressLookupTable: DEFAULT_ADDRESS,
-      borrowLimitA: 0n,
-      borrowLimitB: 0n,
-      disabled: false,
-      liquidationFee: 10000, // 1%
-      liquidationThreshold: 920000, // 92%
-      maxLeverage: (LEVERAGE_ONE * 1020) / 100,
-      maxSwapSlippage: 0,
-      oraclePriceDeviationThreshold: HUNDRED_PERCENT / 2, // Allow large deviation for tests
-      protocolFee: 1000, // 0.1%
-      protocolFeeOnCollateral: 1000, // 0.1%
-      limitOrderExecutionFee: 1000, // 0.1%
-      rebalanceProtocolFee: HUNDRED_PERCENT / 10,
-      spotPositionSizeLimitA: 1000_000_000_000,
-      spotPositionSizeLimitB: 100000_000_000,
-    });
+    testMarket = await setupTestMarket(
+      {
+        addressLookupTable: DEFAULT_ADDRESS,
+        borrowLimitA: 0n,
+        borrowLimitB: 0n,
+        disabled: false,
+        liquidationFee: 10000, // 1%
+        liquidationThreshold: 920000, // 92%
+        maxLeverage: (LEVERAGE_ONE * 1020) / 100,
+        maxSwapSlippage: 0,
+        oraclePriceDeviationThreshold: HUNDRED_PERCENT / 2, // Allow large deviation for tests
+        protocolFee: 1000, // 0.1%
+        protocolFeeOnCollateral: 1000, // 0.1%
+        rebalanceProtocolFee: HUNDRED_PERCENT / 10,
+        spotPositionSizeLimitA: 1000_000_000_000,
+        spotPositionSizeLimitB: 100000_000_000,
+      },
+      MarketMaker.Fusion,
+    );
   });
 
   it(`Adds liquidity with leverage to a two-sided position, providing only token A (target price is between ticks)`, async () => {
@@ -227,4 +228,4 @@ describe("Tuna Position on Fusion", () => {
       },
     );
   });
-});
+}, 20000);

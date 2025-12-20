@@ -21,20 +21,11 @@ import {
 } from "../src";
 
 import { LIQUIDATOR_KEYPAIR } from "./helpers/addresses.ts";
-import {
-  assertCloseActiveTunaSpotPosition,
-  closeActiveTunaSpotPosition,
-} from "./helpers/closeActiveTunaSpotPosition.ts";
 import { closeTunaSpotPosition } from "./helpers/closeTunaSpotPosition.ts";
-import { assertDecreaseTunaSpotPosition, decreaseTunaSpotPosition } from "./helpers/decreaseTunaSpotPosition.ts";
 import { fetchPool } from "./helpers/fetch.ts";
-import { assertIncreaseTunaSpotPosition, increaseTunaSpotPosition } from "./helpers/increaseTunaSpotPosition.ts";
 import { assertLiquidateTunaSpotPosition, liquidateTunaSpotPosition } from "./helpers/liquidateTunaSpotPosition.ts";
 import { rpc, sendTransaction, signer } from "./helpers/mockRpc.ts";
-import {
-  assertOpenAndIncreaseSpotPosition,
-  openAndIncreaseTunaSpotPosition,
-} from "./helpers/openAndIncreaseTunaSpotPosition.ts";
+import { assertModifyTunaSpotPosition, modifyTunaSpotPosition } from "./helpers/modifyTunaSpotPosition.ts";
 import { openTunaSpotPosition } from "./helpers/openTunaSpotPosition.ts";
 import { setupTestMarket, TestMarket } from "./helpers/setup.ts";
 import { swapExactInput } from "./helpers/swap.ts";
@@ -58,13 +49,12 @@ describe("Tuna Spot Position", () => {
       oraclePriceDeviationThreshold: HUNDRED_PERCENT, // Allow large deviation for tests
       protocolFee: 1000, // 0.1%
       protocolFeeOnCollateral: 1000, // 0.1%
-      limitOrderExecutionFee: 1000, // 0.1%
       rebalanceProtocolFee: HUNDRED_PERCENT / 10,
       spotPositionSizeLimitA: 1000_000_000_000,
       spotPositionSizeLimitB: 100000_000_000,
     };
-    testOrcaMarket = await setupTestMarket({ marketMaker: MarketMaker.Orca, ...marketArgs });
-    testFusionMarket = await setupTestMarket({ marketMaker: MarketMaker.Fusion, ...marketArgs });
+    testOrcaMarket = await setupTestMarket({ ...marketArgs }, MarketMaker.Orca);
+    testFusionMarket = await setupTestMarket({ ...marketArgs }, MarketMaker.Fusion);
     markets = [testOrcaMarket, testFusionMarket];
   });
 
@@ -87,11 +77,16 @@ describe("Tuna Spot Position", () => {
     it(`Fails to close a non-empty position (${MarketMaker[marketMaker]})`, async () => {
       const market = markets.find(m => m.marketMaker == marketMaker)!;
 
-      await openAndIncreaseTunaSpotPosition({
+      await openTunaSpotPosition({
         rpc,
         pool: market.pool,
         positionToken: PoolToken.A,
         collateralToken: PoolToken.A,
+      });
+
+      await modifyTunaSpotPosition({
+        rpc,
+        pool: market.pool,
         collateralAmount: 1_000_000_000n,
         borrowAmount: 400_000_000n,
       });
@@ -116,8 +111,8 @@ describe("Tuna Spot Position", () => {
         pool: market.pool,
       });
 
-      assertIncreaseTunaSpotPosition(
-        await increaseTunaSpotPosition({
+      assertModifyTunaSpotPosition(
+        await modifyTunaSpotPosition({
           rpc,
           pool: market.pool,
           collateralAmount: 1_000_000_000n,
@@ -126,8 +121,8 @@ describe("Tuna Spot Position", () => {
         { amountA: 2994617984n, amountB: 0n },
       );
 
-      assertIncreaseTunaSpotPosition(
-        await increaseTunaSpotPosition({
+      assertModifyTunaSpotPosition(
+        await modifyTunaSpotPosition({
           rpc,
           pool: market.pool,
           collateralAmount: 1_000_000_000n,
@@ -136,11 +131,11 @@ describe("Tuna Spot Position", () => {
         { amountA: 5985677096n, amountB: 0n },
       );
 
-      assertDecreaseTunaSpotPosition(
-        await decreaseTunaSpotPosition({
+      assertModifyTunaSpotPosition(
+        await modifyTunaSpotPosition({
           rpc,
           pool: market.pool,
-          withdrawPercent: HUNDRED_PERCENT / 2,
+          decreasePercent: HUNDRED_PERCENT / 2,
         }),
         {
           amountA: 2992838548n,
@@ -152,11 +147,11 @@ describe("Tuna Spot Position", () => {
         },
       );
 
-      assertDecreaseTunaSpotPosition(
-        await decreaseTunaSpotPosition({
+      assertModifyTunaSpotPosition(
+        await modifyTunaSpotPosition({
           rpc,
           pool: market.pool,
-          withdrawPercent: HUNDRED_PERCENT,
+          decreasePercent: HUNDRED_PERCENT,
         }),
         {
           amountA: 0n,
@@ -170,6 +165,89 @@ describe("Tuna Spot Position", () => {
     });
   }
 
+  it("Open a LONG position providing token A (WSOL) as collateral, increase, decrease and close it", async () => {
+    // Create a test market using WSOL for MintA
+    const market = await setupTestMarket(
+      {
+        addressLookupTable: DEFAULT_ADDRESS,
+        borrowLimitA: 0n,
+        borrowLimitB: 0n,
+        disabled: false,
+        liquidationFee: 10000, // 1%
+        liquidationThreshold: 820000, // 82%
+        maxLeverage: (LEVERAGE_ONE * 509) / 100,
+        maxSwapSlippage: 0,
+        oraclePriceDeviationThreshold: HUNDRED_PERCENT / 2, // Allow large deviation for tests
+        protocolFee: 1000, // 0.1%
+        protocolFeeOnCollateral: 1000, // 0.1%
+        rebalanceProtocolFee: HUNDRED_PERCENT / 10,
+        spotPositionSizeLimitA: 1000_000_000_000,
+        spotPositionSizeLimitB: 100000_000_000,
+      },
+      MarketMaker.Fusion,
+      true,
+    );
+
+    await openTunaSpotPosition({
+      rpc,
+      positionToken: PoolToken.A,
+      collateralToken: PoolToken.A,
+      pool: market.pool,
+    });
+
+    assertModifyTunaSpotPosition(
+      await modifyTunaSpotPosition({
+        rpc,
+        pool: market.pool,
+        collateralAmount: 1_000_000_000n,
+        borrowAmount: 400_000_000n,
+      }),
+      { amountA: 2994617984n, amountB: 0n },
+    );
+
+    assertModifyTunaSpotPosition(
+      await modifyTunaSpotPosition({
+        rpc,
+        pool: market.pool,
+        collateralAmount: 1_000_000_000n,
+        borrowAmount: 400_000_000n,
+      }),
+      { amountA: 5985677096n, amountB: 0n },
+    );
+
+    assertModifyTunaSpotPosition(
+      await modifyTunaSpotPosition({
+        rpc,
+        pool: market.pool,
+        decreasePercent: HUNDRED_PERCENT / 2,
+      }),
+      {
+        amountA: 2992838548n,
+        amountB: 0n,
+        userBalanceDeltaA: 997586093n,
+        userBalanceDeltaB: 0n,
+        vaultBalanceDeltaA: 0n,
+        vaultBalanceDeltaB: 400_000_000n,
+      },
+    );
+
+    assertModifyTunaSpotPosition(
+      await modifyTunaSpotPosition({
+        rpc,
+        pool: market.pool,
+        decreasePercent: HUNDRED_PERCENT,
+      }),
+      {
+        amountA: 0n,
+        amountB: 0n,
+        userBalanceDeltaA: 994016869n,
+        userBalanceDeltaB: 0n,
+        vaultBalanceDeltaA: 0n,
+        vaultBalanceDeltaB: 400_000_000n,
+      },
+    );
+  });
+
   for (const marketMaker of marketMakers) {
     it(`Open a LONG position providing token B as collateral, increase, decrease and close it (${MarketMaker[marketMaker]})`, async () => {
       const market = markets.find(m => m.marketMaker == marketMaker)!;
@@ -181,8 +259,8 @@ describe("Tuna Spot Position", () => {
         pool: market.pool,
       });
 
-      assertIncreaseTunaSpotPosition(
-        await increaseTunaSpotPosition({
+      assertModifyTunaSpotPosition(
+        await modifyTunaSpotPosition({
           rpc,
           pool: market.pool,
           collateralAmount: 200_000_000n,
@@ -191,8 +269,8 @@ describe("Tuna Spot Position", () => {
         { amountA: 2992091804n, amountB: 0n },
       );
 
-      assertIncreaseTunaSpotPosition(
-        await increaseTunaSpotPosition({
+      assertModifyTunaSpotPosition(
+        await modifyTunaSpotPosition({
           rpc,
           pool: market.pool,
           collateralAmount: 200_000_000n,
@@ -201,11 +279,11 @@ describe("Tuna Spot Position", () => {
         { amountA: 5976186848n, amountB: 0n },
       );
 
-      assertDecreaseTunaSpotPosition(
-        await decreaseTunaSpotPosition({
+      assertModifyTunaSpotPosition(
+        await modifyTunaSpotPosition({
           rpc,
           pool: market.pool,
-          withdrawPercent: HUNDRED_PERCENT / 2,
+          decreasePercent: HUNDRED_PERCENT / 2,
         }),
         {
           amountA: 2988093424n,
@@ -217,11 +295,11 @@ describe("Tuna Spot Position", () => {
         },
       );
 
-      assertDecreaseTunaSpotPosition(
-        await decreaseTunaSpotPosition({
+      assertModifyTunaSpotPosition(
+        await modifyTunaSpotPosition({
           rpc,
           pool: market.pool,
-          withdrawPercent: HUNDRED_PERCENT,
+          decreasePercent: HUNDRED_PERCENT,
         }),
         {
           amountA: 0n,
@@ -248,8 +326,8 @@ describe("Tuna Spot Position", () => {
         pool: market.pool,
       });
 
-      assertIncreaseTunaSpotPosition(
-        await increaseTunaSpotPosition({
+      assertModifyTunaSpotPosition(
+        await modifyTunaSpotPosition({
           rpc,
           pool: market.pool,
           collateralAmount: 1_000_000_000n,
@@ -258,8 +336,8 @@ describe("Tuna Spot Position", () => {
         { amountA: 0n, amountB: 598418360n },
       );
 
-      assertIncreaseTunaSpotPosition(
-        await increaseTunaSpotPosition({
+      assertModifyTunaSpotPosition(
+        await modifyTunaSpotPosition({
           rpc,
           pool: market.pool,
           collateralAmount: 1_000_000_000n,
@@ -268,11 +346,11 @@ describe("Tuna Spot Position", () => {
         { amountA: 0n, amountB: 1195237368n },
       );
 
-      assertDecreaseTunaSpotPosition(
-        await decreaseTunaSpotPosition({
+      assertModifyTunaSpotPosition(
+        await modifyTunaSpotPosition({
           rpc,
           pool: market.pool,
-          withdrawPercent: HUNDRED_PERCENT / 2,
+          decreasePercent: HUNDRED_PERCENT / 2,
         }),
         {
           amountA: 0n,
@@ -284,11 +362,11 @@ describe("Tuna Spot Position", () => {
         },
       );
 
-      assertDecreaseTunaSpotPosition(
-        await decreaseTunaSpotPosition({
+      assertModifyTunaSpotPosition(
+        await modifyTunaSpotPosition({
           rpc,
           pool: market.pool,
-          withdrawPercent: HUNDRED_PERCENT,
+          decreasePercent: HUNDRED_PERCENT,
         }),
         {
           amountA: 0n,
@@ -315,8 +393,8 @@ describe("Tuna Spot Position", () => {
         pool: market.pool,
       });
 
-      assertIncreaseTunaSpotPosition(
-        await increaseTunaSpotPosition({
+      assertModifyTunaSpotPosition(
+        await modifyTunaSpotPosition({
           rpc,
           pool: market.pool,
           collateralAmount: 2_000_000_000n,
@@ -325,8 +403,8 @@ describe("Tuna Spot Position", () => {
         { amountA: 0n, amountB: 4006315123n },
       );
 
-      assertIncreaseTunaSpotPosition(
-        await increaseTunaSpotPosition({
+      assertModifyTunaSpotPosition(
+        await modifyTunaSpotPosition({
           rpc,
           pool: market.pool,
           collateralAmount: 2_000_000_000n,
@@ -335,11 +413,11 @@ describe("Tuna Spot Position", () => {
         { amountA: 0n, amountB: 7994673287n },
       );
 
-      assertDecreaseTunaSpotPosition(
-        await decreaseTunaSpotPosition({
+      assertModifyTunaSpotPosition(
+        await modifyTunaSpotPosition({
           rpc,
           pool: market.pool,
-          withdrawPercent: HUNDRED_PERCENT / 2,
+          decreasePercent: HUNDRED_PERCENT / 2,
         }),
         {
           amountA: 0n,
@@ -351,11 +429,11 @@ describe("Tuna Spot Position", () => {
         },
       );
 
-      assertDecreaseTunaSpotPosition(
-        await decreaseTunaSpotPosition({
+      assertModifyTunaSpotPosition(
+        await modifyTunaSpotPosition({
           rpc,
           pool: market.pool,
-          withdrawPercent: HUNDRED_PERCENT,
+          decreasePercent: HUNDRED_PERCENT,
         }),
         {
           amountA: 0n,
@@ -375,24 +453,34 @@ describe("Tuna Spot Position", () => {
     it(`Open a non-leveraged position and close it (${MarketMaker[marketMaker]})`, async () => {
       const market = markets.find(m => m.marketMaker == marketMaker)!;
 
-      assertOpenAndIncreaseSpotPosition(
-        await openAndIncreaseTunaSpotPosition({
+      await openTunaSpotPosition({
+        rpc,
+        pool: market.pool,
+        positionToken: PoolToken.B,
+        collateralToken: PoolToken.A,
+      });
+
+      assertModifyTunaSpotPosition(
+        await modifyTunaSpotPosition({
           rpc,
           pool: market.pool,
-          positionToken: PoolToken.B,
-          collateralToken: PoolToken.A,
           collateralAmount: 1_000_000_000n,
           borrowAmount: 0n,
         }),
         { amountA: 0n, amountB: 199650889n },
       );
 
-      assertCloseActiveTunaSpotPosition(await closeActiveTunaSpotPosition({ rpc, pool: market.pool }), {
-        userBalanceDeltaA: 998400817n,
-        userBalanceDeltaB: 0n,
-        vaultBalanceDeltaA: 0n,
-        vaultBalanceDeltaB: 0n,
-      });
+      assertModifyTunaSpotPosition(
+        await modifyTunaSpotPosition({ rpc, pool: market.pool, decreasePercent: HUNDRED_PERCENT }),
+        {
+          userBalanceDeltaA: 998400817n,
+          userBalanceDeltaB: 0n,
+          vaultBalanceDeltaA: 0n,
+          vaultBalanceDeltaB: 0n,
+        },
+      );
+
+      await closeTunaSpotPosition({ rpc, pool: market.pool });
     });
   }
 
@@ -400,24 +488,34 @@ describe("Tuna Spot Position", () => {
     it(`Open a LONG position with liquidity providing token A and close it (${MarketMaker[marketMaker]})`, async () => {
       const market = markets.find(m => m.marketMaker == marketMaker)!;
 
-      assertOpenAndIncreaseSpotPosition(
-        await openAndIncreaseTunaSpotPosition({
+      await openTunaSpotPosition({
+        rpc,
+        pool: market.pool,
+        positionToken: PoolToken.A,
+        collateralToken: PoolToken.A,
+      });
+
+      assertModifyTunaSpotPosition(
+        await modifyTunaSpotPosition({
           rpc,
           pool: market.pool,
-          positionToken: PoolToken.A,
-          collateralToken: PoolToken.A,
           collateralAmount: 1_000_000_000n,
           borrowAmount: 400_000_000n,
         }),
         { amountA: 2994617984n, amountB: 0n },
       );
 
-      assertCloseActiveTunaSpotPosition(await closeActiveTunaSpotPosition({ rpc, pool: market.pool }), {
-        userBalanceDeltaA: 995800950n,
-        userBalanceDeltaB: 0n,
-        vaultBalanceDeltaA: 0n,
-        vaultBalanceDeltaB: 400000000n,
-      });
+      assertModifyTunaSpotPosition(
+        await modifyTunaSpotPosition({ rpc, pool: market.pool, decreasePercent: HUNDRED_PERCENT }),
+        {
+          userBalanceDeltaA: 995800950n,
+          userBalanceDeltaB: 0n,
+          vaultBalanceDeltaA: 0n,
+          vaultBalanceDeltaB: 400000000n,
+        },
+      );
+
+      await closeTunaSpotPosition({ rpc, pool: market.pool });
     });
   }
 
@@ -426,24 +524,34 @@ describe("Tuna Spot Position", () => {
       const market = markets.find(m => m.marketMaker == marketMaker)!;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
 
-      assertOpenAndIncreaseSpotPosition(
-        await openAndIncreaseTunaSpotPosition({
+      await openTunaSpotPosition({
+        rpc,
+        pool: market.pool,
+        positionToken: PoolToken.A,
+        collateralToken: PoolToken.B,
+      });
+
+      assertModifyTunaSpotPosition(
+        await modifyTunaSpotPosition({
           rpc,
           pool: pool.address,
-          positionToken: PoolToken.A,
-          collateralToken: PoolToken.B,
           collateralAmount: 200_000_000n,
           borrowAmount: 400_000_000n,
         }),
         { amountA: 2992091804n, amountB: 0n },
       );
 
-      assertCloseActiveTunaSpotPosition(await closeActiveTunaSpotPosition({ rpc, pool: market.pool }), {
-        userBalanceDeltaA: 0n,
-        userBalanceDeltaB: 199040654n,
-        vaultBalanceDeltaA: 0n,
-        vaultBalanceDeltaB: 400000000n,
-      });
+      assertModifyTunaSpotPosition(
+        await modifyTunaSpotPosition({ rpc, pool: market.pool, decreasePercent: HUNDRED_PERCENT }),
+        {
+          userBalanceDeltaA: 0n,
+          userBalanceDeltaB: 199040654n,
+          vaultBalanceDeltaA: 0n,
+          vaultBalanceDeltaB: 400000000n,
+        },
+      );
+
+      await closeTunaSpotPosition({ rpc, pool: market.pool });
     });
   }
 
@@ -451,24 +559,34 @@ describe("Tuna Spot Position", () => {
     it(`Open a SHORT position with liquidity providing token A and close it (${MarketMaker[marketMaker]})`, async () => {
       const market = markets.find(m => m.marketMaker == marketMaker)!;
 
-      assertOpenAndIncreaseSpotPosition(
-        await openAndIncreaseTunaSpotPosition({
+      await openTunaSpotPosition({
+        rpc,
+        pool: market.pool,
+        positionToken: PoolToken.B,
+        collateralToken: PoolToken.A,
+      });
+
+      assertModifyTunaSpotPosition(
+        await modifyTunaSpotPosition({
           rpc,
           pool: market.pool,
-          positionToken: PoolToken.B,
-          collateralToken: PoolToken.A,
           collateralAmount: 1_000_000_000n,
           borrowAmount: 4_000_000_000n,
         }),
         { amountA: 0n, amountB: 996475010n },
       );
 
-      assertCloseActiveTunaSpotPosition(await closeActiveTunaSpotPosition({ rpc, pool: market.pool }), {
-        userBalanceDeltaA: 992006783n,
-        userBalanceDeltaB: 0n,
-        vaultBalanceDeltaA: 4000000000n,
-        vaultBalanceDeltaB: 0n,
-      });
+      assertModifyTunaSpotPosition(
+        await modifyTunaSpotPosition({ rpc, pool: market.pool, decreasePercent: HUNDRED_PERCENT }),
+        {
+          userBalanceDeltaA: 992006783n,
+          userBalanceDeltaB: 0n,
+          vaultBalanceDeltaA: 4000000000n,
+          vaultBalanceDeltaB: 0n,
+        },
+      );
+
+      await closeTunaSpotPosition({ rpc, pool: market.pool });
     });
   }
 
@@ -476,24 +594,34 @@ describe("Tuna Spot Position", () => {
     it(`Open a SHORT position with liquidity providing token B and close it (${MarketMaker[marketMaker]})`, async () => {
       const market = markets.find(m => m.marketMaker == marketMaker)!;
 
-      assertOpenAndIncreaseSpotPosition(
-        await openAndIncreaseTunaSpotPosition({
+      await openTunaSpotPosition({
+        rpc,
+        pool: market.pool,
+        positionToken: PoolToken.B,
+        collateralToken: PoolToken.B,
+      });
+
+      assertModifyTunaSpotPosition(
+        await modifyTunaSpotPosition({
           rpc,
           pool: market.pool,
-          positionToken: PoolToken.B,
-          collateralToken: PoolToken.B,
           collateralAmount: 200_000_000n,
           borrowAmount: 4_000_000_000n,
         }),
         { amountA: 0n, amountB: 997335419n },
       );
 
-      assertCloseActiveTunaSpotPosition(await closeActiveTunaSpotPosition({ rpc, pool: market.pool }), {
-        userBalanceDeltaA: 0n,
-        userBalanceDeltaB: 198520592n,
-        vaultBalanceDeltaA: 4000000000n,
-        vaultBalanceDeltaB: 0n,
-      });
+      assertModifyTunaSpotPosition(
+        await modifyTunaSpotPosition({ rpc, pool: market.pool, decreasePercent: HUNDRED_PERCENT }),
+        {
+          userBalanceDeltaA: 0n,
+          userBalanceDeltaB: 198520592n,
+          vaultBalanceDeltaA: 4000000000n,
+          vaultBalanceDeltaB: 0n,
+        },
+      );
+
+      await closeTunaSpotPosition({ rpc, pool: market.pool });
     });
   }
 
@@ -503,11 +631,16 @@ describe("Tuna Spot Position", () => {
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const tunaPositionAddress = (await getTunaSpotPositionAddress(signer.address, pool.address))[0];
 
-      await openAndIncreaseTunaSpotPosition({
+      await openTunaSpotPosition({
         rpc,
         pool: market.pool,
         positionToken: PoolToken.A,
         collateralToken: PoolToken.B,
+      });
+
+      await modifyTunaSpotPosition({
+        rpc,
+        pool: market.pool,
         collateralAmount: 200_000_000n,
         borrowAmount: 1700_000_000n,
       });
@@ -537,11 +670,16 @@ describe("Tuna Spot Position", () => {
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const tunaPositionAddress = (await getTunaSpotPositionAddress(signer.address, pool.address))[0];
 
-      await openAndIncreaseTunaSpotPosition({
+      await openTunaSpotPosition({
         rpc,
-        pool: pool.address,
+        pool: market.pool,
         positionToken: PoolToken.B,
         collateralToken: PoolToken.B,
+      });
+
+      await modifyTunaSpotPosition({
+        rpc,
+        pool: pool.address,
         collateralAmount: 200_000_000n,
         borrowAmount: 6_000_000_000n,
       });
@@ -569,7 +707,6 @@ describe("Tuna Spot Position", () => {
       // Override the test market using WSOL for MintA
       const market = await setupTestMarket(
         {
-          marketMaker,
           addressLookupTable: DEFAULT_ADDRESS,
           borrowLimitA: 0n,
           borrowLimitB: 0n,
@@ -581,11 +718,11 @@ describe("Tuna Spot Position", () => {
           oraclePriceDeviationThreshold: HUNDRED_PERCENT, // Allow large deviation for tests
           protocolFee: 1000, // 0.1%
           protocolFeeOnCollateral: 1000, // 0.1%
-          limitOrderExecutionFee: 1000, // 0.1%
           rebalanceProtocolFee: HUNDRED_PERCENT / 10,
           spotPositionSizeLimitA: 1000_000_000_000,
           spotPositionSizeLimitB: 100000_000_000,
         },
+        marketMaker,
         true, // use NATIVE mint
         false,
       );
@@ -593,11 +730,16 @@ describe("Tuna Spot Position", () => {
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const tunaPositionAddress = (await getTunaSpotPositionAddress(signer.address, pool.address))[0];
 
-      await openAndIncreaseTunaSpotPosition({
+      await openTunaSpotPosition({
         rpc,
         pool: market.pool,
         positionToken: PoolToken.A,
         collateralToken: PoolToken.A,
+      });
+
+      await modifyTunaSpotPosition({
+        rpc,
+        pool: market.pool,
         collateralAmount: 1000_000_000n,
         borrowAmount: 1700_000_000n,
       });
@@ -623,16 +765,83 @@ describe("Tuna Spot Position", () => {
   }
 
   for (const marketMaker of marketMakers) {
-    it(`Partially liquidates a LONG position due to an unhealthy state (${MarketMaker[marketMaker]})`, async () => {
+    it(`Partially liquidates a LONG position (collateral A) due to an unhealthy state (${MarketMaker[marketMaker]})`, async () => {
       const market = markets.find(m => m.marketMaker == marketMaker)!;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const tunaPositionAddress = (await getTunaSpotPositionAddress(signer.address, pool.address))[0];
 
-      await openAndIncreaseTunaSpotPosition({
+      await openTunaSpotPosition({
+        rpc,
+        pool: market.pool,
+        positionToken: PoolToken.A,
+        collateralToken: PoolToken.A,
+      });
+
+      await modifyTunaSpotPosition({
+        rpc,
+        pool: market.pool,
+        collateralAmount: 1_000_000_000n,
+        borrowAmount: 1700_000_000n,
+      });
+
+      // Significantly move the price.
+      // the limit amount when the position becomes unhealthy is 28161_524_235n
+      await swapExactInput(rpc, signer, pool.address, 35000_000_000n, pool.data.tokenMintA);
+
+      assertLiquidateTunaSpotPosition(
+        await liquidateTunaSpotPosition({
+          rpc,
+          signer: LIQUIDATOR_KEYPAIR,
+          tunaPositionAddress,
+          decreasePercent: HUNDRED_PERCENT / 2,
+        }),
+        {
+          vaultBalanceDeltaA: 0n,
+          vaultBalanceDeltaB: 850000000n,
+          badDebtDeltaA: 0n,
+          badDebtDeltaB: 0n,
+          userBalanceDeltaA: 319493746n,
+          userBalanceDeltaB: 0n,
+          feeRecipientBalanceDelta: 47279235n,
+        },
+      );
+
+      assertLiquidateTunaSpotPosition(
+        await liquidateTunaSpotPosition({
+          rpc,
+          signer: LIQUIDATOR_KEYPAIR,
+          tunaPositionAddress,
+          decreasePercent: HUNDRED_PERCENT,
+        }),
+        {
+          vaultBalanceDeltaA: 0n,
+          vaultBalanceDeltaB: 850000000n,
+          badDebtDeltaA: 0n,
+          badDebtDeltaB: 0n,
+          userBalanceDeltaA: 302654153n,
+          userBalanceDeltaB: 0n,
+          feeRecipientBalanceDelta: 47279235n,
+        },
+      );
+    });
+  }
+
+  for (const marketMaker of marketMakers) {
+    it(`Partially liquidates a LONG position (collateral B) due to an unhealthy state (${MarketMaker[marketMaker]})`, async () => {
+      const market = markets.find(m => m.marketMaker == marketMaker)!;
+      const pool = await fetchPool(rpc, market.pool, market.marketMaker);
+      const tunaPositionAddress = (await getTunaSpotPositionAddress(signer.address, pool.address))[0];
+
+      await openTunaSpotPosition({
         rpc,
         pool: market.pool,
         positionToken: PoolToken.A,
         collateralToken: PoolToken.B,
+      });
+
+      await modifyTunaSpotPosition({
+        rpc,
+        pool: market.pool,
         collateralAmount: 200_000_000n,
         borrowAmount: 1700_000_000n,
       });
@@ -646,7 +855,7 @@ describe("Tuna Spot Position", () => {
           rpc,
           signer: LIQUIDATOR_KEYPAIR,
           tunaPositionAddress,
-          withdrawPercent: HUNDRED_PERCENT / 2,
+          decreasePercent: HUNDRED_PERCENT / 2,
         }),
         {
           vaultBalanceDeltaA: 0n,
@@ -654,7 +863,7 @@ describe("Tuna Spot Position", () => {
           badDebtDeltaA: 0n,
           badDebtDeltaB: 0n,
           userBalanceDeltaA: 0n,
-          userBalanceDeltaB: 0n,
+          userBalanceDeltaB: 62142364n,
           feeRecipientBalanceDelta: 47237833n,
         },
       );
@@ -664,7 +873,7 @@ describe("Tuna Spot Position", () => {
           rpc,
           signer: LIQUIDATOR_KEYPAIR,
           tunaPositionAddress,
-          withdrawPercent: HUNDRED_PERCENT,
+          decreasePercent: HUNDRED_PERCENT,
         }),
         {
           vaultBalanceDeltaA: 0n,
@@ -685,11 +894,16 @@ describe("Tuna Spot Position", () => {
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const tunaPositionAddress = (await getTunaSpotPositionAddress(signer.address, pool.address))[0];
 
-      await openAndIncreaseTunaSpotPosition({
+      await openTunaSpotPosition({
         rpc,
-        pool: pool.address,
+        pool: market.pool,
         positionToken: PoolToken.A,
         collateralToken: PoolToken.B,
+      });
+
+      await modifyTunaSpotPosition({
+        rpc,
+        pool: pool.address,
         collateralAmount: 200_000_000n,
         borrowAmount: 1700_000_000n,
       });
@@ -719,11 +933,16 @@ describe("Tuna Spot Position", () => {
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const tunaPositionAddress = (await getTunaSpotPositionAddress(signer.address, pool.address))[0];
 
-      await openAndIncreaseTunaSpotPosition({
+      await openTunaSpotPosition({
         rpc,
-        pool: pool.address,
+        pool: market.pool,
         positionToken: PoolToken.B,
         collateralToken: PoolToken.B,
+      });
+
+      await modifyTunaSpotPosition({
+        rpc,
+        pool: pool.address,
         collateralAmount: 200_000_000n,
         borrowAmount: 6_000_000_000n,
       });
@@ -768,11 +987,16 @@ describe("Tuna Spot Position", () => {
         })
       )[0];
 
-      await openAndIncreaseTunaSpotPosition({
+      await openTunaSpotPosition({
         rpc,
-        pool: pool.address,
+        pool: market.pool,
         positionToken: PoolToken.A,
         collateralToken: PoolToken.B,
+      });
+
+      await modifyTunaSpotPosition({
+        rpc,
+        pool: pool.address,
         collateralAmount: 200_000_000n,
         borrowAmount: 1700_000_000n,
       });
@@ -839,11 +1063,16 @@ describe("Tuna Spot Position", () => {
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const tunaPositionAddress = (await getTunaSpotPositionAddress(signer.address, pool.address))[0];
 
-      await openAndIncreaseTunaSpotPosition({
+      await openTunaSpotPosition({
         rpc,
-        pool: pool.address,
+        pool: market.pool,
         positionToken: PoolToken.A,
         collateralToken: PoolToken.B,
+      });
+
+      await modifyTunaSpotPosition({
+        rpc,
+        pool: pool.address,
         collateralAmount: 200_000_000n,
         borrowAmount: 1700_000_000n,
       });
@@ -880,11 +1109,16 @@ describe("Tuna Spot Position", () => {
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const tunaPositionAddress = (await getTunaSpotPositionAddress(signer.address, pool.address))[0];
 
-      await openAndIncreaseTunaSpotPosition({
+      await openTunaSpotPosition({
         rpc,
-        pool: pool.address,
+        pool: market.pool,
         positionToken: PoolToken.B,
         collateralToken: PoolToken.B,
+      });
+
+      await modifyTunaSpotPosition({
+        rpc,
+        pool: pool.address,
         collateralAmount: 200_000_000n,
         borrowAmount: 6_000_000_000n,
       });
@@ -927,7 +1161,7 @@ describe("Tuna Spot Position", () => {
         pool: pool.address,
       });
 
-      await increaseTunaSpotPosition({
+      await modifyTunaSpotPosition({
         rpc,
         pool: market.pool,
         collateralAmount: 2_000_000n,
@@ -939,7 +1173,7 @@ describe("Tuna Spot Position", () => {
       // Move the price a little
       await swapExactInput(rpc, signer, pool.address, 10000_000_000n, pool.data.tokenMintA);
 
-      await increaseTunaSpotPosition({
+      await modifyTunaSpotPosition({
         rpc,
         pool: market.pool,
         collateralAmount: 2_000_000n,
@@ -954,7 +1188,13 @@ describe("Tuna Spot Position", () => {
       expect(positionAfter.data.entrySqrtPrice).toEqual(8231248982356507534n);
       expect(poolAfter.data.sqrtPrice).toEqual(8213136573565815533n);
 
-      await closeActiveTunaSpotPosition({ rpc, pool: market.pool });
+      await modifyTunaSpotPosition({
+        rpc,
+        pool: market.pool,
+        decreasePercent: HUNDRED_PERCENT,
+      });
+
+      await closeTunaSpotPosition({ rpc, pool: market.pool });
     });
   }
 
@@ -1028,34 +1268,21 @@ describe("Tuna Spot Position", () => {
       // Transfer tokens directly to the position.
       await transferTokensToThePosition();
 
-      assertIncreaseTunaSpotPosition(
-        await increaseTunaSpotPosition({
-          rpc,
-          pool: market.pool,
-          collateralAmount: 1_000_000_000n,
-          borrowAmount: 402_000_000n,
-        }),
-        { amountA: 6005579747n, amountB: 0n },
-      );
+      await modifyTunaSpotPosition({
+        rpc,
+        pool: market.pool,
+        collateralAmount: 1_000_000_000n,
+        borrowAmount: 402_000_000n,
+      });
 
       // Transfer tokens directly to the position.
       await transferTokensToThePosition();
 
-      assertDecreaseTunaSpotPosition(
-        await decreaseTunaSpotPosition({
-          rpc,
-          pool: market.pool,
-          withdrawPercent: HUNDRED_PERCENT,
-        }),
-        {
-          amountA: 0n,
-          amountB: 0n,
-          userBalanceDeltaA: 5000377846n,
-          userBalanceDeltaB: 402000000n,
-          vaultBalanceDeltaA: 0n,
-          vaultBalanceDeltaB: 402000000n,
-        },
-      );
+      await modifyTunaSpotPosition({
+        rpc,
+        pool: market.pool,
+        decreasePercent: HUNDRED_PERCENT,
+      });
 
       await closeTunaSpotPosition({ rpc, pool: market.pool });
     });
@@ -1073,7 +1300,7 @@ describe("Tuna Spot Position", () => {
         pool: market.pool,
       });
 
-      await increaseTunaSpotPosition({
+      await modifyTunaSpotPosition({
         rpc,
         pool: market.pool,
         collateralAmount: 1_000_000_000n,
@@ -1095,10 +1322,10 @@ describe("Tuna Spot Position", () => {
         return true;
       });
 
-      await decreaseTunaSpotPosition({
+      await modifyTunaSpotPosition({
         rpc,
         pool: market.pool,
-        withdrawPercent: HUNDRED_PERCENT,
+        decreasePercent: HUNDRED_PERCENT,
       });
 
       await resetTx();
@@ -1117,7 +1344,6 @@ describe("Tuna Spot Position", () => {
       // Override the test market setting the position size limit
       const market = await setupTestMarket(
         {
-          marketMaker,
           addressLookupTable: DEFAULT_ADDRESS,
           borrowLimitA: 0n,
           borrowLimitB: 0n,
@@ -1129,11 +1355,11 @@ describe("Tuna Spot Position", () => {
           oraclePriceDeviationThreshold: HUNDRED_PERCENT, // Allow large deviation for tests
           protocolFee: 1000, // 0.1%
           protocolFeeOnCollateral: 1000, // 0.1%
-          limitOrderExecutionFee: 1000, // 0.1%
           rebalanceProtocolFee: HUNDRED_PERCENT / 10,
           spotPositionSizeLimitA: 0n,
           spotPositionSizeLimitB: 0n,
         },
+        marketMaker,
         false,
         false,
       );
@@ -1146,7 +1372,7 @@ describe("Tuna Spot Position", () => {
       });
 
       await assert.rejects(
-        increaseTunaSpotPosition({
+        modifyTunaSpotPosition({
           rpc,
           pool: market.pool,
           collateralAmount: 100_000_000n, // token A
@@ -1166,15 +1392,20 @@ describe("Tuna Spot Position", () => {
     it(`Fails to open a position due to amount slippage (${MarketMaker[marketMaker]})`, async () => {
       const market = markets.find(m => m.marketMaker == marketMaker)!;
 
+      await openTunaSpotPosition({
+        rpc,
+        pool: market.pool,
+        positionToken: PoolToken.A,
+        collateralToken: PoolToken.A,
+      });
+
       await assert.rejects(
-        openAndIncreaseTunaSpotPosition({
+        modifyTunaSpotPosition({
           rpc,
           pool: market.pool,
-          positionToken: PoolToken.A,
-          collateralToken: PoolToken.A,
           collateralAmount: 10_000_000_000n,
           borrowAmount: 4000_000_000n,
-          minSwapAmountOut: 19_900_000_000n,
+          requiredSwapAmount: 19_900_000_000n,
         }),
         err => {
           expect((err as Error).toString()).contain(
@@ -1184,15 +1415,22 @@ describe("Tuna Spot Position", () => {
         },
       );
 
+      await closeTunaSpotPosition({ rpc, pool: market.pool });
+
+      await openTunaSpotPosition({
+        rpc,
+        pool: market.pool,
+        positionToken: PoolToken.A,
+        collateralToken: PoolToken.B,
+      });
+
       await assert.rejects(
-        openAndIncreaseTunaSpotPosition({
+        modifyTunaSpotPosition({
           rpc,
           pool: market.pool,
-          positionToken: PoolToken.A,
-          collateralToken: PoolToken.B,
           collateralAmount: 2000_000_000n,
           borrowAmount: 4000_000_000n,
-          minSwapAmountOut: 29_900_000_000n,
+          requiredSwapAmount: 29_900_000_000n,
         }),
         err => {
           expect((err as Error).toString()).contain(
@@ -1208,17 +1446,28 @@ describe("Tuna Spot Position", () => {
     it(`Fails to close a position due to amount slippage (${MarketMaker[marketMaker]})`, async () => {
       const market = markets.find(m => m.marketMaker == marketMaker)!;
 
-      await openAndIncreaseTunaSpotPosition({
+      await openTunaSpotPosition({
         rpc,
         pool: market.pool,
         positionToken: PoolToken.A,
         collateralToken: PoolToken.A,
+      });
+
+      await modifyTunaSpotPosition({
+        rpc,
+        pool: market.pool,
         collateralAmount: 10_000_000_000n,
         borrowAmount: 4000_000_000n,
       });
 
+      // acceptableSwapAmount == maximum swap INPUT amount
       await assert.rejects(
-        closeActiveTunaSpotPosition({ rpc, pool: market.pool, maxSwapAmountIn: 19_000_000_000n }),
+        modifyTunaSpotPosition({
+          rpc,
+          pool: market.pool,
+          decreasePercent: HUNDRED_PERCENT,
+          requiredSwapAmount: 19_000_000_000n,
+        }),
         err => {
           expect((err as Error).toString()).contain(
             `custom program error: ${"0x" + TUNA_ERROR__AMOUNT_SLIPPAGE_EXCEEDED.toString(16)}`,
@@ -1227,19 +1476,38 @@ describe("Tuna Spot Position", () => {
         },
       );
 
-      await closeActiveTunaSpotPosition({ rpc, pool: market.pool });
+      // acceptableSwapAmount == maximum swap INPUT amount
+      await modifyTunaSpotPosition({
+        rpc,
+        pool: market.pool,
+        decreasePercent: HUNDRED_PERCENT,
+        requiredSwapAmount: 20_000_000_000n,
+      });
 
-      await openAndIncreaseTunaSpotPosition({
+      await closeTunaSpotPosition({ rpc, pool: market.pool });
+
+      await openTunaSpotPosition({
         rpc,
         pool: market.pool,
         positionToken: PoolToken.A,
         collateralToken: PoolToken.B,
+      });
+
+      await modifyTunaSpotPosition({
+        rpc,
+        pool: market.pool,
         collateralAmount: 2000_000_000n,
         borrowAmount: 4000_000_000n,
       });
 
+      // acceptableSwapAmount == minimum swap OUTPUT amount
       await assert.rejects(
-        closeActiveTunaSpotPosition({ rpc, pool: market.pool, maxSwapAmountIn: 29_000_000_000n }),
+        modifyTunaSpotPosition({
+          rpc,
+          pool: market.pool,
+          decreasePercent: HUNDRED_PERCENT,
+          requiredSwapAmount: 6000_000_000n,
+        }),
         err => {
           expect((err as Error).toString()).contain(
             `custom program error: ${"0x" + TUNA_ERROR__AMOUNT_SLIPPAGE_EXCEEDED.toString(16)}`,
@@ -1248,7 +1516,45 @@ describe("Tuna Spot Position", () => {
         },
       );
 
-      await closeActiveTunaSpotPosition({ rpc, pool: market.pool });
+      // acceptableSwapAmount == minimum swap OUTPUT amount
+      await modifyTunaSpotPosition({
+        rpc,
+        pool: market.pool,
+        decreasePercent: HUNDRED_PERCENT,
+        requiredSwapAmount: 5900_000_000n,
+      });
+
+      await closeTunaSpotPosition({ rpc, pool: market.pool });
     });
   }
-});
+
+  for (const marketMaker of marketMakers) {
+    it(`Decrease a position with the leverage above maximum (${MarketMaker[marketMaker]})`, async () => {
+      const market = markets.find(m => m.marketMaker == marketMaker)!;
+      const pool = await fetchPool(rpc, market.pool, market.marketMaker);
+
+      await openTunaSpotPosition({
+        rpc,
+        pool: market.pool,
+        positionToken: PoolToken.B,
+        collateralToken: PoolToken.B,
+      });
+
+      await modifyTunaSpotPosition({
+        rpc,
+        pool: pool.address,
+        collateralAmount: 200_000_000n,
+        borrowAmount: 8_600_000_000n,
+      });
+
+      // Move the price.
+      await swapExactInput(rpc, signer, pool.address, 2_000_000_000n, pool.data.tokenMintB);
+
+      await modifyTunaSpotPosition({
+        rpc,
+        pool: pool.address,
+        decreasePercent: HUNDRED_PERCENT / 2,
+      });
+    });
+  }
+}, 20000);

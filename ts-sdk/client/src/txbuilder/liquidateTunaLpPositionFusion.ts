@@ -23,7 +23,7 @@ export async function liquidateTunaLpPositionFusionInstructions(
   vaultA: Account<Vault>,
   vaultB: Account<Vault>,
   whirlpool: Account<FusionPool>,
-  withdrawPercent: number,
+  decreasePercent: number,
 ): Promise<IInstruction[]> {
   const instructions: IInstruction[] = [];
 
@@ -62,7 +62,7 @@ export async function liquidateTunaLpPositionFusionInstructions(
     vaultA,
     vaultB,
     whirlpool,
-    withdrawPercent,
+    decreasePercent,
   );
   instructions.push(ix);
 
@@ -85,7 +85,7 @@ export async function liquidateTunaLpPositionFusionInstruction(
   vaultA: Account<Vault>,
   vaultB: Account<Vault>,
   fusionPool: Account<FusionPool>,
-  withdrawPercent: number,
+  decreasePercent: number,
 ): Promise<IInstruction> {
   const positionMint = tunaPosition.data.positionMint;
 
@@ -205,7 +205,7 @@ export async function liquidateTunaLpPositionFusionInstruction(
     tokenProgramA: mintA.programAddress,
     tokenProgramB: mintB.programAddress,
     memoProgram: MEMO_PROGRAM_ADDRESS,
-    withdrawPercent,
+    decreasePercent,
     remainingAccountsInfo,
   });
 

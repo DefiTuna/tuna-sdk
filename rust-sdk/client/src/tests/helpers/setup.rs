@@ -3,10 +3,7 @@ use crate::tests::fusion::setup_fusion_pool;
 use crate::tests::orca::setup_whirlpool;
 use crate::tests::*;
 use crate::types::MarketMaker;
-use crate::{
-    create_market_instruction, create_tuna_config_instruction, create_vault_instructions, deposit_instruction, get_lending_position_address,
-    get_market_address, open_lending_position_instruction,
-};
+use crate::{create_market_instruction, create_tuna_config_instruction, create_vault_instructions, deposit_instruction, get_lending_position_address, get_market_address, get_vault_address, open_lending_position_instruction};
 use fusionamm_sdk::PriceOrTickIndex;
 use orca_whirlpools_core::price_to_sqrt_price;
 use solana_pubkey::Pubkey;
@@ -39,6 +36,7 @@ pub struct TestMarket {
 pub async fn setup_test_market(
     ctx: &RpcContext,
     args: CreateMarketInstructionArgs,
+    market_maker: MarketMaker,
     mint_a_is_native: bool,
     initialize_rewards: bool,
     adaptive_fee: bool,
@@ -80,7 +78,7 @@ pub async fn setup_test_market(
     let initial_sqrt_price = price_to_sqrt_price(200.0, 9, 6);
     let pool: Pubkey;
 
-    if args.market_maker == MarketMaker::Orca {
+    if market_maker == MarketMaker::Orca {
         assert!(!initialize_rewards, "Rewards initialization is not yet implemented in tuna tests");
 
         pool = setup_whirlpool(ctx, &mint_a_address, &mint_b_address, 64, initial_sqrt_price, adaptive_fee).await?;
@@ -137,13 +135,19 @@ pub async fn setup_test_market(
     }
 
     let market = get_market_address(&pool).0;
-    ctx.send_transaction(vec![create_market_instruction(&ctx.signer.pubkey(), &pool, args.clone())])?;
+    ctx.send_transaction(vec![create_market_instruction(
+        &ctx.signer.pubkey(),
+        &pool,
+        &get_vault_address(&mint_a_address).0,
+        &get_vault_address(&mint_b_address).0,
+        args.clone(),
+    )])?;
 
     let lending_position_a = get_lending_position_address(&ctx.signer.pubkey(), &mint_a_address).0;
     let lending_position_b = get_lending_position_address(&ctx.signer.pubkey(), &mint_b_address).0;
 
     Ok(TestMarket {
-        market_maker: args.market_maker,
+        market_maker,
         mint_a,
         mint_b,
         mint_a_address,

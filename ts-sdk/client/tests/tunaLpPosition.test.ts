@@ -1,7 +1,7 @@
 import { tickIndexToSqrtPrice } from "@crypticdot/fusionamm-core";
 import { fetchWhirlpool, getPositionAddress } from "@orca-so/whirlpools-client";
-import { generateKeyPairSigner } from "@solana/kit";
 import { findAssociatedTokenPda, getTransferInstruction } from "@solana-program/token-2022";
+import { generateKeyPairSigner } from "@solana/kit";
 import assert from "assert";
 import { Clock } from "solana-bankrun";
 import { beforeEach, describe, expect, it } from "vitest";
@@ -68,13 +68,12 @@ describe("Tuna Liquidity Position", () => {
       oraclePriceDeviationThreshold: HUNDRED_PERCENT, // Allow large deviation for tests
       protocolFee: 1000, // 0.1%
       protocolFeeOnCollateral: 1000, // 0.1%
-      limitOrderExecutionFee: 1000, // 0.1%
       rebalanceProtocolFee: HUNDRED_PERCENT / 10,
       spotPositionSizeLimitA: 1000_000_000_000,
       spotPositionSizeLimitB: 100000_000_000,
     };
-    testOrcaMarket = await setupTestMarket({ marketMaker: MarketMaker.Orca, ...marketArgs });
-    testFusionMarket = await setupTestMarket({ marketMaker: MarketMaker.Fusion, ...marketArgs });
+    testOrcaMarket = await setupTestMarket({ ...marketArgs }, MarketMaker.Orca);
+    testFusionMarket = await setupTestMarket({ ...marketArgs }, MarketMaker.Fusion);
     markets = [testOrcaMarket, testFusionMarket];
   });
 
@@ -222,17 +221,16 @@ describe("Tuna Liquidity Position", () => {
         disabled: false,
         liquidationFee: 10000, // 1%
         liquidationThreshold: 820000, // 82%
-        marketMaker: 0,
         maxLeverage: (LEVERAGE_ONE * 509) / 100,
         maxSwapSlippage: 0,
         oraclePriceDeviationThreshold: HUNDRED_PERCENT / 2, // Allow large deviation for tests
         protocolFee: 1000, // 0.1%
         protocolFeeOnCollateral: 1000, // 0.1%
-        limitOrderExecutionFee: 1000, // 0.1%
         rebalanceProtocolFee: HUNDRED_PERCENT / 10,
         spotPositionSizeLimitA: 1000_000_000_000,
         spotPositionSizeLimitB: 100000_000_000,
       },
+      MarketMaker.Orca,
       true,
     );
 
@@ -791,7 +789,7 @@ describe("Tuna Liquidity Position", () => {
           signer,
           positionMint: positionMintKeypair.address,
           pool: pool.address,
-          withdrawPercent: HUNDRED_PERCENT / 2,
+          decreasePercent: HUNDRED_PERCENT / 2,
         }),
         {
           userBalanceDeltaA: 997999999n,
@@ -809,7 +807,7 @@ describe("Tuna Liquidity Position", () => {
           signer,
           positionMint: positionMintKeypair.address,
           pool: pool.address,
-          withdrawPercent: HUNDRED_PERCENT,
+          decreasePercent: HUNDRED_PERCENT,
           closeTunaLpPosition: true,
         }),
         {
@@ -855,7 +853,7 @@ describe("Tuna Liquidity Position", () => {
           signer,
           positionMint: positionMintKeypair.address,
           pool: pool.address,
-          withdrawPercent: HUNDRED_PERCENT + 1,
+          decreasePercent: HUNDRED_PERCENT + 1,
           closeTunaLpPosition: true,
         }),
       );
@@ -1156,7 +1154,7 @@ describe("Tuna Liquidity Position", () => {
         signer,
         positionMint: positionMintKeypair.address,
         pool: pool.address,
-        withdrawPercent: HUNDRED_PERCENT,
+        decreasePercent: HUNDRED_PERCENT,
         closeTunaLpPosition: true,
       });
     });
@@ -1225,7 +1223,7 @@ describe("Tuna Liquidity Position", () => {
           signer: ALICE_KEYPAIR,
           positionMint: positionMintKeypair.address,
           pool: pool.address,
-          withdrawPercent: HUNDRED_PERCENT,
+          decreasePercent: HUNDRED_PERCENT,
         }),
       );
 
@@ -1234,7 +1232,7 @@ describe("Tuna Liquidity Position", () => {
         signer,
         positionMint: positionMintKeypair.address,
         pool: pool.address,
-        withdrawPercent: HUNDRED_PERCENT,
+        decreasePercent: HUNDRED_PERCENT,
       });
 
       await assert.rejects(closeTunaLpPosition({ rpc, signer: ALICE_KEYPAIR, positionMint }));
@@ -1244,24 +1242,25 @@ describe("Tuna Liquidity Position", () => {
 
   it("Fails to add liquidity because of the borrow limit", async () => {
     // Override the test market with opened interest
-    testOrcaMarket = await setupTestMarket({
-      addressLookupTable: DEFAULT_ADDRESS,
-      borrowLimitA: 2_000_000_000n,
-      borrowLimitB: 0n,
-      disabled: false,
-      liquidationFee: 10000, // 1%
-      liquidationThreshold: 820000, // 82%
-      marketMaker: 0,
-      maxLeverage: (LEVERAGE_ONE * 509) / 100,
-      maxSwapSlippage: 0,
-      oraclePriceDeviationThreshold: HUNDRED_PERCENT / 2, // Allow large deviation for tests
-      protocolFee: 1000, // 0.1%
-      protocolFeeOnCollateral: 1000, // 0.1%
-      limitOrderExecutionFee: 1000, // 0.1%
-      rebalanceProtocolFee: HUNDRED_PERCENT / 10,
-      spotPositionSizeLimitA: 1000_000_000_000,
-      spotPositionSizeLimitB: 100000_000_000,
-    });
+    testOrcaMarket = await setupTestMarket(
+      {
+        addressLookupTable: DEFAULT_ADDRESS,
+        borrowLimitA: 2_000_000_000n,
+        borrowLimitB: 0n,
+        disabled: false,
+        liquidationFee: 10000, // 1%
+        liquidationThreshold: 820000, // 82%
+        maxLeverage: (LEVERAGE_ONE * 509) / 100,
+        maxSwapSlippage: 0,
+        oraclePriceDeviationThreshold: HUNDRED_PERCENT / 2, // Allow large deviation for tests
+        protocolFee: 1000, // 0.1%
+        protocolFeeOnCollateral: 1000, // 0.1%
+        rebalanceProtocolFee: HUNDRED_PERCENT / 10,
+        spotPositionSizeLimitA: 1000_000_000_000,
+        spotPositionSizeLimitB: 100000_000_000,
+      },
+      MarketMaker.Orca,
+    );
 
     const positionMintKeypair = await generateKeyPairSigner();
     const whirlpool = await fetchWhirlpool(rpc, testOrcaMarket.pool);
@@ -1438,7 +1437,7 @@ describe("Tuna Liquidity Position", () => {
           signer,
           positionMint,
           pool: pool.address,
-          withdrawPercent: HUNDRED_PERCENT,
+          decreasePercent: HUNDRED_PERCENT,
         }),
         {
           userBalanceDeltaA: 0n,
@@ -1547,7 +1546,7 @@ describe("Tuna Liquidity Position", () => {
           signer,
           positionMint,
           pool: pool.address,
-          withdrawPercent: HUNDRED_PERCENT,
+          decreasePercent: HUNDRED_PERCENT,
         }),
         {
           userBalanceDeltaA: 0n,
@@ -1614,7 +1613,7 @@ describe("Tuna Liquidity Position", () => {
           signer,
           positionMint,
           pool: pool.address,
-          withdrawPercent: HUNDRED_PERCENT,
+          decreasePercent: HUNDRED_PERCENT,
         }),
         {
           userBalanceDeltaA: 0n,
@@ -1681,7 +1680,7 @@ describe("Tuna Liquidity Position", () => {
           signer,
           positionMint,
           pool: pool.address,
-          withdrawPercent: HUNDRED_PERCENT,
+          decreasePercent: HUNDRED_PERCENT,
         }),
         {
           userBalanceDeltaA: 0n,
@@ -1722,7 +1721,7 @@ describe("Tuna Liquidity Position", () => {
           signer,
           positionMint,
           pool: pool.address,
-          withdrawPercent: HUNDRED_PERCENT / 100,
+          decreasePercent: HUNDRED_PERCENT / 100,
         }),
         err => {
           expect((err as Error).toString()).contain(
@@ -1739,7 +1738,7 @@ describe("Tuna Liquidity Position", () => {
           signer,
           positionMint,
           pool: pool.address,
-          withdrawPercent: HUNDRED_PERCENT,
+          decreasePercent: HUNDRED_PERCENT,
         }),
         err => {
           expect((err as Error).toString()).contain(
@@ -2035,7 +2034,7 @@ describe("Tuna Liquidity Position", () => {
         signer,
         positionMint,
         pool: pool.address,
-        withdrawPercent: HUNDRED_PERCENT,
+        decreasePercent: HUNDRED_PERCENT,
         closeTunaLpPosition: true,
       });
     });
@@ -2051,17 +2050,16 @@ describe("Tuna Liquidity Position", () => {
         disabled: false,
         liquidationFee: 10000, // 1%
         liquidationThreshold: 820000, // 82%
-        marketMaker: 0,
         maxLeverage: (LEVERAGE_ONE * 509) / 100,
         maxSwapSlippage: 0,
         oraclePriceDeviationThreshold: HUNDRED_PERCENT / 2, // Allow large deviation for tests
         protocolFee: 1000, // 0.1%
         protocolFeeOnCollateral: 1000, // 0.1%
-        limitOrderExecutionFee: 1000, // 0.1%
         rebalanceProtocolFee: HUNDRED_PERCENT / 10,
         spotPositionSizeLimitA: 1000_000_000_000,
         spotPositionSizeLimitB: 100000_000_000,
       },
+      MarketMaker.Orca,
       false,
       true,
     );
@@ -2376,4 +2374,4 @@ describe("Tuna Liquidity Position", () => {
       );
     });
   }
-});
+}, 20000);

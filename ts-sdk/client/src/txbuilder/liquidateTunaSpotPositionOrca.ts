@@ -8,6 +8,7 @@ import {
   getCreateAtaInstructions,
   getLiquidateTunaSpotPositionOrcaInstruction,
   getMarketAddress,
+  HUNDRED_PERCENT,
   NATIVE_MINT,
   OrcaUtils,
   PoolToken,
@@ -25,28 +26,28 @@ export async function liquidateTunaSpotPositionOrcaInstructions(
   vaultA: Account<Vault>,
   vaultB: Account<Vault>,
   whirlpool: Account<Whirlpool>,
-  createTunaPositionOwnerAta: boolean,
-  withdrawPercent: number,
+  decreasePercent: number,
 ): Promise<IInstruction[]> {
   const instructions: IInstruction[] = [];
 
   //
   // Add create position owner token account instructions.
-  // This is optional because it might be used by an attacker to drain the liquidator's wallet.
   //
 
-  if (createTunaPositionOwnerAta) {
-    const collateralTokenMint = tunaPosition.data.collateralToken == PoolToken.A ? mintA : mintB;
-    if (collateralTokenMint.address != NATIVE_MINT) {
-      const createPositionOwnerAtaInstructions = await getCreateAtaInstructions(
-        undefined,
-        authority,
-        collateralTokenMint.address,
-        tunaPosition.data.authority,
-        collateralTokenMint.programAddress,
-      );
-      instructions.push(...createPositionOwnerAtaInstructions.init);
-    }
+  const collateralTokenMint = tunaPosition.data.collateralToken == PoolToken.A ? mintA : mintB;
+
+  // Native SOL is used when the position is totally liquidated.
+  const useNativeSol = collateralTokenMint.address == NATIVE_MINT && decreasePercent == HUNDRED_PERCENT;
+
+  if (!useNativeSol) {
+    const createPositionOwnerAtaInstructions = await getCreateAtaInstructions(
+      undefined,
+      authority,
+      collateralTokenMint.address,
+      tunaPosition.data.authority,
+      collateralTokenMint.programAddress,
+    );
+    instructions.push(...createPositionOwnerAtaInstructions.init);
   }
 
   //
@@ -84,7 +85,7 @@ export async function liquidateTunaSpotPositionOrcaInstructions(
     vaultA,
     vaultB,
     whirlpool,
-    withdrawPercent,
+    decreasePercent,
   );
   instructions.push(ix);
 
@@ -100,7 +101,7 @@ export async function liquidateTunaSpotPositionOrcaInstruction(
   vaultA: Account<Vault>,
   vaultB: Account<Vault>,
   whirlpool: Account<Whirlpool>,
-  withdrawPercent: number,
+  decreasePercent: number,
 ): Promise<IInstruction> {
   const marketAddress = (await getMarketAddress(whirlpool.address))[0];
   const orcaOracleAddress = (await getOracleAddress(whirlpool.address))[0];
@@ -222,7 +223,7 @@ export async function liquidateTunaSpotPositionOrcaInstruction(
     whirlpool: whirlpool.address,
     whirlpoolProgram: WHIRLPOOL_PROGRAM_ADDRESS,
     memoProgram: MEMO_PROGRAM_ADDRESS,
-    withdrawPercent,
+    decreasePercent,
     remainingAccountsInfo,
   });
 

@@ -21,7 +21,7 @@ pub fn liquidate_tuna_lp_position_fusion_instructions(
     fusion_pool: &FusionPool,
     token_program_a: &Pubkey,
     token_program_b: &Pubkey,
-    withdraw_percent: Option<u32>,
+    decrease_percent: Option<u32>,
 ) -> Vec<Instruction> {
     vec![
         create_associated_token_account_idempotent(authority, &tuna_config.fee_recipient, &vault_a.mint, token_program_a),
@@ -35,7 +35,7 @@ pub fn liquidate_tuna_lp_position_fusion_instructions(
             fusion_pool,
             token_program_a,
             token_program_b,
-            withdraw_percent,
+            decrease_percent,
         ),
     ]
 }
@@ -49,7 +49,7 @@ pub fn liquidate_tuna_lp_position_fusion_instruction(
     fusion_pool: &FusionPool,
     token_program_a: &Pubkey,
     token_program_b: &Pubkey,
-    withdraw_percent: Option<u32>,
+    decrease_percent: Option<u32>,
 ) -> Instruction {
     let mint_a = fusion_pool.token_mint_a;
     let mint_b = fusion_pool.token_mint_b;
@@ -102,7 +102,7 @@ pub fn liquidate_tuna_lp_position_fusion_instruction(
 
     ix_builder.instruction_with_remaining_accounts(
         LiquidateTunaLpPositionFusionInstructionArgs {
-            withdraw_percent: withdraw_percent.unwrap_or(HUNDRED_PERCENT),
+            decrease_percent: decrease_percent.unwrap_or(HUNDRED_PERCENT),
             remaining_accounts_info: RemainingAccountsInfo {
                 slices: vec![
                     RemainingAccountsSlice {

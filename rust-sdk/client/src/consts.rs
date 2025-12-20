@@ -6,7 +6,6 @@ pub const LEVERAGE_ONE: u32 = HUNDRED_PERCENT; // 1.0x
 pub const MAX_LEVERAGE: u32 = 11 * LEVERAGE_ONE;
 pub const MAX_PROTOCOL_FEE: u16 = (HUNDRED_PERCENT / 100) as u16;
 pub const MAX_LIQUIDATION_FEE: u32 = HUNDRED_PERCENT / 5;
-pub const MAX_LIMIT_ORDER_EXECUTION_FEE: u32 = HUNDRED_PERCENT / 100;
 pub const MAX_LIQUIDATION_THRESHOLD: u32 = HUNDRED_PERCENT * 95 / 100;
 
 pub const NO_LOWER_LIMIT_ORDER: i32 = -2147483648;
@@ -25,3 +24,7 @@ pub const TUNA_POSITION_FLAGS_MASK: u32 = (1 << 7) - 1;
 
 pub const WP_NFT_UPDATE_AUTH: Pubkey = pubkey!("3axbTs2z5GBy6usVbNVoqEgZMng3vZvMnAoX29BFfwhr");
 pub const DEFAULT_PUSH_ORACLE_PROGRAM_ID: Pubkey = pubkey!("pythWSnswVUd12oZpeFP8e9CVaEqJg25g1Vtc2biRsT");
+
+pub const JUPITER_PROGRAM_ID: Pubkey = pubkey!("JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4");
+pub const JUPITER_EVENT_AUTHORITY: Pubkey = pubkey!("D8cy77BBepLMngZx6ZukaTff5hCt1HrWyKk3Hnd9oitf");
+pub const JUPITER_PROGRAM_AUTHORITY: Pubkey = pubkey!("9nnLbotNTcUhvbrsA6Mdkx45Sm82G35zo28AqUvjExn8");

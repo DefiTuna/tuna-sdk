@@ -3,7 +3,7 @@ import { Whirlpool } from "@orca-so/whirlpools-client";
 import { Account, Address, Rpc, SolanaRpcApi, TransactionSigner } from "@solana/kit";
 import { getSetComputeUnitLimitInstruction } from "@solana-program/compute-budget";
 import { fetchMaybeToken, fetchMint, fetchToken, findAssociatedTokenPda } from "@solana-program/token-2022";
-import { expect } from "vitest";
+import { assert, expect } from "vitest";
 
 import {
   fetchMarket,
@@ -19,7 +19,6 @@ import {
   liquidateTunaSpotPositionOrcaInstructions,
   MarketMaker,
   PoolToken,
-  TunaPositionState,
 } from "../../src";
 
 import { FUNDER } from "./addresses.ts";
@@ -30,7 +29,7 @@ export type LiquidateTunaSpotPositionTestArgs = {
   rpc: Rpc<SolanaRpcApi>;
   signer?: TransactionSigner;
   tunaPositionAddress: Address;
-  withdrawPercent?: number;
+  decreasePercent?: number;
   maxSwapSlippage?: number;
 };
 
@@ -79,7 +78,7 @@ export function assertLiquidateTunaSpotPosition(
 export async function liquidateTunaSpotPosition({
   rpc,
   tunaPositionAddress,
-  withdrawPercent,
+  decreasePercent,
   signer = FUNDER,
 }: LiquidateTunaSpotPositionTestArgs): Promise<LiquidateTunaSpotPositionTestResults> {
   const tunaConfigAddress = (await getTunaConfigAddress())[0];
@@ -170,8 +169,7 @@ export async function liquidateTunaSpotPosition({
           vaultA,
           vaultB,
           pool as Account<Whirlpool, Address>,
-          true,
-          withdrawPercent ?? HUNDRED_PERCENT,
+          decreasePercent ?? HUNDRED_PERCENT,
         )
       : await liquidateTunaSpotPositionFusionInstructions(
           signer,
@@ -182,8 +180,7 @@ export async function liquidateTunaSpotPosition({
           vaultA,
           vaultB,
           pool as Account<FusionPool, Address>,
-          true,
-          withdrawPercent ?? HUNDRED_PERCENT,
+          decreasePercent ?? HUNDRED_PERCENT,
         );
 
   instructions.unshift(getSetComputeUnitLimitInstruction({ units: 1_400_000 }));
@@ -221,16 +218,30 @@ export async function liquidateTunaSpotPosition({
 
   const tunaPositionAfter = await fetchMaybeTunaSpotPosition(rpc, tunaPositionAddress);
 
-  if (withdrawPercent == undefined || withdrawPercent == HUNDRED_PERCENT) {
+  let tunaPositionBalanceAAfter = 0n;
+  let tunaPositionBalanceBAfter = 0n;
+
+  if (decreasePercent == undefined || decreasePercent == HUNDRED_PERCENT) {
     expect((await fetchMaybeToken(rpc, tunaPositionAtaA)).exists).toBeFalsy();
     expect((await fetchMaybeToken(rpc, tunaPositionAtaB)).exists).toBeFalsy();
-    expect(tunaPositionAfter.exists).toBeFalsy();
+    assert(!tunaPositionAfter.exists);
   } else {
+    assert(tunaPositionAfter.exists);
+    tunaPositionBalanceAAfter = (await fetchToken(rpc, tunaPositionAtaA)).data.amount;
+    tunaPositionBalanceBAfter = (await fetchToken(rpc, tunaPositionAtaB)).data.amount;
+
     const newAmount =
-      (tunaPositionBefore.data.amount * BigInt(HUNDRED_PERCENT - (withdrawPercent ?? HUNDRED_PERCENT))) /
+      (tunaPositionBefore.data.amount * BigInt(HUNDRED_PERCENT - (decreasePercent ?? HUNDRED_PERCENT))) /
       BigInt(HUNDRED_PERCENT);
-    expect(tunaPositionAfter.exists).toBeTruthy();
-    if (tunaPositionAfter.exists) expect(tunaPositionAfter.data.amount).toEqual(newAmount);
+
+    expect(tunaPositionAfter.data.amount).toEqual(newAmount);
+    if (tunaPosition.data.positionToken == PoolToken.A) {
+      expect(tunaPositionBalanceAAfter).toEqual(newAmount);
+      expect(tunaPositionBalanceBAfter).toEqual(0n);
+    } else {
+      expect(tunaPositionBalanceAAfter).toEqual(0n);
+      expect(tunaPositionBalanceBAfter).toEqual(newAmount);
+    }
   }
 
   const userTokenAAfter = await fetchMaybeToken(rpc, tunaPositionOwnerAtaA);

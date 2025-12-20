@@ -19,42 +19,45 @@ pub fn liquidate_tuna_spot_position_orca_instructions(
     whirlpool: &Whirlpool,
     token_program_a: &Pubkey,
     token_program_b: &Pubkey,
-    create_tuna_position_owner_ata: bool,
-    withdraw_percent: Option<u32>,
+    decrease_percent: Option<u32>,
 ) -> Vec<Instruction> {
-    let mut instructions = vec![
-        create_associated_token_account_idempotent(authority, &tuna_config.fee_recipient, &vault_a.mint, token_program_a),
-        create_associated_token_account_idempotent(authority, &tuna_config.fee_recipient, &vault_b.mint, token_program_b),
-        liquidate_tuna_spot_position_orca_instruction(
-            authority,
-            tuna_position,
-            tuna_config,
-            vault_a,
-            vault_b,
-            whirlpool,
-            token_program_a,
-            token_program_b,
-            withdraw_percent,
-        ),
-    ];
+    let mut instructions = vec![];
 
-    if create_tuna_position_owner_ata {
-        if tuna_position.collateral_token == PoolToken::A {
-            if tuna_position.mint_a != spl_token::native_mint::ID {
-                instructions.insert(
-                    0,
-                    create_associated_token_account_idempotent(authority, &tuna_position.authority, &tuna_position.mint_a, token_program_a),
-                );
-            }
-        } else {
-            if tuna_position.mint_a != spl_token::native_mint::ID {
-                instructions.insert(
-                    0,
-                    create_associated_token_account_idempotent(authority, &tuna_position.authority, &tuna_position.mint_b, token_program_b),
-                );
-            }
+    instructions.push(create_associated_token_account_idempotent(authority, &tuna_config.fee_recipient, &vault_a.mint, token_program_a));
+    instructions.push(create_associated_token_account_idempotent(authority, &tuna_config.fee_recipient, &vault_b.mint, token_program_b));
+
+    // Native SOL is used when the position is totally liquidated and ATA is not required.
+    if tuna_position.collateral_token == PoolToken::A {
+        if tuna_position.mint_a != spl_token::native_mint::ID || decrease_percent.unwrap_or(HUNDRED_PERCENT) < HUNDRED_PERCENT {
+            instructions.push(create_associated_token_account_idempotent(
+                authority,
+                &tuna_position.authority,
+                &tuna_position.mint_a,
+                token_program_a,
+            ));
+        }
+    } else {
+        if tuna_position.mint_b != spl_token::native_mint::ID || decrease_percent.unwrap_or(HUNDRED_PERCENT) < HUNDRED_PERCENT {
+            instructions.push(create_associated_token_account_idempotent(
+                authority,
+                &tuna_position.authority,
+                &tuna_position.mint_b,
+                token_program_b,
+            ));
         }
     }
+
+    instructions.push(liquidate_tuna_spot_position_orca_instruction(
+        authority,
+        tuna_position,
+        tuna_config,
+        vault_a,
+        vault_b,
+        whirlpool,
+        token_program_a,
+        token_program_b,
+        decrease_percent,
+    ));
 
     instructions
 }
@@ -68,7 +71,7 @@ pub fn liquidate_tuna_spot_position_orca_instruction(
     whirlpool: &Whirlpool,
     token_program_a: &Pubkey,
     token_program_b: &Pubkey,
-    withdraw_percent: Option<u32>,
+    decrease_percent: Option<u32>,
 ) -> Instruction {
     let mint_a = whirlpool.token_mint_a;
     let mint_b = whirlpool.token_mint_b;
@@ -128,7 +131,7 @@ pub fn liquidate_tuna_spot_position_orca_instruction(
 
     ix_builder.instruction_with_remaining_accounts(
         LiquidateTunaSpotPositionOrcaInstructionArgs {
-            withdraw_percent: withdraw_percent.unwrap_or(HUNDRED_PERCENT),
+            decrease_percent: decrease_percent.unwrap_or(HUNDRED_PERCENT),
             remaining_accounts_info: RemainingAccountsInfo {
                 slices: vec![
                     RemainingAccountsSlice {

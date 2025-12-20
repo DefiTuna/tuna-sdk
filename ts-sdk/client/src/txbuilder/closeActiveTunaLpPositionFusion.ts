@@ -116,7 +116,7 @@ export async function closeActiveTunaLpPositionFusionInstructions(
         ...args,
         minRemovedAmountA: 0,
         minRemovedAmountB: 0,
-        withdrawPercent: HUNDRED_PERCENT,
+        decreasePercent: HUNDRED_PERCENT,
       },
     ),
   );

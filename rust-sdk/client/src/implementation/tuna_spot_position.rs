@@ -1,9 +1,9 @@
 use crate::accounts::*;
 use crate::consts::HUNDRED_PERCENT;
-use crate::math::fixed::Rounding;
-use crate::math::{sqrt_price_x64_to_price_x64, Fixed128};
 use crate::types::*;
 use crate::{impl_tuna_position, TunaError as ErrorCode, TunaLimitOrderType, TunaPosition, TunaPositionKind};
+use defituna_core::fixed::Rounding;
+use defituna_core::sqrt_price_x64_to_price_x64;
 use fixed::types::U64F64;
 use fusionamm_core::{sqrt_price_to_tick_index, MAX_SQRT_PRICE, MIN_SQRT_PRICE};
 use solana_pubkey::Pubkey;
@@ -58,7 +58,7 @@ impl TunaPosition for TunaSpotPosition {
         TunaSpotPosition::compute_total_and_debt(self, sqrt_price, vault_a, vault_b)
     }
 
-    fn compute_leverage(&self, sqrt_price: u128, vault_a: &Vault, vault_b: &Vault) -> Result<Fixed128, ErrorCode> {
+    fn compute_leverage(&self, sqrt_price: u128, vault_a: &Vault, vault_b: &Vault) -> Result<f64, ErrorCode> {
         TunaSpotPosition::compute_leverage(self, sqrt_price, vault_a, vault_b)
     }
 

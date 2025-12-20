@@ -1,4 +1,4 @@
-import type { Address, ProgramDerivedAddress } from "@solana/kit";
+import { Address, getU32Encoder, ProgramDerivedAddress } from "@solana/kit";
 import { getAddressEncoder, getProgramDerivedAddress } from "@solana/kit";
 
 import { DEFAULT_PUSH_ORACLE_PROGRAM_ID } from "./consts.ts";
@@ -25,10 +25,20 @@ export async function getLendingVaultAddress(mint: Address): Promise<ProgramDeri
   });
 }
 
-export async function getLendingPositionAddress(authority: Address, mint: Address): Promise<ProgramDerivedAddress> {
+export async function getLendingVaultV2Address(mint: Address, id: number): Promise<ProgramDerivedAddress> {
   return await getProgramDerivedAddress({
     programAddress: TUNA_PROGRAM_ADDRESS,
-    seeds: ["lending_position", getAddressEncoder().encode(authority), getAddressEncoder().encode(mint)],
+    seeds: ["vault", getAddressEncoder().encode(mint), getU32Encoder().encode(id)],
+  });
+}
+
+export async function getLendingPositionAddress(
+  authority: Address,
+  mintOrVault: Address,
+): Promise<ProgramDerivedAddress> {
+  return await getProgramDerivedAddress({
+    programAddress: TUNA_PROGRAM_ADDRESS,
+    seeds: ["lending_position", getAddressEncoder().encode(authority), getAddressEncoder().encode(mintOrVault)],
   });
 }
 

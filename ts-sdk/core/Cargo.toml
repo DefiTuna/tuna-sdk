@@ -1,0 +1,19 @@
+[package]
+name = "defituna-core_js_bindings"
+version = "1.0.0"
+publish = false
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+fusionamm-core = { version = "1.0", features = ["wasm"]}
+defituna-core = { path = "../../rust-sdk/core", features = ["wasm"] }
+
+[profile.release]
+opt-level = "s"
+strip = true
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ["--enable-bulk-memory", "--enable-nontrapping-float-to-int"]

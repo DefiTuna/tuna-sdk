@@ -41,6 +41,16 @@ export function lendingPositionMintFilter(address: Address): LendingPositionFilt
   } as LendingPositionFilter;
 }
 
+export function lendingPositionVaultFilter(address: Address): LendingPositionFilter {
+  return {
+    memcmp: {
+      offset: 91n,
+      bytes: getBase58Decoder().decode(getAddressEncoder().encode(address)),
+      encoding: "base58",
+    },
+  } as LendingPositionFilter;
+}
+
 export async function fetchAllLendingPositionWithFilter(
   rpc: Rpc<GetProgramAccountsApi>,
   ...filters: LendingPositionFilter[]

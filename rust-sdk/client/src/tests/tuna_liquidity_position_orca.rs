@@ -20,12 +20,10 @@ mod tests {
 
     fn test_market_args() -> CreateMarketInstructionArgs {
         CreateMarketInstructionArgs {
-            market_maker: MarketMaker::Orca,
             address_lookup_table: Default::default(),
             max_leverage: (LEVERAGE_ONE * 1020) / 100,
             protocol_fee: 1000,                                    // 0.1%
             protocol_fee_on_collateral: 1000,                      // 0.1%
-            limit_order_execution_fee: 1000,                       // 0.1%
             liquidation_fee: 10000,                                // 1%
             liquidation_threshold: 920000,                         // 92%
             oracle_price_deviation_threshold: HUNDRED_PERCENT / 2, // Allow large deviation for tests
@@ -46,7 +44,9 @@ mod tests {
         rt.block_on(async {
             let signer = Keypair::new();
             let ctx = RpcContext::new(&signer, orca::get_whirlpool_config_accounts(&signer.pubkey())).await;
-            let test_market = setup_test_market(&ctx, test_market_args(), false, false, false).await.unwrap();
+            let test_market = setup_test_market(&ctx, test_market_args(), MarketMaker::Orca, false, false, false)
+                .await
+                .unwrap();
 
             let pool = fetch_whirlpool(&ctx.rpc, &test_market.pool).unwrap();
 
@@ -122,7 +122,9 @@ mod tests {
         rt.block_on(async {
             let signer = Keypair::new();
             let ctx = RpcContext::new(&signer, orca::get_whirlpool_config_accounts(&signer.pubkey())).await;
-            let test_market = setup_test_market(&ctx, test_market_args(), false, false, false).await.unwrap();
+            let test_market = setup_test_market(&ctx, test_market_args(), MarketMaker::Orca, false, false, false)
+                .await
+                .unwrap();
 
             let pool = fetch_whirlpool(&ctx.rpc, &test_market.pool).unwrap();
 
@@ -172,7 +174,9 @@ mod tests {
         rt.block_on(async {
             let signer = Keypair::new();
             let ctx = RpcContext::new(&signer, orca::get_whirlpool_config_accounts(&signer.pubkey())).await;
-            let test_market = setup_test_market(&ctx, test_market_args(), false, false, false).await.unwrap();
+            let test_market = setup_test_market(&ctx, test_market_args(), MarketMaker::Orca, false, false, false)
+                .await
+                .unwrap();
 
             let pool = fetch_whirlpool(&ctx.rpc, &test_market.pool).unwrap();
 
@@ -222,7 +226,9 @@ mod tests {
         rt.block_on(async {
             let signer = Keypair::new();
             let ctx = RpcContext::new(&signer, orca::get_whirlpool_config_accounts(&signer.pubkey())).await;
-            let test_market = setup_test_market(&ctx, test_market_args(), false, false, false).await.unwrap();
+            let test_market = setup_test_market(&ctx, test_market_args(), MarketMaker::Orca, false, false, false)
+                .await
+                .unwrap();
 
             let pool = fetch_whirlpool(&ctx.rpc, &test_market.pool).unwrap();
             let tuna_config = fetch_tuna_config(&ctx.rpc, &get_tuna_config_address().0).unwrap();

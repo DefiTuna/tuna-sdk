@@ -21,12 +21,10 @@ mod tests {
 
     fn test_market_args() -> CreateMarketInstructionArgs {
         CreateMarketInstructionArgs {
-            market_maker: MarketMaker::Fusion,
             address_lookup_table: Default::default(),
             max_leverage: (LEVERAGE_ONE * 1020) / 100,
             protocol_fee: 1000,                                    // 0.1%
             protocol_fee_on_collateral: 1000,                      // 0.1%
-            limit_order_execution_fee: 1000,                       // 0.1%
             liquidation_fee: 10000,                                // 1%
             liquidation_threshold: 920000,                         // 92%
             oracle_price_deviation_threshold: HUNDRED_PERCENT / 2, // Allow large deviation for tests
@@ -47,7 +45,9 @@ mod tests {
         rt.block_on(async {
             let signer = Keypair::new();
             let ctx = RpcContext::new(&signer, fusion::get_fusion_pool_config_accounts(&signer.pubkey())).await;
-            let test_market = setup_test_market(&ctx, test_market_args(), false, false, false).await.unwrap();
+            let test_market = setup_test_market(&ctx, test_market_args(), MarketMaker::Fusion, false, false, false)
+                .await
+                .unwrap();
 
             let pool = fetch_fusion_pool(&ctx.rpc, &test_market.pool).unwrap();
 
@@ -98,7 +98,7 @@ mod tests {
                     &ctx.signer.pubkey(),
                     &position_mint.pubkey(),
                     DecreaseTunaLpPositionArgs {
-                        withdraw_percent: HUNDRED_PERCENT,
+                        decrease_percent: HUNDRED_PERCENT,
                         swap_to_token: None,
                         min_removed_amount_a: 0,
                         min_removed_amount_b: 0,
@@ -132,7 +132,9 @@ mod tests {
         rt.block_on(async {
             let signer = Keypair::new();
             let ctx = RpcContext::new(&signer, fusion::get_fusion_pool_config_accounts(&signer.pubkey())).await;
-            let test_market = setup_test_market(&ctx, test_market_args(), false, false, false).await.unwrap();
+            let test_market = setup_test_market(&ctx, test_market_args(), MarketMaker::Fusion, false, false, false)
+                .await
+                .unwrap();
 
             let pool = fetch_fusion_pool(&ctx.rpc, &test_market.pool).unwrap();
 
@@ -182,7 +184,9 @@ mod tests {
         rt.block_on(async {
             let signer = Keypair::new();
             let ctx = RpcContext::new(&signer, fusion::get_fusion_pool_config_accounts(&signer.pubkey())).await;
-            let test_market = setup_test_market(&ctx, test_market_args(), false, false, false).await.unwrap();
+            let test_market = setup_test_market(&ctx, test_market_args(), MarketMaker::Fusion, false, false, false)
+                .await
+                .unwrap();
 
             let pool = fetch_fusion_pool(&ctx.rpc, &test_market.pool).unwrap();
 
@@ -232,7 +236,9 @@ mod tests {
         rt.block_on(async {
             let signer = Keypair::new();
             let ctx = RpcContext::new(&signer, fusion::get_fusion_pool_config_accounts(&signer.pubkey())).await;
-            let test_market = setup_test_market(&ctx, test_market_args(), false, false, false).await.unwrap();
+            let test_market = setup_test_market(&ctx, test_market_args(), MarketMaker::Fusion, false, false, false)
+                .await
+                .unwrap();
 
             let pool = fetch_fusion_pool(&ctx.rpc, &test_market.pool).unwrap();
             let tuna_config = fetch_tuna_config(&ctx.rpc, &get_tuna_config_address().0).unwrap();

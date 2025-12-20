@@ -1,0 +1,44 @@
+{
+  "name": "@crypticdot/defituna-core",
+  "description": "DefiTuna core typescript package.",
+  "version": "3.4.7",
+  "main": "./dist/nodejs/defituna_core_js_bindings.js",
+  "types": "./dist/nodejs/defituna_core_js_bindings.d.ts",
+  "browser": "./dist/browser/defituna_core_js_bindings.js",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": [
+    "./dist/browser/snippets/*",
+    "./dist/browser/defituna_core_js_bindings.js"
+  ],
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "wasm-pack build --release --out-dir ./dist/nodejs --target nodejs && wasm-pack build --release --out-dir ./dist/browser --target browser",
+    "test": "vitest run tests --no-cache",
+    "prepublishOnly": "rimraf dist/nodejs/.gitignore dist/browser/.gitignore",
+    "deploy": "../../scripts/deploy-npm",
+    "clean": "cargo clean && rimraf dist"
+  },
+  "devDependencies": {
+    "@crypticdot/eslint-config": "^1.0.0",
+    "@crypticdot/prettier-config": "^1.0.0",
+    "@crypticdot/typescript-config": "^1.0.0",
+    "@crypticdot/defituna-rust-core": "workspace:*",
+    "typescript": "^5.8.3",
+    "wasm-pack": "^0.13.1"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "keywords": [
+    "solana",
+    "crypto",
+    "defi",
+    "dex",
+    "amm"
+  ],
+  "homepage": "https://defituna.com"
+}

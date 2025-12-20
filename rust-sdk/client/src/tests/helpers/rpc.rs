@@ -11,6 +11,7 @@
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::{error::Error, str::FromStr};
 
+use crate::JUPITER_PROGRAM_ID;
 use async_trait::async_trait;
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
@@ -74,6 +75,7 @@ impl RpcContext {
         test.add_program("../../target/deploy/tuna", crate::TUNA_ID, None);
         test.add_program("../../external_programs/whirlpool", WHIRLPOOL_ID, None);
         test.add_program("../../external_programs/fusionamm", FUSIONAMM_ID, None);
+        test.add_program("../../external_programs/jupiter", JUPITER_PROGRAM_ID, None);
 
         let context = Mutex::new(test.start_with_context().await);
         let rpc = RpcClient::new_sender(MockRpcSender { context }, RpcClientConfig::default());

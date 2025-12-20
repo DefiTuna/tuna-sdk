@@ -1,14 +1,13 @@
 import {
-  closeActiveTunaSpotPositionFusionInstructions,
-  closeActiveTunaSpotPositionOrcaInstructions,
-  decreaseTunaSpotPositionFusionInstructions,
-  decreaseTunaSpotPositionOrcaInstructions,
+  closeTunaSpotPositionInstructions,
   fetchMarket,
   fetchTunaSpotPosition,
   getMarketAddress,
   getTunaSpotPositionAddress,
   HUNDRED_PERCENT,
   MarketMaker,
+  modifyTunaSpotPositionFusionInstructions,
+  modifyTunaSpotPositionOrcaInstructions,
 } from "@crypticdot/defituna-client";
 import { DEFAULT_TRANSACTION_CONFIG, sendTransaction } from "@crypticdot/fusionamm-tx-sender";
 import { IInstruction } from "@solana/kit";
@@ -23,18 +22,16 @@ export default class DecreaseSpotPosition extends BaseCommand {
       required: true,
     }),
 
-    withdrawPercent: percentFlag({
-      description: "Withdraw percentage",
+    decreasePercent: percentFlag({
+      description: "Decrease percentage",
       min: 0,
       max: HUNDRED_PERCENT,
     }),
-
-    maxSwapAmountIn: percentFlag({
-      description: "Maximum swap amount input",
-    }),
   };
   static override description = "Decreases a tuna spot position and closes it if all liquidity is withdrawn";
-  static override examples = ["<%= config.bin %> <%= command.id %> --positionAddress address"];
+  static override examples = [
+    "<%= config.bin %> <%= command.id %> --pool 7VuKeevbvbQQcxz6N4SNLmuq6PYy4AcGQRDssoqo4t65 --decreasePercent 100%",
+  ];
 
   public async run() {
     const { flags } = await this.parse(DecreaseSpotPosition);
@@ -52,31 +49,36 @@ export default class DecreaseSpotPosition extends BaseCommand {
 
     const addressLookupTable = market.data.addressLookupTable;
 
-    if (!flags.withdrawPercent || flags.withdrawPercent == HUNDRED_PERCENT) {
-      const args = {
-        maxSwapAmountIn: flags.maxSwapAmountIn ?? 0n,
-      };
+    const args = {
+      decreasePercent: flags.decreasePercent ? flags.decreasePercent : HUNDRED_PERCENT,
+      collateralAmount: 0,
+      borrowAmount: 0,
+      requiredSwapAmount: 0n,
+    };
 
-      if (market.data.marketMaker == MarketMaker.Fusion) {
-        const ixs = await closeActiveTunaSpotPositionFusionInstructions(rpc, signer, tunaPosition.data.pool, args);
-        instructions.push(...ixs);
-      } else {
-        const ixs = await closeActiveTunaSpotPositionOrcaInstructions(rpc, signer, tunaPosition.data.pool, args);
-        instructions.push(...ixs);
-      }
+    if (market.data.marketMaker == MarketMaker.Fusion) {
+      const ixs = await modifyTunaSpotPositionFusionInstructions(
+        rpc,
+        signer,
+        tunaPosition.data.pool,
+        tunaPosition.data.collateralToken,
+        args,
+      );
+      instructions.push(...ixs);
     } else {
-      const args = {
-        maxSwapAmountIn: flags.maxSwapAmountIn ?? 0n,
-        withdrawPercent: flags.withdrawPercent,
-      };
+      const ixs = await modifyTunaSpotPositionOrcaInstructions(
+        rpc,
+        signer,
+        tunaPosition.data.pool,
+        tunaPosition.data.collateralToken,
+        args,
+      );
+      instructions.push(...ixs);
+    }
 
-      if (market.data.marketMaker == MarketMaker.Fusion) {
-        const ixs = await decreaseTunaSpotPositionFusionInstructions(rpc, signer, tunaPosition.data.pool, args);
-        instructions.push(...ixs);
-      } else {
-        const ixs = await decreaseTunaSpotPositionOrcaInstructions(rpc, signer, tunaPosition.data.pool, args);
-        instructions.push(...ixs);
-      }
+    if (args.decreasePercent == HUNDRED_PERCENT) {
+      const ixs = await closeTunaSpotPositionInstructions(rpc, signer, tunaPosition.data.pool);
+      instructions.push(...ixs);
     }
 
     console.log("Sending a transaction...");

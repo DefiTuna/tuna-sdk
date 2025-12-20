@@ -1,19 +1,21 @@
 #![allow(dead_code)]
 
-pub mod consts;
-pub mod implementation;
-pub mod math;
-pub mod txbuilder;
-pub mod utils;
-
-mod generated;
+mod core_types;
 mod pda;
+
+#[rustfmt::skip]
+mod generated;
 
 #[cfg(feature = "fetch")]
 mod gpa;
 
 #[cfg(test)]
 mod tests;
+
+pub mod consts;
+pub mod implementation;
+pub mod txbuilder;
+pub mod utils;
 
 pub use generated::accounts;
 pub use generated::errors::*;
@@ -32,6 +34,5 @@ pub use gpa::*;
 
 pub use consts::*;
 pub use implementation::*;
-pub use math::*;
 pub use pda::*;
 pub use txbuilder::*;

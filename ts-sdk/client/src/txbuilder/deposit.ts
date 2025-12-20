@@ -11,6 +11,7 @@ import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
 import { fetchMaybeMint, findAssociatedTokenPda, Mint } from "@solana-program/token-2022";
 
 import {
+  fetchMaybeVault,
   getCreateAtaInstructions,
   getDepositInstruction,
   getLendingPositionAddress,
@@ -21,12 +22,23 @@ import {
 export async function depositInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
-  mintAddress: Address,
+  mintAddress: Address | undefined,
+  vaultAddress: Address | undefined,
   amount: bigint,
 ): Promise<IInstruction[]> {
   const instructions: IInstruction[] = [];
 
-  const mint = await fetchMaybeMint(rpc, mintAddress);
+  if (!mintAddress && !vaultAddress) {
+    throw new Error("Mint or vault address must be provided.");
+  }
+
+  if (vaultAddress && !mintAddress) {
+    const vault = await fetchMaybeVault(rpc, vaultAddress);
+    if (!vault.exists) throw new Error("Vault account not found");
+    mintAddress = vault.data.mint;
+  }
+
+  const mint = await fetchMaybeMint(rpc, mintAddress!);
   if (!mint.exists) throw new Error("Mint account not found");
 
   // Add create user's token account instruction if needed.
@@ -41,7 +53,7 @@ export async function depositInstructions(
   instructions.push(...createUserAtaInstructions.init);
 
   // Add withdraw instruction
-  const ix = await depositInstruction(authority, mint, amount);
+  const ix = await depositInstruction(authority, mint, vaultAddress, amount);
   instructions.push(ix);
 
   // Close WSOL accounts if needed.
@@ -53,12 +65,16 @@ export async function depositInstructions(
 export async function depositInstruction(
   authority: TransactionSigner,
   mint: Account<Mint>,
+  vault: Address | undefined,
   amount: bigint,
 ): Promise<IInstruction> {
   const tunaConfig = (await getTunaConfigAddress())[0];
-  const lendingPosition = (await getLendingPositionAddress(authority.address, mint.address))[0];
+  const lendingPosition = (await getLendingPositionAddress(authority.address, vault ?? mint.address))[0];
 
-  const vault = (await getLendingVaultAddress(mint.address))[0];
+  if (!vault) {
+    vault = (await getLendingVaultAddress(mint.address))[0];
+  }
+
   const vaultAta = (
     await findAssociatedTokenPda({
       owner: vault,

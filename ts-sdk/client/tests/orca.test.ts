@@ -17,7 +17,6 @@ describe("Tuna Position on Orca", () => {
   beforeEach(async () => {
     testMarket = await setupTestMarket(
       {
-        marketMaker: MarketMaker.Orca,
         addressLookupTable: DEFAULT_ADDRESS,
         borrowLimitA: 0n,
         borrowLimitB: 0n,
@@ -29,11 +28,11 @@ describe("Tuna Position on Orca", () => {
         oraclePriceDeviationThreshold: HUNDRED_PERCENT / 2, // Allow large deviation for tests
         protocolFee: 1000, // 0.1%
         protocolFeeOnCollateral: 1000, // 0.1%
-        limitOrderExecutionFee: 1000, // 0.1%
         rebalanceProtocolFee: HUNDRED_PERCENT / 10,
         spotPositionSizeLimitA: 1000_000_000_000,
         spotPositionSizeLimitB: 100000_000_000,
       },
+      MarketMaker.Orca,
       false,
       false,
       true,
@@ -161,4 +160,4 @@ describe("Tuna Position on Orca", () => {
       },
     );
   });
-});
+}, 20000);

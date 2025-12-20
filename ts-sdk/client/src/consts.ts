@@ -3,12 +3,12 @@ import { address } from "@solana/kit";
 export const DEFAULT_ADDRESS = address("11111111111111111111111111111111");
 
 export const HUNDRED_PERCENT = 1000000;
+export const HUNDRED_PERCENTn = 1000000n;
 export const LEVERAGE_ONE = HUNDRED_PERCENT; // 1.0x
 
 export const MAX_LEVERAGE = 11 * LEVERAGE_ONE;
 export const MAX_PROTOCOL_FEE = HUNDRED_PERCENT / 100;
 export const MAX_LIQUIDATION_FEE = HUNDRED_PERCENT / 5;
-export const MAX_LIMIT_ORDER_EXECUTION_FEE = HUNDRED_PERCENT / 100;
 export const DEFAULT_MAX_SWAP_SLIPPAGE = HUNDRED_PERCENT / 50;
 export const MAX_LIQUIDATION_THRESHOLD = (HUNDRED_PERCENT * 95) / 100;
 
@@ -30,6 +30,9 @@ export const TUNA_POSITION_FLAGS_ALLOW_REBALANCING = 1 << 6;
 export const WP_NFT_UPDATE_AUTH = address("3axbTs2z5GBy6usVbNVoqEgZMng3vZvMnAoX29BFfwhr");
 
 export const DEFAULT_PUSH_ORACLE_PROGRAM_ID = address("pythWSnswVUd12oZpeFP8e9CVaEqJg25g1Vtc2biRsT");
+
+export const JUPITER_EVENT_AUTHORITY = address("D8cy77BBepLMngZx6ZukaTff5hCt1HrWyKk3Hnd9oitf");
+export const JUPITER_PROGRAM_AUTHORITY = address("9nnLbotNTcUhvbrsA6Mdkx45Sm82G35zo28AqUvjExn8");
 
 /// The minimum sqrt price for an orca/fusion pool.
 export const MIN_SQRT_PRICE = 4295048016n;

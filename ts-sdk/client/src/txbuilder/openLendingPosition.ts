@@ -16,10 +16,10 @@ export async function openLendingPositionInstruction(
   const lendingPosition = (await getLendingPositionAddress(authority.address, mintAddress))[0];
 
   return getOpenLendingPositionInstruction({
-    lendingPosition,
-    poolMint: mintAddress,
-    vault,
     authority,
     tunaConfig,
+    lendingPosition,
+    mint: mintAddress,
+    vault,
   });
 }
