@@ -1,6 +1,6 @@
 # Rust
 .anchor
-target/*
+target/
 dist/
 sdk/js
 sdk/rust

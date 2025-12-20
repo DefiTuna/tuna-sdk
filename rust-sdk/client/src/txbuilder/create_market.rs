@@ -4,7 +4,13 @@ use solana_instruction::Instruction;
 use solana_pubkey::Pubkey;
 use solana_sdk_ids::system_program;
 
-pub fn create_market_instruction(authority: &Pubkey, pool: &Pubkey, args: CreateMarketInstructionArgs) -> Instruction {
+pub fn create_market_instruction(
+    authority: &Pubkey,
+    pool: &Pubkey,
+    vault_a: &Pubkey,
+    vault_b: &Pubkey,
+    args: CreateMarketInstructionArgs,
+) -> Instruction {
     let tuna_config_address = get_tuna_config_address().0;
     let market_address = get_market_address(pool).0;
 
@@ -12,6 +18,8 @@ pub fn create_market_instruction(authority: &Pubkey, pool: &Pubkey, args: Create
         authority: *authority,
         tuna_config: tuna_config_address,
         market: market_address,
+        vault_a: *vault_a,
+        vault_b: *vault_b,
         pool: *pool,
         system_program: system_program::ID,
     };

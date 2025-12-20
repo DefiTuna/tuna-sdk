@@ -1,0 +1,42 @@
+DefiTuna SDK Source-Available License v1.0
+Copyright (c) Cryptic Dot
+
+This SDK is released under a source-available license. You are permitted to view and use the code under the terms below.
+
+1. Grant of Rights
+
+You are granted a limited, non-exclusive, non-transferable, non-sublicensable license to:
+
+- View and read the source code for educational and integration purposes;
+- Use the SDK **as-is**, without modification, for the sole purpose of building software that interacts with the DefiTuna protocol and services provided by Cryptic Dot;
+- Use the SDK in production environments only if the SDK is used to interact directly with DefiTuna smart contracts, APIs, or infrastructure.
+
+2. Restrictions
+
+You may **not**:
+
+- Modify, adapt, fork, or create derivative works of the SDK;
+- Redistribute, republish, or sublicense the SDK or any portion thereof;
+- Use the SDK for or in connection with any product, protocol, or service that is not built specifically to interact with DefiTuna;
+- Use the SDK to develop or improve competing products, including AMMs, liquidity protocols, trading tools, or DeFi platforms;
+- Use the SDK in any way that violates applicable law or harms the integrity of DefiTuna or Cryptic Dot.
+
+3. Contributions
+
+If you submit any pull request, patch, or contribution, you grant Cryptic Dot an irrevocable, worldwide, royalty-free license to use, modify, and distribute your contribution without obligation or attribution.
+
+4. No Trademark Rights
+
+This license does not grant any rights to use the names, logos, or trademarks of Cryptic Dot or DefiTuna.
+
+5. Disclaimer
+
+THE SDK IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND. CRYPTIC DOT DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+
+6. Termination
+
+This license is automatically terminated if you violate any of its terms. Upon termination, you must cease use of the SDK and delete all copies.
+
+7. Governing Law
+
+This license is governed by the laws of the Republic of Panama, without regard to its conflict of laws principles.

@@ -70,7 +70,7 @@ export default class UpdateVault extends BaseCommand {
       newData.pythOraclePriceUpdate = (await getPythPriceUpdateAccountAddress(0, priceFeedId))[0];
     }
 
-    const ix = await updateVaultInstruction(signer, args.mint, {
+    const ix = await updateVaultInstruction(signer, vaultAddress, {
       interestRate: newData.interestRate,
       supplyLimit: newData.supplyLimit,
       pythOracleFeedId: newData.pythOracleFeedId,

@@ -1,10 +1,13 @@
 import {
   fetchAllLendingPositionWithFilter,
   fetchMaybeLendingPosition,
+  getLendingVaultV2Address,
   LendingPosition,
   lendingPositionAuthorityFilter,
   lendingPositionMintFilter,
+  lendingPositionVaultFilter,
 } from "@crypticdot/defituna-client";
+import { Flags } from "@oclif/core";
 import { Account } from "@solana/kit";
 
 import BaseCommand, { addressArg, addressFlag } from "../base";
@@ -20,8 +23,14 @@ export default class FetchLendingPosition extends BaseCommand {
     mint: addressFlag({
       description: "Token mint address",
     }),
+    vault: addressFlag({
+      description: "Lending vault address",
+    }),
     owner: addressFlag({
       description: "Lending position owner address",
+    }),
+    id: Flags.integer({
+      description: "Isolated vault id. Must be greater than 0 if set.",
     }),
   };
   static override description = "Fetch a tuna lending position or the list of all positions";
@@ -50,19 +59,40 @@ export default class FetchLendingPosition extends BaseCommand {
       }
     } else {
       console.log("Fetching lending positions...");
+
+      if (flags.vault && (flags.mint || flags.id)) {
+        throw new Error(`Mint and id shouldn't be set if the vault address is provided`);
+      }
+
+      const vaultAddress =
+        flags.vault ?? (flags.mint && flags.id ? (await getLendingVaultV2Address(flags.mint, flags.id))[0] : undefined);
+
       if (flags.mint && flags.owner) {
         const positions = await fetchAllLendingPositionWithFilter(
           rpc,
           lendingPositionMintFilter(flags.mint),
           lendingPositionAuthorityFilter(flags.owner),
+          ...(vaultAddress ? [lendingPositionVaultFilter(vaultAddress)] : []),
         );
         for (const position of positions) this.logPosition(position);
       } else if (flags.mint) {
-        const positions = await fetchAllLendingPositionWithFilter(rpc, lendingPositionMintFilter(flags.mint));
+        const positions = await fetchAllLendingPositionWithFilter(
+          rpc,
+          lendingPositionMintFilter(flags.mint),
+          ...(vaultAddress ? [lendingPositionVaultFilter(vaultAddress)] : []),
+        );
+        this.sortByAmount(positions);
+        for (const position of positions) this.logPosition(position);
+      } else if (vaultAddress) {
+        const positions = await fetchAllLendingPositionWithFilter(rpc, lendingPositionVaultFilter(vaultAddress));
         this.sortByAmount(positions);
         for (const position of positions) this.logPosition(position);
       } else if (flags.owner) {
-        const positions = await fetchAllLendingPositionWithFilter(rpc, lendingPositionAuthorityFilter(flags.owner));
+        const positions = await fetchAllLendingPositionWithFilter(
+          rpc,
+          lendingPositionAuthorityFilter(flags.owner),
+          ...(vaultAddress ? [lendingPositionVaultFilter(vaultAddress)] : []),
+        );
         this.sortByAmount(positions);
         for (const position of positions) this.logPosition(position);
       } else {

@@ -1,11 +1,10 @@
 use crate::consts::LEVERAGE_ONE;
 use crate::generated::accounts::Market;
-use crate::math::Fixed128;
 use std::fmt;
 
 impl Market {
-    pub fn get_max_leverage(&self) -> Fixed128 {
-        Fixed128::from_num(self.max_leverage) / Fixed128::from_num(LEVERAGE_ONE)
+    pub fn get_max_leverage(&self) -> f64 {
+        self.max_leverage as f64 / LEVERAGE_ONE as f64
     }
 }
 

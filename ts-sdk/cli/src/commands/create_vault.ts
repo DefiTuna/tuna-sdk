@@ -1,14 +1,17 @@
 import {
   CreateVaultInstructionDataArgs,
   createVaultInstructions,
+  CreateVaultV2InstructionDataArgs,
+  createVaultV2Instructions,
   fetchMaybeVault,
   getLendingVaultAddress,
+  getLendingVaultV2Address,
   getPythPriceUpdateAccountAddress,
   HUNDRED_PERCENT,
 } from "@crypticdot/defituna-client";
 import { sendTransaction } from "@crypticdot/fusionamm-tx-sender";
 import { Flags } from "@oclif/core";
-import { Address, address, getBase58Codec, ReadonlyUint8Array } from "@solana/kit";
+import { Address, address, getBase58Codec, IInstruction, ReadonlyUint8Array } from "@solana/kit";
 import { fetchMint } from "@solana-program/token-2022";
 
 import BaseCommand, { addressArg, bigintFlag, percentFlag, pythFeedIdFlag } from "../base";
@@ -33,6 +36,9 @@ export default class CreateVault extends BaseCommand {
     }),
     allowUnsafeTokenExtensions: Flags.boolean({
       description: "Allow unsafe token extensions",
+    }),
+    id: Flags.integer({
+      description: "Isolated vault id. Must be greater than 0 if set.",
     }),
   };
   static override description = "Create a lending vault";
@@ -68,16 +74,32 @@ export default class CreateVault extends BaseCommand {
 
     const INTEREST_RATE_100_PERCENT = (1n << 60n) / 31536000n; // 100% annually
 
-    const ixArgs: CreateVaultInstructionDataArgs = {
-      interestRate: (INTEREST_RATE_100_PERCENT * BigInt(flags.interestRate)) / BigInt(HUNDRED_PERCENT),
-      supplyLimit: flags.supplyLimit,
-      pythOraclePriceUpdate: pythOraclePriceUpdateAddress,
-      pythOracleFeedId: flags.priceFeedId,
-      allowUnsafeTokenExtensions: flags.allowUnsafeTokenExtensions,
-    };
-
     const mint = await fetchMint(rpc, args.mint);
-    const instructions = await createVaultInstructions(signer, mint, ixArgs);
+
+    let instructions: IInstruction[];
+    if (flags.id) {
+      const ixArgs: CreateVaultV2InstructionDataArgs = {
+        interestRate: (INTEREST_RATE_100_PERCENT * BigInt(flags.interestRate)) / BigInt(HUNDRED_PERCENT),
+        supplyLimit: flags.supplyLimit,
+        pythOraclePriceUpdate: pythOraclePriceUpdateAddress,
+        pythOracleFeedId: flags.priceFeedId,
+        allowUnsafeTokenExtensions: flags.allowUnsafeTokenExtensions,
+        id: flags.id,
+      };
+
+      const vaultAddress = (await getLendingVaultV2Address(mint.address, flags.id))[0];
+      instructions = await createVaultV2Instructions(signer, vaultAddress, mint, ixArgs);
+    } else {
+      const ixArgs: CreateVaultInstructionDataArgs = {
+        interestRate: (INTEREST_RATE_100_PERCENT * BigInt(flags.interestRate)) / BigInt(HUNDRED_PERCENT),
+        supplyLimit: flags.supplyLimit,
+        pythOraclePriceUpdate: pythOraclePriceUpdateAddress,
+        pythOracleFeedId: flags.priceFeedId,
+        allowUnsafeTokenExtensions: flags.allowUnsafeTokenExtensions,
+      };
+
+      instructions = await createVaultInstructions(signer, mint, ixArgs);
+    }
 
     console.log("");
     console.log("Sending a transaction...");

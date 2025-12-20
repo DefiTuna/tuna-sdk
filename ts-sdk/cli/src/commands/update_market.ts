@@ -6,7 +6,6 @@ import {
   HUNDRED_PERCENT,
   LEVERAGE_ONE,
   MAX_LEVERAGE,
-  MAX_LIMIT_ORDER_EXECUTION_FEE,
   MAX_LIQUIDATION_FEE,
   MAX_LIQUIDATION_THRESHOLD,
   MAX_PROTOCOL_FEE,
@@ -61,11 +60,6 @@ export default class UpdateMarket extends BaseCommand {
       description: "Protocol fee on borrowed funds (hundredths of a basis point or %)",
       min: 0,
       max: MAX_PROTOCOL_FEE,
-    }),
-    limitOrderExecutionFee: percentFlag({
-      description: "Limit order execution fee (hundredths of a basis point or %)",
-      min: 0,
-      max: MAX_LIMIT_ORDER_EXECUTION_FEE,
     }),
     liquidationFee: percentFlag({
       description: "Position liquidation fee (hundredths of a basis point or %)",
@@ -141,10 +135,6 @@ export default class UpdateMarket extends BaseCommand {
 
     if (flags.protocolFeeOnCollateral !== undefined) {
       newData.protocolFeeOnCollateral = flags.protocolFeeOnCollateral;
-    }
-
-    if (flags.limitOrderExecutionFee !== undefined) {
-      newData.limitOrderExecutionFee = flags.limitOrderExecutionFee;
     }
 
     if (flags.liquidationFee !== undefined) {
@@ -229,7 +219,6 @@ export default class UpdateMarket extends BaseCommand {
       maxLeverage: newData.maxLeverage,
       protocolFee: newData.protocolFee,
       protocolFeeOnCollateral: newData.protocolFeeOnCollateral,
-      limitOrderExecutionFee: newData.limitOrderExecutionFee,
       liquidationFee: newData.liquidationFee,
       liquidationThreshold: newData.liquidationThreshold,
       borrowLimitA: newData.borrowLimitA,

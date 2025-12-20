@@ -2,7 +2,7 @@ import { Address, GetAccountInfoApi, GetMultipleAccountsApi, IInstruction, Rpc, 
 import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
 import { fetchMaybeMint, findAssociatedTokenPda } from "@solana-program/token-2022";
 
-import { getLendingVaultAddress, getRepayBadDebtInstruction, getTunaConfigAddress } from "../index.ts";
+import { getLendingVaultAddress, getRepayBadDebtInstruction } from "../index.ts";
 
 export async function repayBadDebtInstruction(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
@@ -14,7 +14,6 @@ export async function repayBadDebtInstruction(
   const mint = await fetchMaybeMint(rpc, mintAddress);
   if (!mint.exists) throw new Error("Mint account not found");
 
-  const tunaConfig = (await getTunaConfigAddress())[0];
   const vault = (await getLendingVaultAddress(mint.address))[0];
 
   const vaultAta = (
@@ -37,7 +36,6 @@ export async function repayBadDebtInstruction(
     mint: mint.address,
     vaultAta,
     authority,
-    tunaConfig,
     vault,
     tokenProgram: mint.programAddress,
     memoProgram: MEMO_PROGRAM_ADDRESS,

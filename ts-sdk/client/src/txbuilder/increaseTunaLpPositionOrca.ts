@@ -1,3 +1,4 @@
+import { getIncreaseLpPositionQuote } from "@crypticdot/defituna-core";
 import {
   fetchMaybeWhirlpool,
   getInitializeDynamicTickArrayInstruction,
@@ -46,7 +47,6 @@ import {
   TunaLpPosition,
   Vault,
 } from "../index.ts";
-import { getIncreaseLpPositionQuote } from "../utils";
 
 export type IncreaseTunaLpPositionOrcaInstructionsArgs = Omit<
   IncreaseTunaLpPositionOrcaInstructionDataArgs,
@@ -97,6 +97,7 @@ export async function increaseTunaLpPositionOrcaInstructions(
     protocolFeeRate: market.data.protocolFee,
     protocolFeeRateOnCollateral: market.data.protocolFeeOnCollateral,
     swapFeeRate: whirlpool.data.feeRate,
+    liquidationThreshold: market.data.liquidationThreshold,
   });
 
   //

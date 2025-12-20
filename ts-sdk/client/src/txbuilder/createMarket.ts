@@ -10,6 +10,8 @@ import {
 export async function createMarketInstruction(
   authority: TransactionSigner,
   pool: Address,
+  vaultA: Address,
+  vaultB: Address,
   args: CreateMarketInstructionDataArgs,
 ): Promise<IInstruction> {
   const tunaConfig = (await getTunaConfigAddress())[0];
@@ -20,6 +22,8 @@ export async function createMarketInstruction(
     tunaConfig,
     market: marketAddress,
     pool,
+    vaultA,
+    vaultB,
     ...args,
   });
 }

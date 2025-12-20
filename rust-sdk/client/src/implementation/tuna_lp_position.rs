@@ -1,12 +1,13 @@
 use crate::accounts::*;
 use crate::consts::HUNDRED_PERCENT;
-use crate::math::fixed::Rounding;
-use crate::math::{sqrt_price_x64_to_price_x64, Fixed128};
-use crate::orca::liquidity::get_amounts_for_liquidity;
 use crate::types::*;
 use crate::{impl_tuna_position, TunaError as ErrorCode, TunaLimitOrderType, TunaPosition, TunaPositionKind};
+use defituna_core::fixed::Rounding;
+use defituna_core::price::sqrt_price_x64_to_price_x64;
 use fixed::types::U64F64;
-use fusionamm_core::{sqrt_price_to_tick_index, tick_index_to_sqrt_price, MAX_SQRT_PRICE, MAX_TICK_INDEX, MIN_SQRT_PRICE, MIN_TICK_INDEX};
+use fusionamm_core::{
+    get_amounts_from_liquidity, sqrt_price_to_tick_index, tick_index_to_sqrt_price, MAX_SQRT_PRICE, MAX_TICK_INDEX, MIN_SQRT_PRICE, MIN_TICK_INDEX,
+};
 use solana_pubkey::Pubkey;
 use std::fmt;
 
@@ -41,9 +42,13 @@ impl TunaPosition for TunaLpPosition {
         if self.liquidity == 0 {
             return Ok((0, 0));
         }
-        let lower_sqrt_price_x64 = tick_index_to_sqrt_price(self.tick_lower_index);
-        let upper_sqrt_price_x64 = tick_index_to_sqrt_price(self.tick_upper_index);
-        get_amounts_for_liquidity(sqrt_price, lower_sqrt_price_x64, upper_sqrt_price_x64, self.liquidity)
+
+        let lower_sqrt_price = tick_index_to_sqrt_price(self.tick_lower_index);
+        let upper_sqrt_price = tick_index_to_sqrt_price(self.tick_upper_index);
+
+        get_amounts_from_liquidity(self.liquidity, sqrt_price, lower_sqrt_price, upper_sqrt_price, false)
+            .map_err(|_| ErrorCode::MathOverflow)
+            .map(|amounts| (amounts.a, amounts.b))
     }
 
     fn get_leftovers(&self) -> (u64, u64) {
@@ -58,7 +63,7 @@ impl TunaPosition for TunaLpPosition {
         TunaLpPosition::compute_total_and_debt(self, sqrt_price, vault_a, vault_b)
     }
 
-    fn compute_leverage(&self, sqrt_price: u128, vault_a: &Vault, vault_b: &Vault) -> Result<Fixed128, ErrorCode> {
+    fn compute_leverage(&self, sqrt_price: u128, vault_a: &Vault, vault_b: &Vault) -> Result<f64, ErrorCode> {
         TunaLpPosition::compute_leverage(self, sqrt_price, vault_a, vault_b)
     }
 

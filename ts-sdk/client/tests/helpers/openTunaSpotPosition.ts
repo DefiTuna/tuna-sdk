@@ -1,13 +1,6 @@
 import { Address, Rpc, SolanaRpcApi, TransactionSigner } from "@solana/kit";
 
-import {
-  fetchMarket,
-  getMarketAddress,
-  MarketMaker,
-  openTunaSpotPositionFusionInstructions,
-  openTunaSpotPositionOrcaInstructions,
-  PoolToken,
-} from "../../src";
+import { openTunaSpotPositionInstructions, PoolToken } from "../../src";
 
 import { FUNDER } from "./addresses.ts";
 import { sendTransaction } from "./mockRpc.ts";
@@ -27,17 +20,10 @@ export async function openTunaSpotPosition({
   collateralToken,
   signer = FUNDER,
 }: OpenTunaSpotPositionTestArgs) {
-  const marketAddress = (await getMarketAddress(poolAddress))[0];
-  const market = await fetchMarket(rpc, marketAddress);
-
-  const openTunaLpPositionArgs = {
+  const instructions = await openTunaSpotPositionInstructions(rpc, signer, poolAddress, {
     positionToken,
     collateralToken,
-  };
-  const instructions =
-    market.data.marketMaker == MarketMaker.Orca
-      ? await openTunaSpotPositionOrcaInstructions(rpc, signer, poolAddress, openTunaLpPositionArgs)
-      : await openTunaSpotPositionFusionInstructions(rpc, signer, poolAddress, openTunaLpPositionArgs);
+  });
 
   await sendTransaction(instructions);
 }

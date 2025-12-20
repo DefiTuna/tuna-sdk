@@ -3,14 +3,14 @@ import {
   fetchMaybeTunaSpotPosition,
   getMarketAddress,
   getTunaSpotPositionAddress,
-  increaseTunaSpotPositionFusionInstructions,
-  increaseTunaSpotPositionOrcaInstructions,
   MarketMaker,
   MAX_SQRT_PRICE,
   MIN_SQRT_PRICE,
-  openAndIncreaseTunaSpotPositionFusionInstructions,
-  openAndIncreaseTunaSpotPositionOrcaInstructions,
+  modifyTunaSpotPositionFusionInstructions,
+  modifyTunaSpotPositionOrcaInstructions,
+  openTunaSpotPositionInstructions,
   PoolToken,
+  setTunaSpotPositionLimitOrdersInstruction,
 } from "@crypticdot/defituna-client";
 import { fetchFusionPool } from "@crypticdot/fusionamm-client";
 import { DEFAULT_TRANSACTION_CONFIG, sendTransaction } from "@crypticdot/fusionamm-tx-sender";
@@ -54,12 +54,12 @@ export default class IncreaseSpotPosition extends BaseCommand {
     }),
 
     minSwapAmountOut: bigintFlag({
-      description: "Minimum swap output amount>",
+      description: "Minimum swap output amount",
     }),
   };
   static override description = "Increases a tuna spot position.";
   static override examples = [
-    "<%= config.bin %> <%= command.id %> --pool address --collateralB 1000000 --borrowB 1000000",
+    "<%= config.bin %> <%= command.id %> --pool 7VuKeevbvbQQcxz6N4SNLmuq6PYy4AcGQRDssoqo4t65 --collateralB 1000000 --borrowB 1000000",
   ];
 
   public async run() {
@@ -79,6 +79,13 @@ export default class IncreaseSpotPosition extends BaseCommand {
       throw new Error("Market for the provided pool address is not found");
     }
 
+    console.log("Fetching pool and mints...");
+    const pool =
+      market.data.marketMaker == MarketMaker.Fusion
+        ? await fetchFusionPool(rpc, flags.pool)
+        : await fetchWhirlpool(rpc, flags.pool);
+    const [mintA, mintB] = await fetchAllMint(rpc, [pool.data.tokenMintA, pool.data.tokenMintB]);
+
     const addressLookupTable = market.data.addressLookupTable;
 
     const tunaPositionAddress = (await getTunaSpotPositionAddress(signer.address, flags.pool))[0];
@@ -87,63 +94,65 @@ export default class IncreaseSpotPosition extends BaseCommand {
     console.log("Fetching tuna position...");
     const tunaPosition = await fetchMaybeTunaSpotPosition(rpc, tunaPositionAddress);
 
+    let collateralToken: PoolToken;
+
     if (tunaPosition.exists) {
       console.log("Tuna position:", tunaPosition);
+      collateralToken = tunaPosition.data.collateralToken;
 
-      if (tunaPosition.data.collateralToken == PoolToken.A && flags.collateralB)
-        throw new Error("Collateral token must be A");
-      if (tunaPosition.data.collateralToken == PoolToken.B && flags.collateralA)
-        throw new Error("Collateral token mus be B");
+      if (collateralToken == PoolToken.A && flags.collateralB) throw new Error("Collateral token must be A");
+      if (collateralToken == PoolToken.B && flags.collateralA) throw new Error("Collateral token mus be B");
 
       if (tunaPosition.data.positionToken == PoolToken.A && flags.borrowA) throw new Error("Borrowed token must be B");
       if (tunaPosition.data.positionToken == PoolToken.B && flags.borrowB) throw new Error("Borrowed token must be A");
-
-      const args = {
-        collateralAmount: flags.collateralA ?? flags.collateralB ?? 0n,
-        borrowAmount: flags.borrowA ?? flags.borrowB ?? 0n,
-        minSwapAmountOut: flags.minSwapAmountOut ?? 0n,
-      };
-
-      if (market.data.marketMaker == MarketMaker.Fusion) {
-        const ixs = await increaseTunaSpotPositionFusionInstructions(rpc, signer, tunaPosition.data.pool, args);
-        instructions.push(...ixs);
-      } else {
-        const ixs = await increaseTunaSpotPositionOrcaInstructions(rpc, signer, tunaPosition.data.pool, args);
-        instructions.push(...ixs);
-      }
     } else {
       console.log("The position doesn't exist, opening a new one...");
+
       if (!flags.collateralA && !flags.collateralB)
         throw new Error("Collateral A or B must be provided for a new position");
-
-      const pool =
-        market.data.marketMaker == MarketMaker.Fusion
-          ? await fetchFusionPool(rpc, flags.pool)
-          : await fetchWhirlpool(rpc, flags.pool);
-
-      const [mintA, mintB] = await fetchAllMint(rpc, [pool.data.tokenMintA, pool.data.tokenMintB]);
 
       const args = {
         positionToken: flags.borrowA ? PoolToken.B : PoolToken.A,
         collateralToken: flags.collateralA ? PoolToken.A : PoolToken.B,
         collateralAmount: flags.collateralA ?? flags.collateralB ?? 0n,
-        borrowAmount: flags.borrowA ?? flags.borrowB ?? 0n,
-        lowerLimitOrderSqrtPrice: flags.lowerLimitOrderPrice
-          ? priceToSqrtPrice(flags.lowerLimitOrderPrice, mintA.data.decimals, mintB.data.decimals)
-          : MIN_SQRT_PRICE,
-        upperLimitOrderSqrtPrice: flags.upperLimitOrderPrice
-          ? priceToSqrtPrice(flags.upperLimitOrderPrice, mintA.data.decimals, mintB.data.decimals)
-          : MAX_SQRT_PRICE,
-        minSwapAmountOut: flags.minSwapAmountOut ?? 0n,
       };
 
-      if (market.data.marketMaker == MarketMaker.Fusion) {
-        const ixs = await openAndIncreaseTunaSpotPositionFusionInstructions(rpc, signer, flags.pool, args);
-        instructions.push(...ixs);
-      } else {
-        const ixs = await openAndIncreaseTunaSpotPositionOrcaInstructions(rpc, signer, flags.pool, args);
-        instructions.push(...ixs);
-      }
+      const ixs = await openTunaSpotPositionInstructions(rpc, signer, flags.pool, args);
+      instructions.push(...ixs);
+
+      collateralToken = args.collateralToken;
+    }
+
+    const args = {
+      decreasePercent: 0,
+      collateralAmount: flags.collateralA ?? flags.collateralB ?? 0n,
+      borrowAmount: flags.borrowA ?? flags.borrowB ?? 0n,
+      requiredSwapAmount: flags.minSwapAmountOut ?? 0n,
+    };
+
+    if (market.data.marketMaker == MarketMaker.Fusion) {
+      const ixs = await modifyTunaSpotPositionFusionInstructions(rpc, signer, flags.pool, collateralToken, args);
+      instructions.push(...ixs);
+    } else {
+      const ixs = await modifyTunaSpotPositionOrcaInstructions(rpc, signer, flags.pool, collateralToken, args);
+      instructions.push(...ixs);
+    }
+
+    // Set limit orders if needed
+    if (flags.lowerLimitOrderPrice || flags.upperLimitOrderPrice) {
+      const lowerLimitOrderSqrtPrice = flags.lowerLimitOrderPrice
+        ? priceToSqrtPrice(flags.lowerLimitOrderPrice, mintA.data.decimals, mintB.data.decimals)
+        : MIN_SQRT_PRICE;
+
+      const upperLimitOrderSqrtPrice = flags.upperLimitOrderPrice
+        ? priceToSqrtPrice(flags.upperLimitOrderPrice, mintA.data.decimals, mintB.data.decimals)
+        : MAX_SQRT_PRICE;
+
+      const ix = await setTunaSpotPositionLimitOrdersInstruction(signer, flags.pool, {
+        lowerLimitOrderSqrtPrice,
+        upperLimitOrderSqrtPrice,
+      });
+      instructions.push(ix);
     }
 
     console.log("Sending a transaction...");

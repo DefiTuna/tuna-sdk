@@ -9,6 +9,7 @@ import {
   getCreateAtaInstructions,
   getLiquidateTunaSpotPositionFusionInstruction,
   getMarketAddress,
+  HUNDRED_PERCENT,
   NATIVE_MINT,
   PoolToken,
   TunaConfig,
@@ -25,28 +26,28 @@ export async function liquidateTunaSpotPositionFusionInstructions(
   vaultA: Account<Vault>,
   vaultB: Account<Vault>,
   fusionPool: Account<FusionPool>,
-  createTunaPositionOwnerAta: boolean,
-  withdrawPercent: number,
+  decreasePercent: number,
 ): Promise<IInstruction[]> {
   const instructions: IInstruction[] = [];
 
   //
   // Add create position owner token account instructions.
-  // This is optional because it might be used by an attacker to drain the liquidator's wallet.
   //
 
-  if (createTunaPositionOwnerAta) {
-    const collateralTokenMint = tunaPosition.data.collateralToken == PoolToken.A ? mintA : mintB;
-    if (collateralTokenMint.address != NATIVE_MINT) {
-      const createPositionOwnerAtaInstructions = await getCreateAtaInstructions(
-        undefined,
-        authority,
-        collateralTokenMint.address,
-        tunaPosition.data.authority,
-        collateralTokenMint.programAddress,
-      );
-      instructions.push(...createPositionOwnerAtaInstructions.init);
-    }
+  const collateralTokenMint = tunaPosition.data.collateralToken == PoolToken.A ? mintA : mintB;
+
+  // Native SOL is used when the position is totally liquidated.
+  const useNativeSol = collateralTokenMint.address == NATIVE_MINT && decreasePercent == HUNDRED_PERCENT;
+
+  if (!useNativeSol) {
+    const createPositionOwnerAtaInstructions = await getCreateAtaInstructions(
+      undefined,
+      authority,
+      collateralTokenMint.address,
+      tunaPosition.data.authority,
+      collateralTokenMint.programAddress,
+    );
+    instructions.push(...createPositionOwnerAtaInstructions.init);
   }
 
   //
@@ -84,7 +85,7 @@ export async function liquidateTunaSpotPositionFusionInstructions(
     vaultA,
     vaultB,
     fusionPool,
-    withdrawPercent,
+    decreasePercent,
   );
   instructions.push(ix);
 
@@ -100,7 +101,7 @@ export async function liquidateTunaSpotPositionFusionInstruction(
   vaultA: Account<Vault>,
   vaultB: Account<Vault>,
   fusionPool: Account<FusionPool>,
-  withdrawPercent: number,
+  decreasePercent: number,
 ): Promise<IInstruction> {
   const marketAddress = (await getMarketAddress(fusionPool.address))[0];
 
@@ -219,7 +220,7 @@ export async function liquidateTunaSpotPositionFusionInstruction(
     fusionPool: fusionPool.address,
     fusionammProgram: FUSIONAMM_PROGRAM_ADDRESS,
     memoProgram: MEMO_PROGRAM_ADDRESS,
-    withdrawPercent,
+    decreasePercent,
     remainingAccountsInfo,
   });
 

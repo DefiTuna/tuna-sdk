@@ -27,7 +27,7 @@ export type LiquidateTunaLpPositionTestArgs = {
   rpc: Rpc<SolanaRpcApi>;
   signer: TransactionSigner;
   positionMint: Address;
-  withdrawPercent?: number;
+  decreasePercent?: number;
 };
 
 export type LiquidateTunaLpPositionTestResults = {
@@ -80,7 +80,7 @@ export async function liquidateTunaLpPosition({
   rpc,
   signer,
   positionMint,
-  withdrawPercent,
+  decreasePercent,
 }: LiquidateTunaLpPositionTestArgs): Promise<LiquidateTunaLpPositionTestResults> {
   const tunaConfigAddress = (await getTunaConfigAddress())[0];
   const tunaConfig = await fetchTunaConfig(rpc, tunaConfigAddress);
@@ -158,7 +158,7 @@ export async function liquidateTunaLpPosition({
       vaultA,
       vaultB,
       pool as Account<Whirlpool, Address>,
-      withdrawPercent ?? HUNDRED_PERCENT,
+      decreasePercent ?? HUNDRED_PERCENT,
     );
   } else {
     instructions = await liquidateTunaLpPositionFusionInstructions(
@@ -170,7 +170,7 @@ export async function liquidateTunaLpPosition({
       vaultA,
       vaultB,
       pool as Account<FusionPool, Address>,
-      withdrawPercent ?? HUNDRED_PERCENT,
+      decreasePercent ?? HUNDRED_PERCENT,
     );
   }
 

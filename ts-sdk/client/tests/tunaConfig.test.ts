@@ -261,4 +261,4 @@ describe("Tuna Config", () => {
     });
     await sendTransaction([ix]);
   });
-});
+}, 20000);

@@ -56,7 +56,7 @@ pub fn close_active_tuna_lp_position_fusion_instructions(
         &mint_a_account.owner,
         &mint_b_account.owner,
         DecreaseTunaLpPositionArgs {
-            withdraw_percent: HUNDRED_PERCENT,
+            decrease_percent: HUNDRED_PERCENT,
             swap_to_token: args.swap_to_token,
             min_removed_amount_a: args.min_removed_amount_a,
             min_removed_amount_b: args.min_removed_amount_b,

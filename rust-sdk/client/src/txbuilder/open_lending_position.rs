@@ -14,7 +14,7 @@ pub fn open_lending_position_instruction(authority: &Pubkey, mint: &Pubkey) -> I
         tuna_config: tuna_config_address,
         vault: vault_address,
         lending_position: lending_position_address,
-        pool_mint: *mint,
+        mint: *mint,
         system_program: system_program::ID,
     };
 

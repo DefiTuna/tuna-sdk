@@ -1,8 +1,8 @@
 import { openPositionInstructions as openFusionPositionInstructions } from "@crypticdot/fusionamm-sdk";
 import { openPositionInstructions as openOrcaPositionInstructions, setWhirlpoolsConfig } from "@orca-so/whirlpools";
 import { priceToSqrtPrice } from "@orca-so/whirlpools-core";
-import { Account, Address } from "@solana/kit";
 import { fetchMint, findAssociatedTokenPda, Mint } from "@solana-program/token-2022";
+import { Account, Address } from "@solana/kit";
 import assert from "assert";
 
 import {
@@ -11,17 +11,19 @@ import {
   createTunaConfigInstruction,
   CreateVaultInstructionDataArgs,
   createVaultInstructions,
+  CreateVaultV2InstructionDataArgs,
+  createVaultV2Instructions,
   DEFAULT_ADDRESS,
   depositInstruction,
   fetchMaybeVault,
   getLendingPositionAddress,
   getLendingVaultAddress,
+  getLendingVaultV2Address,
   getMarketAddress,
   MarketMaker,
   NATIVE_MINT,
   openLendingPositionInstruction,
   UNLIMITED_SUPPLY_LIMIT,
-  Vault,
 } from "../../src";
 
 import { FEE_RECIPIENT_KEYPAIR, LIQUIDATOR_KEYPAIR, TUNA_ADMIN_KEYPAIR } from "./addresses.ts";
@@ -50,28 +52,53 @@ export async function setup() {
 }
 
 export async function setupVault(mint: Account<Mint>, args: CreateVaultInstructionDataArgs, skipCreate = false) {
-  if (!skipCreate) {
-    const instructions = await createVaultInstructions(TUNA_ADMIN_KEYPAIR, mint, args);
-    await sendTransaction(instructions);
-  }
-
-  const vaultAddress = (await getLendingVaultAddress(mint.address))[0];
-  const vaultAtaAddress = (
+  const address = (await getLendingVaultAddress(mint.address))[0];
+  const ataAddress = (
     await findAssociatedTokenPda({
-      owner: vaultAddress,
+      owner: address,
       mint: mint.address,
       tokenProgram: mint.programAddress,
     })
   )[0];
 
+  if (!skipCreate) {
+    const instructions = await createVaultInstructions(TUNA_ADMIN_KEYPAIR, mint, args);
+    await sendTransaction(instructions);
+  }
+
   return {
-    vaultAddress,
-    vaultAtaAddress,
+    address,
+    ataAddress,
   };
 }
 
-export async function setupMarket(pool: Address, args: CreateMarketInstructionDataArgs) {
-  const ix = await createMarketInstruction(TUNA_ADMIN_KEYPAIR, pool, args);
+export async function setupVaultV2(mint: Account<Mint>, args: CreateVaultV2InstructionDataArgs, skipCreate = false) {
+  const address = (await getLendingVaultV2Address(mint.address, args.id))[0];
+  const ataAddress = (
+    await findAssociatedTokenPda({
+      owner: address,
+      mint: mint.address,
+      tokenProgram: mint.programAddress,
+    })
+  )[0];
+
+  if (!skipCreate) {
+    const instructions = await createVaultV2Instructions(TUNA_ADMIN_KEYPAIR, address, mint, args);
+    await sendTransaction(instructions);
+  }
+  return {
+    address,
+    ataAddress,
+  };
+}
+
+export async function setupMarket(
+  pool: Address,
+  vaultA: Address,
+  vaultB: Address,
+  args: CreateMarketInstructionDataArgs,
+) {
+  const ix = await createMarketInstruction(TUNA_ADMIN_KEYPAIR, pool, vaultA, vaultB, args);
   await sendTransaction([ix]);
   return (await getMarketAddress(pool))[0];
 }
@@ -96,11 +123,13 @@ export type TestMarket = {
 
 export async function setupTestMarket(
   args: CreateMarketInstructionDataArgs,
+  marketMaker: MarketMaker,
   mintAIsNative = false,
   initializeRewards?: boolean,
   adaptiveFee?: boolean,
 ): Promise<TestMarket> {
-  if (args.marketMaker > 0) assert(!initializeRewards, "Rewards are not supported by this liquidity provider");
+  if (marketMaker != MarketMaker.Orca)
+    assert(!initializeRewards, "Rewards are not supported by this liquidity provider");
 
   const lendingPositionAAmount = 1000_000_000_000n;
   const lendingPositionBAmount = 100000_000_000n;
@@ -120,7 +149,7 @@ export async function setupTestMarket(
 
   const initialPositionParams = { liquidity: 1000_000_000_000n };
 
-  if (args.marketMaker == MarketMaker.Orca) {
+  if (marketMaker == MarketMaker.Orca) {
     poolAddress = await setupWhirlpool(mintA.address, mintB.address, 64, { initialSqrtPrice, adaptiveFee });
 
     if (initializeRewards) {
@@ -180,7 +209,7 @@ export async function setupTestMarket(
   if (!vaultAAccount.exists) {
     await sendTransaction([
       await openLendingPositionInstruction(signer, mintA.address),
-      await depositInstruction(signer, mintA, lendingPositionAAmount),
+      await depositInstruction(signer, mintA, undefined, lendingPositionAAmount),
     ]);
   }
 
@@ -194,15 +223,15 @@ export async function setupTestMarket(
 
   await sendTransaction([
     await openLendingPositionInstruction(signer, mintB.address),
-    await depositInstruction(signer, mintB, lendingPositionBAmount),
+    await depositInstruction(signer, mintB, undefined, lendingPositionBAmount),
   ]);
 
   const marketAddress = (await getMarketAddress(poolAddress))[0];
 
-  await setupMarket(poolAddress, args);
+  await setupMarket(poolAddress, vaultA.address, vaultB.address, args);
 
   return {
-    marketMaker: args.marketMaker,
+    marketMaker,
     ataAAddress,
     ataBAddress,
     lendingPositionAAddress,
@@ -211,9 +240,9 @@ export async function setupTestMarket(
     mintA,
     mintB,
     pool: poolAddress,
-    vaultAAddress: vaultA.vaultAddress,
-    vaultAAtaAddress: vaultA.vaultAtaAddress,
-    vaultBAddress: vaultB.vaultAddress,
-    vaultBAtaAddress: vaultB.vaultAtaAddress,
+    vaultAAddress: vaultA.address,
+    vaultAAtaAddress: vaultA.ataAddress,
+    vaultBAddress: vaultB.address,
+    vaultBAtaAddress: vaultB.ataAddress,
   };
 }

@@ -13,7 +13,7 @@ use solana_pubkey::Pubkey;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 
 pub struct DecreaseTunaLpPositionArgs {
-    pub withdraw_percent: u32,
+    pub decrease_percent: u32,
     pub swap_to_token: Option<PoolToken>,
     pub min_removed_amount_a: u64,
     pub min_removed_amount_b: u64,
@@ -23,7 +23,7 @@ pub struct DecreaseTunaLpPositionArgs {
 impl Default for DecreaseTunaLpPositionArgs {
     fn default() -> Self {
         Self {
-            withdraw_percent: HUNDRED_PERCENT,
+            decrease_percent: HUNDRED_PERCENT,
             swap_to_token: None,
             min_removed_amount_a: 0,
             min_removed_amount_b: 0,
@@ -141,7 +141,7 @@ pub fn decrease_tuna_lp_position_fusion_instruction(
 
     ix_builder.instruction_with_remaining_accounts(
         DecreaseTunaLpPositionFusionInstructionArgs {
-            withdraw_percent: args.withdraw_percent,
+            decrease_percent: args.decrease_percent,
             swap_to_token: args.swap_to_token,
             min_removed_amount_a: args.min_removed_amount_a,
             min_removed_amount_b: args.min_removed_amount_b,

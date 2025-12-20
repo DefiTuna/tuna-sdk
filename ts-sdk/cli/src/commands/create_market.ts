@@ -1,19 +1,23 @@
 import {
   createAddressLookupTableForMarketInstructions,
   createMarketInstruction,
+  createMarketV2Instruction,
   fetchMaybeMarket,
+  getLendingVaultAddress,
   getMarketAddress,
   HUNDRED_PERCENT,
   LEVERAGE_ONE,
   MarketMaker,
   MAX_LEVERAGE,
-  MAX_LIMIT_ORDER_EXECUTION_FEE,
   MAX_LIQUIDATION_FEE,
   MAX_LIQUIDATION_THRESHOLD,
   MAX_PROTOCOL_FEE,
 } from "@crypticdot/defituna-client";
+import { fetchFusionPool } from "@crypticdot/fusionamm-client";
 import { sendTransaction } from "@crypticdot/fusionamm-tx-sender";
 import { Args, Flags } from "@oclif/core";
+import { fetchWhirlpool } from "@orca-so/whirlpools-client";
+import { IInstruction } from "@solana/kit";
 
 import BaseCommand, { addressArg, addressFlag, bigintFlag, percentFlag } from "../base";
 import { rpc, signer } from "../rpc";
@@ -33,6 +37,12 @@ export default class CreateMarket extends BaseCommand {
   static override flags = {
     addressLookupTable: addressFlag({
       description: "Address lookup table",
+    }),
+    vaultA: addressFlag({
+      description: "Vault A address",
+    }),
+    vaultB: addressFlag({
+      description: "Vault B address",
     }),
     disabled: Flags.boolean({
       description: "Indicates if the market is disabled",
@@ -55,12 +65,6 @@ export default class CreateMarket extends BaseCommand {
       default: 0,
       min: 0,
       max: MAX_PROTOCOL_FEE,
-    }),
-    limitOrderExecutionFee: percentFlag({
-      description: "Limit order execution fee (hundredths of a basis point or %)",
-      default: 0,
-      min: 0,
-      max: MAX_LIMIT_ORDER_EXECUTION_FEE,
     }),
     liquidationFee: percentFlag({
       description: "Position liquidation fee (hundredths of a basis point or %)",
@@ -111,7 +115,7 @@ export default class CreateMarket extends BaseCommand {
   };
   static override description = "Create a tuna market";
   static override examples = [
-    "<%= config.bin %> <%= command.id %> Czfq3xZZDmsdGdUyrNLtRhGc47cXcZtLG4crryfu44zE Fusion --maxLeverage 509% --protocolFeeOnCollateral 0.01% --protocolFee 0.05% --limitOrderExecutionFee 0.05% --liquidationFee 5% --liquidationThreshold 83%",
+    "<%= config.bin %> <%= command.id %> Czfq3xZZDmsdGdUyrNLtRhGc47cXcZtLG4crryfu44zE Fusion --maxLeverage 509% --protocolFeeOnCollateral 0.01% --protocolFee 0.05% --liquidationFee 5% --liquidationThreshold 83%",
   ];
 
   public async run() {
@@ -129,6 +133,9 @@ export default class CreateMarket extends BaseCommand {
     }
 
     const marketMaker = args.marketMaker == "Orca" ? MarketMaker.Orca : MarketMaker.Fusion;
+
+    const pool =
+      marketMaker == MarketMaker.Fusion ? await fetchFusionPool(rpc, args.pool) : await fetchWhirlpool(rpc, args.pool);
 
     let addressLookupTable = flags.addressLookupTable;
     if (!addressLookupTable) {
@@ -148,24 +155,37 @@ export default class CreateMarket extends BaseCommand {
       console.log("Transaction landed:", signature);
     }
 
-    const ix = await createMarketInstruction(signer, args.pool, {
-      addressLookupTable,
-      marketMaker,
-      disabled: flags.disabled,
-      maxLeverage: flags.maxLeverage,
-      protocolFee: flags.protocolFee,
-      protocolFeeOnCollateral: flags.protocolFeeOnCollateral,
-      limitOrderExecutionFee: flags.limitOrderExecutionFee,
-      liquidationFee: flags.liquidationFee,
-      liquidationThreshold: flags.liquidationThreshold,
-      borrowLimitA: flags.borrowLimitA,
-      borrowLimitB: flags.borrowLimitB,
-      oraclePriceDeviationThreshold: flags.oraclePriceDeviationThreshold,
-      maxSwapSlippage: flags.maxSwapSlippage,
-      rebalanceProtocolFee: flags.rebalanceProtocolFee,
-      spotPositionSizeLimitA: flags.spotPositionSizeLimitA,
-      spotPositionSizeLimitB: flags.spotPositionSizeLimitB,
-    });
+    const vaultAAddress = (await getLendingVaultAddress(pool.data.tokenMintA))[0];
+    const vaultBAddress = (await getLendingVaultAddress(pool.data.tokenMintB))[0];
+
+    let ix: IInstruction;
+
+    if ((!flags.vaultA && !flags.vaultB) || (flags.vaultA == vaultAAddress && flags.vaultB == vaultBAddress)) {
+      ix = await createMarketInstruction(signer, args.pool, vaultAAddress, vaultBAddress, {
+        addressLookupTable,
+        disabled: flags.disabled,
+        maxLeverage: flags.maxLeverage,
+        protocolFee: flags.protocolFee,
+        protocolFeeOnCollateral: flags.protocolFeeOnCollateral,
+        liquidationFee: flags.liquidationFee,
+        liquidationThreshold: flags.liquidationThreshold,
+        borrowLimitA: flags.borrowLimitA,
+        borrowLimitB: flags.borrowLimitB,
+        oraclePriceDeviationThreshold: flags.oraclePriceDeviationThreshold,
+        maxSwapSlippage: flags.maxSwapSlippage,
+        rebalanceProtocolFee: flags.rebalanceProtocolFee,
+        spotPositionSizeLimitA: flags.spotPositionSizeLimitA,
+        spotPositionSizeLimitB: flags.spotPositionSizeLimitB,
+      });
+    } else {
+      if (!flags.vaultA || !flags.vaultB) {
+        throw new Error("Both vault addresses must be provided");
+      }
+      ix = await createMarketV2Instruction(signer, args.pool, vaultAAddress, vaultBAddress, {
+        addressLookupTable,
+        maxLeverage: flags.maxLeverage,
+      });
+    }
 
     console.log("");
     console.log("Sending a transaction...");

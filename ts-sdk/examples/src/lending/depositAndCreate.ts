@@ -42,6 +42,7 @@ export async function depositAndCreateLendingPosition(): Promise<void> {
     rpc,
     authority,
     mint.address,
+    undefined,
     nominalAmount * decimalsScale,
   );
 

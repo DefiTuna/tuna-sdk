@@ -27,7 +27,7 @@ export default class DecreaseLpPosition extends BaseCommand {
       description: "Position address",
     }),
 
-    withdrawPercent: percentFlag({
+    decreasePercent: percentFlag({
       description: "Withdraw percentage",
       min: 0,
       max: HUNDRED_PERCENT,
@@ -83,7 +83,7 @@ export default class DecreaseLpPosition extends BaseCommand {
     const maxAmountSlippage = flags.maxAmountSlippage ?? HUNDRED_PERCENT;
     const swapToToken = flags.swapToToken ?? 0;
 
-    if (!flags.withdrawPercent || flags.withdrawPercent == HUNDRED_PERCENT) {
+    if (!flags.decreasePercent || flags.decreasePercent == HUNDRED_PERCENT) {
       const args = {
         swapToToken,
         maxSwapSlippage,
@@ -102,7 +102,7 @@ export default class DecreaseLpPosition extends BaseCommand {
         swapToToken,
         maxSwapSlippage,
         maxAmountSlippage,
-        withdrawPercent: flags.withdrawPercent,
+        decreasePercent: flags.decreasePercent,
       };
 
       if (market.data.marketMaker == MarketMaker.Fusion) {

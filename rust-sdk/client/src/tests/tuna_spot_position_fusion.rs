@@ -1,19 +1,16 @@
 #[cfg(test)]
 mod tests {
     use crate::accounts::{fetch_all_vault, fetch_tuna_config, fetch_tuna_spot_position};
-    use crate::instructions::{CreateMarketInstructionArgs, OpenTunaSpotPositionFusionInstructionArgs};
+    use crate::instructions::{CreateMarketInstructionArgs, OpenTunaSpotPositionInstructionArgs};
+    use crate::modify_tuna_spot_position_fusion::{modify_tuna_spot_position_fusion_instructions, ModifyTunaSpotPositionArgs};
     use crate::tests::fusion::swap_exact_in;
     use crate::tests::*;
     use crate::types::{MarketMaker, PoolToken};
     use crate::{
-        close_active_tuna_spot_position_fusion_instructions, close_tuna_spot_position_instructions, decrease_tuna_spot_position_fusion_instructions,
-        get_tuna_config_address, get_tuna_spot_position_address, get_vault_address, increase_tuna_spot_position_fusion_instructions,
-        liquidate_tuna_spot_position_fusion_instructions, open_and_increase_tuna_spot_position_fusion_instructions,
-        open_tuna_spot_position_fusion_instructions, DecreaseTunaSpotPositionArgs, IncreaseTunaSpotPositionArgs, OpenAndIncreaseTunaSpotPositionArgs,
-        HUNDRED_PERCENT, LEVERAGE_ONE,
+        close_tuna_spot_position_instructions, get_tuna_config_address, get_tuna_spot_position_address, get_vault_address,
+        liquidate_tuna_spot_position_fusion_instructions, open_tuna_spot_position_instructions, HUNDRED_PERCENT, LEVERAGE_ONE,
     };
     use fusionamm_client::fetch_fusion_pool;
-    use fusionamm_core::{MAX_SQRT_PRICE, MIN_SQRT_PRICE};
     use serial_test::serial;
     use solana_keypair::Keypair;
     use solana_program_test::tokio;
@@ -21,12 +18,10 @@ mod tests {
 
     fn test_market_args() -> CreateMarketInstructionArgs {
         CreateMarketInstructionArgs {
-            market_maker: MarketMaker::Fusion,
             address_lookup_table: Default::default(),
             max_leverage: (LEVERAGE_ONE * 1020) / 100,
             protocol_fee: 1000,                                    // 0.1%
             protocol_fee_on_collateral: 1000,                      // 0.1%
-            limit_order_execution_fee: 1000,                       // 0.1%
             liquidation_fee: 10000,                                // 1%
             liquidation_threshold: 920000,                         // 92%
             oracle_price_deviation_threshold: HUNDRED_PERCENT / 2, // Allow large deviation for tests
@@ -47,13 +42,15 @@ mod tests {
         rt.block_on(async {
             let signer = Keypair::new();
             let ctx = RpcContext::new(&signer, fusion::get_fusion_pool_config_accounts(&signer.pubkey())).await;
-            let test_market = setup_test_market(&ctx, test_market_args(), false, false, false).await.unwrap();
+            let test_market = setup_test_market(&ctx, test_market_args(), MarketMaker::Fusion, false, false, false)
+                .await
+                .unwrap();
 
-            let instructions = open_tuna_spot_position_fusion_instructions(
+            let instructions = open_tuna_spot_position_instructions(
                 &ctx.rpc,
                 &ctx.signer.pubkey(),
                 &test_market.pool,
-                OpenTunaSpotPositionFusionInstructionArgs {
+                OpenTunaSpotPositionInstructionArgs {
                     position_token: PoolToken::A,
                     collateral_token: PoolToken::A,
                 },
@@ -63,14 +60,16 @@ mod tests {
             ctx.send_transaction(instructions).unwrap();
 
             ctx.send_transaction(
-                increase_tuna_spot_position_fusion_instructions(
+                modify_tuna_spot_position_fusion_instructions(
                     &ctx.rpc,
                     &ctx.signer.pubkey(),
                     &test_market.pool,
-                    IncreaseTunaSpotPositionArgs {
+                    None,
+                    ModifyTunaSpotPositionArgs {
+                        decrease_percent: 0,
                         collateral_amount: 1_000_000_000,
                         borrow_amount: 1_000_000_000,
-                        min_swap_amount_out: 0,
+                        required_swap_amount: 0,
                     },
                 )
                 .unwrap(),
@@ -78,13 +77,16 @@ mod tests {
             .unwrap();
 
             ctx.send_transaction(
-                decrease_tuna_spot_position_fusion_instructions(
+                modify_tuna_spot_position_fusion_instructions(
                     &ctx.rpc,
                     &ctx.signer.pubkey(),
                     &test_market.pool,
-                    DecreaseTunaSpotPositionArgs {
-                        withdraw_percent: HUNDRED_PERCENT,
-                        max_swap_amount_in: 0,
+                    None,
+                    ModifyTunaSpotPositionArgs {
+                        decrease_percent: HUNDRED_PERCENT,
+                        collateral_amount: 0,
+                        borrow_amount: 0,
+                        required_swap_amount: 0,
                     },
                 )
                 .unwrap(),
@@ -98,59 +100,43 @@ mod tests {
 
     #[test]
     #[serial]
-    fn test_open_position_with_liquidity_and_close_with_liquidity() {
-        let rt = tokio::runtime::Runtime::new().unwrap();
-        rt.block_on(async {
-            let signer = Keypair::new();
-            let ctx = RpcContext::new(&signer, fusion::get_fusion_pool_config_accounts(&signer.pubkey())).await;
-            let test_market = setup_test_market(&ctx, test_market_args(), false, false, false).await.unwrap();
-
-            let instructions = open_and_increase_tuna_spot_position_fusion_instructions(
-                &ctx.rpc,
-                &ctx.signer.pubkey(),
-                &test_market.pool,
-                OpenAndIncreaseTunaSpotPositionArgs {
-                    position_token: PoolToken::A,
-                    collateral_token: PoolToken::A,
-                    collateral_amount: 1_000_000_000,
-                    borrow_amount: 1_000_000_000,
-                    min_swap_amount_out: 0,
-                },
-            )
-            .unwrap();
-
-            ctx.send_transaction(instructions).unwrap();
-
-            ctx.send_transaction(close_active_tuna_spot_position_fusion_instructions(&ctx.rpc, &ctx.signer.pubkey(), &test_market.pool, 0).unwrap())
-                .unwrap();
-        });
-    }
-
-    #[test]
-    #[serial]
     fn test_liquidate_position() {
         let rt = tokio::runtime::Runtime::new().unwrap();
         rt.block_on(async {
             let signer = Keypair::new();
             let ctx = RpcContext::new(&signer, fusion::get_fusion_pool_config_accounts(&signer.pubkey())).await;
-            let test_market = setup_test_market(&ctx, test_market_args(), false, false, false).await.unwrap();
+            let test_market = setup_test_market(&ctx, test_market_args(), MarketMaker::Fusion, false, false, false)
+                .await
+                .unwrap();
 
             let pool = fetch_fusion_pool(&ctx.rpc, &test_market.pool).unwrap();
             let tuna_config = fetch_tuna_config(&ctx.rpc, &get_tuna_config_address().0).unwrap();
 
-            let instructions = open_and_increase_tuna_spot_position_fusion_instructions(
+            let mut instructions = open_tuna_spot_position_instructions(
                 &ctx.rpc,
                 &ctx.signer.pubkey(),
                 &test_market.pool,
-                OpenAndIncreaseTunaSpotPositionArgs {
+                OpenTunaSpotPositionInstructionArgs {
                     position_token: PoolToken::A,
                     collateral_token: PoolToken::A,
-                    collateral_amount: 1_000_000_000,
-                    borrow_amount: 1_500_000_000,
-                    min_swap_amount_out: 0,
                 },
             )
             .unwrap();
+
+            let mut increase_ixs = modify_tuna_spot_position_fusion_instructions(
+                &ctx.rpc,
+                &ctx.signer.pubkey(),
+                &test_market.pool,
+                Some(PoolToken::A),
+                ModifyTunaSpotPositionArgs {
+                    decrease_percent: 0,
+                    collateral_amount: 1_000_000_000,
+                    borrow_amount: 1_500_000_000,
+                    required_swap_amount: 0,
+                },
+            )
+            .unwrap();
+            instructions.append(&mut increase_ixs);
 
             ctx.send_transaction(instructions).unwrap();
 
@@ -178,7 +164,6 @@ mod tests {
                 &pool.data,
                 &test_market.token_program_a,
                 &test_market.token_program_b,
-                true,
                 None,
             ))
             .unwrap();

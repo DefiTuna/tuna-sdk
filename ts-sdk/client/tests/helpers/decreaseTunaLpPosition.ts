@@ -29,7 +29,7 @@ export type DecreaseTunaLpPositionTestArgs = {
   signer: TransactionSigner;
   positionMint: Address;
   pool: Address;
-  withdrawPercent?: number;
+  decreasePercent?: number;
   maxAmountSlippage?: number;
   maxSwapSlippage?: number;
   swapToToken?: PoolToken;
@@ -79,7 +79,7 @@ export async function decreaseTunaLpPosition({
   signer,
   positionMint,
   pool: poolAddress,
-  withdrawPercent,
+  decreasePercent,
   maxAmountSlippage,
   maxSwapSlippage,
   swapToToken,
@@ -162,7 +162,7 @@ export async function decreaseTunaLpPosition({
   instructions.push(getSetComputeUnitLimitInstruction({ units: 1_400_000 }));
 
   const removeLiquidityArgs = {
-    withdrawPercent: withdrawPercent ?? HUNDRED_PERCENT,
+    decreasePercent: decreasePercent ?? HUNDRED_PERCENT,
     maxSwapSlippage: maxSwapSlippage ?? HUNDRED_PERCENT,
     maxAmountSlippage: maxAmountSlippage ?? HUNDRED_PERCENT,
     swapToToken: swapToToken ?? null,

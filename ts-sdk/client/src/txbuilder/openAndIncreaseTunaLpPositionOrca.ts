@@ -1,3 +1,4 @@
+import { getIncreaseLpPositionQuote } from "@crypticdot/defituna-core";
 import {
   fetchAllMaybeTickArray,
   fetchMaybeWhirlpool,
@@ -52,7 +53,6 @@ import {
   Vault,
   WP_NFT_UPDATE_AUTH,
 } from "../index.ts";
-import { getIncreaseLpPositionQuote } from "../utils";
 import { calculateMinimumBalanceForRentExemption } from "../utils/sysvar";
 
 export type OpenAndIncreaseTunaLpPositionOrca = {
@@ -117,6 +117,7 @@ export async function openAndIncreaseTunaLpPositionOrcaInstructions(
     protocolFeeRate: market.data.protocolFee,
     protocolFeeRateOnCollateral: market.data.protocolFeeOnCollateral,
     swapFeeRate: whirlpool.data.feeRate,
+    liquidationThreshold: market.data.liquidationThreshold,
   });
 
   //
