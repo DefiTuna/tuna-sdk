@@ -8,7 +8,7 @@ use std::fmt;
 pub const INTEREST_ACCRUE_MIN_INTERVAL: u64 = 60;
 
 impl Vault {
-    pub fn get_utilization(&mut self) -> f64 {
+    pub fn get_utilization(&self) -> f64 {
         if self.deposited_funds > 0 {
             self.borrowed_funds as f64 / self.deposited_funds as f64
         } else {
