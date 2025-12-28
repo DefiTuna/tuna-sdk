@@ -79,11 +79,9 @@ export default class UpdateMarket extends BaseCommand {
     }),
     spotPositionSizeLimitA: bigintFlag({
       description: "Position size limit in token A. Set to zero for unlimited size",
-      default: 0n,
     }),
     spotPositionSizeLimitB: bigintFlag({
       description: "Position size limit in token B. Set to zero for unlimited size",
-      default: 0n,
     }),
     oraclePriceDeviationThreshold: percentFlag({
       description: "Oracle price deviation threshold from the spot price (hundredths of a basis point or %)",
@@ -97,7 +95,6 @@ export default class UpdateMarket extends BaseCommand {
     }),
     rebalanceProtocolFee: percentFlag({
       description: "Protocol fee taken from yield on position re-balancing (hundredths of a basis point or %)",
-      default: 0,
       min: 0,
       max: HUNDRED_PERCENT / 2,
     }),
@@ -225,9 +222,9 @@ export default class UpdateMarket extends BaseCommand {
       borrowLimitB: newData.borrowLimitB,
       oraclePriceDeviationThreshold: newData.oraclePriceDeviationThreshold,
       maxSwapSlippage: newData.maxSwapSlippage,
-      rebalanceProtocolFee: flags.rebalanceProtocolFee,
-      spotPositionSizeLimitA: flags.spotPositionSizeLimitA,
-      spotPositionSizeLimitB: flags.spotPositionSizeLimitB,
+      rebalanceProtocolFee: newData.rebalanceProtocolFee,
+      spotPositionSizeLimitA: newData.spotPositionSizeLimitA,
+      spotPositionSizeLimitB: newData.spotPositionSizeLimitB,
     });
 
     console.log("");
