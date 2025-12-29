@@ -9,6 +9,7 @@ use fusionamm_core::get_tick_array_start_tick_index;
 use solana_client::rpc_client::RpcClient;
 use solana_instruction::{AccountMeta, Instruction};
 use solana_pubkey::Pubkey;
+use solana_sdk_ids::system_program;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 use spl_associated_token_account::instruction::create_associated_token_account_idempotent;
 
@@ -133,6 +134,7 @@ pub fn collect_and_compound_fees_fusion_instruction(
         token_program_a: *token_program_a,
         token_program_b: *token_program_b,
         memo_program: spl_memo::ID,
+        system_program: system_program::ID,
     };
 
     ix_builder.instruction_with_remaining_accounts(

@@ -1,5 +1,13 @@
 # @crypticdot/defituna-core
 
+## 3.5.0
+
+### Minor Changes
+
+- 286065b: Updated tuna program error codes, changed SOL wrapping strategy, simplified amount slippage
+
+## 3.4.8
+
 ## 3.4.7
 
 ## 3.4.6

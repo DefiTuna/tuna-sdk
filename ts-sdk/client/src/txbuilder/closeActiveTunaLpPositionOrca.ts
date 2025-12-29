@@ -167,11 +167,8 @@ export async function closeActiveTunaLpPositionOrcaInstructions(
       whirlpool,
       rewardsToClaim,
       rewardMints,
-      // TODO: Compute minRemovedAmounts according to slippage
       {
         ...args,
-        minRemovedAmountA: 0,
-        minRemovedAmountB: 0,
         decreasePercent: HUNDRED_PERCENT,
       },
     ),

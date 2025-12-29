@@ -1,5 +1,17 @@
 # @defituna/rust-client
 
+## 3.5.0
+
+### Minor Changes
+
+- 286065b: Updated tuna program error codes, changed SOL wrapping strategy, simplified amount slippage
+
+## 3.4.8
+
+### Patch Changes
+
+- 161d574: Removed mut in get_utilization
+
 ## 3.4.7
 
 ### Patch Changes

@@ -1,5 +1,18 @@
 # @defituna/examples-typescript
 
+## 2.0.67
+
+### Patch Changes
+
+- Updated dependencies [286065b]
+  - @crypticdot/defituna-client@3.5.0
+
+## 2.0.66
+
+### Patch Changes
+
+- @crypticdot/defituna-client@3.4.8
+
 ## 2.0.65
 
 ### Patch Changes

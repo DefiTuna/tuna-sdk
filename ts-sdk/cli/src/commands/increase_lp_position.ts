@@ -66,12 +66,6 @@ export default class IncreaseLpPosition extends BaseCommand {
       min: 0,
       max: HUNDRED_PERCENT,
     }),
-
-    maxAmountSlippage: percentFlag({
-      description: "Maximum amount slippage",
-      min: 0,
-      max: HUNDRED_PERCENT,
-    }),
   };
   static override description =
     "Add liquidity to the tuna position. Opens a new position if a position mint account is not provided.";
@@ -99,7 +93,6 @@ export default class IncreaseLpPosition extends BaseCommand {
     }
 
     const maxSwapSlippage = flags.maxSwapSlippage ?? HUNDRED_PERCENT / 10;
-    const maxAmountSlippage = flags.maxAmountSlippage ?? HUNDRED_PERCENT;
 
     if (flags.positionMint || flags.positionAddress) {
       if (flags.pool) throw new Error("Pool address can't be specified for the existing position");
@@ -132,7 +125,8 @@ export default class IncreaseLpPosition extends BaseCommand {
         borrowA,
         borrowB,
         maxSwapSlippage,
-        maxAmountSlippage,
+        minAddedAmountA: 0n,
+        minAddedAmountB: 0n,
       };
 
       if (market.data.marketMaker == MarketMaker.Fusion) {
@@ -188,7 +182,8 @@ export default class IncreaseLpPosition extends BaseCommand {
         borrowA,
         borrowB,
         maxSwapSlippage,
-        maxAmountSlippage,
+        minAddedAmountA: 0n,
+        minAddedAmountB: 0n,
       };
 
       if (market.data.marketMaker == MarketMaker.Fusion) {

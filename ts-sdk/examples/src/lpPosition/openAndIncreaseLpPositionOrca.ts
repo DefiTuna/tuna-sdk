@@ -129,11 +129,6 @@ export async function openAndIncreaseTunaLpPositionOrca(): Promise<void> {
   const upperLimitOrderSqrtPrice = MAX_SQRT_PRICE;
 
   /**
-   * The maximum allowed slippage on the total position amount. 0 is the default slippage value.
-   */
-  const maxAmountSlippage = HUNDRED_PERCENT / 10;
-
-  /**
    * The total amount of slippage allowed on the {@link Whirlpool Whirlpool}'s `price`, in case of inner swaps due to rebalancing of deposit ratio.
    * 0 is the default slippage value.
    */
@@ -183,7 +178,8 @@ export async function openAndIncreaseTunaLpPositionOrca(): Promise<void> {
     collateralB: collateral.b,
     borrowA: borrow.a,
     borrowB: borrow.b,
-    maxAmountSlippage,
+    minAddedAmountA: 0n,
+    minAddedAmountB: 0n,
     maxSwapSlippage,
   };
 

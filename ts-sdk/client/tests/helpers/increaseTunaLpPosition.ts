@@ -35,7 +35,6 @@ export type IncreaseTunaLpPositionTestArgs = {
   collateralB: bigint;
   borrowA: bigint;
   borrowB: bigint;
-  maxAmountSlippage?: number;
   maxSwapSlippage?: number;
 };
 
@@ -90,7 +89,6 @@ export async function increaseTunaLpPosition({
   borrowA,
   borrowB,
   maxSwapSlippage,
-  maxAmountSlippage,
   signer = FUNDER,
 }: IncreaseTunaLpPositionTestArgs): Promise<IncreaseTunaLpPositionTestResults> {
   const tunaConfigAddress = (await getTunaConfigAddress())[0];
@@ -188,8 +186,9 @@ export async function increaseTunaLpPosition({
     borrowB,
     collateralA,
     collateralB,
+    minAddedAmountA: 0n,
+    minAddedAmountB: 0n,
     maxSwapSlippage: maxSwapSlippage ?? HUNDRED_PERCENT / 10,
-    maxAmountSlippage: maxAmountSlippage ?? HUNDRED_PERCENT / 4,
   };
 
   if (isOrcaMarket) {

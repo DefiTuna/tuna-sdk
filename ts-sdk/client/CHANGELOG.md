@@ -1,5 +1,22 @@
 # @defituna/client
 
+## 3.5.0
+
+### Minor Changes
+
+- 286065b: Updated tuna program error codes, changed SOL wrapping strategy, simplified amount slippage
+
+### Patch Changes
+
+- Updated dependencies [286065b]
+  - @crypticdot/defituna-core@3.5.0
+
+## 3.4.8
+
+### Patch Changes
+
+- @crypticdot/defituna-core@3.4.8
+
 ## 3.4.7
 
 ### Patch Changes

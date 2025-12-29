@@ -70,7 +70,6 @@ describe("Tuna Position on Fusion", () => {
         collateralB: 0n,
         borrowA: 30_000_000_000n,
         borrowB: 0n,
-        maxAmountSlippage: HUNDRED_PERCENT,
       }),
       {
         userBalanceDeltaA: -30000000000n,
@@ -120,7 +119,6 @@ describe("Tuna Position on Fusion", () => {
         collateralB: 0n,
         borrowA: 30_000_000_000n,
         borrowB: 0n,
-        maxAmountSlippage: HUNDRED_PERCENT,
       }),
       {
         userBalanceDeltaA: -30000000000n,
@@ -167,7 +165,6 @@ describe("Tuna Position on Fusion", () => {
         collateralB: 30_000_000_000n,
         borrowA: 0n,
         borrowB: 30_000_000_000n,
-        maxAmountSlippage: HUNDRED_PERCENT,
       }),
       {
         userBalanceDeltaA: 0n,
@@ -214,7 +211,6 @@ describe("Tuna Position on Fusion", () => {
         collateralB: 30_000_000_000n,
         borrowA: 0n,
         borrowB: 30_000_000_000n,
-        maxAmountSlippage: HUNDRED_PERCENT,
       }),
       {
         userBalanceDeltaA: 0n,

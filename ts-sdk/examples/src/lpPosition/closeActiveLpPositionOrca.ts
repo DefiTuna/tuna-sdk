@@ -26,10 +26,6 @@ export async function closeActiveTunaLpPositionOrca(tunaPositionMint: Address): 
    */
   const whirlpoolAddress = SOL_USDC_WHIRLPOOL;
   /**
-   * The maximum allowed slippage on the total position amount. 0 is the default slippage value.
-   */
-  const maxAmountSlippage = HUNDRED_PERCENT / 10;
-  /**
    * The total amount of slippage allowed on the {@link Whirlpool Whirlpool}'s `price` during potential inner swaps due to deposit ratio rebalancing.
    */
   const maxSwapSlippage = HUNDRED_PERCENT / 10;
@@ -52,7 +48,8 @@ export async function closeActiveTunaLpPositionOrca(tunaPositionMint: Address): 
 
   const args: CloseActiveTunaLpPositionInstructionArgs = {
     swapToToken,
-    maxAmountSlippage,
+    minRemovedAmountA: 0n,
+    minRemovedAmountB: 0n,
     maxSwapSlippage,
   };
 

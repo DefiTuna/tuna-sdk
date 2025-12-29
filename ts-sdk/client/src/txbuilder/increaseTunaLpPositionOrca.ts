@@ -1,4 +1,3 @@
-import { getIncreaseLpPositionQuote } from "@crypticdot/defituna-core";
 import {
   fetchMaybeWhirlpool,
   getInitializeDynamicTickArrayInstruction,
@@ -32,7 +31,6 @@ import assert from "assert";
 import {
   AccountsType,
   fetchAllVault,
-  fetchMarket,
   fetchMaybeTunaLpPosition,
   fetchTunaConfig,
   getCreateAtaInstructions,
@@ -50,8 +48,8 @@ import {
 
 export type IncreaseTunaLpPositionOrcaInstructionsArgs = Omit<
   IncreaseTunaLpPositionOrcaInstructionDataArgs,
-  "remainingAccountsInfo" | "minAddedAmountA" | "minAddedAmountB"
-> & { maxAmountSlippage: number };
+  "remainingAccountsInfo"
+>;
 
 export async function increaseTunaLpPositionOrcaInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
@@ -73,9 +71,6 @@ export async function increaseTunaLpPositionOrcaInstructions(
   const whirlpool = await fetchMaybeWhirlpool(rpc, tunaPosition.data.pool);
   if (!whirlpool.exists) throw new Error("Whirlpool account not found");
 
-  const marketAddress = (await getMarketAddress(tunaPosition.data.pool))[0];
-  const market = await fetchMarket(rpc, marketAddress);
-
   const [vaultA, vaultB] = await fetchAllVault(rpc, [
     (await getLendingVaultAddress(whirlpool.data.tokenMintA))[0],
     (await getLendingVaultAddress(whirlpool.data.tokenMintB))[0],
@@ -84,21 +79,6 @@ export async function increaseTunaLpPositionOrcaInstructions(
   const [mintA, mintB] = await fetchAllMaybeMint(rpc, [whirlpool.data.tokenMintA, whirlpool.data.tokenMintB]);
   assert(mintA.exists, "Token A not found");
   assert(mintB.exists, "Token B not found");
-
-  const increaseAmounts = getIncreaseLpPositionQuote({
-    collateralA: BigInt(args.collateralA),
-    collateralB: BigInt(args.collateralB),
-    borrowA: BigInt(args.borrowA),
-    borrowB: BigInt(args.borrowB),
-    maxAmountSlippage: args.maxAmountSlippage,
-    sqrtPrice: whirlpool.data.sqrtPrice,
-    tickLowerIndex: tunaPosition.data.tickLowerIndex,
-    tickUpperIndex: tunaPosition.data.tickUpperIndex,
-    protocolFeeRate: market.data.protocolFee,
-    protocolFeeRateOnCollateral: market.data.protocolFeeOnCollateral,
-    swapFeeRate: whirlpool.data.feeRate,
-    liquidationThreshold: market.data.liquidationThreshold,
-  });
 
   //
   // Add create user's token account instructions if needed.
@@ -110,7 +90,6 @@ export async function increaseTunaLpPositionOrcaInstructions(
     mintA.address,
     authority.address,
     mintA.programAddress,
-    increaseAmounts.maxCollateralA,
   );
   createInstructions.push(...createUserAtaAInstructions.init);
 
@@ -120,7 +99,6 @@ export async function increaseTunaLpPositionOrcaInstructions(
     mintB.address,
     authority.address,
     mintB.programAddress,
-    increaseAmounts.maxCollateralB,
   );
   createInstructions.push(...createUserAtaBInstructions.init);
 
@@ -196,7 +174,7 @@ export async function increaseTunaLpPositionOrcaInstructions(
     vaultA,
     vaultB,
     whirlpool,
-    { ...args, minAddedAmountA: increaseAmounts.minTotalA, minAddedAmountB: increaseAmounts.minTotalB },
+    { ...args },
   );
   instructions.push(ix);
 

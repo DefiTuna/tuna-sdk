@@ -49,8 +49,8 @@ import {
 
 export type DecreaseTunaLpPositionOrcaInstructionsArgs = Omit<
   DecreaseTunaLpPositionOrcaInstructionDataArgs,
-  "remainingAccountsInfo" | "minRemovedAmountA" | "minRemovedAmountB"
-> & { maxAmountSlippage: number };
+  "remainingAccountsInfo"
+>;
 
 export async function decreaseTunaLpPositionOrcaInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
@@ -156,7 +156,7 @@ export async function decreaseTunaLpPositionOrcaInstructions(
   }
 
   //
-  // Finally add liquidity decrease instruction.
+  // Finally, add liquidity decrease instruction.
   //
 
   const ix = await decreaseTunaLpPositionOrcaInstruction(
@@ -169,8 +169,7 @@ export async function decreaseTunaLpPositionOrcaInstructions(
     whirlpool,
     rewardsToClaim,
     rewardMints,
-    // TODO: Compute minRemovedAmounts according to slippage
-    { ...args, minRemovedAmountA: 0, minRemovedAmountB: 0 },
+    { ...args },
   );
   instructions.push(ix);
 

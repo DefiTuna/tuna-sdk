@@ -36,7 +36,6 @@ export type OpenAndIncreaseLpPositionTestArgs = {
   borrowA: bigint;
   borrowB: bigint;
   maxSwapSlippage?: number;
-  maxAmountSlippage?: number;
 };
 
 export async function openAndIncreaseTunaLpPosition({
@@ -46,7 +45,6 @@ export async function openAndIncreaseTunaLpPosition({
   collateralB,
   borrowA,
   borrowB,
-  maxAmountSlippage,
   maxSwapSlippage,
   tickLowerIndex,
   tickUpperIndex,
@@ -95,7 +93,8 @@ export async function openAndIncreaseTunaLpPosition({
     collateralA,
     collateralB,
     maxSwapSlippage: maxSwapSlippage ?? HUNDRED_PERCENT / 10,
-    maxAmountSlippage: maxAmountSlippage ?? HUNDRED_PERCENT / 4,
+    minAddedAmountA: 0n,
+    minAddedAmountB: 0n,
   };
   const ix =
     market.data.marketMaker == MarketMaker.Orca

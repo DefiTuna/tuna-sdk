@@ -1,6 +1,6 @@
 [package]
 name = "defituna-core"
-version = "3.3.0"
+version = "3.5.0"
 homepage = "https://defituna.com"
 description = "DefiTuna core library"
 license-file = "LICENSE"

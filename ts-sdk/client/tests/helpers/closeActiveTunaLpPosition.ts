@@ -19,7 +19,6 @@ export type CloseActiveTunaLpPositionTestArgs = {
   rpc: Rpc<SolanaRpcApi>;
   signer?: TransactionSigner;
   positionMint: Address;
-  maxAmountSlippage?: number;
   maxSwapSlippage?: number;
   swapToToken?: number;
 };
@@ -27,7 +26,6 @@ export type CloseActiveTunaLpPositionTestArgs = {
 export async function closeActiveTunaLpPosition({
   rpc,
   positionMint,
-  maxAmountSlippage,
   maxSwapSlippage,
   swapToToken,
   signer = FUNDER,
@@ -40,7 +38,8 @@ export async function closeActiveTunaLpPosition({
 
   const args = {
     maxSwapSlippage: maxSwapSlippage ?? HUNDRED_PERCENT,
-    maxAmountSlippage: maxAmountSlippage ?? HUNDRED_PERCENT,
+    minRemovedAmountA: 0n,
+    minRemovedAmountB: 0n,
     swapToToken: swapToToken ?? 0,
   };
 

@@ -107,27 +107,13 @@ export async function modifyTunaSpotPositionOrcaInstructions(
 
   const createUserAtaAInstructions =
     collateralToken == PoolToken.A || hasDirectlyTransferredTokensA
-      ? await getCreateAtaInstructions(
-          rpc,
-          authority,
-          mintA.address,
-          authority.address,
-          mintA.programAddress,
-          args.collateralAmount,
-        )
+      ? await getCreateAtaInstructions(rpc, authority, mintA.address, authority.address, mintA.programAddress)
       : undefined;
   if (createUserAtaAInstructions) createInstructions.push(...createUserAtaAInstructions.init);
 
   const createUserAtaBInstructions =
     collateralToken == PoolToken.B || hasDirectlyTransferredTokensB
-      ? await getCreateAtaInstructions(
-          rpc,
-          authority,
-          mintB.address,
-          authority.address,
-          mintB.programAddress,
-          args.collateralAmount,
-        )
+      ? await getCreateAtaInstructions(rpc, authority, mintB.address, authority.address, mintB.programAddress)
       : undefined;
   if (createUserAtaBInstructions) createInstructions.push(...createUserAtaBInstructions.init);
 

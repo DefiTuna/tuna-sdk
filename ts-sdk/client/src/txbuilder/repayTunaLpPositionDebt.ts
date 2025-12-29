@@ -46,7 +46,6 @@ export async function repayTunaLpPositionDebtInstructions(
     mintA.address,
     authority.address,
     mintA.programAddress,
-    collateralA,
   );
   createInstructions.push(...createUserAtaAInstructions.init);
 
@@ -56,7 +55,6 @@ export async function repayTunaLpPositionDebtInstructions(
     mintB.address,
     authority.address,
     mintB.programAddress,
-    collateralB,
   );
   createInstructions.push(...createUserAtaBInstructions.init);
 

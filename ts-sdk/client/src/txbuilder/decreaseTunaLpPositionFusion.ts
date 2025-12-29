@@ -42,8 +42,8 @@ import {
 
 export type DecreaseTunaLpPositionFusionInstructionsArgs = Omit<
   DecreaseTunaLpPositionFusionInstructionDataArgs,
-  "remainingAccountsInfo" | "minRemovedAmountA" | "minRemovedAmountB"
-> & { maxAmountSlippage: number };
+  "remainingAccountsInfo"
+>;
 
 export async function decreaseTunaLpPositionFusionInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
@@ -99,7 +99,7 @@ export async function decreaseTunaLpPositionFusionInstructions(
   createInstructions.push(...createUserAtaBInstructions.init);
 
   //
-  // Finally add liquidity decrease instruction.
+  // Finally, add liquidity decrease instruction.
   //
 
   const ix = await decreaseTunaLpPositionFusionInstruction(
@@ -110,8 +110,7 @@ export async function decreaseTunaLpPositionFusionInstructions(
     vaultA,
     vaultB,
     fusionPool,
-    // TODO: Compute minRemovedAmounts according to slippage
-    { ...args, minRemovedAmountA: 0, minRemovedAmountB: 0 },
+    { ...args },
   );
   instructions.push(ix);
 

@@ -55,13 +55,8 @@ pub fn modify_tuna_spot_position_orca_instructions(
 
     let mut instructions = vec![];
 
-    let authority_ata_instructions = get_create_ata_instructions(
-        &collateral_token_mint_address,
-        authority,
-        authority,
-        &collateral_token_mint_account.owner,
-        args.collateral_amount,
-    );
+    let authority_ata_instructions =
+        get_create_ata_instructions(&collateral_token_mint_address, authority, authority, &collateral_token_mint_account.owner, 0);
     instructions.extend(authority_ata_instructions.create);
 
     instructions.push(create_associated_token_account_idempotent(

@@ -292,8 +292,6 @@ pub struct IncreaseLpPositionQuoteArgs {
     pub tick_lower_index: i32,
     /// Position upper tick index.
     pub tick_upper_index: i32,
-    /// Maximum slippage of the position total amount represented as hundredths of a basis point (0.01% = 100).
-    pub max_amount_slippage: u32,
     /// The liquidation threshold of the market.
     pub liquidation_threshold: u32,
 }
@@ -303,14 +301,10 @@ pub struct IncreaseLpPositionQuoteArgs {
 pub struct IncreaseLpPositionQuoteResult {
     pub collateral_a: u64,
     pub collateral_b: u64,
-    pub max_collateral_a: u64,
-    pub max_collateral_b: u64,
     pub borrow_a: u64,
     pub borrow_b: u64,
     pub total_a: u64,
     pub total_b: u64,
-    pub min_total_a: u64,
-    pub min_total_b: u64,
     pub swap_input: u64,
     pub swap_output: u64,
     pub swap_a_to_b: bool,
@@ -334,18 +328,9 @@ pub fn get_increase_lp_position_quote(args: IncreaseLpPositionQuoteArgs) -> Resu
         return Err("Incorrect position tick index order: the lower tick must be less than the upper tick.");
     }
 
-    if args.max_amount_slippage > HUNDRED_PERCENT {
-        return Err("max_amount_slippage must be in range [0; HUNDRED_PERCENT]");
-    }
-
     if collateral_a == COMPUTED_AMOUNT && collateral_b == COMPUTED_AMOUNT {
         return Err("Both collateral amounts can't be set to COMPUTED_AMOUNT");
     }
-
-    let max_amount_slippage = args.max_amount_slippage;
-
-    let mut max_collateral_a = collateral_a;
-    let mut max_collateral_b = collateral_b;
 
     let lower_sqrt_price = tick_index_to_sqrt_price(args.tick_lower_index);
     let upper_sqrt_price = tick_index_to_sqrt_price(args.tick_upper_index);
@@ -358,23 +343,19 @@ pub fn get_increase_lp_position_quote(args: IncreaseLpPositionQuoteArgs) -> Resu
             let amount_a = get_amount_a_from_liquidity(liquidity, sqrt_price, upper_sqrt_price, false)?;
             collateral_a = (amount_a * collateral_b) / (collateral_b + borrow_b);
             borrow_a = amount_a - collateral_a;
-            max_collateral_a = collateral_a + ((collateral_a as u128 * max_amount_slippage as u128) / HUNDRED_PERCENT as u128) as u64;
         } else {
             collateral_a = 0;
-            max_collateral_a = 0;
             borrow_a = 0;
         }
     } else if collateral_b == COMPUTED_AMOUNT {
         if sqrt_price <= lower_sqrt_price {
             collateral_b = 0;
-            max_collateral_b = 0;
             borrow_b = 0;
         } else if sqrt_price < upper_sqrt_price {
             let liquidity = get_liquidity_from_amount_a(collateral_a + borrow_a, sqrt_price, upper_sqrt_price)?;
             let amount_b = get_amount_b_from_liquidity(liquidity, lower_sqrt_price, sqrt_price, false)?;
             collateral_b = (amount_b * collateral_a) / (collateral_a + borrow_a);
             borrow_b = amount_b - collateral_b;
-            max_collateral_b = collateral_b + ((collateral_b as u128 * max_amount_slippage as u128) / HUNDRED_PERCENT as u128) as u64;
         } else {
             return Err("sqrtPrice must be less than upper_sqrt_price if collateral B is computed.");
         }
@@ -425,9 +406,6 @@ pub fn get_increase_lp_position_quote(args: IncreaseLpPositionQuoteArgs) -> Resu
         total_b = (total as f64 * ratio_b) as u64;
     }
 
-    let min_total_a = total_a - ((total_a as u128 * max_amount_slippage as u128) / HUNDRED_PERCENT as u128) as u64;
-    let min_total_b = total_b - ((total_b as u128 * max_amount_slippage as u128) / HUNDRED_PERCENT as u128) as u64;
-
     let liquidity = get_liquidity_from_amounts(sqrt_price, lower_sqrt_price, upper_sqrt_price, total_a, total_b)?;
     let liquidation_prices = get_lp_position_liquidation_prices(
         args.tick_lower_index,
@@ -445,14 +423,10 @@ pub fn get_increase_lp_position_quote(args: IncreaseLpPositionQuoteArgs) -> Resu
     Ok(IncreaseLpPositionQuoteResult {
         collateral_a,
         collateral_b,
-        max_collateral_a,
-        max_collateral_b,
         borrow_a,
         borrow_b,
         total_a,
         total_b,
-        min_total_a,
-        min_total_b,
         swap_input,
         swap_output,
         swap_a_to_b,
@@ -730,20 +704,15 @@ mod tests {
                 protocol_fee_rate: (HUNDRED_PERCENT / 100) as u16,
                 protocol_fee_rate_on_collateral: (HUNDRED_PERCENT / 100) as u16,
                 swap_fee_rate: 10000, // 1%
-                max_amount_slippage: HUNDRED_PERCENT / 10,
                 liquidation_threshold: HUNDRED_PERCENT * 83 / 100,
             }),
             Ok(IncreaseLpPositionQuoteResult {
                 collateral_a: 1000000,
                 collateral_b: 1000000,
-                max_collateral_a: 1000000,
-                max_collateral_b: 1000000,
                 borrow_a: 2000000,
                 borrow_b: 2000000,
                 total_a: 2223701,
                 total_b: 4447744,
-                min_total_a: 2001331,
-                min_total_b: 4002970,
                 swap_input: 742586,
                 swap_output: 1470320,
                 swap_a_to_b: true,
@@ -771,20 +740,15 @@ mod tests {
                 protocol_fee_rate: (HUNDRED_PERCENT / 100) as u16,
                 protocol_fee_rate_on_collateral: (HUNDRED_PERCENT / 100) as u16,
                 swap_fee_rate: 10000, // 1%
-                max_amount_slippage: HUNDRED_PERCENT / 10,
                 liquidation_threshold: HUNDRED_PERCENT * 83 / 100,
             }),
             Ok(IncreaseLpPositionQuoteResult {
                 collateral_a: 10000000,
                 collateral_b: 0,
-                max_collateral_a: 10000000,
-                max_collateral_b: 0,
                 borrow_a: 0,
                 borrow_b: 0,
                 total_a: 4925137,
                 total_b: 2462680451,
-                min_total_a: 4432624,
-                min_total_b: 2216412406,
                 swap_input: 4950113,
                 swap_output: 2450305500,
                 swap_a_to_b: true,
@@ -812,20 +776,15 @@ mod tests {
                 protocol_fee_rate: 0,
                 protocol_fee_rate_on_collateral: 0,
                 swap_fee_rate: 0,
-                max_amount_slippage: HUNDRED_PERCENT / 10,
                 liquidation_threshold: HUNDRED_PERCENT * 83 / 100,
             }),
             Ok(IncreaseLpPositionQuoteResult {
                 collateral_a: 10000000,
                 collateral_b: 94660495,
-                max_collateral_a: 10000000,
-                max_collateral_b: 104126544,
                 borrow_a: 2000000,
                 borrow_b: 18932100,
                 total_a: 12000000,
                 total_b: 113592595,
-                min_total_a: 10800000,
-                min_total_b: 102233336,
                 swap_input: 0,
                 swap_output: 0,
                 swap_a_to_b: false,
@@ -853,20 +812,15 @@ mod tests {
                 protocol_fee_rate: 0,
                 protocol_fee_rate_on_collateral: 0,
                 swap_fee_rate: 0,
-                max_amount_slippage: HUNDRED_PERCENT / 10,
                 liquidation_threshold: HUNDRED_PERCENT * 83 / 100,
             }),
             Ok(IncreaseLpPositionQuoteResult {
                 collateral_a: 105640,
                 collateral_b: 1000000,
-                max_collateral_a: 116204,
-                max_collateral_b: 1000000,
                 borrow_a: 211282,
                 borrow_b: 2000000,
                 total_a: 316922,
                 total_b: 3000000,
-                min_total_a: 285230,
-                min_total_b: 2700000,
                 swap_input: 0,
                 swap_output: 0,
                 swap_a_to_b: false,
@@ -894,20 +848,15 @@ mod tests {
                 protocol_fee_rate: 0,
                 protocol_fee_rate_on_collateral: 0,
                 swap_fee_rate: 0,
-                max_amount_slippage: HUNDRED_PERCENT / 10,
                 liquidation_threshold: HUNDRED_PERCENT * 83 / 100,
             }),
             Ok(IncreaseLpPositionQuoteResult {
                 collateral_a: 10000000,
                 collateral_b: 0,
-                max_collateral_a: 10000000,
-                max_collateral_b: 0,
                 borrow_a: 2000000,
                 borrow_b: 0,
                 total_a: 12000000,
                 total_b: 0,
-                min_total_a: 10800000,
-                min_total_b: 0,
                 swap_input: 0,
                 swap_output: 0,
                 swap_a_to_b: false,
@@ -935,20 +884,15 @@ mod tests {
                 protocol_fee_rate: 0,
                 protocol_fee_rate_on_collateral: 0,
                 swap_fee_rate: 0,
-                max_amount_slippage: HUNDRED_PERCENT / 10,
                 liquidation_threshold: HUNDRED_PERCENT * 83 / 100,
             }),
             Ok(IncreaseLpPositionQuoteResult {
                 collateral_a: 0,
                 collateral_b: 1000000,
-                max_collateral_a: 0,
-                max_collateral_b: 1000000,
                 borrow_a: 0,
                 borrow_b: 2000000,
                 total_a: 0,
                 total_b: 3000000,
-                min_total_a: 0,
-                min_total_b: 2700000,
                 swap_input: 0,
                 swap_output: 0,
                 swap_a_to_b: false,
@@ -975,7 +919,6 @@ mod tests {
             protocol_fee_rate: 500,
             protocol_fee_rate_on_collateral: 500,
             swap_fee_rate: 40,
-            max_amount_slippage: HUNDRED_PERCENT / 10,
             liquidation_threshold: HUNDRED_PERCENT * 83 / 100,
         })
         .unwrap();

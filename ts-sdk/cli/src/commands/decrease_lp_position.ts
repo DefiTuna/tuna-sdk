@@ -39,12 +39,6 @@ export default class DecreaseLpPosition extends BaseCommand {
       max: HUNDRED_PERCENT,
     }),
 
-    maxAmountSlippage: percentFlag({
-      description: "Maximum amount slippage",
-      min: 0,
-      max: HUNDRED_PERCENT,
-    }),
-
     swapToToken: Flags.integer({
       description: "Swap liquidity to token (0 - don't swap, 1 - swap to token A, 2 - swap to token B)",
       min: 0,
@@ -80,14 +74,14 @@ export default class DecreaseLpPosition extends BaseCommand {
     const addressLookupTable = market.data.addressLookupTable;
 
     const maxSwapSlippage = flags.maxSwapSlippage ?? HUNDRED_PERCENT / 10;
-    const maxAmountSlippage = flags.maxAmountSlippage ?? HUNDRED_PERCENT;
     const swapToToken = flags.swapToToken ?? 0;
 
     if (!flags.decreasePercent || flags.decreasePercent == HUNDRED_PERCENT) {
       const args = {
         swapToToken,
         maxSwapSlippage,
-        maxAmountSlippage,
+        minRemovedAmountA: 0n,
+        minRemovedAmountB: 0n,
       };
 
       if (market.data.marketMaker == MarketMaker.Fusion) {
@@ -101,7 +95,8 @@ export default class DecreaseLpPosition extends BaseCommand {
       const args = {
         swapToToken,
         maxSwapSlippage,
-        maxAmountSlippage,
+        minRemovedAmountA: 0n,
+        minRemovedAmountB: 0n,
         decreasePercent: flags.decreasePercent,
       };
 

@@ -30,7 +30,8 @@ import {
 
 export type CloseActiveTunaLpPositionInstructionArgs = {
   swapToToken: OptionOrNullable<PoolToken>;
-  maxAmountSlippage: number;
+  minRemovedAmountA: bigint;
+  minRemovedAmountB: bigint;
   maxSwapSlippage: number;
 };
 
@@ -114,8 +115,6 @@ export async function closeActiveTunaLpPositionFusionInstructions(
       // TODO: Compute minRemovedAmounts according to slippage
       {
         ...args,
-        minRemovedAmountA: 0,
-        minRemovedAmountB: 0,
         decreasePercent: HUNDRED_PERCENT,
       },
     ),

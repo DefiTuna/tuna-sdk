@@ -1,4 +1,3 @@
-import { getIncreaseLpPositionQuote } from "@crypticdot/defituna-core";
 import {
   fetchAllMaybeTickArray,
   fetchMaybeFusionPool,
@@ -32,7 +31,6 @@ import assert from "assert";
 import {
   AccountsType,
   fetchAllVault,
-  fetchMarket,
   fetchMaybeTunaLpPosition,
   fetchTunaConfig,
   FusionUtils,
@@ -50,8 +48,8 @@ import {
 
 export type IncreaseTunaLpPositionFusionInstructionsArgs = Omit<
   IncreaseTunaLpPositionFusionInstructionDataArgs,
-  "remainingAccountsInfo" | "minAddedAmountA" | "minAddedAmountB"
-> & { maxAmountSlippage: number };
+  "remainingAccountsInfo"
+>;
 
 export async function increaseTunaLpPositionFusionInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
@@ -73,9 +71,6 @@ export async function increaseTunaLpPositionFusionInstructions(
   const fusionPool = await fetchMaybeFusionPool(rpc, tunaPosition.data.pool);
   if (!fusionPool.exists) throw new Error("FusionPool account not found");
 
-  const marketAddress = (await getMarketAddress(tunaPosition.data.pool))[0];
-  const market = await fetchMarket(rpc, marketAddress);
-
   const [vaultA, vaultB] = await fetchAllVault(rpc, [
     (await getLendingVaultAddress(fusionPool.data.tokenMintA))[0],
     (await getLendingVaultAddress(fusionPool.data.tokenMintB))[0],
@@ -84,21 +79,6 @@ export async function increaseTunaLpPositionFusionInstructions(
   const [mintA, mintB] = await fetchAllMaybeMint(rpc, [fusionPool.data.tokenMintA, fusionPool.data.tokenMintB]);
   assert(mintA.exists, "Token A not found");
   assert(mintB.exists, "Token B not found");
-
-  const increaseAmounts = getIncreaseLpPositionQuote({
-    collateralA: BigInt(args.collateralA),
-    collateralB: BigInt(args.collateralB),
-    borrowA: BigInt(args.borrowA),
-    borrowB: BigInt(args.borrowB),
-    maxAmountSlippage: args.maxAmountSlippage,
-    sqrtPrice: fusionPool.data.sqrtPrice,
-    tickLowerIndex: tunaPosition.data.tickLowerIndex,
-    tickUpperIndex: tunaPosition.data.tickUpperIndex,
-    protocolFeeRate: market.data.protocolFee,
-    protocolFeeRateOnCollateral: market.data.protocolFeeOnCollateral,
-    swapFeeRate: fusionPool.data.feeRate,
-    liquidationThreshold: market.data.liquidationThreshold,
-  });
 
   //
   // Add create user's token account instructions if needed.
@@ -110,7 +90,6 @@ export async function increaseTunaLpPositionFusionInstructions(
     mintA.address,
     authority.address,
     mintA.programAddress,
-    increaseAmounts.maxCollateralA,
   );
   createInstructions.push(...createUserAtaAInstructions.init);
 
@@ -120,7 +99,6 @@ export async function increaseTunaLpPositionFusionInstructions(
     mintB.address,
     authority.address,
     mintB.programAddress,
-    increaseAmounts.maxCollateralB,
   );
   createInstructions.push(...createUserAtaBInstructions.init);
 
@@ -203,7 +181,7 @@ export async function increaseTunaLpPositionFusionInstructions(
     vaultA,
     vaultB,
     fusionPool,
-    { ...args, minAddedAmountA: increaseAmounts.minTotalA, minAddedAmountB: increaseAmounts.minTotalB },
+    { ...args },
   );
   instructions.push(ix);
 
