@@ -341,7 +341,7 @@ pub fn get_increase_lp_position_quote(args: IncreaseLpPositionQuoteArgs) -> Resu
         } else if sqrt_price < upper_sqrt_price {
             let liquidity = get_liquidity_from_amount_b(collateral_b + borrow_b, lower_sqrt_price, sqrt_price)?;
             let amount_a = get_amount_a_from_liquidity(liquidity, sqrt_price, upper_sqrt_price, false)?;
-            collateral_a = (amount_a * collateral_b) / (collateral_b + borrow_b);
+            collateral_a = ((amount_a as u128 * collateral_b as u128) / (collateral_b as u128 + borrow_b as u128)) as u64;
             borrow_a = amount_a - collateral_a;
         } else {
             collateral_a = 0;
@@ -354,7 +354,7 @@ pub fn get_increase_lp_position_quote(args: IncreaseLpPositionQuoteArgs) -> Resu
         } else if sqrt_price < upper_sqrt_price {
             let liquidity = get_liquidity_from_amount_a(collateral_a + borrow_a, sqrt_price, upper_sqrt_price)?;
             let amount_b = get_amount_b_from_liquidity(liquidity, lower_sqrt_price, sqrt_price, false)?;
-            collateral_b = (amount_b * collateral_a) / (collateral_a + borrow_a);
+            collateral_b = ((amount_b as u128 * collateral_a as u128) / (collateral_a as u128 + borrow_a as u128)) as u64;
             borrow_b = amount_b - collateral_b;
         } else {
             return Err("sqrtPrice must be less than upper_sqrt_price if collateral B is computed.");
@@ -799,6 +799,42 @@ mod tests {
     }
 
     #[test]
+    fn test_lp_increase_quote_collateral_a_provided_b_computed_no_leverage() {
+        assert_eq!(
+            get_increase_lp_position_quote(IncreaseLpPositionQuoteArgs {
+                collateral_a: 30000000000,
+                collateral_b: COMPUTED_AMOUNT,
+                borrow_a: 0,
+                borrow_b: 0,
+                tick_lower_index: price_to_tick_index(1.0, 1, 1),
+                sqrt_price: price_to_sqrt_price(3.0, 1, 1),
+                tick_upper_index: price_to_tick_index(4.0, 1, 1),
+                protocol_fee_rate: 0,
+                protocol_fee_rate_on_collateral: 0,
+                swap_fee_rate: 0,
+                liquidation_threshold: HUNDRED_PERCENT * 83 / 100,
+            }),
+            Ok(IncreaseLpPositionQuoteResult {
+                collateral_a: 30000000000,
+                collateral_b: 283981489799,
+                borrow_a: 0,
+                borrow_b: 0,
+                total_a: 30000000000,
+                total_b: 283981489799,
+                swap_input: 0,
+                swap_output: 0,
+                swap_a_to_b: false,
+                protocol_fee_a: 0,
+                protocol_fee_b: 0,
+                liquidity: 387925929269,
+                leverage: 1.0,
+                liquidation_lower_price: 0.0,
+                liquidation_upper_price: 0.0
+            })
+        );
+    }
+
+    #[test]
     fn test_lp_increase_quote_collateral_a_computed_b_provided() {
         assert_eq!(
             get_increase_lp_position_quote(IncreaseLpPositionQuoteArgs {
@@ -830,6 +866,42 @@ mod tests {
                 leverage: 3.000003796737843,
                 liquidation_lower_price: 1.4306915613018771,
                 liquidation_upper_price: 6.63182675287057
+            })
+        );
+    }
+
+    #[test]
+    fn test_lp_increase_quote_collateral_a_computed_b_provided_no_leverage() {
+        assert_eq!(
+            get_increase_lp_position_quote(IncreaseLpPositionQuoteArgs {
+                collateral_a: COMPUTED_AMOUNT,
+                collateral_b: 30000000000,
+                borrow_a: 0,
+                borrow_b: 0,
+                tick_lower_index: price_to_tick_index(1.0, 1, 1),
+                sqrt_price: price_to_sqrt_price(3.0, 1, 1),
+                tick_upper_index: price_to_tick_index(4.0, 1, 1),
+                protocol_fee_rate: 0,
+                protocol_fee_rate_on_collateral: 0,
+                swap_fee_rate: 0,
+                liquidation_threshold: HUNDRED_PERCENT * 83 / 100,
+            }),
+            Ok(IncreaseLpPositionQuoteResult {
+                collateral_a: 3169220644,
+                collateral_b: 30000000000,
+                borrow_a: 0,
+                borrow_b: 0,
+                total_a: 3169220644,
+                total_b: 30000000000,
+                swap_input: 0,
+                swap_output: 0,
+                swap_a_to_b: false,
+                protocol_fee_a: 0,
+                protocol_fee_b: 0,
+                liquidity: 40980762112,
+                leverage: 1.0,
+                liquidation_lower_price: 0.0,
+                liquidation_upper_price: 0.0
             })
         );
     }

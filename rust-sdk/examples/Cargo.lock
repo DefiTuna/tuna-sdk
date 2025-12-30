@@ -941,7 +941,7 @@ checksum = "2a2330da5de22e8a3cb63252ce2abb30116bf5265e89c0e01bc17015ce30a476"
 
 [[package]]
 name = "defituna-client"
-version = "3.3.0"
+version = "3.5.0"
 dependencies = [
  "anyhow",
  "bincode",
@@ -981,7 +981,9 @@ dependencies = [
 
 [[package]]
 name = "defituna-core"
-version = "3.3.0"
+version = "3.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fc06c28502b109379f852abe7f8bbd9c79bc14f8b56765acd2c0d3f5c4f0cee8"
 dependencies = [
  "fixed",
  "fusionamm-core",

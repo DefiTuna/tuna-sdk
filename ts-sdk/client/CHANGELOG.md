@@ -1,5 +1,12 @@
 # @defituna/client
 
+## 3.5.1
+
+### Patch Changes
+
+- Updated dependencies [7931cec]
+  - @crypticdot/defituna-core@3.5.1
+
 ## 3.5.0
 
 ### Minor Changes

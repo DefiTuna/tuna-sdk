@@ -1,5 +1,11 @@
 # @crypticdot/defituna-core
 
+## 3.5.1
+
+### Patch Changes
+
+- 7931cec: bugfix: math overflow in get_increase_lp_position_quote
+
 ## 3.5.0
 
 ### Minor Changes
