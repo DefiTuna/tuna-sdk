@@ -2,7 +2,7 @@
   "address": "tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD",
   "metadata": {
     "name": "tuna",
-    "version": "3.5.0",
+    "version": "3.5.1",
     "spec": "0.1.0",
     "description": "DefiTuna"
   },
@@ -4798,317 +4798,317 @@
   ],
   "errors": [
     {
-      "code": 12500,
+      "code": 6500,
       "name": "TypeCastOverflow",
       "msg": "Type cast overflow"
     },
     {
-      "code": 12501,
+      "code": 6501,
       "name": "MathOverflow",
       "msg": "Math overflow"
     },
     {
-      "code": 12502,
+      "code": 6502,
       "name": "MathUnderflow",
       "msg": "Math underflow"
     },
     {
-      "code": 12600,
+      "code": 6600,
       "name": "AmountSlippageExceeded",
       "msg": "Amount slippage exceeded"
     },
     {
-      "code": 12601,
+      "code": 6601,
       "name": "BadDebt",
       "msg": "Bad debt is not allowed for the executed instruction"
     },
     {
-      "code": 12602,
+      "code": 6602,
       "name": "InvalidRemainingAccountsLength",
       "msg": "Invalid number of remaining accounts"
     },
     {
-      "code": 12603,
+      "code": 6603,
       "name": "InvalidInstructionArguments",
       "msg": "Invalid instruction arguments"
     },
     {
-      "code": 12604,
+      "code": 6604,
       "name": "InvalidMarketMaker",
       "msg": "Invalid market maker"
     },
     {
-      "code": 12605,
+      "code": 6605,
       "name": "InvalidAccountDiscriminator",
       "msg": "Invalid account discriminator"
     },
     {
-      "code": 12606,
+      "code": 6606,
       "name": "InvalidAccountOwner",
       "msg": "Invalid account owner"
     },
     {
-      "code": 12607,
+      "code": 6607,
       "name": "InvalidPool",
       "msg": "Invalid Fusion or Orca pool"
     },
     {
-      "code": 12608,
+      "code": 6608,
       "name": "InvalidVault",
       "msg": "Vault address is invalid"
     },
     {
-      "code": 12609,
+      "code": 6609,
       "name": "InsufficientLiquidity",
       "msg": "Insufficient liquidity"
     },
     {
-      "code": 12610,
+      "code": 6610,
       "name": "InterestRateIsOutOfRange",
       "msg": "Interest rate is out of range"
     },
     {
-      "code": 12611,
+      "code": 6611,
       "name": "LeverageIsOutOfRange",
       "msg": "Leverage is out or range"
     },
     {
-      "code": 12612,
+      "code": 6612,
       "name": "LeftoversExceeded",
       "msg": "Leftovers percentage exceeded the maximum allowed value"
     },
     {
-      "code": 12613,
+      "code": 6613,
       "name": "LiquidationFeeIsOutOfRange",
       "msg": "Liquidation fee is out of range"
     },
     {
-      "code": 12614,
+      "code": 6614,
       "name": "LiquidationThresholdIsOutOfRange",
       "msg": "Liquidation threshold is out of range"
     },
     {
-      "code": 12615,
+      "code": 6615,
       "name": "MarketDisabled",
       "msg": "Market is disabled"
     },
     {
-      "code": 12616,
+      "code": 6616,
       "name": "MarketDebtLimitExceeded",
       "msg": "Exceed the maximum allowed debt for the market"
     },
     {
-      "code": 12617,
+      "code": 6617,
       "name": "NoExtraAccountsForTransferHook",
       "msg": "Unable to call transfer hook without extra accounts"
     },
     {
-      "code": 12618,
+      "code": 6618,
       "name": "OracleStalePrice",
       "msg": "Oracle price is stale"
     },
     {
-      "code": 12619,
+      "code": 6619,
       "name": "OraclePriceDeviationThresholdExceeded",
       "msg": "Oracle price deviation threshold exceeded"
     },
     {
-      "code": 12620,
+      "code": 6620,
       "name": "OraclePriceDeviationThresholdOutOfRange",
       "msg": "Oracle price deviation threshold out of range"
     },
     {
-      "code": 12622,
+      "code": 6622,
       "name": "PositionIsHealthy",
       "msg": "Position is healthy"
     },
     {
-      "code": 12623,
+      "code": 6623,
       "name": "PositionIsLiquidated",
       "msg": "Position is already liquidated"
     },
     {
-      "code": 12624,
+      "code": 6624,
       "name": "PositionIsUnhealthy",
       "msg": "Position is unhealthy"
     },
     {
-      "code": 12625,
+      "code": 6625,
       "name": "PositionNotEmpty",
       "msg": "Position is not empty"
     },
     {
-      "code": 12626,
+      "code": 6626,
       "name": "PositionIsEmpty",
       "msg": "Position is empty"
     },
     {
-      "code": 12627,
+      "code": 6627,
       "name": "PositionIsAutoRebalanceable",
       "msg": "Unable to claim yield for auto re-balanceable positions"
     },
     {
-      "code": 12628,
+      "code": 6628,
       "name": "PositionSizeLimitExceeded",
       "msg": "Position size exceeds the maximum allowed value"
     },
     {
-      "code": 12640,
+      "code": 6640,
       "name": "ProtocolFeeIsOutOfRange",
       "msg": "Protocol fee is out of range"
     },
     {
-      "code": 12641,
+      "code": 6641,
       "name": "RebalanceConditionsNotMet",
       "msg": "Rebalance conditions are not met"
     },
     {
-      "code": 12642,
+      "code": 6642,
       "name": "RemainingAccountsDuplicatedAccountsType",
       "msg": "Same accounts type is provided more than once"
     },
     {
-      "code": 12643,
+      "code": 6643,
       "name": "RemainingAccountsInvalidSlice",
       "msg": "Invalid remaining accounts"
     },
     {
-      "code": 12644,
+      "code": 6644,
       "name": "RemainingAccountsInvalidSliceLength",
       "msg": "Invalid remaining accounts slice length"
     },
     {
-      "code": 12645,
+      "code": 6645,
       "name": "RemainingAccountsInsufficient",
       "msg": "Insufficient remaining accounts"
     },
     {
-      "code": 12646,
+      "code": 6646,
       "name": "RequiredRemainingAccountNotProvided",
       "msg": "Required remaining account is not provided"
     },
     {
-      "code": 12647,
+      "code": 6647,
       "name": "SolverFailedToFindRoot",
       "msg": "Swap equation solver failed to t find the root"
     },
     {
-      "code": 12648,
+      "code": 6648,
       "name": "SupplyLimitExceeded",
       "msg": "Lending vault supply limit exceeded"
     },
     {
-      "code": 12649,
+      "code": 6649,
       "name": "Suspended",
       "msg": "Instruction is suspended"
     },
     {
-      "code": 12650,
+      "code": 6650,
       "name": "SwapSlippageExceeded",
       "msg": "Maximum allowed swap slippage is exceeded"
     },
     {
-      "code": 12651,
+      "code": 6651,
       "name": "SwapSlippageIsOutOfRange",
       "msg": "Provided swap slippage value is out of range"
     },
     {
-      "code": 12652,
+      "code": 6652,
       "name": "SwapToPositionRatioEstimationFailed",
       "msg": "Swap to position ratio estimation failed"
     },
     {
-      "code": 12653,
+      "code": 6653,
       "name": "SwapQuoteNotEqualToActualSwapAmount",
       "msg": "Swap quote amount is not equal to the actual swap amount"
     },
     {
-      "code": 12654,
+      "code": 6654,
       "name": "TransferFeeCalculationError",
       "msg": "Transfer fee calculation failed"
     },
     {
-      "code": 12655,
+      "code": 6655,
       "name": "UnableToLoadAccountData",
       "msg": "Unable to load the account data"
     },
     {
-      "code": 12656,
+      "code": 6656,
       "name": "UnableToDeserializeAccountData",
       "msg": "Unable to deserialize the account data"
     },
     {
-      "code": 12657,
+      "code": 6657,
       "name": "UnexpectedValue",
       "msg": "Unexpected value"
     },
     {
-      "code": 12658,
+      "code": 6658,
       "name": "UnsupportedTokenMint",
       "msg": "Token mint has unsupported attributes"
     },
     {
-      "code": 12559,
+      "code": 6559,
       "name": "VaultNotInitialized",
       "msg": "Lending vault is not initialized"
     },
     {
-      "code": 12560,
+      "code": 6560,
       "name": "WithdrawRequestExceedsUserBalance",
       "msg": "Withdraw request the exceeds user balance"
     },
     {
-      "code": 12561,
+      "code": 6561,
       "name": "ZeroPriceRange",
       "msg": "Zero price range: the lower price is equal to upper price)"
     },
     {
-      "code": 12662,
+      "code": 6662,
       "name": "ZeroYield",
       "msg": "Collected yield is zero"
     },
     {
-      "code": 12663,
+      "code": 6663,
       "name": "ZeroAmount",
       "msg": "Position amount is zero"
     },
     {
-      "code": 12670,
+      "code": 6670,
       "name": "IncorrectPositionDirection",
       "msg": "Incorrect position direction"
     },
     {
-      "code": 12671,
+      "code": 6671,
       "name": "RecipientAccountIsNotSet",
       "msg": "Optional recipient account is not set"
     },
     {
-      "code": 12672,
+      "code": 6672,
       "name": "MAPriceDeviationThresholdExceeded",
       "msg": "Moving Average price deviation threshold exceeded"
     },
     {
-      "code": 12673,
+      "code": 6673,
       "name": "InvalidJupiterRoute",
       "msg": "Invalid jupiter route data"
     },
     {
-      "code": 12674,
+      "code": 6674,
       "name": "InsufficientSwapOutputAmount",
       "msg": "Insufficient swap output amount"
     },
     {
-      "code": 12675,
+      "code": 6675,
       "name": "IncorrectSwapInputAmount",
       "msg": "Incorrect swap input amount"
     },
     {
-      "code": 12676,
+      "code": 6676,
       "name": "IncorrectSwapOutputAmount",
       "msg": "Incorrect swap output amount"
     },
     {
-      "code": 12677,
+      "code": 6677,
       "name": "AccountNotInitialized",
       "msg": "Account is not initialized"
     }

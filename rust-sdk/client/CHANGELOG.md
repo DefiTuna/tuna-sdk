@@ -1,5 +1,11 @@
 # @defituna/rust-client
 
+## 3.5.2
+
+### Patch Changes
+
+- d1d51f1: Updated tuna program error codes
+
 ## 3.5.1
 
 ## 3.5.0

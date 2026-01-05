@@ -1,7 +1,7 @@
 {
   "name": "@crypticdot/defituna-core",
   "description": "DefiTuna core typescript package.",
-  "version": "3.5.1",
+  "version": "3.5.2",
   "main": "./dist/nodejs/defituna_core_js_bindings.js",
   "types": "./dist/nodejs/defituna_core_js_bindings.d.ts",
   "browser": "./dist/browser/defituna_core_js_bindings.js",

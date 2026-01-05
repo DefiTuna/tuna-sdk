@@ -1,7 +1,7 @@
 {
   "name": "@crypticdot/defituna-rust-core",
   "description": "DefiTuna core rust library.",
-  "version": "3.5.1",
+  "version": "3.5.2",
   "private": true,
   "files": [],
   "scripts": {
