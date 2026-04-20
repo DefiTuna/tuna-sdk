@@ -1,11 +1,11 @@
 import {
   CreateVaultInstructionDataArgs,
   createVaultInstructions,
-  CreateVaultV2InstructionDataArgs,
-  createVaultV2Instructions,
+  CreateVaultPermissionlessInstructionDataArgs,
+  createVaultPermissionlessInstructions,
   fetchMaybeVault,
   getLendingVaultAddress,
-  getLendingVaultV2Address,
+  getMarketAddress,
   getPythPriceUpdateAccountAddress,
   HUNDRED_PERCENT,
 } from "@crypticdot/defituna-client";
@@ -14,7 +14,7 @@ import { Flags } from "@oclif/core";
 import { Address, address, getBase58Codec, IInstruction, ReadonlyUint8Array } from "@solana/kit";
 import { fetchMint } from "@solana-program/token-2022";
 
-import BaseCommand, { addressArg, bigintFlag, percentFlag, pythFeedIdFlag } from "../base";
+import BaseCommand, { addressArg, addressFlag, bigintFlag, percentFlag, pythFeedIdFlag } from "../base";
 import { rpc, signer } from "../rpc";
 
 export default class CreateVault extends BaseCommand {
@@ -37,8 +37,8 @@ export default class CreateVault extends BaseCommand {
     allowUnsafeTokenExtensions: Flags.boolean({
       description: "Allow unsafe token extensions",
     }),
-    id: Flags.integer({
-      description: "Isolated vault id. Must be greater than 0 if set.",
+    pool: addressFlag({
+      description: "Pool address to which the isolated vault belongs. Should NOT be set for default vaults.",
     }),
   };
   static override description = "Create a lending vault";
@@ -55,7 +55,8 @@ export default class CreateVault extends BaseCommand {
   public async run() {
     const { args, flags } = await this.parse(CreateVault);
 
-    const vaultAddress = (await getLendingVaultAddress(args.mint))[0];
+    const market = flags.pool ? (await getMarketAddress(flags.pool))[0] : undefined;
+    const vaultAddress = (await getLendingVaultAddress(args.mint, market))[0];
     console.log("Fetching vault:", vaultAddress);
     const vault = await fetchMaybeVault(rpc, vaultAddress);
     if (vault.exists) {
@@ -66,7 +67,7 @@ export default class CreateVault extends BaseCommand {
     }
 
     let pythOraclePriceUpdateAddress: Address = address("11111111111111111111111111111111");
-    if (flags.priceFeedId) {
+    if (flags.priceFeedId != address("11111111111111111111111111111111")) {
       const priceFeedId = Buffer.from(this.uint8ArrayToHex(getBase58Codec().encode(flags.priceFeedId)), "hex");
       pythOraclePriceUpdateAddress = (await getPythPriceUpdateAccountAddress(0, priceFeedId))[0];
       console.log("Pyth price update account:", pythOraclePriceUpdateAddress);
@@ -77,23 +78,19 @@ export default class CreateVault extends BaseCommand {
     const mint = await fetchMint(rpc, args.mint);
 
     let instructions: IInstruction[];
-    if (flags.id) {
-      const ixArgs: CreateVaultV2InstructionDataArgs = {
+    if (flags.pool) {
+      const ixArgs: CreateVaultPermissionlessInstructionDataArgs = {
         interestRate: (INTEREST_RATE_100_PERCENT * BigInt(flags.interestRate)) / BigInt(HUNDRED_PERCENT),
-        supplyLimit: flags.supplyLimit,
-        pythOraclePriceUpdate: pythOraclePriceUpdateAddress,
-        pythOracleFeedId: flags.priceFeedId,
-        allowUnsafeTokenExtensions: flags.allowUnsafeTokenExtensions,
-        id: flags.id,
+        market: market!,
       };
 
-      const vaultAddress = (await getLendingVaultV2Address(mint.address, flags.id))[0];
-      instructions = await createVaultV2Instructions(signer, vaultAddress, mint, ixArgs);
+      const vaultAddress = (await getLendingVaultAddress(mint.address, market))[0];
+      instructions = await createVaultPermissionlessInstructions(signer, vaultAddress, mint, ixArgs);
     } else {
       const ixArgs: CreateVaultInstructionDataArgs = {
         interestRate: (INTEREST_RATE_100_PERCENT * BigInt(flags.interestRate)) / BigInt(HUNDRED_PERCENT),
         supplyLimit: flags.supplyLimit,
-        pythOraclePriceUpdate: pythOraclePriceUpdateAddress,
+        oraclePriceUpdate: pythOraclePriceUpdateAddress,
         pythOracleFeedId: flags.priceFeedId,
         allowUnsafeTokenExtensions: flags.allowUnsafeTokenExtensions,
       };

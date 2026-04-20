@@ -29,7 +29,7 @@ pub async fn open_lending_position_and_deposit(rpc: RpcClient, authority: &Keypa
   // The deposit instruction interacts with the Tuna program to deposit the funds into the Lending Position.
   // If the Lending Position doesn't exist, we need to create it. We rely on the create instruction from the Tuna program.
   let instructions =
-    open_lending_position_and_deposit_instructions(&rpc, &authority.pubkey(), &token_mint_address, amount)?;
+    open_lending_position_and_deposit_instructions(&rpc, &authority.pubkey(), &token_mint_address, None, amount)?;
 
   // 'send_smart_transaction' requires a non-blocking rpc client, so we create it here.
   // However, it's not recommended to create the client each time—initialize it once and reuse it.

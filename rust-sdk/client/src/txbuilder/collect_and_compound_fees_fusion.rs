@@ -27,7 +27,7 @@ pub fn collect_and_compound_fees_fusion_instructions(
 
     let tuna_config = fetch_tuna_config(rpc, &get_tuna_config_address().0)?;
 
-    let vaults = fetch_all_vault(&rpc, &[get_vault_address(&mint_a_address).0, get_vault_address(&mint_b_address).0])?;
+    let vaults = fetch_all_vault(&rpc, &[get_vault_address(&mint_a_address, None).0, get_vault_address(&mint_b_address, None).0])?;
     let (vault_a, vault_b) = (&vaults[0], &vaults[1]);
 
     let mint_accounts = rpc.get_multiple_accounts(&[mint_a_address.into(), mint_b_address.into()])?;
@@ -38,7 +38,9 @@ pub fn collect_and_compound_fees_fusion_instructions(
         authority,
         &tuna_config.data,
         &tuna_position.data,
+        &vault_a.address,
         &vault_a.data,
+        &vault_b.address,
         &vault_b.data,
         &fusion_pool.data,
         &mint_a_account.owner,
@@ -51,7 +53,9 @@ pub fn _collect_and_compound_fees_fusion_instructions(
     authority: &Pubkey,
     tuna_config: &TunaConfig,
     tuna_position: &TunaLpPosition,
+    vault_a_address: &Pubkey,
     vault_a: &Vault,
+    vault_b_address: &Pubkey,
     vault_b: &Vault,
     fusion_pool: &FusionPool,
     token_program_a: &Pubkey,
@@ -65,7 +69,9 @@ pub fn _collect_and_compound_fees_fusion_instructions(
             authority,
             tuna_config,
             tuna_position,
+            vault_a_address,
             vault_a,
+            vault_b_address,
             vault_b,
             fusion_pool,
             token_program_a,
@@ -79,7 +85,9 @@ pub fn collect_and_compound_fees_fusion_instruction(
     authority: &Pubkey,
     tuna_config: &TunaConfig,
     tuna_position: &TunaLpPosition,
+    vault_a_address: &Pubkey,
     vault_a: &Vault,
+    vault_b_address: &Pubkey,
     vault_b: &Vault,
     fusion_pool: &FusionPool,
     token_program_a: &Pubkey,
@@ -98,8 +106,6 @@ pub fn collect_and_compound_fees_fusion_instruction(
     let tuna_config_address = get_tuna_config_address().0;
     let market_address = get_market_address(&fusion_pool_address).0;
     let tuna_position_address = get_tuna_liquidity_position_address(&tuna_position.position_mint).0;
-    let vault_a_address = get_vault_address(&mint_a).0;
-    let vault_b_address = get_vault_address(&mint_b).0;
     let fusion_position_address = get_position_address(&tuna_position.position_mint).unwrap().0;
 
     let tick_array_lower_start_tick_index = get_tick_array_start_tick_index(tuna_position.tick_lower_index, fusion_pool.tick_spacing);
@@ -116,18 +122,18 @@ pub fn collect_and_compound_fees_fusion_instruction(
         mint_a,
         mint_b,
         market: market_address,
-        vault_a: vault_a_address,
-        vault_b: vault_b_address,
-        vault_a_ata: get_associated_token_address_with_program_id(&vault_a_address, &mint_a, token_program_a),
-        vault_b_ata: get_associated_token_address_with_program_id(&vault_b_address, &mint_b, token_program_b),
+        vault_a: *vault_a_address,
+        vault_b: *vault_b_address,
+        vault_a_ata: get_associated_token_address_with_program_id(vault_a_address, &mint_a, token_program_a),
+        vault_b_ata: get_associated_token_address_with_program_id(vault_b_address, &mint_b, token_program_b),
         tuna_position: tuna_position_address,
         tuna_position_ata: get_associated_token_address_with_program_id(&tuna_position_address, &tuna_position.position_mint, &spl_token_2022::ID),
         tuna_position_ata_a: get_associated_token_address_with_program_id(&tuna_position_address, &mint_a, token_program_a),
         tuna_position_ata_b: get_associated_token_address_with_program_id(&tuna_position_address, &mint_b, token_program_b),
         fee_recipient_ata_a: get_associated_token_address_with_program_id(&tuna_config.fee_recipient, &mint_a, token_program_a),
         fee_recipient_ata_b: get_associated_token_address_with_program_id(&tuna_config.fee_recipient, &mint_b, token_program_b),
-        pyth_oracle_price_feed_a: vault_a.pyth_oracle_price_update,
-        pyth_oracle_price_feed_b: vault_b.pyth_oracle_price_update,
+        oracle_price_update_a: vault_a.oracle_price_update,
+        oracle_price_update_b: vault_b.oracle_price_update,
         fusionamm_program: fusionamm_client::ID,
         fusion_pool: fusion_pool_address,
         fusion_position: fusion_position_address,

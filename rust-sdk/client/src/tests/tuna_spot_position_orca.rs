@@ -43,7 +43,7 @@ mod tests {
         rt.block_on(async {
             let signer = Keypair::new();
             let ctx = RpcContext::new(&signer, orca::get_whirlpool_config_accounts(&signer.pubkey())).await;
-            let test_market = setup_test_market(&ctx, test_market_args(), MarketMaker::Orca, false, false, false)
+            let test_market = setup_test_market(&ctx, test_market_args(), MarketMaker::Orca, TestMarketArgs::default())
                 .await
                 .unwrap();
 
@@ -106,7 +106,7 @@ mod tests {
         rt.block_on(async {
             let signer = Keypair::new();
             let ctx = RpcContext::new(&signer, orca::get_whirlpool_config_accounts(&signer.pubkey())).await;
-            let test_market = setup_test_market(&ctx, test_market_args(), MarketMaker::Orca, false, false, false)
+            let test_market = setup_test_market(&ctx, test_market_args(), MarketMaker::Orca, TestMarketArgs::default())
                 .await
                 .unwrap();
 
@@ -150,8 +150,8 @@ mod tests {
             let vaults = fetch_all_vault(
                 &ctx.rpc,
                 &[
-                    get_vault_address(&test_market.mint_a_address).0,
-                    get_vault_address(&test_market.mint_b_address).0,
+                    get_vault_address(&test_market.mint_a_address, None).0,
+                    get_vault_address(&test_market.mint_b_address, None).0,
                 ],
             )
             .unwrap();
@@ -160,7 +160,9 @@ mod tests {
                 &ctx.signer.pubkey(),
                 &tuna_position.data,
                 &tuna_config.data,
+                &vaults[0].address,
                 &vaults[0].data,
+                &vaults[1].address,
                 &vaults[1].data,
                 &pool.data,
                 &test_market.token_program_a,

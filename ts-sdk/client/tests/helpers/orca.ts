@@ -1,5 +1,6 @@
 import { SPLASH_POOL_TICK_SPACING, swapInstructions, WHIRLPOOLS_CONFIG_ADDRESS } from "@orca-so/whirlpools";
 import {
+  fetchAllMaybeTickArray,
   fetchPosition,
   fetchWhirlpool,
   getFeeTierAddress,
@@ -15,15 +16,24 @@ import {
   getTokenBadgeAddress,
   getUpdateFeesAndRewardsInstruction,
   getWhirlpoolAddress,
+  Whirlpool,
 } from "@orca-so/whirlpools-client";
-import { getInitializableTickIndex, getTickArrayStartTickIndex, tickIndexToSqrtPrice } from "@orca-so/whirlpools-core";
 import {
+  _TICK_ARRAY_SIZE,
+  getInitializableTickIndex,
+  getTickArrayStartTickIndex,
+  TickArrayFacade,
+  tickIndexToSqrtPrice,
+} from "@orca-so/whirlpools-core";
+import {
+  Account,
   type Address,
   GetAccountInfoApi,
   GetEpochInfoApi,
   GetMinimumBalanceForRentExemptionApi,
   GetMultipleAccountsApi,
   type IInstruction,
+  lamports,
   Rpc,
   TransactionSigner,
 } from "@solana/kit";
@@ -276,4 +286,66 @@ export async function swapExactInputOrca(
     signer,
   );
   await sendTransaction(instructions);
+}
+
+function createUninitializedTickArray(
+  address: Address,
+  startTickIndex: number,
+  programAddress: Address,
+): Account<TickArrayFacade> {
+  return {
+    address,
+    data: {
+      startTickIndex,
+      ticks: Array(_TICK_ARRAY_SIZE()).fill({
+        initialized: false,
+        liquidityNet: 0n,
+        liquidityGross: 0n,
+        feeGrowthOutsideA: 0n,
+        feeGrowthOutsideB: 0n,
+        rewardGrowthsOutside: [0n, 0n, 0n],
+      }),
+    },
+    space: 0n,
+    executable: false,
+    lamports: lamports(0n),
+    programAddress,
+  };
+}
+
+export async function fetchTickArrayOrDefault(
+  rpc: Rpc<GetMultipleAccountsApi>,
+  whirlpool: Account<Whirlpool>,
+): Promise<Account<TickArrayFacade>[]> {
+  const tickArrayStartIndex = getTickArrayStartTickIndex(whirlpool.data.tickCurrentIndex, whirlpool.data.tickSpacing);
+  const offset = whirlpool.data.tickSpacing * _TICK_ARRAY_SIZE();
+
+  const tickArrayIndexes = [
+    tickArrayStartIndex,
+    tickArrayStartIndex + offset,
+    tickArrayStartIndex + offset * 2,
+    tickArrayStartIndex - offset,
+    tickArrayStartIndex - offset * 2,
+  ];
+
+  const tickArrayAddresses = await Promise.all(
+    tickArrayIndexes.map(startIndex => getTickArrayAddress(whirlpool.address, startIndex).then(x => x[0])),
+  );
+
+  const maybeTickArrays = await fetchAllMaybeTickArray(rpc, tickArrayAddresses);
+
+  const tickArrays: Account<TickArrayFacade>[] = [];
+
+  for (let i = 0; i < maybeTickArrays.length; i++) {
+    const maybeTickArray = maybeTickArrays[i];
+    if (maybeTickArray.exists) {
+      tickArrays.push(maybeTickArray);
+    } else {
+      tickArrays.push(
+        createUninitializedTickArray(tickArrayAddresses[i], tickArrayIndexes[i], whirlpool.programAddress),
+      );
+    }
+  }
+
+  return tickArrays;
 }

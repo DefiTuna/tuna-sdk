@@ -2,17 +2,21 @@ import {
   createAddressLookupTableForMarketInstructions,
   extendAddressLookupTableForMarketInstructions,
   fetchMarket,
+  getLendingVaultAddress,
   getMarketAddress,
   HUNDRED_PERCENT,
   LEVERAGE_ONE,
+  MarketMaker,
   MAX_LEVERAGE,
   MAX_LIQUIDATION_FEE,
   MAX_LIQUIDATION_THRESHOLD,
   MAX_PROTOCOL_FEE,
   updateMarketInstruction,
 } from "@crypticdot/defituna-client";
+import { fetchFusionPool } from "@crypticdot/fusionamm-client";
 import { sendTransaction } from "@crypticdot/fusionamm-tx-sender";
 import { Flags } from "@oclif/core";
+import { fetchWhirlpool } from "@orca-so/whirlpools-client";
 import _ from "lodash";
 
 import BaseCommand, { addressArg, addressFlag, bigintFlag, percentFlag } from "../base";
@@ -112,6 +116,18 @@ export default class UpdateMarket extends BaseCommand {
     const market = await fetchMarket(rpc, marketAddress);
     console.log("Market:", market);
 
+    const pool =
+      market.data.marketMaker == MarketMaker.Fusion
+        ? await fetchFusionPool(rpc, args.pool)
+        : await fetchWhirlpool(rpc, args.pool);
+
+    const isolatedVaults = market.data.vaultA != (await getLendingVaultAddress(pool.data.tokenMintA))[0];
+    if (isolatedVaults) {
+      if (market.data.vaultA != (await getLendingVaultAddress(pool.data.tokenMintA, marketAddress))[0]) {
+        throw new Error("Unreachable code! Incorrect isolated vault address!");
+      }
+    }
+
     const newData = _.clone(market.data);
 
     if (flags.disabled !== undefined) {
@@ -171,6 +187,7 @@ export default class UpdateMarket extends BaseCommand {
         rpc,
         args.pool,
         market.data.marketMaker,
+        isolatedVaults,
         signer,
         market.data.addressLookupTable,
       );
@@ -198,6 +215,7 @@ export default class UpdateMarket extends BaseCommand {
         rpc,
         args.pool,
         market.data.marketMaker,
+        isolatedVaults,
         signer,
         currentSlot,
       );

@@ -1,8 +1,6 @@
-import { fetchVault, getLendingVaultAddress, getLendingVaultV2Address } from "@crypticdot/defituna-client";
-import { Flags } from "@oclif/core";
-import { Address } from "@solana/kit";
+import { fetchVault, getLendingVaultAddress } from "@crypticdot/defituna-client";
 
-import BaseCommand, { addressArg } from "../base";
+import BaseCommand, { addressArg, addressFlag } from "../base";
 import { rpc } from "../rpc";
 
 export default class FetchVault extends BaseCommand {
@@ -14,8 +12,8 @@ export default class FetchVault extends BaseCommand {
   };
 
   static override flags = {
-    id: Flags.integer({
-      description: "Isolated vault id. Must be greater than 0 if set.",
+    market: addressFlag({
+      description: "Isolated vault market",
     }),
   };
 
@@ -25,13 +23,7 @@ export default class FetchVault extends BaseCommand {
   public async run() {
     const { args, flags } = await this.parse(FetchVault);
 
-    let vaultAddress: Address;
-
-    if (flags.id) {
-      vaultAddress = (await getLendingVaultV2Address(args.mint, flags.id))[0];
-    } else {
-      vaultAddress = (await getLendingVaultAddress(args.mint))[0];
-    }
+    const vaultAddress = (await getLendingVaultAddress(args.mint, flags.market))[0];
 
     console.log("Fetching vault:", vaultAddress);
     const vault = await fetchVault(rpc, vaultAddress);

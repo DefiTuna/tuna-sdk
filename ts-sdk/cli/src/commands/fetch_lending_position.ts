@@ -1,13 +1,12 @@
 import {
   fetchAllLendingPositionWithFilter,
   fetchMaybeLendingPosition,
-  getLendingVaultV2Address,
+  getLendingVaultAddress,
   LendingPosition,
   lendingPositionAuthorityFilter,
   lendingPositionMintFilter,
   lendingPositionVaultFilter,
 } from "@crypticdot/defituna-client";
-import { Flags } from "@oclif/core";
 import { Account } from "@solana/kit";
 
 import BaseCommand, { addressArg, addressFlag } from "../base";
@@ -29,8 +28,8 @@ export default class FetchLendingPosition extends BaseCommand {
     owner: addressFlag({
       description: "Lending position owner address",
     }),
-    id: Flags.integer({
-      description: "Isolated vault id. Must be greater than 0 if set.",
+    market: addressFlag({
+      description: "Market for the isolated vault.",
     }),
   };
   static override description = "Fetch a tuna lending position or the list of all positions";
@@ -65,7 +64,8 @@ export default class FetchLendingPosition extends BaseCommand {
       }
 
       const vaultAddress =
-        flags.vault ?? (flags.mint && flags.id ? (await getLendingVaultV2Address(flags.mint, flags.id))[0] : undefined);
+        flags.vault ??
+        (flags.mint && flags.id ? (await getLendingVaultAddress(flags.mint, flags.market))[0] : undefined);
 
       if (flags.mint && flags.owner) {
         const positions = await fetchAllLendingPositionWithFilter(

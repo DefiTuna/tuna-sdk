@@ -9,7 +9,6 @@ import {
   fetchTunaConfig,
   fetchTunaLpPosition,
   fetchVault,
-  getLendingVaultAddress,
   getMarketAddress,
   getTunaConfigAddress,
   getTunaLpPositionAddress,
@@ -112,7 +111,7 @@ export async function liquidateTunaLpPosition({
     })
   )[0];
 
-  const vaultAAddress = (await getLendingVaultAddress(mintA.address))[0];
+  const vaultAAddress = market.data.vaultA;
   const vaultAAta = (
     await findAssociatedTokenPda({
       owner: vaultAAddress,
@@ -122,7 +121,7 @@ export async function liquidateTunaLpPosition({
   )[0];
   const vaultA = await fetchVault(rpc, vaultAAddress);
 
-  const vaultBAddress = (await getLendingVaultAddress(mintB.address))[0];
+  const vaultBAddress = market.data.vaultB;
   const vaultBAta = (
     await findAssociatedTokenPda({
       owner: vaultBAddress,
@@ -207,6 +206,14 @@ export async function liquidateTunaLpPosition({
 
   const vaultAAfter = await fetchVault(rpc, vaultAAddress);
   const vaultBAfter = await fetchVault(rpc, vaultBAddress);
+
+  const marketAfter = await fetchMarket(rpc, marketAddress);
+  expect(marketAfter.data.badDebtA - market.data.badDebtA).toEqual(
+    vaultAAfter.data.unpaidDebtShares - vaultA.data.unpaidDebtShares,
+  );
+  expect(marketAfter.data.badDebtB - market.data.badDebtB).toEqual(
+    vaultBAfter.data.unpaidDebtShares - vaultB.data.unpaidDebtShares,
+  );
 
   return {
     poolBalanceDeltaA: poolBalanceAAfter - poolBalanceABefore,

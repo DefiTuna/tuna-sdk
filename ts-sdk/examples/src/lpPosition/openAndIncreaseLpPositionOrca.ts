@@ -10,6 +10,7 @@ import { MAX_SQRT_PRICE, MIN_SQRT_PRICE } from "@crypticdot/defituna-client/src"
 import { DEFAULT_TRANSACTION_CONFIG, sendTransaction } from "@crypticdot/fusionamm-tx-sender";
 import { fetchMaybeWhirlpool } from "@orca-so/whirlpools-client";
 import { sqrtPriceToPrice } from "@orca-so/whirlpools-core";
+import { generateKeyPairSigner } from "@solana/kit";
 import { fetchAllMint } from "@solana-program/token-2022";
 
 import { loadKeypair, rpc } from "../utils/common";
@@ -183,10 +184,12 @@ export async function openAndIncreaseTunaLpPositionOrca(): Promise<void> {
     maxSwapSlippage,
   };
 
+  const positionMint = await generateKeyPairSigner();
+
   /**
    * Creation of instructions for Position Accounts creation and adding liquidity.
    */
-  const ix = await openAndIncreaseTunaLpPositionOrcaInstructions(rpc, signer, whirlpoolAddress, args);
+  const ix = await openAndIncreaseTunaLpPositionOrcaInstructions(rpc, signer, positionMint, whirlpoolAddress, args);
 
   /**
    * Signing and sending the transaction with all the instructions to the Solana network.

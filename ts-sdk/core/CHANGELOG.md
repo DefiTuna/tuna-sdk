@@ -1,5 +1,87 @@
 # @crypticdot/defituna-core
 
+## 3.6.19
+
+## 3.6.18
+
+## 3.6.17
+
+## 3.6.16
+
+## 3.6.15
+
+## 3.6.14
+
+## 3.6.13
+
+## 3.6.12
+
+### Patch Changes
+
+- 9a51033: Added open_and_increase_tuna_spot_position_jupiter ix, updated spot position increase/decrease quote functions
+
+## 3.6.11
+
+## 3.6.10
+
+## 3.6.9
+
+## 3.6.8
+
+## 3.6.7
+
+## 3.6.6
+
+## 3.6.5
+
+## 3.6.4
+
+## 3.6.3
+
+## 3.6.2
+
+## 3.6.1
+
+## 3.6.0
+
+### Minor Changes
+
+- 810637d: Permissionless markets
+
+## 3.5.13
+
+### Patch Changes
+
+- 43accb6: Permissionless markets
+
+## 3.5.12
+
+### Patch Changes
+
+- 574caaa: Fixed Market account structure
+
+## 3.5.11
+
+## 3.5.10
+
+## 3.5.9
+
+## 3.5.8
+
+## 3.5.7
+
+## 3.5.6
+
+## 3.5.5
+
+## 3.5.4
+
+### Patch Changes
+
+- 6183b93: Added multisig support for LP positions
+
+## 3.5.3
+
 ## 3.5.2
 
 ## 3.5.1

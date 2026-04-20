@@ -1,5 +1,135 @@
 # @defituna/rust-client
 
+## 3.6.19
+
+## 3.6.18
+
+## 3.6.17
+
+## 3.6.16
+
+## 3.6.15
+
+## 3.6.14
+
+## 3.6.13
+
+### Patch Changes
+
+- 50dd9c8: Added referral account
+
+## 3.6.12
+
+## 3.6.11
+
+### Patch Changes
+
+- ba60e8d: Removed lock instruction and added the ability to lock via position flags
+
+## 3.6.10
+
+### Patch Changes
+
+- 8b2c05a: Closing of intermediate token accounts for jupiter swaps
+
+## 3.6.9
+
+### Patch Changes
+
+- 72474d9: Updated jupiter instructions
+
+## 3.6.8
+
+### Patch Changes
+
+- 71eb5aa: Added liquidation of Orca positions via Jupiter
+
+## 3.6.7
+
+### Patch Changes
+
+- f52373a: Updated jupiter lp liquidation instruction
+
+## 3.6.6
+
+## 3.6.5
+
+## 3.6.4
+
+### Patch Changes
+
+- fcd063c: Updated jupiter instructions
+
+## 3.6.3
+
+### Patch Changes
+
+- 1354c16: Ability to pass jupiter program authority to instructions
+
+## 3.6.2
+
+### Patch Changes
+
+- 6b3b516: Updated liquidation instructions
+
+## 3.6.1
+
+### Patch Changes
+
+- 5246f23: LP positions liquidation via jupiter and support for position locking
+
+## 3.6.0
+
+### Minor Changes
+
+- 810637d: Permissionless markets
+
+## 3.5.13
+
+### Patch Changes
+
+- 43accb6: Permissionless markets
+
+## 3.5.12
+
+### Patch Changes
+
+- 574caaa: Fixed Market account structure
+
+## 3.5.11
+
+## 3.5.10
+
+### Patch Changes
+
+- 282f2bd: Fixed struct TunaOraclePriceUpdate
+
+## 3.5.9
+
+### Patch Changes
+
+- 9b740de: Renamed update_oracle_price_instruction() helper
+
+## 3.5.8
+
+### Patch Changes
+
+- 5914ca4: Added Tuna Oracle
+
+## 3.5.7
+
+## 3.5.6
+
+## 3.5.5
+
+## 3.5.4
+
+## 3.5.3
+
+### Patch Changes
+
+- 187204a: Updated orca crates versions
+
 ## 3.5.2
 
 ### Patch Changes

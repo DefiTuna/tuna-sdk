@@ -42,6 +42,7 @@ describe("Tuna Position on Fusion", () => {
 
     const openOrderInstructions = await openLimitOrderInstructions(
       rpc,
+      await generateKeyPairSigner(),
       pool.address,
       3_000_000_000n,
       { tickIndex: actualTickIndex - pool.data.tickSpacing },
@@ -94,6 +95,7 @@ describe("Tuna Position on Fusion", () => {
 
     const openOrderInstructions = await openLimitOrderInstructions(
       rpc,
+      await generateKeyPairSigner(),
       pool.address,
       60_000_000_000n,
       { tickIndex: actualTickIndex - pool.data.tickSpacing },
@@ -140,6 +142,7 @@ describe("Tuna Position on Fusion", () => {
 
     const openOrderInstructions = await openLimitOrderInstructions(
       rpc,
+      await generateKeyPairSigner(),
       pool.address,
       3_000_000_000n,
       { tickIndex: actualTickIndex + pool.data.tickSpacing },
@@ -186,6 +189,7 @@ describe("Tuna Position on Fusion", () => {
 
     const openOrderInstructions = await openLimitOrderInstructions(
       rpc,
+      await generateKeyPairSigner(),
       pool.address,
       700_000_000_000n,
       { tickIndex: actualTickIndex + pool.data.tickSpacing },

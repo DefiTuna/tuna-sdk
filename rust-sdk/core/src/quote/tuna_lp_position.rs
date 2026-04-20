@@ -72,7 +72,7 @@ fn compute_liquidation_prices_inside(
     let mut lower_liquidation_sqrt_price = 0.0;
     let mut upper_liquidation_sqrt_price = 0.0;
 
-    if d >= 0.0 {
+    if d >= 0.0 && a > 0.0 {
         lower_liquidation_sqrt_price = (-b - d.sqrt()) / (2.0 * a);
         upper_liquidation_sqrt_price = (-b + d.sqrt()) / (2.0 * a);
         if lower_liquidation_sqrt_price < 0.0 || lower_liquidation_sqrt_price < lower_sqrt_price_f {
@@ -135,11 +135,11 @@ fn calculate_liquidation_outside(
     } else if amount_a > 0 && amount_b == 0 {
         // Lower liquidation price
         let numerator = debt_b as f64 - liquidation_threshold_f * leftovers_b as f64;
-        let denominator = liquidation_threshold_f * (amount_a + leftovers_a) as f64 - debt_a as f64;
+        let denominator = liquidation_threshold_f * (amount_a as f64 + leftovers_a as f64) - debt_a as f64;
         Ok(numerator / denominator)
     } else if amount_a == 0 && amount_b > 0 {
         // Upper liquidation price
-        let numerator = liquidation_threshold_f * (amount_b + leftovers_b) as f64 - debt_b as f64;
+        let numerator = liquidation_threshold_f * (amount_b as f64 + leftovers_b as f64) - debt_b as f64;
         let denominator = debt_a as f64 - liquidation_threshold_f * leftovers_a as f64;
         if denominator == 0.0 {
             return Ok(0.0);
@@ -174,8 +174,8 @@ fn compute_liquidation_prices_outside(
     debt_b: u64,
     liquidation_threshold: u32,
 ) -> Result<LiquidationPrices, CoreError> {
-    let amount_a = get_amount_a_from_liquidity(liquidity, lower_sqrt_price, upper_sqrt_price, false)?;
-    let amount_b = get_amount_b_from_liquidity(liquidity, lower_sqrt_price, upper_sqrt_price, false)?;
+    let amount_a = get_amount_a_from_liquidity(liquidity, lower_sqrt_price, upper_sqrt_price, false).unwrap_or(u64::MAX);
+    let amount_b = get_amount_b_from_liquidity(liquidity, lower_sqrt_price, upper_sqrt_price, false).unwrap_or(u64::MAX);
 
     let mut liquidation_price_for_a = calculate_liquidation_outside(amount_a, 0, leftovers_a, leftovers_b, debt_a, debt_b, liquidation_threshold)?;
     let mut liquidation_price_for_b = calculate_liquidation_outside(0, amount_b, leftovers_a, leftovers_b, debt_a, debt_b, liquidation_threshold)?;
@@ -561,7 +561,9 @@ mod tests {
         get_increase_lp_position_quote, get_lp_position_liquidation_prices, get_repay_lp_position_debt_quote, IncreaseLpPositionQuoteArgs,
         IncreaseLpPositionQuoteResult, LiquidationPrices, RepayLpPositionDebtQuoteArgs, COMPUTED_AMOUNT, HUNDRED_PERCENT,
     };
-    use fusionamm_core::{get_liquidity_from_amount_b, price_to_sqrt_price, price_to_tick_index, tick_index_to_sqrt_price};
+    use fusionamm_core::{
+        get_liquidity_from_amount_b, price_to_sqrt_price, price_to_tick_index, tick_index_to_sqrt_price, MAX_TICK_INDEX, MIN_TICK_INDEX,
+    };
     use once_cell::sync::Lazy;
 
     pub static TICK_LOWER_INDEX: Lazy<i32> = Lazy::new(|| price_to_tick_index(180.736, 6, 6));
@@ -899,6 +901,42 @@ mod tests {
                 protocol_fee_a: 0,
                 protocol_fee_b: 0,
                 liquidity: 40980762112,
+                leverage: 1.0,
+                liquidation_lower_price: 0.0,
+                liquidation_upper_price: 0.0
+            })
+        );
+    }
+
+    #[test]
+    fn test_lp_increase_quote_collateral_a_computed_b_provided_no_leverage_full_range() {
+        assert_eq!(
+            get_increase_lp_position_quote(IncreaseLpPositionQuoteArgs {
+                collateral_a: COMPUTED_AMOUNT,
+                collateral_b: 30000000000,
+                borrow_a: 0,
+                borrow_b: 0,
+                tick_lower_index: MIN_TICK_INDEX,
+                sqrt_price: price_to_sqrt_price(3.0, 1, 1),
+                tick_upper_index: MAX_TICK_INDEX,
+                protocol_fee_rate: 0,
+                protocol_fee_rate_on_collateral: 0,
+                swap_fee_rate: 0,
+                liquidation_threshold: HUNDRED_PERCENT * 83 / 100,
+            }),
+            Ok(IncreaseLpPositionQuoteResult {
+                collateral_a: 9999999997,
+                collateral_b: 30000000000,
+                borrow_a: 0,
+                borrow_b: 0,
+                total_a: 9999999997,
+                total_b: 30000000000,
+                swap_input: 0,
+                swap_output: 0,
+                swap_a_to_b: false,
+                protocol_fee_a: 0,
+                protocol_fee_b: 0,
+                liquidity: 17320508077,
                 leverage: 1.0,
                 liquidation_lower_price: 0.0,
                 liquidation_upper_price: 0.0

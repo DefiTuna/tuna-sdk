@@ -26,13 +26,16 @@ export const TUNA_POSITION_FLAGS_UPPER_LIMIT_ORDER_SWAP_TO_TOKEN_B = 1 << 3;
 export const TUNA_POSITION_FLAGS_AUTO_COMPOUND_YIELD = 1 << 4;
 export const TUNA_POSITION_FLAGS_AUTO_COMPOUND_YIELD_WITH_LEVERAGE = 1 << 5;
 export const TUNA_POSITION_FLAGS_ALLOW_REBALANCING = 1 << 6;
+export const TUNA_POSITION_FLAGS_LOCKED = 1 << 7;
+export const TUNA_POSITION_FLAGS_MASK = (1 << 8) - 1;
 
 export const WP_NFT_UPDATE_AUTH = address("3axbTs2z5GBy6usVbNVoqEgZMng3vZvMnAoX29BFfwhr");
 
 export const DEFAULT_PUSH_ORACLE_PROGRAM_ID = address("pythWSnswVUd12oZpeFP8e9CVaEqJg25g1Vtc2biRsT");
 
 export const JUPITER_EVENT_AUTHORITY = address("D8cy77BBepLMngZx6ZukaTff5hCt1HrWyKk3Hnd9oitf");
-export const JUPITER_PROGRAM_AUTHORITY = address("9nnLbotNTcUhvbrsA6Mdkx45Sm82G35zo28AqUvjExn8");
+export const JUPITER_PROGRAM_AUTHORITY_8 = address("9nnLbotNTcUhvbrsA6Mdkx45Sm82G35zo28AqUvjExn8");
+export const JUPITER_PROGRAM_AUTHORITY_11 = address("69yhtoJR4JYPPABZcSNkzuqbaFbwHsCkja1sP1Q2aVT5");
 
 /// The minimum sqrt price for an orca/fusion pool.
 export const MIN_SQRT_PRICE = 4295048016n;

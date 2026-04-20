@@ -9,9 +9,11 @@ import { afterEach, assert, beforeEach, describe, it, vi } from "vitest";
 
 import {
   fetchAllLendingPositionWithFilter,
+  fetchAllReferralsWithFilter,
   fetchAllTunaLpPositionWithFilter,
   fetchAllTunaSpotPositionWithFilter,
   getLendingPositionEncoder,
+  getReferralEncoder,
   getTunaLpPositionEncoder,
   getTunaSpotPositionEncoder,
   LendingPositionArgs,
@@ -20,6 +22,9 @@ import {
   lendingPositionVaultFilter,
   MarketMaker,
   PoolToken,
+  ReferralArgs,
+  referralAuthorityFilter,
+  referralIdFilter,
   TunaLpPositionArgs,
   tunaLpPositionAuthorityFilter,
   tunaLpPositionMarketMakerFilter,
@@ -159,6 +164,22 @@ describe("Get program account memcmp filters", () => {
       tunaSpotPositionMintBFilter(positionStruct.mintB),
     );
     const data = getTunaSpotPositionEncoder().encode(positionStruct);
+    assertFilters(data);
+  });
+
+  it("Referral", async () => {
+    const referralStruct: ReferralArgs = {
+      authority: addresses[0],
+      timestamp: 43637432452,
+      referralId: 4676484,
+      reserved: new Uint8Array(),
+    };
+    await fetchAllReferralsWithFilter(
+      mockRpc,
+      referralAuthorityFilter(referralStruct.authority),
+      referralIdFilter(referralStruct.referralId),
+    );
+    const data = getReferralEncoder().encode(referralStruct);
     assertFilters(data);
   });
 });

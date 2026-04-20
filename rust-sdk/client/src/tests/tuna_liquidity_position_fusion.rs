@@ -7,13 +7,14 @@ mod tests {
     use crate::types::MarketMaker;
     use crate::{
         close_active_tuna_lp_position_fusion_instructions, close_tuna_lp_position_fusion_instruction, decrease_tuna_lp_position_fusion_instructions,
-        get_tuna_config_address, get_tuna_liquidity_position_address, get_vault_address, increase_tuna_lp_position_fusion_instructions,
+        get_tuna_config_address, get_tuna_liquidity_position_address, increase_tuna_lp_position_fusion_instructions,
         liquidate_tuna_lp_position_fusion_instructions, open_and_increase_tuna_lp_position_fusion_instructions,
         open_tuna_lp_position_fusion_instruction, rebalance_tuna_lp_position_fusion_instructions, CloseActiveTunaLpPositionArgs,
         DecreaseTunaLpPositionArgs, IncreaseTunaLpPositionArgs, OpenAndIncreaseTunaLpPositionArgs, HUNDRED_PERCENT, LEVERAGE_ONE,
         TUNA_POSITION_FLAGS_ALLOW_REBALANCING,
     };
     use fusionamm_client::fetch_fusion_pool;
+    use rstest::rstest;
     use serial_test::serial;
     use solana_keypair::Keypair;
     use solana_program_test::tokio;
@@ -38,16 +39,26 @@ mod tests {
         }
     }
 
-    #[test]
+    #[rstest]
+    #[case(false)]
+    #[case(true)]
     #[serial]
-    fn test_open_close_position() {
+    fn test_open_close_position(#[case] permissionless: bool) {
         let rt = tokio::runtime::Runtime::new().unwrap();
         rt.block_on(async {
             let signer = Keypair::new();
             let ctx = RpcContext::new(&signer, fusion::get_fusion_pool_config_accounts(&signer.pubkey())).await;
-            let test_market = setup_test_market(&ctx, test_market_args(), MarketMaker::Fusion, false, false, false)
-                .await
-                .unwrap();
+            let test_market = setup_test_market(
+                &ctx,
+                test_market_args(),
+                MarketMaker::Fusion,
+                TestMarketArgs {
+                    permissionless,
+                    ..TestMarketArgs::default()
+                },
+            )
+            .await
+            .unwrap();
 
             let pool = fetch_fusion_pool(&ctx.rpc, &test_market.pool).unwrap();
 
@@ -125,16 +136,26 @@ mod tests {
         });
     }
 
-    #[test]
+    #[rstest]
+    #[case(false)]
+    #[case(true)]
     #[serial]
-    fn test_open_position_with_liquidity_and_close_with_liquidity() {
+    fn test_open_position_with_liquidity_and_close_with_liquidity(#[case] permissionless: bool) {
         let rt = tokio::runtime::Runtime::new().unwrap();
         rt.block_on(async {
             let signer = Keypair::new();
             let ctx = RpcContext::new(&signer, fusion::get_fusion_pool_config_accounts(&signer.pubkey())).await;
-            let test_market = setup_test_market(&ctx, test_market_args(), MarketMaker::Fusion, false, false, false)
-                .await
-                .unwrap();
+            let test_market = setup_test_market(
+                &ctx,
+                test_market_args(),
+                MarketMaker::Fusion,
+                TestMarketArgs {
+                    permissionless,
+                    ..TestMarketArgs::default()
+                },
+            )
+            .await
+            .unwrap();
 
             let pool = fetch_fusion_pool(&ctx.rpc, &test_market.pool).unwrap();
 
@@ -177,16 +198,26 @@ mod tests {
         });
     }
 
-    #[test]
+    #[rstest]
+    #[case(false)]
+    #[case(true)]
     #[serial]
-    fn test_rebalance_position() {
+    fn test_rebalance_position(#[case] permissionless: bool) {
         let rt = tokio::runtime::Runtime::new().unwrap();
         rt.block_on(async {
             let signer = Keypair::new();
             let ctx = RpcContext::new(&signer, fusion::get_fusion_pool_config_accounts(&signer.pubkey())).await;
-            let test_market = setup_test_market(&ctx, test_market_args(), MarketMaker::Fusion, false, false, false)
-                .await
-                .unwrap();
+            let test_market = setup_test_market(
+                &ctx,
+                test_market_args(),
+                MarketMaker::Fusion,
+                TestMarketArgs {
+                    permissionless,
+                    ..TestMarketArgs::default()
+                },
+            )
+            .await
+            .unwrap();
 
             let pool = fetch_fusion_pool(&ctx.rpc, &test_market.pool).unwrap();
 
@@ -229,16 +260,26 @@ mod tests {
         });
     }
 
-    #[test]
+    #[rstest]
+    #[case(false)]
+    #[case(true)]
     #[serial]
-    fn test_liquidate_position() {
+    fn test_liquidate_position(#[case] permissionless: bool) {
         let rt = tokio::runtime::Runtime::new().unwrap();
         rt.block_on(async {
             let signer = Keypair::new();
             let ctx = RpcContext::new(&signer, fusion::get_fusion_pool_config_accounts(&signer.pubkey())).await;
-            let test_market = setup_test_market(&ctx, test_market_args(), MarketMaker::Fusion, false, false, false)
-                .await
-                .unwrap();
+            let test_market = setup_test_market(
+                &ctx,
+                test_market_args(),
+                MarketMaker::Fusion,
+                TestMarketArgs {
+                    permissionless,
+                    ..TestMarketArgs::default()
+                },
+            )
+            .await
+            .unwrap();
 
             let pool = fetch_fusion_pool(&ctx.rpc, &test_market.pool).unwrap();
             let tuna_config = fetch_tuna_config(&ctx.rpc, &get_tuna_config_address().0).unwrap();
@@ -274,20 +315,15 @@ mod tests {
                 .unwrap();
 
             let tuna_position = fetch_tuna_lp_position(&ctx.rpc, &get_tuna_liquidity_position_address(&ix.position_mint).0).unwrap();
-            let vaults = fetch_all_vault(
-                &ctx.rpc,
-                &[
-                    get_vault_address(&test_market.mint_a_address).0,
-                    get_vault_address(&test_market.mint_b_address).0,
-                ],
-            )
-            .unwrap();
+            let vaults = fetch_all_vault(&ctx.rpc, &[test_market.vault_a, test_market.vault_b]).unwrap();
 
             ctx.send_transaction(liquidate_tuna_lp_position_fusion_instructions(
                 &ctx.signer.pubkey(),
                 &tuna_position.data,
                 &tuna_config.data,
+                &vaults[0].address,
                 &vaults[0].data,
+                &vaults[1].address,
                 &vaults[1].data,
                 &pool.data,
                 &test_market.token_program_a,

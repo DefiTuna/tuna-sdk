@@ -1,4 +1,4 @@
-import { Address, Rpc, SolanaRpcApi, TransactionSigner } from "@solana/kit";
+import { Address, generateKeyPairSigner, Rpc, SolanaRpcApi, TransactionSigner } from "@solana/kit";
 import { getSetComputeUnitLimitInstruction } from "@solana-program/compute-budget";
 import { fetchMaybeToken, fetchMint, findAssociatedTokenPda } from "@solana-program/token-2022";
 import { expect } from "vitest";
@@ -7,7 +7,6 @@ import {
   fetchMarket,
   fetchTunaConfig,
   fetchVault,
-  getLendingVaultAddress,
   getMarketAddress,
   getTunaConfigAddress,
   HUNDRED_PERCENT,
@@ -61,9 +60,10 @@ export async function openAndIncreaseTunaLpPosition({
   const mintA = await fetchMint(rpc, pool.data.tokenMintA);
   const mintB = await fetchMint(rpc, pool.data.tokenMintB);
 
-  const vaultAAddress = (await getLendingVaultAddress(mintA.address))[0];
+  const vaultAAddress = market.data.vaultA;
   const vaultA = await fetchVault(rpc, vaultAAddress);
-  const vaultBAddress = (await getLendingVaultAddress(mintB.address))[0];
+
+  const vaultBAddress = market.data.vaultB;
   const vaultB = await fetchVault(rpc, vaultBAddress);
 
   const feeRecipientAtaA = (
@@ -96,10 +96,24 @@ export async function openAndIncreaseTunaLpPosition({
     minAddedAmountA: 0n,
     minAddedAmountB: 0n,
   };
+
+  const positionMint = await generateKeyPairSigner();
   const ix =
     market.data.marketMaker == MarketMaker.Orca
-      ? await openAndIncreaseTunaLpPositionOrcaInstructions(rpc, signer, poolAddress, openTunaLpPositionArgs)
-      : await openAndIncreaseTunaLpPositionFusionInstructions(rpc, signer, poolAddress, openTunaLpPositionArgs);
+      ? await openAndIncreaseTunaLpPositionOrcaInstructions(
+          rpc,
+          signer,
+          positionMint,
+          poolAddress,
+          openTunaLpPositionArgs,
+        )
+      : await openAndIncreaseTunaLpPositionFusionInstructions(
+          rpc,
+          signer,
+          positionMint,
+          poolAddress,
+          openTunaLpPositionArgs,
+        );
 
   ix.instructions.unshift(getSetComputeUnitLimitInstruction({ units: 1_400_000 }));
 
@@ -133,5 +147,5 @@ export async function openAndIncreaseTunaLpPosition({
   expect(feeRecipientBalanceAAfter - feeRecipientBalanceABefore).toEqual(feeA);
   expect(feeRecipientBalanceBAfter - feeRecipientBalanceBBefore).toEqual(feeB);
 
-  return ix.positionMint;
+  return positionMint.address;
 }

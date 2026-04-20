@@ -14,7 +14,7 @@ import {
   type Account,
   AccountRole,
   Address,
-  generateKeyPairSigner,
+  address,
   GetAccountInfoApi,
   GetMultipleAccountsApi,
   IAccountMeta,
@@ -38,24 +38,24 @@ import assert from "assert";
 import {
   AccountsType,
   fetchAllVault,
+  fetchMarket,
   fetchTunaConfig,
   FusionUtils,
-  getCreateAtaInstructions,
-  getLendingVaultAddress,
   getMarketAddress,
   getOpenAndIncreaseTunaLpPositionFusionInstruction,
+  getOpenAndIncreaseTunaLpPositionFusionInstructionDataEncoder,
   getTunaConfigAddress,
   getTunaLpPositionAddress,
+  OpenAndIncreaseTunaLpPositionFusionInput,
   OpenAndIncreaseTunaLpPositionFusionInstructionDataArgs,
+  TUNA_PROGRAM_ADDRESS,
   TunaConfig,
   Vault,
 } from "../index.ts";
 import { calculateMinimumBalanceForRentExemption } from "../utils/sysvar";
+import { getTunaLpPositionCreateAtaInstructions } from "../utils/tuna.ts";
 
 export type OpenAndIncreaseTunaLpPositionFusion = {
-  /** The mint address of the position NFT. */
-  positionMint: Address;
-
   /** List of Solana transaction instructions to execute. */
   instructions: IInstruction[];
 
@@ -71,19 +71,17 @@ export type OpenAndIncreaseTunaLpPositionFusionInstructionsArgs = Omit<
 export async function openAndIncreaseTunaLpPositionFusionInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
+  positionMint: TransactionSigner | Address,
   fusionPoolAddress: Address,
   args: OpenAndIncreaseTunaLpPositionFusionInstructionsArgs,
   createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
 ): Promise<OpenAndIncreaseTunaLpPositionFusion> {
-  const instructions: IInstruction[] = [];
-  if (!createInstructions) createInstructions = instructions;
-  if (!cleanupInstructions) cleanupInstructions = instructions;
-
   const rent = await fetchSysvarRent(rpc);
   let nonRefundableRent: bigint = 0n;
 
-  const positionMint = await generateKeyPairSigner();
+  const positionMintAddress = typeof positionMint === "string" ? positionMint : positionMint.address;
+  const tunaPositionAddress = (await getTunaLpPositionAddress(positionMintAddress))[0];
 
   const tunaConfig = await fetchTunaConfig(rpc, (await getTunaConfigAddress())[0]);
 
@@ -94,54 +92,30 @@ export async function openAndIncreaseTunaLpPositionFusionInstructions(
   assert(mintA.exists, "Token A account not found");
   assert(mintB.exists, "Token B account not found");
 
-  const [vaultA, vaultB] = await fetchAllVault(rpc, [
-    (await getLendingVaultAddress(fusionPool.data.tokenMintA))[0],
-    (await getLendingVaultAddress(fusionPool.data.tokenMintB))[0],
-  ]);
+  const marketAddress = (await getMarketAddress(fusionPoolAddress))[0];
+  const market = await fetchMarket(rpc, marketAddress);
 
-  //
-  // Add create user's token account instructions if needed.
-  //
+  const [vaultA, vaultB] = await fetchAllVault(rpc, [market.data.vaultA, market.data.vaultB]);
 
-  const createUserAtaAInstructions = await getCreateAtaInstructions(
+  const { init, cleanup } = await getTunaLpPositionCreateAtaInstructions(
     rpc,
     authority,
-    mintA.address,
-    authority.address,
-    mintA.programAddress,
+    tunaConfig,
+    { exists: false, address: tunaPositionAddress },
+    mintA,
+    mintB,
   );
-  createInstructions.push(...createUserAtaAInstructions.init);
-
-  const createUserAtaBInstructions = await getCreateAtaInstructions(
-    rpc,
-    authority,
-    mintB.address,
-    authority.address,
-    mintB.programAddress,
-  );
-  createInstructions.push(...createUserAtaBInstructions.init);
 
   //
-  // Add create fee recipient's token account instructions if needed.
+  // Create the list of instructions
   //
+  const instructions: IInstruction[] = [];
 
-  const createFeeRecipientAtaAInstructions = await getCreateAtaInstructions(
-    rpc,
-    authority,
-    mintA.address,
-    tunaConfig.data.feeRecipient,
-    mintA.programAddress,
-  );
-  createInstructions.push(...createFeeRecipientAtaAInstructions.init);
-
-  const createFeeRecipientAtaBInstructions = await getCreateAtaInstructions(
-    rpc,
-    authority,
-    mintB.address,
-    tunaConfig.data.feeRecipient,
-    mintB.programAddress,
-  );
-  createInstructions.push(...createFeeRecipientAtaBInstructions.init);
+  if (createInstructions) {
+    createInstructions.push(...init);
+  } else {
+    instructions.push(...init);
+  }
 
   //
   // Add create tick arrays instructions if needed.
@@ -184,7 +158,7 @@ export async function openAndIncreaseTunaLpPositionFusionInstructions(
   }
 
   //
-  // Finally add liquidity increase instruction.
+  // Finally, add liquidity increase instruction.
   //
 
   const ix = await openAndIncreaseTunaLpPositionFusionInstruction(
@@ -204,19 +178,21 @@ export async function openAndIncreaseTunaLpPositionFusionInstructions(
   // Close WSOL accounts if needed.
   //
 
-  cleanupInstructions.push(...createUserAtaAInstructions.cleanup);
-  cleanupInstructions.push(...createUserAtaBInstructions.cleanup);
+  if (cleanupInstructions) {
+    cleanupInstructions.push(...cleanup);
+  } else {
+    instructions.push(...cleanup);
+  }
 
   return {
     instructions,
-    positionMint: positionMint.address,
     initializationCost: lamports(nonRefundableRent),
   };
 }
 
 export async function openAndIncreaseTunaLpPositionFusionInstruction(
   authority: TransactionSigner,
-  positionMint: TransactionSigner,
+  positionMint: TransactionSigner | Address,
   tunaConfig: Account<TunaConfig>,
   mintA: Account<Mint>,
   mintB: Account<Mint>,
@@ -225,15 +201,16 @@ export async function openAndIncreaseTunaLpPositionFusionInstruction(
   fusionPool: Account<FusionPool>,
   args: Omit<OpenAndIncreaseTunaLpPositionFusionInstructionDataArgs, "remainingAccountsInfo">,
 ): Promise<IInstruction> {
-  const tunaPositionAddress = (await getTunaLpPositionAddress(positionMint.address))[0];
+  const positionMintAddress = typeof positionMint === "string" ? positionMint : positionMint.address;
+  const tunaPositionAddress = (await getTunaLpPositionAddress(positionMintAddress))[0];
 
   const marketAddress = (await getMarketAddress(fusionPool.address))[0];
-  const fusionPositionAddress = (await getPositionAddress(positionMint.address))[0];
+  const fusionPositionAddress = (await getPositionAddress(positionMintAddress))[0];
 
   const tunaPositionAta = (
     await findAssociatedTokenPda({
       owner: tunaPositionAddress,
-      mint: positionMint.address,
+      mint: positionMintAddress,
       tokenProgram: TOKEN_2022_PROGRAM_ADDRESS,
     })
   )[0];
@@ -328,42 +305,215 @@ export async function openAndIncreaseTunaLpPositionFusionInstruction(
     ],
   };
 
-  const ix = getOpenAndIncreaseTunaLpPositionFusionInstruction({
-    authority,
-    tunaConfig: tunaConfig.address,
-    mintA: mintA.address,
-    mintB: mintB.address,
-    market: marketAddress,
-    pythOraclePriceFeedA: vaultA.data.pythOraclePriceUpdate,
-    pythOraclePriceFeedB: vaultB.data.pythOraclePriceUpdate,
-    vaultA: vaultA.address,
-    vaultAAta,
-    vaultB: vaultB.address,
-    vaultBAta,
-    tunaPosition: tunaPositionAddress,
-    tunaPositionMint: positionMint,
-    tunaPositionAta,
-    tunaPositionAtaA,
-    tunaPositionAtaB,
-    tunaPositionOwnerAtaA,
-    tunaPositionOwnerAtaB,
-    feeRecipientAtaA,
-    feeRecipientAtaB,
-    fusionPool: fusionPool.address,
-    fusionammProgram: FUSIONAMM_PROGRAM_ADDRESS,
-    fusionPosition: fusionPositionAddress,
-    tokenProgramA: mintA.programAddress,
-    tokenProgramB: mintB.programAddress,
-    memoProgram: MEMO_PROGRAM_ADDRESS,
-    metadataUpdateAuth: FP_NFT_UPDATE_AUTH,
-    associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
-    token2022Program: TOKEN_2022_PROGRAM_ADDRESS,
-    ...args,
-    remainingAccountsInfo,
-  });
+  const ix =
+    typeof positionMint === "string"
+      ? getOpenAndIncreaseTunaLpPositionFusionInstructionWithEphemeralSigner({
+          authority,
+          tunaConfig: tunaConfig.address,
+          mintA: mintA.address,
+          mintB: mintB.address,
+          market: marketAddress,
+          oraclePriceUpdateA: vaultA.data.oraclePriceUpdate,
+          oraclePriceUpdateB: vaultB.data.oraclePriceUpdate,
+          vaultA: vaultA.address,
+          vaultAAta,
+          vaultB: vaultB.address,
+          vaultBAta,
+          tunaPosition: tunaPositionAddress,
+          tunaPositionMint: positionMint,
+          tunaPositionAta,
+          tunaPositionAtaA,
+          tunaPositionAtaB,
+          tunaPositionOwnerAtaA,
+          tunaPositionOwnerAtaB,
+          feeRecipientAtaA,
+          feeRecipientAtaB,
+          fusionPool: fusionPool.address,
+          fusionammProgram: FUSIONAMM_PROGRAM_ADDRESS,
+          fusionPosition: fusionPositionAddress,
+          tokenProgramA: mintA.programAddress,
+          tokenProgramB: mintB.programAddress,
+          memoProgram: MEMO_PROGRAM_ADDRESS,
+          metadataUpdateAuth: FP_NFT_UPDATE_AUTH,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
+          token2022Program: TOKEN_2022_PROGRAM_ADDRESS,
+          ...args,
+          remainingAccountsInfo,
+        })
+      : getOpenAndIncreaseTunaLpPositionFusionInstruction({
+          authority,
+          tunaConfig: tunaConfig.address,
+          mintA: mintA.address,
+          mintB: mintB.address,
+          market: marketAddress,
+          oraclePriceUpdateA: vaultA.data.oraclePriceUpdate,
+          oraclePriceUpdateB: vaultB.data.oraclePriceUpdate,
+          vaultA: vaultA.address,
+          vaultAAta,
+          vaultB: vaultB.address,
+          vaultBAta,
+          tunaPosition: tunaPositionAddress,
+          tunaPositionMint: positionMint,
+          tunaPositionAta,
+          tunaPositionAtaA,
+          tunaPositionAtaB,
+          tunaPositionOwnerAtaA,
+          tunaPositionOwnerAtaB,
+          feeRecipientAtaA,
+          feeRecipientAtaB,
+          fusionPool: fusionPool.address,
+          fusionammProgram: FUSIONAMM_PROGRAM_ADDRESS,
+          fusionPosition: fusionPositionAddress,
+          tokenProgramA: mintA.programAddress,
+          tokenProgramB: mintB.programAddress,
+          memoProgram: MEMO_PROGRAM_ADDRESS,
+          metadataUpdateAuth: FP_NFT_UPDATE_AUTH,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
+          token2022Program: TOKEN_2022_PROGRAM_ADDRESS,
+          ...args,
+          remainingAccountsInfo,
+        });
 
   // @ts-expect-error don't worry about the error
   ix.accounts.push(...remainingAccounts);
 
   return ix;
+}
+
+type OpenAndIncreaseTunaLpPositionFusionInputWithEphemeralSigner<TAccountTunaPositionMint extends string = string> =
+  Omit<OpenAndIncreaseTunaLpPositionFusionInput, "tunaPositionMint"> & {
+    tunaPositionMint: Address<TAccountTunaPositionMint>;
+  };
+
+export function getOpenAndIncreaseTunaLpPositionFusionInstructionWithEphemeralSigner(
+  input: OpenAndIncreaseTunaLpPositionFusionInputWithEphemeralSigner,
+): IInstruction {
+  return {
+    accounts: [
+      {
+        address: input.authority.address,
+        role: AccountRole.WRITABLE_SIGNER,
+      },
+      {
+        address: input.tunaConfig,
+        role: AccountRole.READONLY,
+      },
+      {
+        address: input.mintA,
+        role: AccountRole.READONLY,
+      },
+      {
+        address: input.mintB,
+        role: AccountRole.READONLY,
+      },
+      {
+        address: input.tokenProgramA,
+        role: AccountRole.READONLY,
+      },
+      {
+        address: input.tokenProgramB,
+        role: AccountRole.READONLY,
+      },
+      {
+        address: input.market,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.vaultA,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.vaultB,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.vaultAAta,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.vaultBAta,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.tunaPosition,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.tunaPositionMint,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.tunaPositionAta,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.tunaPositionAtaA,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.tunaPositionAtaB,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.tunaPositionOwnerAtaA,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.tunaPositionOwnerAtaB,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.feeRecipientAtaA,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.feeRecipientAtaB,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.oraclePriceUpdateA,
+        role: AccountRole.READONLY,
+      },
+      {
+        address: input.oraclePriceUpdateB,
+        role: AccountRole.READONLY,
+      },
+      {
+        address: input.fusionammProgram,
+        role: AccountRole.READONLY,
+      },
+      {
+        address: input.fusionPool,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.fusionPosition,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.metadataUpdateAuth,
+        role: AccountRole.READONLY,
+      },
+      {
+        address: input.memoProgram,
+        role: AccountRole.READONLY,
+      },
+      {
+        address: input.token2022Program,
+        role: AccountRole.READONLY,
+      },
+      {
+        address: input.systemProgram ?? address("11111111111111111111111111111111"),
+        role: AccountRole.READONLY,
+      },
+      {
+        address: input.associatedTokenProgram,
+        role: AccountRole.READONLY,
+      },
+    ],
+    programAddress: TUNA_PROGRAM_ADDRESS,
+    data: getOpenAndIncreaseTunaLpPositionFusionInstructionDataEncoder().encode(
+      input as OpenAndIncreaseTunaLpPositionFusionInstructionDataArgs,
+    ),
+  };
 }

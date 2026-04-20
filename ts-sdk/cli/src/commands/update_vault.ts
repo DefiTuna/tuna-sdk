@@ -67,14 +67,14 @@ export default class UpdateVault extends BaseCommand {
 
     if (flags.priceFeedId) {
       const priceFeedId = Buffer.from(this.uint8ArrayToHex(getBase58Codec().encode(flags.priceFeedId)), "hex");
-      newData.pythOraclePriceUpdate = (await getPythPriceUpdateAccountAddress(0, priceFeedId))[0];
+      newData.oraclePriceUpdate = (await getPythPriceUpdateAccountAddress(0, priceFeedId))[0];
     }
 
     const ix = await updateVaultInstruction(signer, vaultAddress, {
       interestRate: newData.interestRate,
       supplyLimit: newData.supplyLimit,
       pythOracleFeedId: newData.pythOracleFeedId,
-      pythOraclePriceUpdate: newData.pythOraclePriceUpdate,
+      oraclePriceUpdate: newData.oraclePriceUpdate,
     });
 
     console.log("");

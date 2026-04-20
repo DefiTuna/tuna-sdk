@@ -2,7 +2,7 @@ use crate::accounts::{TunaConfig, TunaSpotPosition, Vault};
 use crate::instructions::{LiquidateTunaSpotPositionFusion, LiquidateTunaSpotPositionFusionInstructionArgs};
 use crate::types::{AccountsType, PoolToken, RemainingAccountsInfo, RemainingAccountsSlice};
 use crate::utils::fusion::get_swap_tick_arrays;
-use crate::{get_market_address, get_tuna_config_address, get_tuna_spot_position_address, get_vault_address, HUNDRED_PERCENT};
+use crate::{get_market_address, get_tuna_config_address, get_tuna_spot_position_address, HUNDRED_PERCENT};
 use fusionamm_client::FusionPool;
 use solana_instruction::{AccountMeta, Instruction};
 use solana_pubkey::Pubkey;
@@ -14,7 +14,9 @@ pub fn liquidate_tuna_spot_position_fusion_instructions(
     authority: &Pubkey,
     tuna_position: &TunaSpotPosition,
     tuna_config: &TunaConfig,
+    vault_a_address: &Pubkey,
     vault_a: &Vault,
+    vault_b_address: &Pubkey,
     vault_b: &Vault,
     fusion_pool: &FusionPool,
     token_program_a: &Pubkey,
@@ -51,7 +53,9 @@ pub fn liquidate_tuna_spot_position_fusion_instructions(
         authority,
         tuna_position,
         tuna_config,
+        vault_a_address,
         vault_a,
+        vault_b_address,
         vault_b,
         fusion_pool,
         token_program_a,
@@ -66,7 +70,9 @@ pub fn liquidate_tuna_spot_position_fusion_instruction(
     authority: &Pubkey,
     tuna_position: &TunaSpotPosition,
     tuna_config: &TunaConfig,
+    vault_a_address: &Pubkey,
     vault_a: &Vault,
+    vault_b_address: &Pubkey,
     vault_b: &Vault,
     fusion_pool: &FusionPool,
     token_program_a: &Pubkey,
@@ -87,8 +93,6 @@ pub fn liquidate_tuna_spot_position_fusion_instruction(
     let tuna_position_address = get_tuna_spot_position_address(&tuna_position.authority, &tuna_position.pool).0;
     let tuna_position_owner_ata_a = get_associated_token_address_with_program_id(&tuna_position.authority, &mint_a, token_program_a);
     let tuna_position_owner_ata_b = get_associated_token_address_with_program_id(&tuna_position.authority, &mint_b, token_program_b);
-    let vault_a_address = get_vault_address(&mint_a).0;
-    let vault_b_address = get_vault_address(&mint_b).0;
 
     let swap_ticks_arrays = get_swap_tick_arrays(fusion_pool.tick_current_index, tick_spacing, &tuna_position.pool);
 
@@ -98,10 +102,10 @@ pub fn liquidate_tuna_spot_position_fusion_instruction(
         mint_a,
         mint_b,
         market: market_address,
-        vault_a: vault_a_address,
-        vault_b: vault_b_address,
-        vault_a_ata: get_associated_token_address_with_program_id(&vault_a_address, &mint_a, token_program_a),
-        vault_b_ata: get_associated_token_address_with_program_id(&vault_b_address, &mint_b, token_program_b),
+        vault_a: *vault_a_address,
+        vault_b: *vault_b_address,
+        vault_a_ata: get_associated_token_address_with_program_id(vault_a_address, &mint_a, token_program_a),
+        vault_b_ata: get_associated_token_address_with_program_id(vault_b_address, &mint_b, token_program_b),
         tuna_position: tuna_position_address,
         tuna_position_ata_a: get_associated_token_address_with_program_id(&tuna_position_address, &mint_a, token_program_a),
         tuna_position_ata_b: get_associated_token_address_with_program_id(&tuna_position_address, &mint_b, token_program_b),
@@ -118,8 +122,8 @@ pub fn liquidate_tuna_spot_position_fusion_instruction(
         },
         fee_recipient_ata_a: get_associated_token_address_with_program_id(&tuna_config.fee_recipient, &mint_a, token_program_a),
         fee_recipient_ata_b: get_associated_token_address_with_program_id(&tuna_config.fee_recipient, &mint_b, token_program_b),
-        pyth_oracle_price_feed_a: vault_a.pyth_oracle_price_update,
-        pyth_oracle_price_feed_b: vault_b.pyth_oracle_price_update,
+        oracle_price_update_a: vault_a.oracle_price_update,
+        oracle_price_update_b: vault_b.oracle_price_update,
         fusionamm_program: fusionamm_client::ID,
         fusion_pool: tuna_position.pool,
         token_program_a: *token_program_a,

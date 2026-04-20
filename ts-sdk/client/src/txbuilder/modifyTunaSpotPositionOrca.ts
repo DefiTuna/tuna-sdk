@@ -11,16 +11,15 @@ import {
   TransactionSigner,
 } from "@solana/kit";
 import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
-import { fetchAllMaybeMint, fetchAllToken, findAssociatedTokenPda, Mint } from "@solana-program/token-2022";
+import { fetchAllMaybeMint, findAssociatedTokenPda, Mint } from "@solana-program/token-2022";
 import assert from "assert";
 
 import {
   AccountsType,
   fetchAllVault,
+  fetchMarket,
   fetchMaybeTunaSpotPosition,
   fetchTunaConfig,
-  getCreateAtaInstructions,
-  getLendingVaultAddress,
   getMarketAddress,
   getModifyTunaSpotPositionOrcaInstruction,
   getTunaConfigAddress,
@@ -31,6 +30,7 @@ import {
   TunaConfig,
   Vault,
 } from "../index.ts";
+import { getTunaSpotPositionCreateAtaInstructions } from "../utils/tuna.ts";
 
 export type ModifyTunaSpotPositionOrcaInstructionsArgs = Omit<
   ModifyTunaSpotPositionOrcaInstructionDataArgs,
@@ -46,10 +46,6 @@ export async function modifyTunaSpotPositionOrcaInstructions(
   createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
 ): Promise<IInstruction[]> {
-  const instructions: IInstruction[] = [];
-  if (!createInstructions) createInstructions = instructions;
-  if (!cleanupInstructions) cleanupInstructions = instructions;
-
   const tunaPositionAddress = (await getTunaSpotPositionAddress(authority.address, poolAddress))[0];
   const tunaPosition = await fetchMaybeTunaSpotPosition(rpc, tunaPositionAddress);
 
@@ -66,81 +62,36 @@ export async function modifyTunaSpotPositionOrcaInstructions(
   assert(mintA.exists, "Token A account not found");
   assert(mintB.exists, "Token B account not found");
 
-  const [vaultA, vaultB] = await fetchAllVault(rpc, [
-    (await getLendingVaultAddress(pool.data.tokenMintA))[0],
-    (await getLendingVaultAddress(pool.data.tokenMintB))[0],
-  ]);
+  const marketAddress = (await getMarketAddress(poolAddress))[0];
+  const market = await fetchMarket(rpc, marketAddress);
+
+  const [vaultA, vaultB] = await fetchAllVault(rpc, [market.data.vaultA, market.data.vaultB]);
+
+  const { init, cleanup, requireTunaPositionOwnerAtaA, requireTunaPositionOwnerAtaB } =
+    await getTunaSpotPositionCreateAtaInstructions(
+      rpc,
+      authority,
+      tunaConfig,
+      tunaPosition,
+      mintA,
+      mintB,
+      collateralToken,
+      false,
+    );
 
   //
-  // Add create user's token account instructions if needed.
+  // Create the list of instructions
   //
-  let hasDirectlyTransferredTokensA = false;
-  let hasDirectlyTransferredTokensB = false;
+  const instructions: IInstruction[] = [];
 
-  if (tunaPosition.exists) {
-    const tunaPositionAtaAAddress = (
-      await findAssociatedTokenPda({
-        owner: tunaPositionAddress,
-        mint: mintA.address,
-        tokenProgram: mintA.programAddress,
-      })
-    )[0];
-
-    const tunaPositionAtaBAddress = (
-      await findAssociatedTokenPda({
-        owner: tunaPositionAddress,
-        mint: mintB.address,
-        tokenProgram: mintB.programAddress,
-      })
-    )[0];
-
-    const [tunaPositionAtaA, tunaPositionAtaB] = await fetchAllToken(rpc, [
-      tunaPositionAtaAAddress,
-      tunaPositionAtaBAddress,
-    ]);
-
-    hasDirectlyTransferredTokensA =
-      tunaPositionAtaA.data.amount > (tunaPosition.data.positionToken == PoolToken.A ? tunaPosition.data.amount : 0n);
-    hasDirectlyTransferredTokensB =
-      tunaPositionAtaB.data.amount > (tunaPosition.data.positionToken == PoolToken.B ? tunaPosition.data.amount : 0n);
+  if (createInstructions) {
+    createInstructions.push(...init);
+  } else {
+    instructions.push(...init);
   }
 
-  const createUserAtaAInstructions =
-    collateralToken == PoolToken.A || hasDirectlyTransferredTokensA
-      ? await getCreateAtaInstructions(rpc, authority, mintA.address, authority.address, mintA.programAddress)
-      : undefined;
-  if (createUserAtaAInstructions) createInstructions.push(...createUserAtaAInstructions.init);
-
-  const createUserAtaBInstructions =
-    collateralToken == PoolToken.B || hasDirectlyTransferredTokensB
-      ? await getCreateAtaInstructions(rpc, authority, mintB.address, authority.address, mintB.programAddress)
-      : undefined;
-  if (createUserAtaBInstructions) createInstructions.push(...createUserAtaBInstructions.init);
-
   //
-  // Add create fee recipient's token account instructions if needed.
-  //
-
-  const createFeeRecipientAtaAInstructions = await getCreateAtaInstructions(
-    rpc,
-    authority,
-    mintA.address,
-    tunaConfig.data.feeRecipient,
-    mintA.programAddress,
-  );
-  createInstructions.push(...createFeeRecipientAtaAInstructions.init);
-
-  const createFeeRecipientAtaBInstructions = await getCreateAtaInstructions(
-    rpc,
-    authority,
-    mintB.address,
-    tunaConfig.data.feeRecipient,
-    mintB.programAddress,
-  );
-  createInstructions.push(...createFeeRecipientAtaBInstructions.init);
-
-  //
-  // Finally, add the modify instruction.
+  // Finally, add the position modify instruction.
   //
 
   const ix = await modifyTunaSpotPositionOrcaInstruction(
@@ -151,8 +102,8 @@ export async function modifyTunaSpotPositionOrcaInstructions(
     vaultA,
     vaultB,
     pool,
-    createUserAtaAInstructions != undefined,
-    createUserAtaBInstructions != undefined,
+    requireTunaPositionOwnerAtaA,
+    requireTunaPositionOwnerAtaB,
     { ...args },
   );
   instructions.push(ix);
@@ -161,8 +112,11 @@ export async function modifyTunaSpotPositionOrcaInstructions(
   // Close WSOL accounts if needed.
   //
 
-  if (createUserAtaAInstructions) cleanupInstructions.push(...createUserAtaAInstructions.cleanup);
-  if (createUserAtaBInstructions) cleanupInstructions.push(...createUserAtaBInstructions.cleanup);
+  if (cleanupInstructions) {
+    cleanupInstructions.push(...cleanup);
+  } else {
+    instructions.push(...cleanup);
+  }
 
   return instructions;
 }
@@ -175,8 +129,8 @@ export async function modifyTunaSpotPositionOrcaInstruction(
   vaultA: Account<Vault>,
   vaultB: Account<Vault>,
   pool: Account<Whirlpool>,
-  setTunaPositionOwnerAtaA: boolean,
-  setTunaPositionOwnerAtaB: boolean,
+  requireTunaPositionOwnerAtaA: boolean,
+  requireTunaPositionOwnerAtaB: boolean,
   args: ModifyTunaSpotPositionOrcaInstructionsArgs,
 ): Promise<IInstruction> {
   const marketAddress = (await getMarketAddress(pool.address))[0];
@@ -277,8 +231,8 @@ export async function modifyTunaSpotPositionOrcaInstruction(
     tokenProgramA: mintA.programAddress,
     tokenProgramB: mintB.programAddress,
     market: marketAddress,
-    pythOraclePriceFeedA: vaultA.data.pythOraclePriceUpdate,
-    pythOraclePriceFeedB: vaultB.data.pythOraclePriceUpdate,
+    oraclePriceUpdateA: vaultA.data.oraclePriceUpdate,
+    oraclePriceUpdateB: vaultB.data.oraclePriceUpdate,
     vaultA: vaultA.address,
     vaultAAta,
     vaultB: vaultB.address,
@@ -286,8 +240,8 @@ export async function modifyTunaSpotPositionOrcaInstruction(
     tunaPosition: tunaPositionAddress,
     tunaPositionAtaA,
     tunaPositionAtaB,
-    ...(setTunaPositionOwnerAtaA && { tunaPositionOwnerAtaA }),
-    ...(setTunaPositionOwnerAtaB && { tunaPositionOwnerAtaB }),
+    ...(requireTunaPositionOwnerAtaA && { tunaPositionOwnerAtaA }),
+    ...(requireTunaPositionOwnerAtaB && { tunaPositionOwnerAtaB }),
     feeRecipientAtaA,
     feeRecipientAtaB,
     whirlpool: pool.address,

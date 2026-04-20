@@ -3,12 +3,11 @@
   "include": ["src"],
   "exclude": ["node_modules"],
   "compilerOptions": {
-    "module": "preserve",
     "outDir": "dist",
     "strict": true,
     "target": "es2022",
     "paths": {
       "@crypticdot/defituna-client": ["../client/src"]
     }
-  },
+  }
 }

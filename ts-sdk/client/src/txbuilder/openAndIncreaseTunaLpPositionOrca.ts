@@ -14,7 +14,7 @@ import {
   type Account,
   AccountRole,
   Address,
-  generateKeyPairSigner,
+  address,
   GetAccountInfoApi,
   GetMultipleAccountsApi,
   IAccountMeta,
@@ -38,25 +38,25 @@ import assert from "assert";
 import {
   AccountsType,
   fetchAllVault,
+  fetchMarket,
   fetchTunaConfig,
-  getCreateAtaInstructions,
-  getLendingVaultAddress,
   getMarketAddress,
   getOpenAndIncreaseTunaLpPositionOrcaInstruction,
+  getOpenAndIncreaseTunaLpPositionOrcaInstructionDataEncoder,
   getTunaConfigAddress,
   getTunaLpPositionAddress,
+  OpenAndIncreaseTunaLpPositionOrcaInput,
   OpenAndIncreaseTunaLpPositionOrcaInstructionDataArgs,
   OrcaUtils,
+  TUNA_PROGRAM_ADDRESS,
   TunaConfig,
   Vault,
   WP_NFT_UPDATE_AUTH,
 } from "../index.ts";
 import { calculateMinimumBalanceForRentExemption } from "../utils/sysvar";
+import { getTunaLpPositionCreateAtaInstructions } from "../utils/tuna.ts";
 
 export type OpenAndIncreaseTunaLpPositionOrca = {
-  /** The mint address of the position NFT. */
-  positionMint: Address;
-
   /** List of Solana transaction instructions to execute. */
   instructions: IInstruction[];
 
@@ -72,19 +72,17 @@ export type OpenAndIncreaseTunaLpPositionOrcaInstructionsArgs = Omit<
 export async function openAndIncreaseTunaLpPositionOrcaInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
+  positionMint: TransactionSigner | Address,
   whirlpoolAddress: Address,
   args: OpenAndIncreaseTunaLpPositionOrcaInstructionsArgs,
   createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
 ): Promise<OpenAndIncreaseTunaLpPositionOrca> {
-  const instructions: IInstruction[] = [];
-  if (!createInstructions) createInstructions = instructions;
-  if (!cleanupInstructions) cleanupInstructions = instructions;
-
   const rent = await fetchSysvarRent(rpc);
   let nonRefundableRent: bigint = 0n;
 
-  const positionMint = await generateKeyPairSigner();
+  const positionMintAddress = typeof positionMint === "string" ? positionMint : positionMint.address;
+  const tunaPositionAddress = (await getTunaLpPositionAddress(positionMintAddress))[0];
 
   const tunaConfig = await fetchTunaConfig(rpc, (await getTunaConfigAddress())[0]);
 
@@ -95,54 +93,30 @@ export async function openAndIncreaseTunaLpPositionOrcaInstructions(
   assert(mintA.exists, "Token A account not found");
   assert(mintB.exists, "Token B account not found");
 
-  const [vaultA, vaultB] = await fetchAllVault(rpc, [
-    (await getLendingVaultAddress(whirlpool.data.tokenMintA))[0],
-    (await getLendingVaultAddress(whirlpool.data.tokenMintB))[0],
-  ]);
+  const marketAddress = (await getMarketAddress(whirlpoolAddress))[0];
+  const market = await fetchMarket(rpc, marketAddress);
 
-  //
-  // Add create user's token account instructions if needed.
-  //
+  const [vaultA, vaultB] = await fetchAllVault(rpc, [market.data.vaultA, market.data.vaultB]);
 
-  const createUserAtaAInstructions = await getCreateAtaInstructions(
+  const { init, cleanup } = await getTunaLpPositionCreateAtaInstructions(
     rpc,
     authority,
-    mintA.address,
-    authority.address,
-    mintA.programAddress,
+    tunaConfig,
+    { exists: false, address: tunaPositionAddress },
+    mintA,
+    mintB,
   );
-  createInstructions.push(...createUserAtaAInstructions.init);
-
-  const createUserAtaBInstructions = await getCreateAtaInstructions(
-    rpc,
-    authority,
-    mintB.address,
-    authority.address,
-    mintB.programAddress,
-  );
-  createInstructions.push(...createUserAtaBInstructions.init);
 
   //
-  // Add create fee recipient's token account instructions if needed.
+  // Create the list of instructions
   //
+  const instructions: IInstruction[] = [];
 
-  const createFeeRecipientAtaAInstructions = await getCreateAtaInstructions(
-    rpc,
-    authority,
-    mintA.address,
-    tunaConfig.data.feeRecipient,
-    mintA.programAddress,
-  );
-  createInstructions.push(...createFeeRecipientAtaAInstructions.init);
-
-  const createFeeRecipientAtaBInstructions = await getCreateAtaInstructions(
-    rpc,
-    authority,
-    mintB.address,
-    tunaConfig.data.feeRecipient,
-    mintB.programAddress,
-  );
-  createInstructions.push(...createFeeRecipientAtaBInstructions.init);
+  if (createInstructions) {
+    createInstructions.push(...init);
+  } else {
+    instructions.push(...init);
+  }
 
   //
   // Add create tick arrays instructions if needed.
@@ -207,19 +181,21 @@ export async function openAndIncreaseTunaLpPositionOrcaInstructions(
   // Close WSOL accounts if needed.
   //
 
-  cleanupInstructions.push(...createUserAtaAInstructions.cleanup);
-  cleanupInstructions.push(...createUserAtaBInstructions.cleanup);
+  if (cleanupInstructions) {
+    cleanupInstructions.push(...cleanup);
+  } else {
+    instructions.push(...cleanup);
+  }
 
   return {
     instructions,
-    positionMint: positionMint.address,
     initializationCost: lamports(nonRefundableRent),
   };
 }
 
 export async function openAndIncreaseTunaLpPositionOrcaInstruction(
   authority: TransactionSigner,
-  positionMint: TransactionSigner,
+  positionMint: TransactionSigner | Address,
   tunaConfig: Account<TunaConfig>,
   mintA: Account<Mint>,
   mintB: Account<Mint>,
@@ -228,16 +204,17 @@ export async function openAndIncreaseTunaLpPositionOrcaInstruction(
   whirlpool: Account<Whirlpool>,
   args: Omit<OpenAndIncreaseTunaLpPositionOrcaInstructionDataArgs, "remainingAccountsInfo">,
 ): Promise<IInstruction> {
-  const tunaPositionAddress = (await getTunaLpPositionAddress(positionMint.address))[0];
+  const positionMintAddress = typeof positionMint === "string" ? positionMint : positionMint.address;
+  const tunaPositionAddress = (await getTunaLpPositionAddress(positionMintAddress))[0];
 
   const marketAddress = (await getMarketAddress(whirlpool.address))[0];
-  const orcaPositionAddress = (await getPositionAddress(positionMint.address))[0];
+  const orcaPositionAddress = (await getPositionAddress(positionMintAddress))[0];
   const orcaOracleAddress = (await getOracleAddress(whirlpool.address))[0];
 
   const tunaPositionAta = (
     await findAssociatedTokenPda({
       owner: tunaPositionAddress,
-      mint: positionMint.address,
+      mint: positionMintAddress,
       tokenProgram: TOKEN_2022_PROGRAM_ADDRESS,
     })
   )[0];
@@ -334,42 +311,217 @@ export async function openAndIncreaseTunaLpPositionOrcaInstruction(
     ],
   };
 
-  const ix = getOpenAndIncreaseTunaLpPositionOrcaInstruction({
-    authority,
-    tunaConfig: tunaConfig.address,
-    mintA: mintA.address,
-    mintB: mintB.address,
-    market: marketAddress,
-    pythOraclePriceFeedA: vaultA.data.pythOraclePriceUpdate,
-    pythOraclePriceFeedB: vaultB.data.pythOraclePriceUpdate,
-    vaultA: vaultA.address,
-    vaultAAta,
-    vaultB: vaultB.address,
-    vaultBAta,
-    tunaPosition: tunaPositionAddress,
-    tunaPositionMint: positionMint,
-    tunaPositionAta,
-    tunaPositionAtaA,
-    tunaPositionAtaB,
-    tunaPositionOwnerAtaA,
-    tunaPositionOwnerAtaB,
-    feeRecipientAtaA,
-    feeRecipientAtaB,
-    whirlpool: whirlpool.address,
-    whirlpoolProgram: WHIRLPOOL_PROGRAM_ADDRESS,
-    orcaPosition: orcaPositionAddress,
-    tokenProgramA: mintA.programAddress,
-    tokenProgramB: mintB.programAddress,
-    memoProgram: MEMO_PROGRAM_ADDRESS,
-    metadataUpdateAuth: WP_NFT_UPDATE_AUTH,
-    associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
-    token2022Program: TOKEN_2022_PROGRAM_ADDRESS,
-    ...args,
-    remainingAccountsInfo,
-  });
+  const ix =
+    typeof positionMint === "string"
+      ? getOpenAndIncreaseTunaLpPositionOrcaInstructionWithEphemeralSigner({
+          authority,
+          tunaConfig: tunaConfig.address,
+          mintA: mintA.address,
+          mintB: mintB.address,
+          market: marketAddress,
+          oraclePriceUpdateA: vaultA.data.oraclePriceUpdate,
+          oraclePriceUpdateB: vaultB.data.oraclePriceUpdate,
+          vaultA: vaultA.address,
+          vaultAAta,
+          vaultB: vaultB.address,
+          vaultBAta,
+          tunaPosition: tunaPositionAddress,
+          tunaPositionMint: positionMint,
+          tunaPositionAta,
+          tunaPositionAtaA,
+          tunaPositionAtaB,
+          tunaPositionOwnerAtaA,
+          tunaPositionOwnerAtaB,
+          feeRecipientAtaA,
+          feeRecipientAtaB,
+          whirlpool: whirlpool.address,
+          whirlpoolProgram: WHIRLPOOL_PROGRAM_ADDRESS,
+          orcaPosition: orcaPositionAddress,
+          tokenProgramA: mintA.programAddress,
+          tokenProgramB: mintB.programAddress,
+          memoProgram: MEMO_PROGRAM_ADDRESS,
+          metadataUpdateAuth: WP_NFT_UPDATE_AUTH,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
+          token2022Program: TOKEN_2022_PROGRAM_ADDRESS,
+          ...args,
+          remainingAccountsInfo,
+        })
+      : getOpenAndIncreaseTunaLpPositionOrcaInstruction({
+          authority,
+          tunaConfig: tunaConfig.address,
+          mintA: mintA.address,
+          mintB: mintB.address,
+          market: marketAddress,
+          oraclePriceUpdateA: vaultA.data.oraclePriceUpdate,
+          oraclePriceUpdateB: vaultB.data.oraclePriceUpdate,
+          vaultA: vaultA.address,
+          vaultAAta,
+          vaultB: vaultB.address,
+          vaultBAta,
+          tunaPosition: tunaPositionAddress,
+          tunaPositionMint: positionMint,
+          tunaPositionAta,
+          tunaPositionAtaA,
+          tunaPositionAtaB,
+          tunaPositionOwnerAtaA,
+          tunaPositionOwnerAtaB,
+          feeRecipientAtaA,
+          feeRecipientAtaB,
+          whirlpool: whirlpool.address,
+          whirlpoolProgram: WHIRLPOOL_PROGRAM_ADDRESS,
+          orcaPosition: orcaPositionAddress,
+          tokenProgramA: mintA.programAddress,
+          tokenProgramB: mintB.programAddress,
+          memoProgram: MEMO_PROGRAM_ADDRESS,
+          metadataUpdateAuth: WP_NFT_UPDATE_AUTH,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
+          token2022Program: TOKEN_2022_PROGRAM_ADDRESS,
+          ...args,
+          remainingAccountsInfo,
+        });
 
   // @ts-expect-error don't worry about the error
   ix.accounts.push(...remainingAccounts);
 
   return ix;
+}
+
+type OpenAndIncreaseTunaLpPositionOrcaInputWithEphemeralSigner<TAccountTunaPositionMint extends string = string> = Omit<
+  OpenAndIncreaseTunaLpPositionOrcaInput,
+  "tunaPositionMint"
+> & {
+  tunaPositionMint: Address<TAccountTunaPositionMint>;
+};
+
+export function getOpenAndIncreaseTunaLpPositionOrcaInstructionWithEphemeralSigner(
+  input: OpenAndIncreaseTunaLpPositionOrcaInputWithEphemeralSigner,
+): IInstruction {
+  return {
+    accounts: [
+      {
+        address: input.authority.address,
+        role: AccountRole.WRITABLE_SIGNER,
+      },
+      {
+        address: input.tunaConfig,
+        role: AccountRole.READONLY,
+      },
+      {
+        address: input.mintA,
+        role: AccountRole.READONLY,
+      },
+      {
+        address: input.mintB,
+        role: AccountRole.READONLY,
+      },
+      {
+        address: input.market,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.vaultA,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.vaultB,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.vaultAAta,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.vaultBAta,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.tunaPosition,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.tunaPositionMint,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.tunaPositionAta,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.tunaPositionAtaA,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.tunaPositionAtaB,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.tunaPositionOwnerAtaA,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.tunaPositionOwnerAtaB,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.feeRecipientAtaA,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.feeRecipientAtaB,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.oraclePriceUpdateA,
+        role: AccountRole.READONLY,
+      },
+      {
+        address: input.oraclePriceUpdateB,
+        role: AccountRole.READONLY,
+      },
+      {
+        address: input.whirlpoolProgram,
+        role: AccountRole.READONLY,
+      },
+      {
+        address: input.whirlpool,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.orcaPosition,
+        role: AccountRole.WRITABLE,
+      },
+      {
+        address: input.tokenProgramA,
+        role: AccountRole.READONLY,
+      },
+      {
+        address: input.tokenProgramB,
+        role: AccountRole.READONLY,
+      },
+      {
+        address: input.metadataUpdateAuth,
+        role: AccountRole.READONLY,
+      },
+      {
+        address: input.memoProgram,
+        role: AccountRole.READONLY,
+      },
+      {
+        address: input.token2022Program,
+        role: AccountRole.READONLY,
+      },
+      {
+        address: input.systemProgram ?? address("11111111111111111111111111111111"),
+        role: AccountRole.READONLY,
+      },
+      {
+        address: input.associatedTokenProgram,
+        role: AccountRole.READONLY,
+      },
+    ],
+    programAddress: TUNA_PROGRAM_ADDRESS,
+    data: getOpenAndIncreaseTunaLpPositionOrcaInstructionDataEncoder().encode(
+      input as OpenAndIncreaseTunaLpPositionOrcaInstructionDataArgs,
+    ),
+  };
 }

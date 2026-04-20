@@ -1,5 +1,11 @@
 # @crypticdot/defituna-rust-examples
 
+## 2.0.6
+
+### Patch Changes
+
+- 187204a: Updated orca crates versions
+
 ## 2.0.5
 
 ### Patch Changes

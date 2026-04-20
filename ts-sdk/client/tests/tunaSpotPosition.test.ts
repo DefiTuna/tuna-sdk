@@ -33,7 +33,9 @@ import { swapExactInput } from "./helpers/swap.ts";
 describe("Tuna Spot Position", () => {
   let testOrcaMarket: TestMarket;
   let testFusionMarket: TestMarket;
+  let testPermissionlessFusionMarket: TestMarket;
   let markets: TestMarket[];
+  const marketNames = ["Orca", "Fusion", "Fusion Isolated"];
   const marketMakers = [MarketMaker.Orca, MarketMaker.Fusion];
 
   beforeEach(async () => {
@@ -55,12 +57,15 @@ describe("Tuna Spot Position", () => {
     };
     testOrcaMarket = await setupTestMarket({ ...marketArgs }, MarketMaker.Orca);
     testFusionMarket = await setupTestMarket({ ...marketArgs }, MarketMaker.Fusion);
-    markets = [testOrcaMarket, testFusionMarket];
+    testPermissionlessFusionMarket = await setupTestMarket({ ...marketArgs }, MarketMaker.Fusion, {
+      permissionless: true,
+    });
+    markets = [testOrcaMarket, testFusionMarket, testPermissionlessFusionMarket];
   });
 
-  for (const marketMaker of marketMakers) {
-    it(`Open an empty position and close it (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Open an empty position and close it (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
 
       await openTunaSpotPosition({
         rpc,
@@ -73,9 +78,9 @@ describe("Tuna Spot Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Fails to close a non-empty position (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Fails to close a non-empty position (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
 
       await openTunaSpotPosition({
         rpc,
@@ -100,9 +105,9 @@ describe("Tuna Spot Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Open a LONG position providing token A as collateral, increase, decrease and close it (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Open a LONG position providing token A as collateral, increase, decrease and close it (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
 
       await openTunaSpotPosition({
         rpc,
@@ -185,7 +190,9 @@ describe("Tuna Spot Position", () => {
         spotPositionSizeLimitB: 100000_000_000,
       },
       MarketMaker.Fusion,
-      true,
+      {
+        mintAIsNative: true,
+      },
     );
 
     await openTunaSpotPosition({
@@ -248,9 +255,9 @@ describe("Tuna Spot Position", () => {
     );
   });
 
-  for (const marketMaker of marketMakers) {
-    it(`Open a LONG position providing token B as collateral, increase, decrease and close it (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Open a LONG position providing token B as collateral, increase, decrease and close it (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
 
       await openTunaSpotPosition({
         rpc,
@@ -315,9 +322,9 @@ describe("Tuna Spot Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Open a SHORT position providing token A as collateral, increase, decrease and close it (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Open a SHORT position providing token A as collateral, increase, decrease and close it (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
 
       await openTunaSpotPosition({
         rpc,
@@ -382,9 +389,9 @@ describe("Tuna Spot Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Open a SHORT position providing token B as collateral, increase, decrease and close it (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Open a SHORT position providing token B as collateral, increase, decrease and close it (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
 
       await openTunaSpotPosition({
         rpc,
@@ -449,9 +456,9 @@ describe("Tuna Spot Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Open a non-leveraged position and close it (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Open a non-leveraged position and close it (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
 
       await openTunaSpotPosition({
         rpc,
@@ -484,9 +491,9 @@ describe("Tuna Spot Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Open a LONG position with liquidity providing token A and close it (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Open a LONG position with liquidity providing token A and close it (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
 
       await openTunaSpotPosition({
         rpc,
@@ -519,9 +526,9 @@ describe("Tuna Spot Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Open a LONG position with liquidity providing token B and close it (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Open a LONG position with liquidity providing token B and close it (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
 
       await openTunaSpotPosition({
@@ -555,9 +562,9 @@ describe("Tuna Spot Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Open a SHORT position with liquidity providing token A and close it (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Open a SHORT position with liquidity providing token A and close it (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
 
       await openTunaSpotPosition({
         rpc,
@@ -590,9 +597,9 @@ describe("Tuna Spot Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Open a SHORT position with liquidity providing token B and close it (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Open a SHORT position with liquidity providing token B and close it (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
 
       await openTunaSpotPosition({
         rpc,
@@ -625,9 +632,9 @@ describe("Tuna Spot Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Liquidates a LONG position due to an unhealthy state (no bad debt) (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Liquidates a LONG position due to an unhealthy state (no bad debt) (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const tunaPositionAddress = (await getTunaSpotPositionAddress(signer.address, pool.address))[0];
 
@@ -664,9 +671,9 @@ describe("Tuna Spot Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Liquidates a SHORT position due to an unhealthy state (no bad debt) (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Liquidates a SHORT position due to an unhealthy state (no bad debt) (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const tunaPositionAddress = (await getTunaSpotPositionAddress(signer.address, pool.address))[0];
 
@@ -703,7 +710,7 @@ describe("Tuna Spot Position", () => {
   }
 
   for (const marketMaker of marketMakers) {
-    it(`Liquidates a LONG position due to an unhealthy state (NATIVE mint, ${MarketMaker[marketMaker]})`, async () => {
+    it(`Liquidates a LONG position due to an unhealthy state (NATIVE mint, ${marketMaker})`, async () => {
       // Override the test market using WSOL for MintA
       const market = await setupTestMarket(
         {
@@ -723,8 +730,9 @@ describe("Tuna Spot Position", () => {
           spotPositionSizeLimitB: 100000_000_000,
         },
         marketMaker,
-        true, // use NATIVE mint
-        false,
+        {
+          mintAIsNative: true,
+        },
       );
 
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
@@ -764,9 +772,9 @@ describe("Tuna Spot Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Partially liquidates a LONG position (collateral A) due to an unhealthy state (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Partially liquidates a LONG position (collateral A) due to an unhealthy state (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const tunaPositionAddress = (await getTunaSpotPositionAddress(signer.address, pool.address))[0];
 
@@ -826,9 +834,9 @@ describe("Tuna Spot Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Partially liquidates a LONG position (collateral B) due to an unhealthy state (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Partially liquidates a LONG position (collateral B) due to an unhealthy state (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const tunaPositionAddress = (await getTunaSpotPositionAddress(signer.address, pool.address))[0];
 
@@ -888,9 +896,9 @@ describe("Tuna Spot Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Liquidates a LONG position due to an unhealthy state (bad debt B) (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Liquidates a LONG position due to an unhealthy state (bad debt B) (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const tunaPositionAddress = (await getTunaSpotPositionAddress(signer.address, pool.address))[0];
 
@@ -927,9 +935,9 @@ describe("Tuna Spot Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Liquidates a SHORT position due to an unhealthy state (bad debt A) (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Liquidates a SHORT position due to an unhealthy state (bad debt A) (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const tunaPositionAddress = (await getTunaSpotPositionAddress(signer.address, pool.address))[0];
 
@@ -965,9 +973,9 @@ describe("Tuna Spot Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Liquidates a position with directly transferred tokens (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Liquidates a position with directly transferred tokens (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const tunaPositionAddress = (await getTunaSpotPositionAddress(signer.address, pool.address))[0];
 
@@ -1057,9 +1065,9 @@ describe("Tuna Spot Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`T/P limit order (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`T/P limit order (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const tunaPositionAddress = (await getTunaSpotPositionAddress(signer.address, pool.address))[0];
 
@@ -1103,9 +1111,9 @@ describe("Tuna Spot Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`S/L limit order (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`S/L limit order (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const tunaPositionAddress = (await getTunaSpotPositionAddress(signer.address, pool.address))[0];
 
@@ -1148,9 +1156,9 @@ describe("Tuna Spot Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Entry price change on the position increase (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Entry price change on the position increase (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const tunaPositionAddress = (await getTunaSpotPositionAddress(signer.address, market.pool))[0];
 
@@ -1198,9 +1206,9 @@ describe("Tuna Spot Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Increase and decrease position accounting for direct token transfers (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Increase and decrease position accounting for direct token transfers (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const tunaPositionAddress = (await getTunaSpotPositionAddress(signer.address, market.pool))[0];
 
       const signerAtaA = (
@@ -1288,9 +1296,9 @@ describe("Tuna Spot Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Open a LONG position, decrease and reset it to a SHORT (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Open a LONG position, decrease and reset it to a SHORT (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const tunaPositionAddress = (await getTunaSpotPositionAddress(signer.address, market.pool))[0];
 
       await openTunaSpotPosition({
@@ -1340,7 +1348,7 @@ describe("Tuna Spot Position", () => {
   }
 
   for (const marketMaker of marketMakers) {
-    it(`Fails to increase a position if it exceeds the allowed limit (${MarketMaker[marketMaker]})`, async () => {
+    it(`Fails to increase a position if it exceeds the allowed limit (${marketMaker})`, async () => {
       // Override the test market setting the position size limit
       const market = await setupTestMarket(
         {
@@ -1360,8 +1368,6 @@ describe("Tuna Spot Position", () => {
           spotPositionSizeLimitB: 0n,
         },
         marketMaker,
-        false,
-        false,
       );
 
       await openTunaSpotPosition({
@@ -1388,9 +1394,9 @@ describe("Tuna Spot Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Fails to open a position due to amount slippage (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Fails to open a position due to amount slippage (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
 
       await openTunaSpotPosition({
         rpc,
@@ -1442,9 +1448,9 @@ describe("Tuna Spot Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Fails to close a position due to amount slippage (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Fails to close a position due to amount slippage (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
 
       await openTunaSpotPosition({
         rpc,
@@ -1528,9 +1534,9 @@ describe("Tuna Spot Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Decrease a position with the leverage above maximum (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Decrease a position with the leverage above maximum (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
 
       await openTunaSpotPosition({

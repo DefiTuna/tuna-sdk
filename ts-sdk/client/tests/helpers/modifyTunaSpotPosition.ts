@@ -8,7 +8,6 @@ import {
   fetchTunaConfig,
   fetchTunaSpotPosition,
   fetchVault,
-  getLendingVaultAddress,
   getMarketAddress,
   getTunaConfigAddress,
   getTunaSpotPositionAddress,
@@ -110,7 +109,7 @@ export async function modifyTunaSpotPosition({
     })
   )[0];
 
-  const vaultAAddress = (await getLendingVaultAddress(mintA.address))[0];
+  const vaultAAddress = market.data.vaultA;
   const vaultAAta = (
     await findAssociatedTokenPda({
       owner: vaultAAddress,
@@ -118,7 +117,8 @@ export async function modifyTunaSpotPosition({
       tokenProgram: mintA.programAddress,
     })
   )[0];
-  const vaultBAddress = (await getLendingVaultAddress(mintB.address))[0];
+
+  const vaultBAddress = market.data.vaultB;
   const vaultBAta = (
     await findAssociatedTokenPda({
       owner: vaultBAddress,

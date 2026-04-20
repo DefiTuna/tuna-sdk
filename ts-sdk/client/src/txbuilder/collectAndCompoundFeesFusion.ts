@@ -27,12 +27,12 @@ import assert from "assert";
 import {
   AccountsType,
   fetchAllVault,
+  fetchMarket,
   fetchMaybeTunaLpPosition,
   fetchTunaConfig,
   FusionUtils,
   getCollectAndCompoundFeesFusionInstruction,
   getCreateAtaInstructions,
-  getLendingVaultAddress,
   getMarketAddress,
   getTunaConfigAddress,
   getTunaLpPositionAddress,
@@ -57,10 +57,10 @@ export async function collectAndCompoundFeesFusionInstructions(
   const fusionPool = await fetchMaybeFusionPool(rpc, tunaPosition.data.pool);
   if (!fusionPool.exists) throw new Error("FusionPool account not found");
 
-  const [vaultA, vaultB] = await fetchAllVault(rpc, [
-    (await getLendingVaultAddress(fusionPool.data.tokenMintA))[0],
-    (await getLendingVaultAddress(fusionPool.data.tokenMintB))[0],
-  ]);
+  const marketAddress = (await getMarketAddress(tunaPosition.data.pool))[0];
+  const market = await fetchMarket(rpc, marketAddress);
+
+  const [vaultA, vaultB] = await fetchAllVault(rpc, [market.data.vaultA, market.data.vaultB]);
 
   const [mintA, mintB] = await fetchAllMaybeMint(rpc, [fusionPool.data.tokenMintA, fusionPool.data.tokenMintB]);
   assert(mintA.exists, "Token A account not found");
@@ -216,8 +216,8 @@ export async function collectAndCompoundFeesFusionInstruction(
     market: marketAddress,
     mintA: mintA.address,
     mintB: mintB.address,
-    pythOraclePriceFeedA: vaultA.data.pythOraclePriceUpdate,
-    pythOraclePriceFeedB: vaultB.data.pythOraclePriceUpdate,
+    oraclePriceUpdateA: vaultA.data.oraclePriceUpdate,
+    oraclePriceUpdateB: vaultB.data.oraclePriceUpdate,
     vaultA: vaultA.address,
     vaultAAta,
     vaultB: vaultB.address,

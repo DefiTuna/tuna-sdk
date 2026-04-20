@@ -1,5 +1,225 @@
 # @defituna/client
 
+## 3.6.19
+
+### Patch Changes
+
+- 96fd8fd: Removed leverage from get_decrease_spot_position_quote
+  - @crypticdot/defituna-core@3.6.19
+
+## 3.6.18
+
+### Patch Changes
+
+- acd6833: Optimized jupiter quoting
+  - @crypticdot/defituna-core@3.6.18
+
+## 3.6.17
+
+### Patch Changes
+
+- 439d1ab: Updated spot quote functions
+  - @crypticdot/defituna-core@3.6.17
+
+## 3.6.16
+
+### Patch Changes
+
+- 870ab89: Adjusted price_impact calculation in quote functions
+  - @crypticdot/defituna-core@3.6.16
+
+## 3.6.15
+
+### Patch Changes
+
+- @crypticdot/defituna-core@3.6.15
+
+## 3.6.14
+
+### Patch Changes
+
+- fca0b63: Optimized building of tuna instructions
+  - @crypticdot/defituna-core@3.6.14
+
+## 3.6.13
+
+### Patch Changes
+
+- 50dd9c8: Added referral account
+  - @crypticdot/defituna-core@3.6.13
+
+## 3.6.12
+
+### Patch Changes
+
+- 9a51033: Added open_and_increase_tuna_spot_position_jupiter ix, updated spot position increase/decrease quote functions
+- Updated dependencies [9a51033]
+  - @crypticdot/defituna-core@3.6.12
+
+## 3.6.11
+
+### Patch Changes
+
+- ba60e8d: Removed lock instruction and added the ability to lock via position flags
+  - @crypticdot/defituna-core@3.6.11
+
+## 3.6.10
+
+### Patch Changes
+
+- 8b2c05a: Closing of intermediate token accounts for jupiter swaps
+  - @crypticdot/defituna-core@3.6.10
+
+## 3.6.9
+
+### Patch Changes
+
+- 72474d9: Updated jupiter instructions
+  - @crypticdot/defituna-core@3.6.9
+
+## 3.6.8
+
+### Patch Changes
+
+- 71eb5aa: Added liquidation of Orca positions via Jupiter
+  - @crypticdot/defituna-core@3.6.8
+
+## 3.6.7
+
+### Patch Changes
+
+- f52373a: Updated jupiter lp liquidation instruction
+  - @crypticdot/defituna-core@3.6.7
+
+## 3.6.6
+
+### Patch Changes
+
+- 3994033: Added getAddressesForFusionMarketLookupTable
+  - @crypticdot/defituna-core@3.6.6
+
+## 3.6.5
+
+### Patch Changes
+
+- d184fc9: Updated market LUT addresses list
+  - @crypticdot/defituna-core@3.6.5
+
+## 3.6.4
+
+### Patch Changes
+
+- fcd063c: Updated jupiter instructions
+  - @crypticdot/defituna-core@3.6.4
+
+## 3.6.3
+
+### Patch Changes
+
+- 1354c16: Ability to pass jupiter program authority to instructions
+  - @crypticdot/defituna-core@3.6.3
+
+## 3.6.2
+
+### Patch Changes
+
+- 6b3b516: Updated liquidation instructions
+  - @crypticdot/defituna-core@3.6.2
+
+## 3.6.1
+
+### Patch Changes
+
+- 5246f23: LP positions liquidation via jupiter and support for position locking
+  - @crypticdot/defituna-core@3.6.1
+
+## 3.6.0
+
+### Minor Changes
+
+- 810637d: Permissionless markets
+
+### Patch Changes
+
+- Updated dependencies [810637d]
+  - @crypticdot/defituna-core@3.6.0
+
+## 3.5.13
+
+### Patch Changes
+
+- 43accb6: Permissionless markets
+- Updated dependencies [43accb6]
+  - @crypticdot/defituna-core@3.5.13
+
+## 3.5.12
+
+### Patch Changes
+
+- 574caaa: Fixed Market account structure
+- Updated dependencies [574caaa]
+  - @crypticdot/defituna-core@3.5.12
+
+## 3.5.11
+
+### Patch Changes
+
+- 2194ec2: Added reset_market_bad_debt instruction
+  - @crypticdot/defituna-core@3.5.11
+
+## 3.5.10
+
+### Patch Changes
+
+- @crypticdot/defituna-core@3.5.10
+
+## 3.5.9
+
+### Patch Changes
+
+- @crypticdot/defituna-core@3.5.9
+
+## 3.5.8
+
+### Patch Changes
+
+- 5914ca4: Added Tuna Oracle
+  - @crypticdot/defituna-core@3.5.8
+
+## 3.5.7
+
+### Patch Changes
+
+- @crypticdot/defituna-core@3.5.7
+
+## 3.5.6
+
+### Patch Changes
+
+- 47f2e06: Fixed LP positions opening with provided ephemeral keys
+  - @crypticdot/defituna-core@3.5.6
+
+## 3.5.5
+
+### Patch Changes
+
+- 0a3ac17: Updated getOpenTunaLpPositionFusionInstructionWithEphemeralSigner
+  - @crypticdot/defituna-core@3.5.5
+
+## 3.5.4
+
+### Patch Changes
+
+- 6183b93: Added multisig support for LP positions
+- Updated dependencies [6183b93]
+  - @crypticdot/defituna-core@3.5.4
+
+## 3.5.3
+
+### Patch Changes
+
+- @crypticdot/defituna-core@3.5.3
+
 ## 3.5.2
 
 ### Patch Changes

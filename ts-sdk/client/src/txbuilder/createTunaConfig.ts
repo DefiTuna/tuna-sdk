@@ -7,6 +7,7 @@ export async function createTunaConfigInstruction(
   ownerAuthority: Address,
   adminAuthority: Address,
   liquidatorAuthority: Address,
+  oraclePriceUpdateAuthority: Address,
   feeRecipient: Address,
 ): Promise<IInstruction> {
   const tunaConfigAddress = await getTunaConfigAddress();
@@ -16,6 +17,7 @@ export async function createTunaConfigInstruction(
     authority,
     feeRecipient,
     liquidatorAuthority,
+    oraclePriceUpdateAuthority,
     ownerAuthority,
     tunaConfig: tunaConfigAddress[0],
   });

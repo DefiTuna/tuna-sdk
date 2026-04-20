@@ -1,7 +1,7 @@
 import {
   createAddressLookupTableForMarketInstructions,
   createMarketInstruction,
-  createMarketV2Instruction,
+  createMarketPermissionlessInstruction,
   fetchMaybeMarket,
   getLendingVaultAddress,
   getMarketAddress,
@@ -38,11 +38,9 @@ export default class CreateMarket extends BaseCommand {
     addressLookupTable: addressFlag({
       description: "Address lookup table",
     }),
-    vaultA: addressFlag({
-      description: "Vault A address",
-    }),
-    vaultB: addressFlag({
-      description: "Vault B address",
+    isolated: Flags.boolean({
+      description: "Permissionless market with isolated vaults will be created if true",
+      default: false,
     }),
     disabled: Flags.boolean({
       description: "Indicates if the market is disabled",
@@ -144,6 +142,7 @@ export default class CreateMarket extends BaseCommand {
         rpc,
         args.pool,
         marketMaker,
+        flags.isolated,
         signer,
         currentSlot,
       );
@@ -155,12 +154,12 @@ export default class CreateMarket extends BaseCommand {
       console.log("Transaction landed:", signature);
     }
 
-    const vaultAAddress = (await getLendingVaultAddress(pool.data.tokenMintA))[0];
-    const vaultBAddress = (await getLendingVaultAddress(pool.data.tokenMintB))[0];
-
     let ix: IInstruction;
 
-    if ((!flags.vaultA && !flags.vaultB) || (flags.vaultA == vaultAAddress && flags.vaultB == vaultBAddress)) {
+    if (!flags.isolated) {
+      const vaultAAddress = (await getLendingVaultAddress(pool.data.tokenMintA))[0];
+      const vaultBAddress = (await getLendingVaultAddress(pool.data.tokenMintB))[0];
+
       ix = await createMarketInstruction(signer, args.pool, vaultAAddress, vaultBAddress, {
         addressLookupTable,
         disabled: flags.disabled,
@@ -178,12 +177,11 @@ export default class CreateMarket extends BaseCommand {
         spotPositionSizeLimitB: flags.spotPositionSizeLimitB,
       });
     } else {
-      if (!flags.vaultA || !flags.vaultB) {
-        throw new Error("Both vault addresses must be provided");
-      }
-      ix = await createMarketV2Instruction(signer, args.pool, vaultAAddress, vaultBAddress, {
+      const vaultAAddress = (await getLendingVaultAddress(pool.data.tokenMintA, marketAddress))[0];
+      const vaultBAddress = (await getLendingVaultAddress(pool.data.tokenMintB, marketAddress))[0];
+
+      ix = await createMarketPermissionlessInstruction(signer, args.pool, vaultAAddress, vaultBAddress, {
         addressLookupTable,
-        maxLeverage: flags.maxLeverage,
       });
     }
 

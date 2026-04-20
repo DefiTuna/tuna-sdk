@@ -1,4 +1,4 @@
-import { Address, getU32Encoder, ProgramDerivedAddress } from "@solana/kit";
+import { Address, ProgramDerivedAddress } from "@solana/kit";
 import { getAddressEncoder, getProgramDerivedAddress } from "@solana/kit";
 
 import { DEFAULT_PUSH_ORACLE_PROGRAM_ID } from "./consts.ts";
@@ -18,17 +18,12 @@ export async function getMarketAddress(pool: Address): Promise<ProgramDerivedAdd
   });
 }
 
-export async function getLendingVaultAddress(mint: Address): Promise<ProgramDerivedAddress> {
+export async function getLendingVaultAddress(mint: Address, market?: Address): Promise<ProgramDerivedAddress> {
   return await getProgramDerivedAddress({
     programAddress: TUNA_PROGRAM_ADDRESS,
-    seeds: ["vault", getAddressEncoder().encode(mint)],
-  });
-}
-
-export async function getLendingVaultV2Address(mint: Address, id: number): Promise<ProgramDerivedAddress> {
-  return await getProgramDerivedAddress({
-    programAddress: TUNA_PROGRAM_ADDRESS,
-    seeds: ["vault", getAddressEncoder().encode(mint), getU32Encoder().encode(id)],
+    seeds: market
+      ? ["vault", getAddressEncoder().encode(mint), getAddressEncoder().encode(market)]
+      : ["vault", getAddressEncoder().encode(mint)],
   });
 }
 
@@ -56,6 +51,13 @@ export async function getTunaSpotPositionAddress(authority: Address, pool: Addre
   });
 }
 
+export async function getTunaPriceUpdateAddress(mint: Address): Promise<ProgramDerivedAddress> {
+  return await getProgramDerivedAddress({
+    programAddress: TUNA_PROGRAM_ADDRESS,
+    seeds: ["tuna_price_update", getAddressEncoder().encode(mint)],
+  });
+}
+
 export async function getPythPriceUpdateAccountAddress(
   shardId: number,
   priceFeedId: Buffer | string,
@@ -77,5 +79,12 @@ export async function getPythPriceUpdateAccountAddress(
   return await getProgramDerivedAddress({
     programAddress: DEFAULT_PUSH_ORACLE_PROGRAM_ID,
     seeds: [shardBuffer, priceFeedId],
+  });
+}
+
+export async function getReferralAddress(authority: Address): Promise<ProgramDerivedAddress> {
+  return await getProgramDerivedAddress({
+    programAddress: TUNA_PROGRAM_ADDRESS,
+    seeds: ["referral", getAddressEncoder().encode(authority)],
   });
 }

@@ -1,9 +1,17 @@
-use crate::instructions::{CreateMarketInstructionArgs, CreateVaultInstructionArgs};
+use crate::instructions::{
+    CreateMarketInstructionArgs, CreateMarketPermissionlessInstructionArgs, CreateVaultInstructionArgs, CreateVaultPermissionlessInstructionArgs,
+    UpdateMarketInstructionArgs,
+};
+use crate::open_lending_position_v2::open_lending_position_v2_instruction;
 use crate::tests::fusion::setup_fusion_pool;
 use crate::tests::orca::setup_whirlpool;
 use crate::tests::*;
 use crate::types::MarketMaker;
-use crate::{create_market_instruction, create_tuna_config_instruction, create_vault_instructions, deposit_instruction, get_lending_position_address, get_market_address, get_vault_address, open_lending_position_instruction};
+use crate::{
+    create_market_instruction, create_market_permissionless_instruction, create_tuna_config_instruction, create_vault_instructions,
+    create_vault_permissionless_instructions, deposit_instruction, get_lending_position_address, get_market_address, get_vault_address,
+    open_lending_position_instruction, update_market_instruction,
+};
 use fusionamm_sdk::PriceOrTickIndex;
 use orca_whirlpools_core::price_to_sqrt_price;
 use solana_pubkey::Pubkey;
@@ -33,18 +41,24 @@ pub struct TestMarket {
     pub market: Pubkey,
 }
 
+#[derive(Default)]
+pub struct TestMarketArgs {
+    pub mint_a_is_native: bool,
+    pub initialize_rewards: bool,
+    pub adaptive_fee: bool,
+    pub permissionless: bool,
+}
+
 pub async fn setup_test_market(
     ctx: &RpcContext,
     args: CreateMarketInstructionArgs,
     market_maker: MarketMaker,
-    mint_a_is_native: bool,
-    initialize_rewards: bool,
-    adaptive_fee: bool,
+    setup_args: TestMarketArgs,
 ) -> Result<TestMarket, Box<dyn Error>> {
     //let lending_position_a_amount = 1000_000_000_000;
     //let lending_position_b_amount = 100000_000_000;
 
-    let mint_a_address = if mint_a_is_native {
+    let mint_a_address = if setup_args.mint_a_is_native {
         spl_token::native_mint::ID
     } else {
         setup_mint(ctx, 9).await?
@@ -73,15 +87,16 @@ pub async fn setup_test_market(
         &ctx.signer.pubkey(),
         &ctx.signer.pubkey(),
         &ctx.signer.pubkey(),
+        &ctx.signer.pubkey(),
     )])?;
 
     let initial_sqrt_price = price_to_sqrt_price(200.0, 9, 6);
     let pool: Pubkey;
 
     if market_maker == MarketMaker::Orca {
-        assert!(!initialize_rewards, "Rewards initialization is not yet implemented in tuna tests");
+        assert!(!setup_args.initialize_rewards, "Rewards initialization is not yet implemented in tuna tests");
 
-        pool = setup_whirlpool(ctx, &mint_a_address, &mint_b_address, 64, initial_sqrt_price, adaptive_fee).await?;
+        pool = setup_whirlpool(ctx, &mint_a_address, &mint_b_address, 64, initial_sqrt_price, setup_args.adaptive_fee).await?;
 
         let open_position_result = orca_whirlpools::open_position_instructions(
             &ctx.rpc.get_inner_client(),
@@ -95,8 +110,8 @@ pub async fn setup_test_market(
         .await?;
         ctx.send_transaction_with_signers(open_position_result.instructions, open_position_result.additional_signers.iter().collect())?;
     } else {
-        assert!(!initialize_rewards, "Rewards are not supported by Fusion pools");
-        assert!(!adaptive_fee, "Adaptive fee is not supported by Fusion pools");
+        assert!(!setup_args.initialize_rewards, "Rewards are not supported by Fusion pools");
+        assert!(!setup_args.adaptive_fee, "Adaptive fee is not supported by Fusion pools");
 
         pool = setup_fusion_pool(ctx, &mint_a_address, &mint_b_address, 64, initial_sqrt_price).await?;
 
@@ -113,35 +128,93 @@ pub async fn setup_test_market(
         ctx.send_transaction_with_signers(open_position_result.instructions, open_position_result.additional_signers.iter().collect())?;
     }
 
+    let market_address = get_market_address(&pool).0;
+
     let all_deposits = [1000000000000_u64, 100000000000_u64];
 
     for ((mint_address, token_program), deposit_amount) in all_mints.iter().zip(all_token_programs.iter()).zip(all_deposits.iter()) {
-        let mut instructions = create_vault_instructions(
-            &ctx.signer.pubkey(),
-            &mint_address,
-            &token_program,
-            CreateVaultInstructionArgs {
-                interest_rate: 3655890108,
-                supply_limit: u64::MAX,
-                pyth_oracle_price_update: Default::default(),
-                pyth_oracle_feed_id: Default::default(),
-                allow_unsafe_token_extensions: true,
-            },
-        );
-        instructions.push(open_lending_position_instruction(&ctx.signer.pubkey(), &mint_address));
-        instructions.push(deposit_instruction(&ctx.signer.pubkey(), &mint_address, &token_program, *deposit_amount));
+        let instructions = if setup_args.permissionless {
+            let vault_address = get_vault_address(&mint_address, Some(&market_address)).0;
+            let mut instructions = create_vault_permissionless_instructions(
+                &ctx.signer.pubkey(),
+                &mint_address,
+                &token_program,
+                &market_address,
+                CreateVaultPermissionlessInstructionArgs {
+                    market: market_address,
+                    interest_rate: 3655890108,
+                },
+            );
+            instructions.push(open_lending_position_v2_instruction(&ctx.signer.pubkey(), &mint_address, &vault_address));
+            instructions.push(deposit_instruction(&ctx.signer.pubkey(), &mint_address, &token_program, Some(&vault_address), *deposit_amount));
+            instructions
+        } else {
+            let mut instructions = create_vault_instructions(
+                &ctx.signer.pubkey(),
+                &mint_address,
+                &token_program,
+                CreateVaultInstructionArgs {
+                    interest_rate: 3655890108,
+                    supply_limit: u64::MAX,
+                    oracle_price_update: Default::default(),
+                    pyth_oracle_feed_id: Default::default(),
+                    allow_unsafe_token_extensions: true,
+                },
+            );
+            instructions.push(open_lending_position_instruction(&ctx.signer.pubkey(), &mint_address));
+            instructions.push(deposit_instruction(&ctx.signer.pubkey(), &mint_address, &token_program, None, *deposit_amount));
+            instructions
+        };
 
         ctx.send_transaction(instructions)?;
     }
 
-    let market = get_market_address(&pool).0;
-    ctx.send_transaction(vec![create_market_instruction(
-        &ctx.signer.pubkey(),
-        &pool,
-        &get_vault_address(&mint_a_address).0,
-        &get_vault_address(&mint_b_address).0,
-        args.clone(),
-    )])?;
+    let vault_a_address = get_vault_address(&mint_a_address, if setup_args.permissionless { Some(&market_address) } else { None }).0;
+    let vault_b_address = get_vault_address(&mint_b_address, if setup_args.permissionless { Some(&market_address) } else { None }).0;
+
+    let instructions = if setup_args.permissionless {
+        vec![
+            create_market_permissionless_instruction(
+                &ctx.signer.pubkey(),
+                &pool,
+                &vault_a_address,
+                &vault_b_address,
+                CreateMarketPermissionlessInstructionArgs {
+                    address_lookup_table: args.address_lookup_table,
+                },
+            ),
+            update_market_instruction(
+                &ctx.signer.pubkey(),
+                &pool,
+                UpdateMarketInstructionArgs {
+                    address_lookup_table: args.address_lookup_table,
+                    max_leverage: args.max_leverage,
+                    protocol_fee: args.protocol_fee,
+                    protocol_fee_on_collateral: args.protocol_fee_on_collateral,
+                    liquidation_fee: args.liquidation_fee,
+                    liquidation_threshold: args.liquidation_threshold,
+                    oracle_price_deviation_threshold: args.oracle_price_deviation_threshold,
+                    disabled: args.disabled,
+                    borrow_limit_a: args.borrow_limit_a,
+                    borrow_limit_b: args.borrow_limit_b,
+                    max_swap_slippage: args.max_swap_slippage,
+                    rebalance_protocol_fee: args.rebalance_protocol_fee,
+                    spot_position_size_limit_a: args.spot_position_size_limit_a,
+                    spot_position_size_limit_b: args.spot_position_size_limit_b,
+                },
+            ),
+        ]
+    } else {
+        vec![create_market_instruction(
+            &ctx.signer.pubkey(),
+            &pool,
+            &vault_a_address,
+            &vault_b_address,
+            args.clone(),
+        )]
+    };
+
+    ctx.send_transaction(instructions)?;
 
     let lending_position_a = get_lending_position_address(&ctx.signer.pubkey(), &mint_a_address).0;
     let lending_position_b = get_lending_position_address(&ctx.signer.pubkey(), &mint_b_address).0;
@@ -159,12 +232,12 @@ pub async fn setup_test_market(
         ata_a,
         ata_b,
         pool,
-        vault_a: Default::default(),
-        vault_b: Default::default(),
+        vault_a: vault_a_address,
+        vault_b: vault_b_address,
         vault_a_ata: Default::default(),
         vault_b_ata: Default::default(),
         lending_position_a,
         lending_position_b,
-        market,
+        market: market_address,
     })
 }

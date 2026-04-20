@@ -3,8 +3,10 @@ import { fetchMaybeToken, fetchMint, findAssociatedTokenPda } from "@solana-prog
 import { expect } from "vitest";
 
 import {
+  fetchMarket,
   fetchTunaLpPosition,
   getLendingVaultAddress,
+  getMarketAddress,
   getTunaLpPositionAddress,
   repayTunaLpPositionDebtInstructions,
 } from "../../src";
@@ -30,6 +32,9 @@ export async function repayTunaLpPositionDebt({
   const tunaPositionAddress = (await getTunaLpPositionAddress(positionMint))[0];
   const tunaPosition = await fetchTunaLpPosition(rpc, tunaPositionAddress);
 
+  const marketAddress = (await getMarketAddress(tunaPosition.data.pool))[0];
+  const market = await fetchMarket(rpc, marketAddress);
+
   const mintA = await fetchMint(rpc, tunaPosition.data.mintA);
   const mintB = await fetchMint(rpc, tunaPosition.data.mintB);
 
@@ -49,7 +54,7 @@ export async function repayTunaLpPositionDebt({
     })
   )[0];
 
-  const vaultAAddress = (await getLendingVaultAddress(mintA.address))[0];
+  const vaultAAddress = market.data.vaultA;
   const vaultAAta = (
     await findAssociatedTokenPda({
       owner: vaultAAddress,
@@ -58,7 +63,7 @@ export async function repayTunaLpPositionDebt({
     })
   )[0];
 
-  const vaultBAddress = (await getLendingVaultAddress(mintB.address))[0];
+  const vaultBAddress = market.data.vaultB;
   const vaultBAta = (
     await findAssociatedTokenPda({
       owner: vaultBAddress,

@@ -11,7 +11,6 @@ import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
 import { fetchMaybeMint, findAssociatedTokenPda, Mint } from "@solana-program/token-2022";
 
 import {
-  fetchMaybeVault,
   getCreateAtaInstructions,
   getLendingPositionAddress,
   getLendingVaultAddress,
@@ -22,22 +21,12 @@ import {
 export async function withdrawInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
-  mintAddress: Address | undefined,
+  mintAddress: Address,
   vaultAddress: Address | undefined,
   funds: bigint,
   shares: bigint,
 ): Promise<IInstruction[]> {
   const instructions: IInstruction[] = [];
-
-  if (!mintAddress && !vaultAddress) {
-    throw new Error("Mint or vault address must be provided.");
-  }
-
-  if (vaultAddress && !mintAddress) {
-    const vault = await fetchMaybeVault(rpc, vaultAddress);
-    if (!vault.exists) throw new Error("Vault account not found");
-    mintAddress = vault.data.mint;
-  }
 
   const mint = await fetchMaybeMint(rpc, mintAddress!);
   if (!mint.exists) throw new Error("Mint account not found");

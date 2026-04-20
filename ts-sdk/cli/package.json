@@ -1,9 +1,9 @@
 {
   "name": "@crypticdot/defituna-cli",
   "version": "1.0.4",
-  "type": "module",
   "private": true,
   "license": "SEE LICENSE IN LICENSE",
+  "type": "module",
   "bin": {
     "tuna-cli": "./bin/run.js"
   },
@@ -18,9 +18,9 @@
   "dependencies": {
     "@crypticdot/defituna-core": "workspace:*",
     "@crypticdot/defituna-client": "workspace:*",
-    "@crypticdot/fusionamm-core": "^1.0.67",
-    "@crypticdot/fusionamm-client": "^1.0.67",
-    "@crypticdot/fusionamm-sdk": "^1.0.67",
+    "@crypticdot/fusionamm-core": "^1.0.83",
+    "@crypticdot/fusionamm-client": "^1.0.83",
+    "@crypticdot/fusionamm-sdk": "^1.0.83",
     "@crypticdot/fusionamm-tx-sender": "^1.0.11",
     "@oclif/core": "^4.2.10",
     "@solana/kit": "^2.1.0",
@@ -30,7 +30,6 @@
     "@orca-so/whirlpools-client": "^2.0.0",
     "@orca-so/whirlpools-core": "^2.0.0",
     "@orca-so/whirlpools": "^2.0.0",
-    "@jup-ag/api": "^6.0.45",
     "dotenv": "^16.4.7",
     "lodash": "^4.17.21"
   },

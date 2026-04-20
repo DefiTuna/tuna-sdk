@@ -17,9 +17,15 @@ export let FUNDER: TransactionSigner = DEFAULT_FUNDER;
 export const ALICE_KEYPAIR = getNextKeypair();
 export const TUNA_ADMIN_KEYPAIR = getNextKeypair();
 export const LIQUIDATOR_KEYPAIR = getNextKeypair();
+export const TUNA_ORACLE_PRICE_UPDATE_KEYPAIR = getNextKeypair();
 export const FEE_RECIPIENT_KEYPAIR = getNextKeypair();
 
-export const airdropAddresses = [ALICE_KEYPAIR, TUNA_ADMIN_KEYPAIR, LIQUIDATOR_KEYPAIR];
+export const airdropAddresses = [
+  ALICE_KEYPAIR,
+  TUNA_ADMIN_KEYPAIR,
+  LIQUIDATOR_KEYPAIR,
+  TUNA_ORACLE_PRICE_UPDATE_KEYPAIR,
+];
 
 /**
  * Sets the default funder for transactions.

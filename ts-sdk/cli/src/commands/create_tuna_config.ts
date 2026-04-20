@@ -15,6 +15,7 @@ export default class CreateTunaConfig extends BaseCommand {
       required: true,
     }),
     liquidationAuthority: addressArg({ description: "Liquidator authority", required: true }),
+    oraclePriceUpdateAuthority: addressArg({ description: "Oracle price update authority", required: true }),
     feeRecipient: addressArg({
       description: "Authority who receives all protocol fees of the platform",
       required: true,
@@ -31,6 +32,7 @@ export default class CreateTunaConfig extends BaseCommand {
       args.adminAuthority,
       args.feeRecipient,
       args.liquidationAuthority,
+      args.oraclePriceUpdateAuthority,
       args.ownerAuthority,
     );
 

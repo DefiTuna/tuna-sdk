@@ -33,9 +33,9 @@ describe("Tuna Position on Orca", () => {
         spotPositionSizeLimitB: 100000_000_000,
       },
       MarketMaker.Orca,
-      false,
-      false,
-      true,
+      {
+        adaptiveFee: true,
+      },
     );
   });
 

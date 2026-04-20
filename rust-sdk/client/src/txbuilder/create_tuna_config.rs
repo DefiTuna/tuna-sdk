@@ -10,6 +10,7 @@ pub fn create_tuna_config_instruction(
     owner_authority: &Pubkey,
     admin_authority: &Pubkey,
     liquidator_authority: &Pubkey,
+    oracle_price_update_authority: &Pubkey,
     fee_recipient: &Pubkey,
 ) -> Instruction {
     let tuna_config_address = get_tuna_config_address().0;
@@ -25,6 +26,7 @@ pub fn create_tuna_config_instruction(
         owner_authority: *owner_authority,
         admin_authority: *admin_authority,
         liquidator_authority: *liquidator_authority,
+        oracle_price_update_authority: *oracle_price_update_authority,
         fee_recipient: *fee_recipient,
     })
 }

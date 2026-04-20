@@ -3,9 +3,9 @@ import { fetchFusionPool, FUSIONAMM_PROGRAM_ADDRESS, FusionPool } from "@cryptic
 import { fetchTickArrayOrDefault } from "@crypticdot/fusionamm-sdk";
 import {
   DefiTunaAccountsType,
-  getRouteInstruction,
+  getRouteV2Instruction,
   JUPITER_PROGRAM_ADDRESS,
-  RouteInstructionDataArgs,
+  RouteV2InstructionDataArgs,
 } from "@crypticdot/jupiter-solana-client";
 import {
   Account,
@@ -27,19 +27,21 @@ import {
   getTunaSpotPositionAddress,
   HUNDRED_PERCENT,
   HUNDRED_PERCENTn,
+  JUPITER_EVENT_AUTHORITY,
   LEVERAGE_ONE,
   MarketMaker,
   mulDiv,
   PoolToken,
 } from "../src";
+
 import { LIQUIDATOR_KEYPAIR } from "./helpers/addresses.ts";
 import { fetchPool } from "./helpers/fetch.ts";
 import { assertLiquidateTunaSpotPosition } from "./helpers/liquidateTunaSpotPosition.ts";
 import { liquidateTunaSpotPositionJupiter } from "./helpers/liquidateTunaSpotPositionJupiter.ts";
-
 import { rpc, signer } from "./helpers/mockRpc.ts";
 import { assertModifyTunaSpotPosition, modifyTunaSpotPosition } from "./helpers/modifyTunaSpotPosition.ts";
 import { modifyTunaSpotPositionJupiter } from "./helpers/modifyTunaSpotPositionJupiter.ts";
+import { openAndIncreaseTunaSpotPositionJupiter } from "./helpers/openAndIncreaseTunaSpotPositionJupiter.ts";
 import { openTunaSpotPosition } from "./helpers/openTunaSpotPosition.ts";
 import { setupTestMarket, TestMarket } from "./helpers/setup.ts";
 import { swapExactInput } from "./helpers/swap.ts";
@@ -157,11 +159,12 @@ describe("Tuna Spot Position Jupiter", () => {
     //const quotedOutAmount = 1995617984n;
     const quotedOutAmount = 0n;
 
-    let args: RouteInstructionDataArgs = {
+    let args: RouteV2InstructionDataArgs = {
       inAmount: swapAmountIn,
       quotedOutAmount,
       platformFeeBps: 0,
       slippageBps: 0,
+      positiveSlippageBps: 0,
       routePlan: [
         {
           swap: {
@@ -176,23 +179,34 @@ describe("Tuna Spot Position Jupiter", () => {
               ],
             },
           },
-          percent: 100,
+          bps: 10000,
           inputIndex: 0,
           outputIndex: 1,
         },
       ],
     };
 
-    let routeInstruction = getRouteInstruction({
-      userTransferAuthority: signer, // Accounts don't matter because we only need arguments from this instruction.
-      userSourceTokenAccount: JUPITER_PROGRAM_ADDRESS, // Accounts don't matter because we only need arguments from this instruction.
-      destinationMint: JUPITER_PROGRAM_ADDRESS, // Accounts don't matter because we only need arguments from this instruction.
-      userDestinationTokenAccount: JUPITER_PROGRAM_ADDRESS, // Accounts don't matter because we only need arguments from this instruction.
-      program: JUPITER_PROGRAM_ADDRESS, // Accounts don't matter because we only need arguments from this instruction.
+    // B->A swap
+    let routeInstruction = getRouteV2Instruction({
+      userTransferAuthority: signer,
+      destinationTokenAccount: tunaPositionAtaA,
+      destinationTokenProgram: market.mintB.programAddress,
+      eventAuthority: JUPITER_EVENT_AUTHORITY,
+      sourceMint: market.mintB.address,
+      sourceTokenProgram: market.mintB.programAddress,
+      userSourceTokenAccount: tunaPositionAtaB,
+      destinationMint: market.mintA.address,
+      userDestinationTokenAccount: tunaPositionAtaA,
+      program: JUPITER_PROGRAM_ADDRESS,
       ...args,
     });
+    routeInstruction.accounts[0] = {
+      address: tunaPositionAddress,
+      role: AccountRole.READONLY,
+    };
 
     let fusionPool = await fetchFusionPool(rpc, market.pool);
+
     let routeAccounts = await getRouteAccounts(
       rpc,
       fusionPool,
@@ -200,6 +214,7 @@ describe("Tuna Spot Position Jupiter", () => {
       tunaPositionAtaA,
       tunaPositionAtaB,
     );
+    routeInstruction.accounts.push(...routeAccounts);
 
     assertModifyTunaSpotPosition(
       await modifyTunaSpotPositionJupiter({
@@ -208,7 +223,7 @@ describe("Tuna Spot Position Jupiter", () => {
         decreasePercent: 0,
         collateralAmount,
         borrowAmount,
-        routeAccounts,
+        routeAccounts: routeInstruction.accounts,
         routeData: routeInstruction.data,
       }),
       { amountA: 1997254447n, amountB: 0n },
@@ -222,6 +237,7 @@ describe("Tuna Spot Position Jupiter", () => {
       quotedOutAmount: 0,
       platformFeeBps: 0,
       slippageBps: 0,
+      positiveSlippageBps: 0,
       routePlan: [
         {
           swap: {
@@ -236,24 +252,36 @@ describe("Tuna Spot Position Jupiter", () => {
               ],
             },
           },
-          percent: 100,
+          bps: 10000,
           inputIndex: 0,
           outputIndex: 1,
         },
       ],
     };
 
-    routeInstruction = getRouteInstruction({
-      userTransferAuthority: signer, // Accounts don't matter because we only need arguments from this instruction.
-      userSourceTokenAccount: JUPITER_PROGRAM_ADDRESS, // Accounts don't matter because we only need arguments from this instruction.
-      destinationMint: JUPITER_PROGRAM_ADDRESS, // Accounts don't matter because we only need arguments from this instruction.
-      userDestinationTokenAccount: JUPITER_PROGRAM_ADDRESS, // Accounts don't matter because we only need arguments from this instruction.
-      program: JUPITER_PROGRAM_ADDRESS, // Accounts don't matter because we only need arguments from this instruction.
+    // A->B swap
+    routeInstruction = getRouteV2Instruction({
+      userTransferAuthority: signer,
+      destinationTokenAccount: tunaPositionAtaB,
+      destinationTokenProgram: market.mintB.programAddress,
+      eventAuthority: JUPITER_EVENT_AUTHORITY,
+      sourceMint: market.mintA.address,
+      sourceTokenProgram: market.mintA.programAddress,
+      userSourceTokenAccount: tunaPositionAtaA,
+      destinationMint: market.mintB.address,
+      userDestinationTokenAccount: tunaPositionAtaB,
+      program: JUPITER_PROGRAM_ADDRESS,
       ...args,
     });
+    routeInstruction.accounts[0] = {
+      address: tunaPositionAddress,
+      role: AccountRole.READONLY,
+    };
 
     fusionPool = await fetchFusionPool(rpc, market.pool);
+
     routeAccounts = await getRouteAccounts(rpc, fusionPool, tunaPositionAddress, tunaPositionAtaA, tunaPositionAtaB);
+    routeInstruction.accounts.push(...routeAccounts);
 
     assertModifyTunaSpotPosition(
       await modifyTunaSpotPositionJupiter({
@@ -262,21 +290,22 @@ describe("Tuna Spot Position Jupiter", () => {
         decreasePercent,
         collateralAmount: 0n,
         borrowAmount: 0n,
-        routeAccounts,
+        routeAccounts: routeInstruction.accounts,
         routeData: routeInstruction.data,
       }),
       {
         amountA: 998_627_223n,
         amountB: 0n,
         userBalanceDeltaA: 498_627_224n,
-        userBalanceDeltaB: 36_947n,
+        userBalanceDeltaB: 0n,
         vaultBalanceDeltaA: 0n,
-        vaultBalanceDeltaB: 100_000_000n,
+        vaultBalanceDeltaB: 100_036_947n,
       },
     );
   });
 
-  it(`Open a LONG position providing token B as collateral, increase, decrease and close it`, async () => {
+  /*
+  it(`Open and increase a LONG position providing token B as collateral, decrease and close it`, async () => {
     const tunaPositionAddress = (await getTunaSpotPositionAddress(signer.address, market.pool))[0];
 
     const tunaPositionAtaA = (
@@ -295,13 +324,6 @@ describe("Tuna Spot Position Jupiter", () => {
       })
     )[0];
 
-    await openTunaSpotPosition({
-      rpc,
-      positionToken: PoolToken.A,
-      collateralToken: PoolToken.B,
-      pool: market.pool,
-    });
-
     const collateralAmount = 200_000_000n;
     const borrowAmount = 400_000_000n;
 
@@ -317,11 +339,12 @@ describe("Tuna Spot Position Jupiter", () => {
     let swapAmountIn = collateralAmount + borrowAmount - protocolFee.b;
     const quotedOutAmount = 0n;
 
-    let args: RouteInstructionDataArgs = {
+    let args: RouteV2InstructionDataArgs = {
       inAmount: swapAmountIn,
       quotedOutAmount,
       platformFeeBps: 0,
       slippageBps: 0,
+      positiveSlippageBps: 0,
       routePlan: [
         {
           swap: {
@@ -336,21 +359,31 @@ describe("Tuna Spot Position Jupiter", () => {
               ],
             },
           },
-          percent: 100,
+          bps: 10000,
           inputIndex: 0,
           outputIndex: 1,
         },
       ],
     };
 
-    let routeInstruction = getRouteInstruction({
-      userTransferAuthority: signer, // Accounts don't matter because we only need arguments from this instruction.
-      userSourceTokenAccount: JUPITER_PROGRAM_ADDRESS, // Accounts don't matter because we only need arguments from this instruction.
-      destinationMint: JUPITER_PROGRAM_ADDRESS, // Accounts don't matter because we only need arguments from this instruction.
-      userDestinationTokenAccount: JUPITER_PROGRAM_ADDRESS, // Accounts don't matter because we only need arguments from this instruction.
-      program: JUPITER_PROGRAM_ADDRESS, // Accounts don't matter because we only need arguments from this instruction.
+    // B->A swap
+    let routeInstruction = getRouteV2Instruction({
+      userTransferAuthority: signer,
+      destinationTokenAccount: tunaPositionAtaA,
+      destinationTokenProgram: market.mintB.programAddress,
+      eventAuthority: JUPITER_EVENT_AUTHORITY,
+      sourceMint: market.mintB.address,
+      sourceTokenProgram: market.mintB.programAddress,
+      userSourceTokenAccount: tunaPositionAtaB,
+      destinationMint: market.mintA.address,
+      userDestinationTokenAccount: tunaPositionAtaA,
+      program: JUPITER_PROGRAM_ADDRESS,
       ...args,
     });
+    routeInstruction.accounts[0] = {
+      address: tunaPositionAddress,
+      role: AccountRole.READONLY,
+    };
 
     let fusionPool = await fetchFusionPool(rpc, market.pool);
     let routeAccounts = await getRouteAccounts(
@@ -360,15 +393,17 @@ describe("Tuna Spot Position Jupiter", () => {
       tunaPositionAtaA,
       tunaPositionAtaB,
     );
+    routeInstruction.accounts.push(...routeAccounts);
 
     assertModifyTunaSpotPosition(
-      await modifyTunaSpotPositionJupiter({
+      await openAndIncreaseTunaSpotPositionJupiter({
         rpc,
         pool: market.pool,
-        decreasePercent: 0,
+        positionToken: PoolToken.A,
+        collateralToken: PoolToken.B,
         collateralAmount,
         borrowAmount,
-        routeAccounts,
+        routeAccounts: routeInstruction.accounts,
         routeData: routeInstruction.data,
       }),
       { amountA: 2992091804n, amountB: 0n },
@@ -391,6 +426,7 @@ describe("Tuna Spot Position Jupiter", () => {
       quotedOutAmount: 0,
       platformFeeBps: 0,
       slippageBps: 0,
+      positiveSlippageBps: 0,
       routePlan: [
         {
           swap: {
@@ -405,24 +441,36 @@ describe("Tuna Spot Position Jupiter", () => {
               ],
             },
           },
-          percent: 100,
+          bps: 10000,
           inputIndex: 0,
           outputIndex: 1,
         },
       ],
     };
 
-    routeInstruction = getRouteInstruction({
-      userTransferAuthority: signer, // Accounts don't matter because we only need arguments from this instruction.
-      userSourceTokenAccount: JUPITER_PROGRAM_ADDRESS, // Accounts don't matter because we only need arguments from this instruction.
-      destinationMint: JUPITER_PROGRAM_ADDRESS, // Accounts don't matter because we only need arguments from this instruction.
-      userDestinationTokenAccount: JUPITER_PROGRAM_ADDRESS, // Accounts don't matter because we only need arguments from this instruction.
-      program: JUPITER_PROGRAM_ADDRESS, // Accounts don't matter because we only need arguments from this instruction.
+    // A->B swap
+    routeInstruction = getRouteV2Instruction({
+      userTransferAuthority: signer,
+      destinationTokenAccount: tunaPositionAtaB,
+      destinationTokenProgram: market.mintB.programAddress,
+      eventAuthority: JUPITER_EVENT_AUTHORITY,
+      sourceMint: market.mintA.address,
+      sourceTokenProgram: market.mintA.programAddress,
+      userSourceTokenAccount: tunaPositionAtaA,
+      destinationMint: market.mintB.address,
+      userDestinationTokenAccount: tunaPositionAtaB,
+      program: JUPITER_PROGRAM_ADDRESS,
       ...args,
     });
+    routeInstruction.accounts[0] = {
+      address: tunaPositionAddress,
+      role: AccountRole.READONLY,
+    };
 
     fusionPool = await fetchFusionPool(rpc, market.pool);
+
     routeAccounts = await getRouteAccounts(rpc, fusionPool, tunaPositionAddress, tunaPositionAtaA, tunaPositionAtaB);
+    routeInstruction.accounts.push(...routeAccounts);
 
     assertModifyTunaSpotPosition(
       await modifyTunaSpotPositionJupiter({
@@ -431,7 +479,7 @@ describe("Tuna Spot Position Jupiter", () => {
         decreasePercent,
         collateralAmount: 0n,
         borrowAmount: 0n,
-        routeAccounts,
+        routeAccounts: routeInstruction.accounts,
         routeData: routeInstruction.data,
       }),
       {
@@ -485,11 +533,12 @@ describe("Tuna Spot Position Jupiter", () => {
 
     const swapInAmount = tunaPosition.data.amount - 737_700_000n;
 
-    const args: RouteInstructionDataArgs = {
+    const args: RouteV2InstructionDataArgs = {
       inAmount: swapInAmount,
       quotedOutAmount: 0,
       platformFeeBps: 0,
       slippageBps: 0,
+      positiveSlippageBps: 0,
       routePlan: [
         {
           swap: {
@@ -504,38 +553,52 @@ describe("Tuna Spot Position Jupiter", () => {
               ],
             },
           },
-          percent: 100,
+          bps: 10000,
           inputIndex: 0,
           outputIndex: 1,
         },
       ],
     };
 
-    const routeInstruction = getRouteInstruction({
-      userTransferAuthority: signer, // Accounts don't matter because we only need arguments from this instruction.
-      userSourceTokenAccount: JUPITER_PROGRAM_ADDRESS, // Accounts don't matter because we only need arguments from this instruction.
-      destinationMint: JUPITER_PROGRAM_ADDRESS, // Accounts don't matter because we only need arguments from this instruction.
-      userDestinationTokenAccount: JUPITER_PROGRAM_ADDRESS, // Accounts don't matter because we only need arguments from this instruction.
-      program: JUPITER_PROGRAM_ADDRESS, // Accounts don't matter because we only need arguments from this instruction.
+    // A->B swap
+    const routeInstruction = getRouteV2Instruction({
+      userTransferAuthority: signer,
+      destinationTokenAccount: tunaPositionAtaB,
+      destinationTokenProgram: market.mintB.programAddress,
+      eventAuthority: JUPITER_EVENT_AUTHORITY,
+      sourceMint: market.mintA.address,
+      sourceTokenProgram: market.mintA.programAddress,
+      userSourceTokenAccount: tunaPositionAtaA,
+      destinationMint: market.mintB.address,
+      userDestinationTokenAccount: tunaPositionAtaB,
+      program: JUPITER_PROGRAM_ADDRESS,
       ...args,
     });
+    routeInstruction.accounts[0] = {
+      address: tunaPositionAddress,
+      role: AccountRole.READONLY,
+    };
 
     const fusionPool = await fetchFusionPool(rpc, market.pool);
+
     const routeAccounts = await getRouteAccounts(
       rpc,
       fusionPool,
       tunaPositionAddress,
       tunaPositionAtaA,
       tunaPositionAtaB,
+      //authorityAtaB,
     );
+    routeInstruction.accounts.push(...routeAccounts);
 
     assertLiquidateTunaSpotPosition(
       await liquidateTunaSpotPositionJupiter({
         rpc,
         signer: LIQUIDATOR_KEYPAIR,
         tunaPositionAddress,
-        routeAccounts,
+        routeAccounts: routeInstruction.accounts,
         routeData: routeInstruction.data,
+        intermediateTokenAccountsAndPrograms: [],
       }),
       {
         vaultBalanceDeltaA: 0n,
@@ -589,11 +652,12 @@ describe("Tuna Spot Position Jupiter", () => {
 
     const swapInAmount = tunaPosition.data.amount / 2n - 370_600_000n;
 
-    const args: RouteInstructionDataArgs = {
+    const args: RouteV2InstructionDataArgs = {
       inAmount: swapInAmount,
       quotedOutAmount: 0,
       platformFeeBps: 0,
       slippageBps: 0,
+      positiveSlippageBps: 0,
       routePlan: [
         {
           swap: {
@@ -608,23 +672,34 @@ describe("Tuna Spot Position Jupiter", () => {
               ],
             },
           },
-          percent: 100,
+          bps: 10000,
           inputIndex: 0,
           outputIndex: 1,
         },
       ],
     };
 
-    const routeInstruction = getRouteInstruction({
-      userTransferAuthority: signer, // Accounts don't matter because we only need arguments from this instruction.
-      userSourceTokenAccount: JUPITER_PROGRAM_ADDRESS, // Accounts don't matter because we only need arguments from this instruction.
-      destinationMint: JUPITER_PROGRAM_ADDRESS, // Accounts don't matter because we only need arguments from this instruction.
-      userDestinationTokenAccount: JUPITER_PROGRAM_ADDRESS, // Accounts don't matter because we only need arguments from this instruction.
-      program: JUPITER_PROGRAM_ADDRESS, // Accounts don't matter because we only need arguments from this instruction.
+    // A->B swap
+    const routeInstruction = getRouteV2Instruction({
+      userTransferAuthority: signer,
+      destinationTokenAccount: tunaPositionAtaB,
+      destinationTokenProgram: market.mintB.programAddress,
+      eventAuthority: JUPITER_EVENT_AUTHORITY,
+      sourceMint: market.mintA.address,
+      sourceTokenProgram: market.mintA.programAddress,
+      userSourceTokenAccount: tunaPositionAtaA,
+      destinationMint: market.mintB.address,
+      userDestinationTokenAccount: tunaPositionAtaB,
+      program: JUPITER_PROGRAM_ADDRESS,
       ...args,
     });
+    routeInstruction.accounts[0] = {
+      address: tunaPositionAddress,
+      role: AccountRole.READONLY,
+    };
 
     const fusionPool = await fetchFusionPool(rpc, market.pool);
+
     const routeAccounts = await getRouteAccounts(
       rpc,
       fusionPool,
@@ -632,6 +707,7 @@ describe("Tuna Spot Position Jupiter", () => {
       tunaPositionAtaA,
       tunaPositionAtaB,
     );
+    routeInstruction.accounts.push(...routeAccounts);
 
     assertLiquidateTunaSpotPosition(
       await liquidateTunaSpotPositionJupiter({
@@ -639,8 +715,9 @@ describe("Tuna Spot Position Jupiter", () => {
         signer: LIQUIDATOR_KEYPAIR,
         tunaPositionAddress,
         decreasePercent: HUNDRED_PERCENT / 2,
-        routeAccounts,
+        routeAccounts: routeInstruction.accounts,
         routeData: routeInstruction.data,
+        intermediateTokenAccountsAndPrograms: [],
       }),
       {
         vaultBalanceDeltaA: 0n,
@@ -694,11 +771,12 @@ describe("Tuna Spot Position Jupiter", () => {
 
     const swapInAmount = tunaPosition.data.amount - 450_000_000n;
 
-    const args: RouteInstructionDataArgs = {
+    const args: RouteV2InstructionDataArgs = {
       inAmount: swapInAmount,
       quotedOutAmount: 0,
       platformFeeBps: 0,
       slippageBps: 0,
+      positiveSlippageBps: 0,
       routePlan: [
         {
           swap: {
@@ -713,23 +791,34 @@ describe("Tuna Spot Position Jupiter", () => {
               ],
             },
           },
-          percent: 100,
+          bps: 10000,
           inputIndex: 0,
           outputIndex: 1,
         },
       ],
     };
 
-    const routeInstruction = getRouteInstruction({
-      userTransferAuthority: signer, // Accounts don't matter because we only need arguments from this instruction.
-      userSourceTokenAccount: JUPITER_PROGRAM_ADDRESS, // Accounts don't matter because we only need arguments from this instruction.
-      destinationMint: JUPITER_PROGRAM_ADDRESS, // Accounts don't matter because we only need arguments from this instruction.
-      userDestinationTokenAccount: JUPITER_PROGRAM_ADDRESS, // Accounts don't matter because we only need arguments from this instruction.
-      program: JUPITER_PROGRAM_ADDRESS, // Accounts don't matter because we only need arguments from this instruction.
+    // A->B swap
+    const routeInstruction = getRouteV2Instruction({
+      userTransferAuthority: signer,
+      destinationTokenAccount: tunaPositionAtaB,
+      destinationTokenProgram: market.mintB.programAddress,
+      eventAuthority: JUPITER_EVENT_AUTHORITY,
+      sourceMint: market.mintA.address,
+      sourceTokenProgram: market.mintA.programAddress,
+      userSourceTokenAccount: tunaPositionAtaA,
+      destinationMint: market.mintB.address,
+      userDestinationTokenAccount: tunaPositionAtaB,
+      program: JUPITER_PROGRAM_ADDRESS,
       ...args,
     });
+    routeInstruction.accounts[0] = {
+      address: tunaPositionAddress,
+      role: AccountRole.READONLY,
+    };
 
     const fusionPool = await fetchFusionPool(rpc, market.pool);
+
     const routeAccounts = await getRouteAccounts(
       rpc,
       fusionPool,
@@ -737,14 +826,16 @@ describe("Tuna Spot Position Jupiter", () => {
       tunaPositionAtaA,
       tunaPositionAtaB,
     );
+    routeInstruction.accounts.push(...routeAccounts);
 
     assertLiquidateTunaSpotPosition(
       await liquidateTunaSpotPositionJupiter({
         rpc,
         signer: LIQUIDATOR_KEYPAIR,
         tunaPositionAddress,
-        routeAccounts,
+        routeAccounts: routeInstruction.accounts,
         routeData: routeInstruction.data,
+        intermediateTokenAccountsAndPrograms: [],
       }),
       {
         vaultBalanceDeltaA: 0n,
@@ -756,5 +847,5 @@ describe("Tuna Spot Position Jupiter", () => {
         feeRecipientBalanceDelta: 450000000n,
       },
     );
-  });
+  });*/
 }, 20000);

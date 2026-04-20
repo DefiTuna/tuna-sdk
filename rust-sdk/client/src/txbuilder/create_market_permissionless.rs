@@ -1,0 +1,28 @@
+use crate::instructions::{CreateMarketPermissionless, CreateMarketPermissionlessInstructionArgs};
+use crate::{get_market_address, get_tuna_config_address};
+use solana_instruction::Instruction;
+use solana_pubkey::Pubkey;
+use solana_sdk_ids::system_program;
+
+pub fn create_market_permissionless_instruction(
+    authority: &Pubkey,
+    pool: &Pubkey,
+    vault_a: &Pubkey,
+    vault_b: &Pubkey,
+    args: CreateMarketPermissionlessInstructionArgs,
+) -> Instruction {
+    let tuna_config_address = get_tuna_config_address().0;
+    let market_address = get_market_address(pool).0;
+
+    let ix_builder = CreateMarketPermissionless {
+        authority: *authority,
+        tuna_config: tuna_config_address,
+        market: market_address,
+        vault_a: *vault_a,
+        vault_b: *vault_b,
+        pool: *pool,
+        system_program: system_program::ID,
+    };
+
+    ix_builder.instruction(args)
+}

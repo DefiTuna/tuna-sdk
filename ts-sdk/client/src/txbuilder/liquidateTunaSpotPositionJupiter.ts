@@ -4,19 +4,20 @@ import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
 import { findAssociatedTokenPda, Mint } from "@solana-program/token-2022";
 
 import {
+  AccountsType,
   getCreateAtaInstructions,
   getLiquidateTunaSpotPositionJupiterInstruction,
   getMarketAddress,
-  HUNDRED_PERCENT,
-  JUPITER_EVENT_AUTHORITY,
-  JUPITER_PROGRAM_AUTHORITY,
   LiquidateTunaSpotPositionJupiterInstructionDataArgs,
-  NATIVE_MINT,
-  PoolToken,
   TunaConfig,
   TunaSpotPosition,
   Vault,
 } from "../index.ts";
+
+export type LiquidateTunaSpotPositionJupiterInstructionsArgs = Omit<
+  LiquidateTunaSpotPositionJupiterInstructionDataArgs,
+  "remainingAccountsInfo"
+>;
 
 export async function liquidateTunaSpotPositionJupiterInstructions(
   authority: TransactionSigner,
@@ -27,17 +28,13 @@ export async function liquidateTunaSpotPositionJupiterInstructions(
   vaultA: Account<Vault>,
   vaultB: Account<Vault>,
   poolAddress: Address,
-  remainingAccounts: IAccountMeta[],
-  args: LiquidateTunaSpotPositionJupiterInstructionDataArgs,
+  jupiterRouteAccounts: IAccountMeta[],
+  intermediateTokenAccountsAndPrograms: IAccountMeta[],
+  args: LiquidateTunaSpotPositionJupiterInstructionsArgs,
 ): Promise<IInstruction[]> {
   const instructions: IInstruction[] = [];
 
-  //
-  // Add create position owner token account instructions.
-  //
-
-  const collateralTokenMint = tunaPosition.data.collateralToken == PoolToken.A ? mintA : mintB;
-
+  /*
   // Native SOL is used when the position is totally liquidated.
   const useNativeSol = collateralTokenMint.address == NATIVE_MINT && args.decreasePercent == HUNDRED_PERCENT;
 
@@ -51,37 +48,33 @@ export async function liquidateTunaSpotPositionJupiterInstructions(
     );
     instructions.push(...createPositionOwnerAtaInstructions.init);
   }
+*/
 
   //
-  // Add user's token account creation instructions if needed.
+  // Add create position owner token account instructions.
   //
 
-  if (mintA.address != NATIVE_MINT || args.decreasePercent < HUNDRED_PERCENT) {
-    const createUserAtaAInstructions = await getCreateAtaInstructions(
-      undefined,
-      authority,
-      mintA.address,
-      authority.address,
-      mintA.programAddress,
-    );
-    instructions.push(...createUserAtaAInstructions.init);
-  }
+  const createPositionOwnerAtaAInstructions = await getCreateAtaInstructions(
+    undefined,
+    authority,
+    mintA.address,
+    tunaPosition.data.authority,
+    mintA.programAddress,
+  );
+  instructions.push(...createPositionOwnerAtaAInstructions.init);
 
-  if (mintB.address != NATIVE_MINT || args.decreasePercent < HUNDRED_PERCENT) {
-    const createUserAtaBInstructions = await getCreateAtaInstructions(
-      undefined,
-      authority,
-      mintB.address,
-      authority.address,
-      mintB.programAddress,
-    );
-    instructions.push(...createUserAtaBInstructions.init);
-  }
+  const createPositionOwnerAtaBInstructions = await getCreateAtaInstructions(
+    undefined,
+    authority,
+    mintB.address,
+    tunaPosition.data.authority,
+    mintB.programAddress,
+  );
+  instructions.push(...createPositionOwnerAtaBInstructions.init);
 
   //
   // Add create fee recipient's token account instructions.
   //
-
   const createFeeRecipientAtaAInstructions = await getCreateAtaInstructions(
     undefined,
     authority,
@@ -113,7 +106,8 @@ export async function liquidateTunaSpotPositionJupiterInstructions(
     vaultA,
     vaultB,
     poolAddress,
-    remainingAccounts,
+    jupiterRouteAccounts,
+    intermediateTokenAccountsAndPrograms,
     args,
   );
   instructions.push(ix);
@@ -130,8 +124,9 @@ export async function liquidateTunaSpotPositionJupiterInstruction(
   vaultA: Account<Vault>,
   vaultB: Account<Vault>,
   poolAddress: Address,
-  remainingAccounts: IAccountMeta[],
-  args: LiquidateTunaSpotPositionJupiterInstructionDataArgs,
+  jupiterRouteAccounts: IAccountMeta[],
+  intermediateTokenAccountsAndPrograms: IAccountMeta[],
+  args: LiquidateTunaSpotPositionJupiterInstructionsArgs,
 ): Promise<IInstruction> {
   const marketAddress = (await getMarketAddress(poolAddress))[0];
 
@@ -199,6 +194,19 @@ export async function liquidateTunaSpotPositionJupiterInstruction(
     })
   )[0];
 
+  const remainingAccountsInfo = {
+    slices: [{ accountsType: AccountsType.JupiterRoute, length: jupiterRouteAccounts.length }],
+  };
+
+  if (intermediateTokenAccountsAndPrograms.length > 0) {
+    remainingAccountsInfo.slices.push({
+      accountsType: AccountsType.JupiterIntermediateTokenAccounts,
+      length: intermediateTokenAccountsAndPrograms.length,
+    });
+  }
+
+  const remainingAccounts: IAccountMeta[] = [...jupiterRouteAccounts, ...intermediateTokenAccountsAndPrograms];
+
   const ix = getLiquidateTunaSpotPositionJupiterInstruction({
     authority,
     tunaConfig: tunaConfig.address,
@@ -207,8 +215,8 @@ export async function liquidateTunaSpotPositionJupiterInstruction(
     tokenProgramA: mintA.programAddress,
     tokenProgramB: mintB.programAddress,
     market: marketAddress,
-    pythOraclePriceFeedA: vaultA.data.pythOraclePriceUpdate,
-    pythOraclePriceFeedB: vaultB.data.pythOraclePriceUpdate,
+    oraclePriceUpdateA: vaultA.data.oraclePriceUpdate,
+    oraclePriceUpdateB: vaultB.data.oraclePriceUpdate,
     vaultA: vaultA.address,
     vaultAAta,
     vaultB: vaultB.address,
@@ -223,10 +231,9 @@ export async function liquidateTunaSpotPositionJupiterInstruction(
     feeRecipientAtaB,
     pool: poolAddress,
     jupiterProgram: JUPITER_PROGRAM_ADDRESS,
-    jupiterEventAuthority: JUPITER_EVENT_AUTHORITY,
-    jupiterProgramAuthority: JUPITER_PROGRAM_AUTHORITY,
     memoProgram: MEMO_PROGRAM_ADDRESS,
     ...args,
+    remainingAccountsInfo,
   });
 
   // @ts-expect-error don't worry about the error

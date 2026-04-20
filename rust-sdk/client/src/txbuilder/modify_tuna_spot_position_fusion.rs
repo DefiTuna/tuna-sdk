@@ -1,9 +1,9 @@
-use crate::accounts::{fetch_all_vault, fetch_maybe_tuna_spot_position, fetch_tuna_config, TunaConfig, Vault};
+use crate::accounts::{fetch_all_vault, fetch_market, fetch_maybe_tuna_spot_position, fetch_tuna_config, TunaConfig, Vault};
 use crate::instructions::{ModifyTunaSpotPositionFusion, ModifyTunaSpotPositionFusionInstructionArgs};
 use crate::types::{AccountsType, PoolToken, RemainingAccountsInfo, RemainingAccountsSlice};
 use crate::utils::fusion::get_swap_tick_arrays;
 use crate::utils::get_create_ata_instructions;
-use crate::{get_market_address, get_tuna_config_address, get_tuna_spot_position_address, get_vault_address, MaybeAccount};
+use crate::{get_market_address, get_tuna_config_address, get_tuna_spot_position_address, MaybeAccount};
 use anyhow::{anyhow, Result};
 use fusionamm_client::{fetch_fusion_pool, FusionPool};
 use solana_client::rpc_client::RpcClient;
@@ -46,7 +46,10 @@ pub fn modify_tuna_spot_position_fusion_instructions(
 
     let tuna_config = fetch_tuna_config(rpc, &get_tuna_config_address().0)?;
 
-    let vaults = fetch_all_vault(&rpc, &[get_vault_address(&mint_a_address).0, get_vault_address(&mint_b_address).0])?;
+    let market_address = get_market_address(fusion_pool_address).0;
+    let market = fetch_market(&rpc, &market_address)?;
+
+    let vaults = fetch_all_vault(&rpc, &[market.data.vault_a, market.data.vault_b])?;
     let (vault_a, vault_b) = (&vaults[0], &vaults[1]);
 
     let mint_accounts = rpc.get_multiple_accounts(&[mint_a_address.into(), mint_b_address.into()])?;
@@ -82,7 +85,9 @@ pub fn modify_tuna_spot_position_fusion_instructions(
     instructions.push(modify_tuna_spot_position_fusion_instruction(
         authority,
         &tuna_config.data,
+        &vault_a.address,
         &vault_a.data,
+        &vault_b.address,
         &vault_b.data,
         fusion_pool_address,
         &fusion_pool.data,
@@ -101,7 +106,9 @@ pub fn modify_tuna_spot_position_fusion_instructions(
 pub fn modify_tuna_spot_position_fusion_instruction(
     authority: &Pubkey,
     tuna_config: &TunaConfig,
+    vault_a_address: &Pubkey,
     vault_a: &Vault,
+    vault_b_address: &Pubkey,
     vault_b: &Vault,
     fusion_pool_address: &Pubkey,
     fusion_pool: &FusionPool,
@@ -124,9 +131,6 @@ pub fn modify_tuna_spot_position_fusion_instruction(
     let tuna_position_owner_ata_a = get_associated_token_address_with_program_id(authority, &mint_a, token_program_a);
     let tuna_position_owner_ata_b = get_associated_token_address_with_program_id(authority, &mint_b, token_program_b);
 
-    let vault_a_address = get_vault_address(&mint_a).0;
-    let vault_b_address = get_vault_address(&mint_b).0;
-
     let swap_ticks_arrays = get_swap_tick_arrays(fusion_pool.tick_current_index, tick_spacing, fusion_pool_address);
 
     let ix_builder = ModifyTunaSpotPositionFusion {
@@ -135,10 +139,10 @@ pub fn modify_tuna_spot_position_fusion_instruction(
         mint_a,
         mint_b,
         market: market_address,
-        vault_a: vault_a_address,
-        vault_b: vault_b_address,
-        vault_a_ata: get_associated_token_address_with_program_id(&vault_a_address, &mint_a, token_program_a),
-        vault_b_ata: get_associated_token_address_with_program_id(&vault_b_address, &mint_b, token_program_b),
+        vault_a: *vault_a_address,
+        vault_b: *vault_b_address,
+        vault_a_ata: get_associated_token_address_with_program_id(vault_a_address, &mint_a, token_program_a),
+        vault_b_ata: get_associated_token_address_with_program_id(vault_b_address, &mint_b, token_program_b),
         tuna_position: tuna_position_address,
         tuna_position_ata_a: get_associated_token_address_with_program_id(&tuna_position_address, &mint_a, token_program_a),
         tuna_position_ata_b: get_associated_token_address_with_program_id(&tuna_position_address, &mint_b, token_program_b),
@@ -154,8 +158,8 @@ pub fn modify_tuna_spot_position_fusion_instruction(
         },
         fee_recipient_ata_a: get_associated_token_address_with_program_id(&tuna_config.fee_recipient, &mint_a, token_program_a),
         fee_recipient_ata_b: get_associated_token_address_with_program_id(&tuna_config.fee_recipient, &mint_b, token_program_b),
-        pyth_oracle_price_feed_a: vault_a.pyth_oracle_price_update,
-        pyth_oracle_price_feed_b: vault_b.pyth_oracle_price_update,
+        oracle_price_update_a: vault_a.oracle_price_update,
+        oracle_price_update_b: vault_b.oracle_price_update,
         fusionamm_program: fusionamm_client::ID,
         fusion_pool: *fusion_pool_address,
         token_program_a: *token_program_a,

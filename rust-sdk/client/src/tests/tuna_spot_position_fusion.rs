@@ -7,10 +7,11 @@ mod tests {
     use crate::tests::*;
     use crate::types::{MarketMaker, PoolToken};
     use crate::{
-        close_tuna_spot_position_instructions, get_tuna_config_address, get_tuna_spot_position_address, get_vault_address,
+        close_tuna_spot_position_instructions, get_tuna_config_address, get_tuna_spot_position_address,
         liquidate_tuna_spot_position_fusion_instructions, open_tuna_spot_position_instructions, HUNDRED_PERCENT, LEVERAGE_ONE,
     };
     use fusionamm_client::fetch_fusion_pool;
+    use rstest::rstest;
     use serial_test::serial;
     use solana_keypair::Keypair;
     use solana_program_test::tokio;
@@ -35,16 +36,26 @@ mod tests {
         }
     }
 
-    #[test]
+    #[rstest]
+    #[case(false)]
+    #[case(true)]
     #[serial]
-    fn test_open_increase_decrease_close_position() {
+    fn test_open_increase_decrease_close_position(#[case] permissionless: bool) {
         let rt = tokio::runtime::Runtime::new().unwrap();
         rt.block_on(async {
             let signer = Keypair::new();
             let ctx = RpcContext::new(&signer, fusion::get_fusion_pool_config_accounts(&signer.pubkey())).await;
-            let test_market = setup_test_market(&ctx, test_market_args(), MarketMaker::Fusion, false, false, false)
-                .await
-                .unwrap();
+            let test_market = setup_test_market(
+                &ctx,
+                test_market_args(),
+                MarketMaker::Fusion,
+                TestMarketArgs {
+                    permissionless,
+                    ..TestMarketArgs::default()
+                },
+            )
+            .await
+            .unwrap();
 
             let instructions = open_tuna_spot_position_instructions(
                 &ctx.rpc,
@@ -98,16 +109,26 @@ mod tests {
         });
     }
 
-    #[test]
+    #[rstest]
+    #[case(false)]
+    #[case(true)]
     #[serial]
-    fn test_liquidate_position() {
+    fn test_liquidate_position(#[case] permissionless: bool) {
         let rt = tokio::runtime::Runtime::new().unwrap();
         rt.block_on(async {
             let signer = Keypair::new();
             let ctx = RpcContext::new(&signer, fusion::get_fusion_pool_config_accounts(&signer.pubkey())).await;
-            let test_market = setup_test_market(&ctx, test_market_args(), MarketMaker::Fusion, false, false, false)
-                .await
-                .unwrap();
+            let test_market = setup_test_market(
+                &ctx,
+                test_market_args(),
+                MarketMaker::Fusion,
+                TestMarketArgs {
+                    permissionless,
+                    ..TestMarketArgs::default()
+                },
+            )
+            .await
+            .unwrap();
 
             let pool = fetch_fusion_pool(&ctx.rpc, &test_market.pool).unwrap();
             let tuna_config = fetch_tuna_config(&ctx.rpc, &get_tuna_config_address().0).unwrap();
@@ -146,20 +167,15 @@ mod tests {
 
             let tuna_position_address = get_tuna_spot_position_address(&signer.pubkey(), &test_market.pool).0;
             let tuna_position = fetch_tuna_spot_position(&ctx.rpc, &tuna_position_address).unwrap();
-            let vaults = fetch_all_vault(
-                &ctx.rpc,
-                &[
-                    get_vault_address(&test_market.mint_a_address).0,
-                    get_vault_address(&test_market.mint_b_address).0,
-                ],
-            )
-            .unwrap();
+            let vaults = fetch_all_vault(&ctx.rpc, &[test_market.vault_a, test_market.vault_b]).unwrap();
 
             ctx.send_transaction(liquidate_tuna_spot_position_fusion_instructions(
                 &ctx.signer.pubkey(),
                 &tuna_position.data,
                 &tuna_config.data,
+                &vaults[0].address,
                 &vaults[0].data,
+                &vaults[1].address,
                 &vaults[1].data,
                 &pool.data,
                 &test_market.token_program_a,

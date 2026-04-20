@@ -7,7 +7,7 @@ use solana_sdk_ids::system_program;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 
 pub fn create_vault_instructions(authority: &Pubkey, mint: &Pubkey, token_program: &Pubkey, args: CreateVaultInstructionArgs) -> Vec<Instruction> {
-    let vault_address = get_vault_address(mint).0;
+    let vault_address = get_vault_address(mint, None).0;
     let mut instructions = get_create_ata_instructions(&mint, &vault_address, authority, &token_program, 0).create;
     instructions.push(create_vault_instruction(authority, mint, token_program, args));
     instructions
@@ -15,7 +15,7 @@ pub fn create_vault_instructions(authority: &Pubkey, mint: &Pubkey, token_progra
 
 pub fn create_vault_instruction(authority: &Pubkey, mint: &Pubkey, token_program: &Pubkey, args: CreateVaultInstructionArgs) -> Instruction {
     let tuna_config_address = get_tuna_config_address().0;
-    let vault_address = get_vault_address(mint).0;
+    let vault_address = get_vault_address(mint, None).0;
     let vault_ata = get_associated_token_address_with_program_id(&vault_address, &mint, &token_program);
 
     let ix_builder = CreateVault {

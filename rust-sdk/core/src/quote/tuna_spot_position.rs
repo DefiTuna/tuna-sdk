@@ -4,36 +4,34 @@
 #[cfg(feature = "wasm")]
 use fusionamm_macros::wasm_expose;
 #[cfg(feature = "wasm")]
-use serde::Serialize;
-#[cfg(feature = "wasm")]
-use serde_wasm_bindgen::Serializer;
+//use serde::Serialize;
+//#[cfg(feature = "wasm")]
+//use serde_wasm_bindgen::Serializer;
 #[cfg(feature = "wasm")]
 use wasm_bindgen::prelude::wasm_bindgen;
-#[cfg(feature = "wasm")]
-use wasm_bindgen::JsValue;
+//#[cfg(feature = "wasm")]
+//use wasm_bindgen::JsValue;
 
-use crate::utils::fees;
 use crate::{
-    calculate_tuna_protocol_fee, HUNDRED_PERCENT, INVALID_ARGUMENTS, JUPITER_QUOTE_REQUEST_ERROR, JUPITER_SWAP_INSTRUCTIONS_REQUEST_ERROR, TOKEN_A,
-    TOKEN_B,
+    apply_swap_fee, apply_tuna_protocol_fee, calculate_tuna_protocol_fee, reverse_apply_swap_fee, reverse_apply_tuna_protocol_fee, HUNDRED_PERCENT,
+    INVALID_ARGUMENTS, TOKEN_A, TOKEN_B,
 };
 use fusionamm_core::{
     sqrt_price_to_price, swap_quote_by_input_token, swap_quote_by_output_token, try_get_max_amount_with_slippage_tolerance,
     try_get_min_amount_with_slippage_tolerance, try_mul_div, CoreError, FusionPoolFacade, TickArrays, TokenPair,
 };
-use jup_ag::{PrioritizationFeeLamports, QuoteConfig, SwapMode, SwapRequest};
 use libm::{ceil, round};
-use solana_instruction::AccountMeta;
-use solana_pubkey::Pubkey;
 
 pub const DEFAULT_SLIPPAGE_TOLERANCE_BPS: u16 = 100;
 
+/*
 #[cfg_attr(feature = "wasm", wasm_expose)]
-pub struct SwapInstruction {
+pub struct JupiterSwapInstruction {
     pub data: Vec<u8>,
     pub accounts: Vec<AccountMeta>,
     pub address_lookup_table_addresses: Vec<Pubkey>,
 }
+*/
 
 #[cfg_attr(feature = "wasm", wasm_expose)]
 pub struct IncreaseSpotPositionQuoteResult {
@@ -45,6 +43,8 @@ pub struct IncreaseSpotPositionQuoteResult {
     pub estimated_amount: u64,
     /** Swap input amount. */
     pub swap_input_amount: u64,
+    /** Swap output amount. */
+    pub swap_output_amount: u64,
     /** Minimum swap output amount according to the provided slippage. */
     pub min_swap_output_amount: u64,
     /** Protocol fee in token A */
@@ -53,39 +53,39 @@ pub struct IncreaseSpotPositionQuoteResult {
     pub protocol_fee_b: u64,
     /** Price impact in percents (100% = 1.0) */
     pub price_impact: f64,
-    /** Optional jupiter swap instruction data and accounts. */
-    pub jupiter_swap_ix: Option<SwapInstruction>,
 }
 
-/// Spot position increase quote
-///
-/// # Parameters
-/// - `increase_amount`: Position total size in the collateral_token.
-/// - `collateral_token`: Collateral token.
-/// - `position_token`: Token of the position.
-/// - `leverage`: Leverage (1.0 or higher).
-/// - `slippage_tolerance_bps`: An optional slippage tolerance in basis points. Defaults to the global slippage tolerance if not provided.
-/// - `protocol_fee_rate`: Protocol fee rate from a market account represented as hundredths of a basis point (0.01% = 100).
-/// - `protocol_fee_rate_on_collateral`: Protocol fee rate from a market account represented as hundredths of a basis point (0.01% = 100).
-/// - `mint_a`: Token A mint address
-/// - `mint_b`: Token B mint address
-/// - `fusion_pool`: Fusion pool.
-/// - `tick_arrays`: Optional five tick arrays around the current pool price. If not provided, the quote will be calculated using the Jupiter Aggregator.
-///
-/// # Returns
-/// - `IncreaseSpotPositionQuoteResult`: quote result
-pub async fn get_increase_spot_position_quote(
+#[cfg_attr(feature = "wasm", wasm_expose)]
+pub struct IncreaseSpotPositionEstimationResult {
+    /** Required collateral amount */
+    pub collateral: u64,
+    /** Required amount to borrow */
+    pub borrow: u64,
+    /** Estimated position size in the position token. */
+    pub estimated_amount: u64,
+    /** Swap input amount. */
+    pub swap_input_amount: u64,
+    /** Protocol fee in token A */
+    pub protocol_fee_a: u64,
+    /** Protocol fee in token B */
+    pub protocol_fee_b: u64,
+}
+
+struct SwapPool {
+    pub fusion_pool: FusionPoolFacade,
+    pub tick_arrays: TickArrays,
+    pub slippage_bps: Option<u16>,
+}
+
+fn get_increase_spot_position_quote_internal(
     increase_amount: u64,
     collateral_token: u8,
     position_token: u8,
     leverage: f64,
-    slippage_tolerance_bps: Option<u16>,
     protocol_fee_rate: u16,
     protocol_fee_rate_on_collateral: u16,
-    mint_a: Pubkey,
-    mint_b: Pubkey,
-    fusion_pool: FusionPoolFacade,
-    tick_arrays: Option<TickArrays>,
+    price: f64,
+    pool: Option<SwapPool>,
 ) -> Result<IncreaseSpotPositionQuoteResult, CoreError> {
     if collateral_token > TOKEN_B || position_token > TOKEN_B {
         return Err(INVALID_ARGUMENTS.into());
@@ -99,22 +99,23 @@ pub async fn get_increase_spot_position_quote(
     let mut collateral: u64;
     let mut estimated_amount: u64 = 0;
     let mut swap_input_amount: u64;
+    let mut swap_output_amount: u64 = 0;
     let mut min_swap_output_amount: u64 = 0;
     let mut price_impact: f64 = 0.0;
-    let mut jupiter_swap_ix: Option<SwapInstruction> = None;
 
-    let price = sqrt_price_to_price(fusion_pool.sqrt_price.into(), 1, 1);
-    let slippage_tolerance_bps = slippage_tolerance_bps.unwrap_or(DEFAULT_SLIPPAGE_TOLERANCE_BPS);
+    let (fee_rate, slippage_bps) = match pool.as_ref() {
+        None => (0, 0),
+        Some(pool) => (pool.fusion_pool.fee_rate, pool.slippage_bps.unwrap_or(DEFAULT_SLIPPAGE_TOLERANCE_BPS)),
+    };
 
     let borrowed_token = if position_token == TOKEN_A { TOKEN_B } else { TOKEN_A };
     let swap_input_token_is_a = borrowed_token == TOKEN_A;
 
     if borrowed_token == collateral_token {
         borrow = ceil((increase_amount as f64 * (leverage - 1.0)) / leverage) as u64;
-        collateral =
-            increase_amount - fees::apply_swap_fee(fees::apply_tuna_protocol_fee(borrow, protocol_fee_rate, false)?, fusion_pool.fee_rate, false)?;
-        collateral = fees::reverse_apply_swap_fee(collateral, fusion_pool.fee_rate, false)?;
-        collateral = fees::reverse_apply_tuna_protocol_fee(collateral, protocol_fee_rate_on_collateral, false)?;
+        collateral = increase_amount - apply_swap_fee(apply_tuna_protocol_fee(borrow, protocol_fee_rate, false)?, fee_rate, false)?;
+        collateral = reverse_apply_swap_fee(collateral, fee_rate, false)?;
+        collateral = reverse_apply_tuna_protocol_fee(collateral, protocol_fee_rate_on_collateral, false)?;
 
         swap_input_amount = collateral + borrow;
     } else {
@@ -123,14 +124,11 @@ pub async fn get_increase_spot_position_quote(
 
         borrow = ceil(borrow_in_position_token * position_to_borrowed_token_price) as u64;
 
-        let borrow_in_position_token_with_fees_applied = fees::apply_swap_fee(
-            fees::apply_tuna_protocol_fee(borrow_in_position_token as u64, protocol_fee_rate, false)?,
-            fusion_pool.fee_rate,
-            false,
-        )?;
+        let borrow_in_position_token_with_fees_applied =
+            apply_swap_fee(apply_tuna_protocol_fee(borrow_in_position_token as u64, protocol_fee_rate, false)?, fee_rate, false)?;
 
         collateral = increase_amount - borrow_in_position_token_with_fees_applied;
-        collateral = fees::reverse_apply_tuna_protocol_fee(collateral, protocol_fee_rate_on_collateral, false)?;
+        collateral = reverse_apply_tuna_protocol_fee(collateral, protocol_fee_rate_on_collateral, false)?;
 
         swap_input_amount = borrow;
     }
@@ -151,25 +149,18 @@ pub async fn get_increase_spot_position_quote(
     }
 
     if swap_input_amount > 0 {
-        if let Some(tick_arrays) = tick_arrays {
-            let quote = swap_quote_by_input_token(swap_input_amount, swap_input_token_is_a, 0, fusion_pool, tick_arrays, None, None)?;
+        if let Some(pool) = pool {
+            let quote = swap_quote_by_input_token(swap_input_amount, swap_input_token_is_a, 0, pool.fusion_pool, pool.tick_arrays, None, None)?;
             estimated_amount += quote.token_est_out;
-            min_swap_output_amount = try_get_min_amount_with_slippage_tolerance(quote.token_est_out, slippage_tolerance_bps)?;
-            let new_price = sqrt_price_to_price(quote.next_sqrt_price.into(), 1, 1);
-            price_impact = (new_price / price - 1.0).abs();
-        } else {
-            let (input_mint, output_mint) = if swap_input_token_is_a { (mint_a, mint_b) } else { (mint_b, mint_a) };
-
-            let quote = jupiter_swap_quote(input_mint, output_mint, swap_input_amount, Some(slippage_tolerance_bps as u64)).await?;
-
-            estimated_amount += quote.out_amount;
-            price_impact = quote.price_impact_pct;
-            min_swap_output_amount = quote.other_amount_threshold;
-            jupiter_swap_ix = Some(SwapInstruction {
-                data: quote.instruction.data,
-                accounts: quote.instruction.accounts,
-                address_lookup_table_addresses: quote.instruction.address_lookup_table_addresses,
-            });
+            swap_output_amount = quote.token_est_out;
+            min_swap_output_amount = try_get_min_amount_with_slippage_tolerance(swap_output_amount, slippage_bps)?;
+            //let new_price = sqrt_price_to_price(quote.next_sqrt_price.into(), 1, 1);
+            //price_impact = (new_price / price - 1.0).abs();
+            price_impact = if swap_input_token_is_a {
+                (swap_input_amount as f64 - swap_output_amount as f64 / price) / swap_input_amount as f64
+            } else {
+                (swap_input_amount as f64 - swap_output_amount as f64 * price) / swap_input_amount as f64
+            }
         }
     }
 
@@ -178,13 +169,104 @@ pub async fn get_increase_spot_position_quote(
         borrow,
         estimated_amount,
         swap_input_amount,
+        swap_output_amount,
         min_swap_output_amount,
         protocol_fee_a: protocol_fee.a,
         protocol_fee_b: protocol_fee.b,
         price_impact,
-        jupiter_swap_ix,
     })
 }
+
+/// Spot position increase quote
+///
+/// # Parameters
+/// - `increase_amount`: Position total size in the collateral_token.
+/// - `collateral_token`: Collateral token.
+/// - `position_token`: Token of the position.
+/// - `leverage`: Leverage (1.0 or higher).
+/// - `slippage_bps`: An optional slippage tolerance in basis points. Defaults to the global slippage tolerance if not provided.
+/// - `protocol_fee_rate`: Protocol fee rate from a market account represented as hundredths of a basis point (0.01% = 100).
+/// - `protocol_fee_rate_on_collateral`: Protocol fee rate from a market account represented as hundredths of a basis point (0.01% = 100).
+/// - `fusion_pool`: Fusion pool.
+/// - `tick_arrays`: Optional five tick arrays around the current pool price. If not provided, the quote will be calculated using the Jupiter Aggregator.
+///
+/// # Returns
+/// - `IncreaseSpotPositionQuoteResult`: quote result
+#[cfg_attr(feature = "wasm", wasm_expose)]
+pub fn get_increase_spot_position_quote(
+    increase_amount: u64,
+    collateral_token: u8,
+    position_token: u8,
+    leverage: f64,
+    slippage_bps: Option<u16>,
+    protocol_fee_rate: u16,
+    protocol_fee_rate_on_collateral: u16,
+    fusion_pool: FusionPoolFacade,
+    tick_arrays: TickArrays,
+) -> Result<IncreaseSpotPositionQuoteResult, CoreError> {
+    let price = sqrt_price_to_price(fusion_pool.sqrt_price.into(), 1, 1);
+
+    get_increase_spot_position_quote_internal(
+        increase_amount,
+        collateral_token,
+        position_token,
+        leverage,
+        protocol_fee_rate,
+        protocol_fee_rate_on_collateral,
+        price,
+        Some(SwapPool {
+            fusion_pool,
+            tick_arrays,
+            slippage_bps,
+        }),
+    )
+}
+
+/// Spot position increase estimation
+///
+/// # Parameters
+/// - `increase_amount`: Position total size in the collateral_token.
+/// - `collateral_token`: Collateral token.
+/// - `position_token`: Token of the position.
+/// - `leverage`: Leverage (1.0 or higher).
+/// - `protocol_fee_rate`: Protocol fee rate from a market account represented as hundredths of a basis point (0.01% = 100).
+/// - `protocol_fee_rate_on_collateral`: Protocol fee rate from a market account represented as hundredths of a basis point (0.01% = 100).
+/// - `price`: Pool price.
+///
+/// # Returns
+/// - `IncreaseSpotPositionEstimationResult`: quote result
+#[cfg_attr(feature = "wasm", wasm_expose)]
+pub fn get_increase_spot_position_estimation(
+    increase_amount: u64,
+    collateral_token: u8,
+    position_token: u8,
+    leverage: f64,
+    protocol_fee_rate: u16,
+    protocol_fee_rate_on_collateral: u16,
+    price: f64,
+) -> Result<IncreaseSpotPositionEstimationResult, CoreError> {
+    let quote = get_increase_spot_position_quote_internal(
+        increase_amount,
+        collateral_token,
+        position_token,
+        leverage,
+        protocol_fee_rate,
+        protocol_fee_rate_on_collateral,
+        price,
+        None,
+    )?;
+
+    Ok(IncreaseSpotPositionEstimationResult {
+        collateral: quote.collateral,
+        borrow: quote.borrow,
+        estimated_amount: quote.estimated_amount,
+        swap_input_amount: quote.swap_input_amount,
+        protocol_fee_a: quote.protocol_fee_a,
+        protocol_fee_b: quote.protocol_fee_b,
+    })
+}
+
+/*
 
 /// Spot position increase quote
 ///
@@ -216,7 +298,6 @@ pub async fn wasm_get_increase_spot_position_quote(
     mint_a: Pubkey,
     mint_b: Pubkey,
     fusion_pool: FusionPoolFacade,
-    tick_arrays: Option<TickArrays>,
 ) -> Result<JsValue, JsValue> {
     let result = get_increase_spot_position_quote(
         increase_amount,
@@ -239,13 +320,21 @@ pub async fn wasm_get_increase_spot_position_quote(
 
     Ok(js_value)
 }
+*/
 
 #[cfg_attr(feature = "wasm", wasm_expose)]
 pub struct DecreaseSpotPositionQuoteResult {
     /** Position decrease percentage */
     pub decrease_percent: u32,
-    /** The maximum acceptable swap input amount for position decrease according to the provided slippage
-     * (if collateral_token == position_token) OR the minimum swap output amount (if collateral_token != position_token).
+    /** Exact in or exact out swap. */
+    pub swap_exact_in: bool,
+    /** Swap input amount. */
+    pub swap_input_amount: u64,
+    /** Swap output amount according. */
+    pub swap_output_amount: u64,
+    /** if swap_exact_in is false, it's the maximum acceptable swap input amount for position decrease according to the provided slippage.
+     *  if swap_exact_in is true, it's the minimum swap output amount.
+     *  This value is passed directly to the spot position modify instruction.
      */
     pub required_swap_amount: u64,
     /** Estimated total amount of the adjusted position. */
@@ -256,54 +345,44 @@ pub struct DecreaseSpotPositionQuoteResult {
     pub estimated_collateral_to_be_withdrawn: u64,
     /** Price impact in percents (100% = 1.0) */
     pub price_impact: f64,
-    /** Optional jupiter swap instruction data and accounts. */
-    pub jupiter_swap_ix: Option<SwapInstruction>,
 }
 
-/// Spot position decrease quote
-///
-/// # Parameters
-/// - `decrease_amount`: Position total decrease size in the collateral_token.
-/// - `collateral_token`: Collateral token.
-/// - `leverage`: Leverage (1.0 or higher).
-/// - `slippage_tolerance_bps`: An optional slippage tolerance in basis points. Defaults to the global slippage tolerance if not provided.
-/// - `position_token`: Token of the existing position.
-/// - `position_amount`: Existing position amount in the position_token.
-/// - `position_debt`: Existing position debt in the token opposite to the position_token.
-/// - `fusion_pool`: Fusion pool.
-/// - `tick_arrays`: Optional five tick arrays around the current pool price. If not provided, the quote will be calculated using the Jupiter Aggregator.
-///
-/// # Returns
-/// - `DecreaseSpotPositionQuoteResult`: quote result
-pub async fn get_decrease_spot_position_quote(
+#[cfg_attr(feature = "wasm", wasm_expose)]
+pub struct DecreaseSpotPositionEstimationResult {
+    /** Position decrease percentage. */
+    pub decrease_percent: u32,
+    /** Exact in or exact out swap. */
+    pub swap_exact_in: bool,
+    /** Swap input or output amount. */
+    pub swap_amount: u64,
+    /** Estimated total amount of the adjusted position. */
+    pub estimated_amount: u64,
+    /** Estimated value of a debt that will be repaid. */
+    pub estimated_payable_debt: u64,
+}
+
+fn get_decrease_spot_position_quote_internal(
     decrease_amount: u64,
     collateral_token: u8,
-    leverage: f64,
-    slippage_tolerance_bps: Option<u16>,
     position_token: u8,
     position_amount: u64,
     position_debt: u64,
-    mint_a: Pubkey,
-    mint_b: Pubkey,
-    fusion_pool: FusionPoolFacade,
-    tick_arrays: Option<TickArrays>,
+    price: f64,
+    pool: Option<SwapPool>,
 ) -> Result<DecreaseSpotPositionQuoteResult, CoreError> {
     if collateral_token > TOKEN_B || position_token > TOKEN_B {
         return Err(INVALID_ARGUMENTS.into());
     }
 
-    if leverage < 1.0 {
-        return Err(INVALID_ARGUMENTS.into());
-    }
+    let slippage_bps = match pool.as_ref() {
+        None => 0,
+        Some(pool) => pool.slippage_bps.unwrap_or(DEFAULT_SLIPPAGE_TOLERANCE_BPS),
+    };
 
-    let price = sqrt_price_to_price(fusion_pool.sqrt_price.into(), 1, 1);
     let position_to_borrowed_token_price = if position_token == TOKEN_A { price } else { 1.0 / price };
     let borrowed_token = if position_token == TOKEN_A { TOKEN_B } else { TOKEN_A };
-    let slippage_tolerance_bps = slippage_tolerance_bps.unwrap_or(DEFAULT_SLIPPAGE_TOLERANCE_BPS);
 
     let mut required_swap_amount: u64 = 0;
-    let mut price_impact = 0.0;
-    let mut jupiter_swap_ix: Option<SwapInstruction> = None;
 
     let mut decrease_amount_in_position_token = if collateral_token == position_token {
         decrease_amount
@@ -319,76 +398,61 @@ pub async fn get_decrease_spot_position_quote(
     let estimated_payable_debt = try_mul_div(position_debt, decrease_percent as u128, HUNDRED_PERCENT as u128, true)?;
     let mut estimated_collateral_to_be_withdrawn = 0;
 
-    if let Some(tick_arrays) = tick_arrays {
-        let mut next_sqrt_price = fusion_pool.sqrt_price;
+    //let mut next_sqrt_price = fusion_pool.sqrt_price;
+    let swap_exact_in: bool;
+    let mut swap_input_amount = 0;
+    let mut swap_output_amount = 0;
 
-        if collateral_token == position_token {
-            if position_debt > 0 {
-                let amount_out = position_debt * decrease_percent as u64 / HUNDRED_PERCENT as u64;
-                let swap = swap_quote_by_output_token(amount_out, borrowed_token == TOKEN_A, 0, fusion_pool, tick_arrays, None, None)?;
-                next_sqrt_price = swap.next_sqrt_price;
-                required_swap_amount = try_get_max_amount_with_slippage_tolerance(swap.token_est_in, slippage_tolerance_bps)?;
+    if collateral_token == position_token {
+        swap_exact_in = false;
+        if position_debt > 0 {
+            swap_output_amount = estimated_payable_debt;
+            if let Some(pool) = pool {
+                let swap =
+                    swap_quote_by_output_token(swap_output_amount, borrowed_token == TOKEN_A, 0, pool.fusion_pool, pool.tick_arrays, None, None)?;
+                swap_input_amount = swap.token_est_in;
+                //next_sqrt_price = swap.next_sqrt_price;
+                required_swap_amount = try_get_max_amount_with_slippage_tolerance(swap.token_est_in, slippage_bps)?;
                 estimated_collateral_to_be_withdrawn = position_amount.saturating_sub(swap.token_est_in).saturating_sub(estimated_amount);
-            } else {
-                estimated_collateral_to_be_withdrawn = position_amount - estimated_amount;
             }
         } else {
-            let amount_in = position_amount - estimated_amount;
-            let swap = swap_quote_by_input_token(amount_in, position_token == TOKEN_A, 0, fusion_pool, tick_arrays, None, None)?;
-            next_sqrt_price = swap.next_sqrt_price;
-            required_swap_amount = try_get_min_amount_with_slippage_tolerance(swap.token_est_out, slippage_tolerance_bps)?;
+            estimated_collateral_to_be_withdrawn = position_amount - estimated_amount;
+        }
+    } else {
+        swap_exact_in = true;
+        swap_input_amount = position_amount - estimated_amount;
+        if let Some(pool) = pool {
+            let swap = swap_quote_by_input_token(swap_input_amount, position_token == TOKEN_A, 0, pool.fusion_pool, pool.tick_arrays, None, None)?;
+            //next_sqrt_price = swap.next_sqrt_price;
+            swap_output_amount = swap.token_est_out;
+            required_swap_amount = try_get_min_amount_with_slippage_tolerance(swap.token_est_out, slippage_bps)?;
             estimated_collateral_to_be_withdrawn = swap.token_est_out.saturating_sub(estimated_payable_debt);
         }
-
-        let new_price = sqrt_price_to_price(next_sqrt_price.into(), 1, 1);
-        price_impact = (new_price / price - 1.0).abs();
-    } else {
-        let (input_mint, output_mint) = if position_token == TOKEN_A { (mint_a, mint_b) } else { (mint_b, mint_a) };
-
-        let amount_in = if collateral_token == position_token {
-            if position_debt > 0 {
-                let mut amount_in = if position_token == TOKEN_A {
-                    (position_debt as f64 / price) as u64
-                } else {
-                    (position_debt as f64 * price) as u64
-                };
-                amount_in = try_get_max_amount_with_slippage_tolerance(amount_in, slippage_tolerance_bps)?;
-                amount_in = amount_in.min(position_amount);
-                estimated_collateral_to_be_withdrawn = position_amount.saturating_sub(amount_in).saturating_sub(estimated_amount);
-                amount_in
-            } else {
-                estimated_collateral_to_be_withdrawn = position_amount - estimated_amount;
-                0
-            }
-        } else {
-            position_amount - estimated_amount
-        };
-
-        if amount_in > 0 {
-            let quote = jupiter_swap_quote(input_mint, output_mint, amount_in, Some(slippage_tolerance_bps as u64)).await?;
-
-            price_impact = quote.price_impact_pct;
-            required_swap_amount = quote.other_amount_threshold;
-            jupiter_swap_ix = Some(SwapInstruction {
-                data: quote.instruction.data,
-                accounts: quote.instruction.accounts,
-                address_lookup_table_addresses: quote.instruction.address_lookup_table_addresses,
-            });
-
-            if collateral_token != position_token {
-                estimated_collateral_to_be_withdrawn = quote.out_amount.saturating_sub(estimated_payable_debt);
-            }
-        }
     }
+
+    //let new_price = sqrt_price_to_price(next_sqrt_price.into(), 1, 1);
+    //let price_impact = (new_price / price - 1.0).abs();
+
+    let price_impact = if swap_input_amount > 0 {
+        if position_token == TOKEN_A {
+            (swap_input_amount as f64 - swap_output_amount as f64 / price) / swap_input_amount as f64
+        } else {
+            (swap_input_amount as f64 - swap_output_amount as f64 * price) / swap_input_amount as f64
+        }
+    } else {
+        0.0
+    };
 
     Ok(DecreaseSpotPositionQuoteResult {
         decrease_percent,
         estimated_payable_debt,
         estimated_collateral_to_be_withdrawn,
+        swap_exact_in,
+        swap_input_amount,
+        swap_output_amount,
         required_swap_amount,
         estimated_amount,
         price_impact,
-        jupiter_swap_ix,
     })
 }
 
@@ -397,13 +461,92 @@ pub async fn get_decrease_spot_position_quote(
 /// # Parameters
 /// - `decrease_amount`: Position total decrease size in the collateral_token.
 /// - `collateral_token`: Collateral token.
-/// - `leverage`: Leverage (1.0 or higher).
-/// - `slippage_tolerance_bps`: An optional slippage tolerance in basis points. Defaults to the global slippage tolerance if not provided.
+/// - `slippage_bps`: An optional slippage tolerance in basis points. Defaults to the global slippage tolerance if not provided.
 /// - `position_token`: Token of the existing position.
 /// - `position_amount`: Existing position amount in the position_token.
 /// - `position_debt`: Existing position debt in the token opposite to the position_token.
 /// - `fusion_pool`: Fusion pool.
-/// - `tick_arrays`: Optional five tick arrays around the current pool price. If not provided, the quote will be calculated using the Jupiter Aggregator.
+/// - `tick_arrays`: Optional five tick arrays around the current pool price.
+///
+/// # Returns
+/// - `DecreaseSpotPositionQuoteResult`: quote result
+#[cfg_attr(feature = "wasm", wasm_expose)]
+pub fn get_decrease_spot_position_quote(
+    decrease_amount: u64,
+    collateral_token: u8,
+    slippage_bps: Option<u16>,
+    position_token: u8,
+    position_amount: u64,
+    position_debt: u64,
+    fusion_pool: FusionPoolFacade,
+    tick_arrays: TickArrays,
+) -> Result<DecreaseSpotPositionQuoteResult, CoreError> {
+    let price = sqrt_price_to_price(fusion_pool.sqrt_price.into(), 1, 1);
+    get_decrease_spot_position_quote_internal(
+        decrease_amount,
+        collateral_token,
+        position_token,
+        position_amount,
+        position_debt,
+        price,
+        Some(SwapPool {
+            fusion_pool,
+            tick_arrays,
+            slippage_bps,
+        }),
+    )
+}
+
+/// Spot position decrease estimation
+///
+/// # Parameters
+/// - `decrease_amount`: Position total decrease size in the collateral_token.
+/// - `collateral_token`: Collateral token.
+/// - `position_token`: Token of the existing position.
+/// - `position_amount`: Existing position amount in the position_token.
+/// - `position_debt`: Existing position debt in the token opposite to the position_token.
+/// - `price`: Pool price.
+///
+/// # Returns
+/// - `DecreaseSpotPositionQuoteResult`: quote result
+#[cfg_attr(feature = "wasm", wasm_expose)]
+pub fn get_decrease_spot_position_estimation(
+    decrease_amount: u64,
+    collateral_token: u8,
+    position_token: u8,
+    position_amount: u64,
+    position_debt: u64,
+    price: f64,
+) -> Result<DecreaseSpotPositionEstimationResult, CoreError> {
+    let quote =
+        get_decrease_spot_position_quote_internal(decrease_amount, collateral_token, position_token, position_amount, position_debt, price, None)?;
+
+    Ok(DecreaseSpotPositionEstimationResult {
+        decrease_percent: quote.decrease_percent,
+        swap_exact_in: quote.swap_exact_in,
+        swap_amount: if quote.swap_exact_in {
+            quote.swap_input_amount
+        } else {
+            quote.swap_output_amount
+        },
+        estimated_amount: quote.estimated_amount,
+        estimated_payable_debt: quote.estimated_payable_debt,
+    })
+}
+
+/*
+/// Spot position decrease quote
+///
+/// # Parameters
+/// - `decrease_amount`: Position total decrease size in the collateral_token.
+/// - `collateral_token`: Collateral token.
+/// - `leverage`: Leverage (1.0 or higher).
+/// - `slippage_bps`: An optional slippage tolerance in basis points. Defaults to the global slippage tolerance if not provided.
+/// - `position_token`: Token of the existing position.
+/// - `position_amount`: Existing position amount in the position_token.
+/// - `position_debt`: Existing position debt in the token opposite to the position_token.
+/// - `fusion_pool`: Fusion pool.
+/// - `tick_arrays`: Optional five tick arrays around the current pool price.
 ///
 /// # Returns
 /// - `DecreaseSpotPositionQuoteResult`: quote result
@@ -413,7 +556,7 @@ pub async fn wasm_get_decrease_spot_position_quote(
     decrease_amount: u64,
     collateral_token: u8,
     leverage: f64,
-    slippage_tolerance_bps: Option<u16>,
+    slippage_bps: Option<u16>,
     position_token: u8,
     position_amount: u64,
     position_debt: u64,
@@ -426,7 +569,7 @@ pub async fn wasm_get_decrease_spot_position_quote(
         decrease_amount,
         collateral_token,
         leverage,
-        slippage_tolerance_bps,
+        slippage_bps,
         position_token,
         position_amount,
         position_debt,
@@ -443,6 +586,7 @@ pub async fn wasm_get_decrease_spot_position_quote(
 
     Ok(js_value)
 }
+*/
 
 /// Returns the liquidation price
 ///
@@ -483,7 +627,8 @@ pub fn get_spot_position_liquidation_price(position_token: u8, amount: u64, debt
 /// - `position_amount`: Existing position amount in the position_token.
 /// - `protocol_fee_rate`: Protocol fee rate from a market account represented as hundredths of a basis point (0.01% = 100).
 /// - `protocol_fee_rate_on_collateral`: Protocol fee rate from a market account represented as hundredths of a basis point (0.01% = 100).
-/// - `fusion_pool`: Fusion pool.
+/// - 'swap_fee_rate': Pool swap fee rate.
+/// - `price`: Pool price.
 /// - `increase`: true if increasing the position
 ///
 /// # Returns
@@ -497,7 +642,8 @@ pub fn get_tradable_amount(
     position_amount: u64,
     protocol_fee_rate: u16,
     protocol_fee_rate_on_collateral: u16,
-    fusion_pool: FusionPoolFacade,
+    swap_fee_rate: u16,
+    price: f64,
     increase: bool,
 ) -> Result<u64, CoreError> {
     if collateral_token > TOKEN_B || position_token > TOKEN_B {
@@ -512,12 +658,12 @@ pub fn get_tradable_amount(
     // B = T⋅(L - 1) / L
     // => T = C⋅Fc⋅Fs / (1 - Fb⋅Fs⋅(L - 1) / L)
     let add_leverage = |collateral: u64| -> Result<u64, CoreError> {
-        let mut collateral = fees::apply_tuna_protocol_fee(collateral, protocol_fee_rate_on_collateral, false)?;
+        let mut collateral = apply_tuna_protocol_fee(collateral, protocol_fee_rate_on_collateral, false)?;
         if collateral_token != position_token {
-            collateral = fees::apply_swap_fee(collateral, fusion_pool.fee_rate, false)?;
+            collateral = apply_swap_fee(collateral, swap_fee_rate, false)?;
         }
 
-        let fee_multiplier = (1.0 - protocol_fee_rate as f64 / HUNDRED_PERCENT as f64) * (1.0 - fusion_pool.fee_rate as f64 / 1_000_000.0);
+        let fee_multiplier = (1.0 - protocol_fee_rate as f64 / HUNDRED_PERCENT as f64) * (1.0 - swap_fee_rate as f64 / 1_000_000.0);
         let total = (collateral as f64 / (1.0 - (fee_multiplier * (leverage - 1.0)) / leverage)) as u64;
         Ok(total)
     };
@@ -525,7 +671,6 @@ pub fn get_tradable_amount(
     let available_to_trade = if increase {
         add_leverage(available_balance)?
     } else {
-        let price = sqrt_price_to_price(fusion_pool.sqrt_price.into(), 1, 1);
         let position_to_opposite_token_price = if position_token == TOKEN_A { price } else { 1.0 / price };
 
         if collateral_token == position_token {
@@ -538,23 +683,30 @@ pub fn get_tradable_amount(
     Ok(available_to_trade)
 }
 
+/*
 struct JupiterSwapResult {
-    pub instruction: SwapInstruction,
+    pub instruction: JupiterSwapInstruction,
     pub out_amount: u64,
     pub other_amount_threshold: u64,
     pub price_impact_pct: f64,
 }
 
-async fn jupiter_swap_quote(input_mint: Pubkey, output_mint: Pubkey, amount: u64, slippage_bps: Option<u64>) -> Result<JupiterSwapResult, CoreError> {
+async fn jupiter_swap_quote(
+    tuna_position_address: Pubkey,
+    input_mint: Pubkey,
+    output_mint: Pubkey,
+    amount: u64,
+    slippage_bps: Option<u64>,
+) -> Result<JupiterSwapResult, CoreError> {
     let quote_config = QuoteConfig {
         slippage_bps,
         swap_mode: Some(SwapMode::ExactIn),
         dexes: None,
-        exclude_dexes: None,
+        exclude_dexes: Some(vec!["Pump.fun Amm".to_string(), "Pump.fun".to_string()]),
         only_direct_routes: false,
         as_legacy_transaction: None,
         platform_fee_bps: None,
-        max_accounts: None,
+        max_accounts: Some(45),
     };
 
     let quote = jup_ag::quote(input_mint, output_mint, amount, quote_config)
@@ -563,7 +715,7 @@ async fn jupiter_swap_quote(input_mint: Pubkey, output_mint: Pubkey, amount: u64
 
     #[allow(deprecated)]
     let swap_request = SwapRequest {
-        user_public_key: Default::default(),
+        user_public_key: tuna_position_address,
         wrap_and_unwrap_sol: None,
         use_shared_accounts: Some(true),
         fee_account: None,
@@ -580,7 +732,7 @@ async fn jupiter_swap_quote(input_mint: Pubkey, output_mint: Pubkey, amount: u64
         .map_err(|_| JUPITER_SWAP_INSTRUCTIONS_REQUEST_ERROR)?;
 
     Ok(JupiterSwapResult {
-        instruction: SwapInstruction {
+        instruction: JupiterSwapInstruction {
             data: swap_response.swap_instruction.data,
             accounts: swap_response.swap_instruction.accounts,
             address_lookup_table_addresses: swap_response.address_lookup_table_addresses,
@@ -590,6 +742,7 @@ async fn jupiter_swap_quote(input_mint: Pubkey, output_mint: Pubkey, amount: u64
         price_impact_pct: quote.price_impact_pct,
     })
 }
+*/
 
 #[cfg_attr(feature = "wasm", wasm_expose)]
 pub fn calculate_tuna_spot_position_protocol_fee(
@@ -621,10 +774,6 @@ mod tests {
     use fusionamm_core::{
         get_tick_array_start_tick_index, price_to_sqrt_price, sqrt_price_to_tick_index, TickArrayFacade, TickFacade, TICK_ARRAY_SIZE,
     };
-    use solana_pubkey::pubkey;
-
-    const NATIVE_MINT: Pubkey = pubkey!("So11111111111111111111111111111111111111112");
-    const TUNA_MINT: Pubkey = pubkey!("TUNAfXDZEdQizTMTh3uEvNvYqJmqFHZbEJt8joP4cyx");
 
     fn test_fusion_pool(sqrt_price: u128) -> FusionPoolFacade {
         let tick_current_index = sqrt_price_to_tick_index(sqrt_price);
@@ -689,12 +838,9 @@ mod tests {
             Some(0),
             (HUNDRED_PERCENT / 100) as u16,
             (HUNDRED_PERCENT / 200) as u16,
-            NATIVE_MINT,
-            TUNA_MINT,
             fusion_pool,
-            Some(test_tick_arrays(fusion_pool)),
+            test_tick_arrays(fusion_pool),
         )
-        .await
         .unwrap();
 
         assert_eq!(quote.collateral, 1057165829);
@@ -703,7 +849,7 @@ mod tests {
         assert_eq!(quote.estimated_amount, 4_999_303_011);
         assert_eq!(quote.protocol_fee_a, 5285829);
         assert_eq!(quote.protocol_fee_b, 8000000);
-        assert_eq!(quote.price_impact, 0.00035316176257027543);
+        assert_eq!(quote.price_impact, 0.0031760073232324137);
         assert_approx_eq!(quote.estimated_amount as f64 / (quote.estimated_amount as f64 - (quote.borrow as f64 * 1000.0) / 200.0), 5.0, 0.1);
     }
 
@@ -720,12 +866,9 @@ mod tests {
             Some(0),
             (HUNDRED_PERCENT / 100) as u16,
             (HUNDRED_PERCENT / 200) as u16,
-            NATIVE_MINT,
-            TUNA_MINT,
             fusion_pool,
-            Some(test_tick_arrays(fusion_pool)),
+            test_tick_arrays(fusion_pool),
         )
-        .await
         .unwrap();
 
         assert_eq!(quote.collateral, 1060346869);
@@ -733,7 +876,7 @@ mod tests {
         assert_eq!(quote.estimated_amount, 24_972_080_293);
         assert_eq!(quote.protocol_fee_a, 0);
         assert_eq!(quote.protocol_fee_b, 45301734);
-        assert_eq!(quote.price_impact, 0.0022373179716579372);
+        assert_eq!(quote.price_impact, 0.004113437834493303);
         assert_approx_eq!(quote.estimated_amount as f64 / (quote.estimated_amount as f64 - (quote.borrow as f64 * 1000.0) / 200.0), 5.0, 0.1);
     }
 
@@ -750,12 +893,9 @@ mod tests {
             Some(0),
             (HUNDRED_PERCENT / 100) as u16,
             (HUNDRED_PERCENT / 200) as u16,
-            NATIVE_MINT,
-            TUNA_MINT,
             fusion_pool,
-            Some(test_tick_arrays(fusion_pool)),
+            test_tick_arrays(fusion_pool),
         )
-        .await
         .unwrap();
 
         assert_eq!(quote.collateral, 1060346869);
@@ -763,7 +903,7 @@ mod tests {
         assert_eq!(quote.estimated_amount, 999_776_441);
         assert_eq!(quote.protocol_fee_a, 45301734);
         assert_eq!(quote.protocol_fee_b, 0);
-        assert_eq!(quote.price_impact, 0.0004470636400017991);
+        assert_eq!(quote.price_impact, 0.003222888242261054);
         assert_approx_eq!(quote.estimated_amount as f64 / (quote.estimated_amount as f64 - (quote.borrow as f64 / 1000.0) * 200.0), 5.0, 0.1);
     }
 
@@ -780,12 +920,9 @@ mod tests {
             Some(0),
             (HUNDRED_PERCENT / 100) as u16,
             (HUNDRED_PERCENT / 200) as u16,
-            NATIVE_MINT,
-            TUNA_MINT,
             fusion_pool,
-            Some(test_tick_arrays(fusion_pool)),
+            test_tick_arrays(fusion_pool),
         )
-        .await
         .unwrap();
 
         assert_eq!(quote.collateral, 1057165829);
@@ -793,7 +930,7 @@ mod tests {
         assert_eq!(quote.estimated_amount, 4996_517_564);
         assert_eq!(quote.protocol_fee_a, 200000000);
         assert_eq!(quote.protocol_fee_b, 5285829);
-        assert_eq!(quote.price_impact, 0.0017633175413067637);
+        assert_eq!(quote.price_impact, 0.0038794030303030305);
         assert_approx_eq!(quote.estimated_amount as f64 / (quote.estimated_amount as f64 - (quote.borrow as f64 / 1000.0) * 200.0), 5.0, 0.1);
     }
 
@@ -803,39 +940,13 @@ mod tests {
         let fusion_pool = test_fusion_pool(sqrt_price);
 
         // with slippage 10%
-        let quote = get_increase_spot_position_quote(
-            200_000,
-            TOKEN_B,
-            TOKEN_A,
-            5.0,
-            Some(1000),
-            0,
-            0,
-            NATIVE_MINT,
-            TUNA_MINT,
-            fusion_pool,
-            Some(test_tick_arrays(fusion_pool)),
-        )
-        .await
-        .unwrap();
+        let quote =
+            get_increase_spot_position_quote(200_000, TOKEN_B, TOKEN_A, 5.0, Some(1000), 0, 0, fusion_pool, test_tick_arrays(fusion_pool)).unwrap();
         assert_eq!(quote.min_swap_output_amount, 899_994);
 
         // without slippage
-        let quote = get_increase_spot_position_quote(
-            200_000,
-            TOKEN_B,
-            TOKEN_A,
-            5.0,
-            Some(0),
-            0,
-            0,
-            NATIVE_MINT,
-            TUNA_MINT,
-            fusion_pool,
-            Some(test_tick_arrays(fusion_pool)),
-        )
-        .await
-        .unwrap();
+        let quote =
+            get_increase_spot_position_quote(200_000, TOKEN_B, TOKEN_A, 5.0, Some(0), 0, 0, fusion_pool, test_tick_arrays(fusion_pool)).unwrap();
         assert_eq!(quote.min_swap_output_amount, 999_994);
     }
 
@@ -847,17 +958,13 @@ mod tests {
         let quote = get_decrease_spot_position_quote(
             1_000_000_000,
             TOKEN_A,
-            1.0,
             Some(0),
             TOKEN_A,
             5_000_000_000, // A
             0,             // B
-            NATIVE_MINT,
-            TUNA_MINT,
             fusion_pool,
-            Some(test_tick_arrays(fusion_pool)),
+            test_tick_arrays(fusion_pool),
         )
-        .await
         .unwrap();
 
         assert_eq!(quote.decrease_percent, 200000);
@@ -875,24 +982,20 @@ mod tests {
         let quote = get_decrease_spot_position_quote(
             200_000_000,
             TOKEN_B,
-            1.0,
             Some(0),
             TOKEN_A,
             5_000_000_000, // A
             0,             // B
-            NATIVE_MINT,
-            TUNA_MINT,
             fusion_pool,
-            Some(test_tick_arrays(fusion_pool)),
+            test_tick_arrays(fusion_pool),
         )
-        .await
         .unwrap();
 
         assert_eq!(quote.decrease_percent, 200000);
         assert_eq!(quote.estimated_amount, 4_000_000_000);
         assert_eq!(quote.estimated_payable_debt, 0);
         assert_eq!(quote.estimated_collateral_to_be_withdrawn, 199_391_108);
-        assert_eq!(quote.price_impact, 0.00008916842709072448);
+        assert_eq!(quote.price_impact, 0.003044459999999881);
     }
 
     #[tokio::test]
@@ -903,43 +1006,57 @@ mod tests {
         let quote = get_decrease_spot_position_quote(
             1_000_000_000,
             TOKEN_A,
-            5.0,
             Some(0),
             TOKEN_A,
             5_000_000_000, // A
             800_000_000,   // B
-            NATIVE_MINT,
-            TUNA_MINT,
             fusion_pool,
-            Some(test_tick_arrays(fusion_pool)),
+            test_tick_arrays(fusion_pool),
         )
-        .await
         .unwrap();
 
         assert_eq!(quote.decrease_percent, 200000);
         assert_eq!(quote.estimated_amount, 4_000_000_000);
         assert_eq!(quote.estimated_payable_debt, 160_000_000);
+        assert_eq!(quote.swap_exact_in, false);
+        assert_eq!(quote.swap_input_amount, 802_435_931);
+        assert_eq!(quote.swap_output_amount, 160_000_000);
         assert_eq!(quote.estimated_collateral_to_be_withdrawn, 197_564_069);
-        assert_eq!(quote.price_impact, 0.00007155289528004705);
+        assert_eq!(quote.price_impact, 0.0030356703954722095);
 
         let quote = get_decrease_spot_position_quote(
             6_000_000_000,
             TOKEN_A,
-            5.0,
             Some(0),
             TOKEN_A,
             5_000_000_000, // A
             800_000_000,   // B
-            NATIVE_MINT,
-            TUNA_MINT,
             fusion_pool,
-            Some(test_tick_arrays(fusion_pool)),
+            test_tick_arrays(fusion_pool),
         )
-        .await
         .unwrap();
 
         assert_eq!(quote.decrease_percent, HUNDRED_PERCENT);
         assert_eq!(quote.estimated_amount, 0);
+    }
+
+    #[tokio::test]
+    async fn decrease_long_position_providing_a_estimation() {
+        let quote = get_decrease_spot_position_estimation(
+            1_000_000_000,
+            TOKEN_A,
+            TOKEN_A,
+            5_000_000_000, // A
+            800_000_000,   // B
+            0.2,
+        )
+        .unwrap();
+
+        assert_eq!(quote.decrease_percent, 200000);
+        assert_eq!(quote.estimated_amount, 4_000_000_000);
+        assert_eq!(quote.estimated_payable_debt, 160_000_000);
+        assert_eq!(quote.swap_exact_in, false);
+        assert_eq!(quote.swap_amount, 160_000_000);
     }
 
     #[tokio::test]
@@ -950,39 +1067,34 @@ mod tests {
         let quote = get_decrease_spot_position_quote(
             200_000_000,
             TOKEN_B,
-            5.0,
             Some(0),
             TOKEN_A,
             5_000_000_000, // A
             800_000_000,   // B
-            NATIVE_MINT,
-            TUNA_MINT,
             fusion_pool,
-            Some(test_tick_arrays(fusion_pool)),
+            test_tick_arrays(fusion_pool),
         )
-        .await
         .unwrap();
 
         assert_eq!(quote.estimated_amount, 4000000000);
         assert_eq!(quote.decrease_percent, 200000);
         assert_eq!(quote.estimated_payable_debt, 160_000_000);
+        assert_eq!(quote.swap_exact_in, true);
+        assert_eq!(quote.swap_input_amount, 1_000_000_000);
+        assert_eq!(quote.swap_output_amount, 199_391_108);
         assert_eq!(quote.estimated_collateral_to_be_withdrawn, 39_391_108);
-        assert_eq!(quote.price_impact, 0.00008916842709072448);
+        assert_eq!(quote.price_impact, 0.003044459999999881);
 
         let quote = get_decrease_spot_position_quote(
             1200_000_000,
             TOKEN_B,
-            5.0,
             Some(0),
             TOKEN_A,
             5_000_000_000, // A
             800_000_000,   // B
-            NATIVE_MINT,
-            TUNA_MINT,
             fusion_pool,
-            Some(test_tick_arrays(fusion_pool)),
+            test_tick_arrays(fusion_pool),
         )
-        .await
         .unwrap();
 
         assert_eq!(quote.estimated_amount, 0);
@@ -992,8 +1104,9 @@ mod tests {
     #[tokio::test]
     async fn tradable_amount_for_1x_long_position_providing_b() {
         let sqrt_price = price_to_sqrt_price(200.0, 9, 6);
+        let price = sqrt_price_to_price(sqrt_price, 1, 1);
         let fusion_pool = test_fusion_pool(sqrt_price);
-        let tick_arrays = Some(test_tick_arrays(fusion_pool));
+        let tick_arrays = test_tick_arrays(fusion_pool);
 
         let collateral_token = TOKEN_B;
         let position_token = TOKEN_A;
@@ -1010,7 +1123,8 @@ mod tests {
             0,
             protocol_fee_rate,
             protocol_fee_rate_on_collateral,
-            fusion_pool,
+            fusion_pool.fee_rate,
+            price,
             true,
         )
         .unwrap();
@@ -1024,12 +1138,9 @@ mod tests {
             Some(0),
             protocol_fee_rate,
             protocol_fee_rate_on_collateral,
-            NATIVE_MINT,
-            TUNA_MINT,
             fusion_pool,
             tick_arrays,
         )
-        .await
         .unwrap();
         assert_eq!(quote.collateral, available_balance);
     }
@@ -1037,8 +1148,9 @@ mod tests {
     #[tokio::test]
     async fn tradable_amount_for_5x_long_position_providing_b() {
         let sqrt_price = price_to_sqrt_price(200.0, 9, 6);
+        let price = sqrt_price_to_price(sqrt_price, 1, 1);
         let fusion_pool = test_fusion_pool(sqrt_price);
-        let tick_arrays = Some(test_tick_arrays(fusion_pool));
+        let tick_arrays = test_tick_arrays(fusion_pool);
 
         let collateral_token = TOKEN_B;
         let position_token = TOKEN_A;
@@ -1055,7 +1167,8 @@ mod tests {
             0,
             protocol_fee_rate,
             protocol_fee_rate_on_collateral,
-            fusion_pool,
+            fusion_pool.fee_rate,
+            price,
             true,
         )
         .unwrap();
@@ -1069,12 +1182,9 @@ mod tests {
             Some(0),
             protocol_fee_rate,
             protocol_fee_rate_on_collateral,
-            NATIVE_MINT,
-            TUNA_MINT,
             fusion_pool,
             tick_arrays,
         )
-        .await
         .unwrap();
         // TODO: fix precision error
         assert_eq!(quote.collateral, available_balance + 1);
@@ -1083,8 +1193,9 @@ mod tests {
     #[tokio::test]
     async fn tradable_amount_for_5x_long_position_providing_a() {
         let sqrt_price = price_to_sqrt_price(200.0, 9, 6);
+        let price = sqrt_price_to_price(sqrt_price, 1, 1);
         let fusion_pool = test_fusion_pool(sqrt_price);
-        let tick_arrays = Some(test_tick_arrays(fusion_pool));
+        let tick_arrays = test_tick_arrays(fusion_pool);
 
         let collateral_token = TOKEN_A;
         let position_token = TOKEN_A;
@@ -1101,7 +1212,8 @@ mod tests {
             0,
             protocol_fee_rate,
             protocol_fee_rate_on_collateral,
-            fusion_pool,
+            fusion_pool.fee_rate,
+            price,
             true,
         )
         .unwrap();
@@ -1115,12 +1227,9 @@ mod tests {
             Some(0),
             protocol_fee_rate,
             protocol_fee_rate_on_collateral,
-            NATIVE_MINT,
-            TUNA_MINT,
             fusion_pool,
             tick_arrays,
         )
-        .await
         .unwrap();
         assert_eq!(quote.collateral, available_balance);
         //assert_eq!(quote.estimated_amount, tradable_amount);
@@ -1129,8 +1238,9 @@ mod tests {
     #[tokio::test]
     async fn tradable_amount_for_5x_short_position_providing_b() {
         let sqrt_price = price_to_sqrt_price(200.0, 9, 6);
+        let price = sqrt_price_to_price(sqrt_price, 1, 1);
         let fusion_pool = test_fusion_pool(sqrt_price);
-        let tick_arrays = Some(test_tick_arrays(fusion_pool));
+        let tick_arrays = test_tick_arrays(fusion_pool);
 
         let collateral_token = TOKEN_B;
         let position_token = TOKEN_B;
@@ -1147,7 +1257,8 @@ mod tests {
             0,
             protocol_fee_rate,
             protocol_fee_rate_on_collateral,
-            fusion_pool,
+            fusion_pool.fee_rate,
+            price,
             true,
         )
         .unwrap();
@@ -1161,12 +1272,9 @@ mod tests {
             Some(0),
             protocol_fee_rate,
             protocol_fee_rate_on_collateral,
-            NATIVE_MINT,
-            TUNA_MINT,
             fusion_pool,
             tick_arrays,
         )
-        .await
         .unwrap();
         // TODO: fix precision error
         assert_eq!(quote.collateral, available_balance + 1);
@@ -1176,8 +1284,9 @@ mod tests {
     #[tokio::test]
     async fn tradable_amount_for_reducing_existing_long_position() {
         let sqrt_price = price_to_sqrt_price(200.0, 9, 6);
+        let price = sqrt_price_to_price(sqrt_price, 1, 1);
         let fusion_pool = test_fusion_pool(sqrt_price);
-        let tick_arrays = Some(test_tick_arrays(fusion_pool));
+        let tick_arrays = test_tick_arrays(fusion_pool);
 
         for i in 0..2 {
             let collateral_token = if i == 0 { TOKEN_A } else { TOKEN_B };
@@ -1197,7 +1306,8 @@ mod tests {
                 position_amount,
                 protocol_fee_rate,
                 protocol_fee_rate_on_collateral,
-                fusion_pool,
+                fusion_pool.fee_rate,
+                price,
                 false,
             )
             .unwrap();
@@ -1206,17 +1316,13 @@ mod tests {
             let quote = get_decrease_spot_position_quote(
                 tradable_amount,
                 collateral_token,
-                5.0,
                 Some(0),
                 position_token,
                 position_amount,
                 position_debt,
-                NATIVE_MINT,
-                TUNA_MINT,
                 fusion_pool,
                 tick_arrays.clone(),
             )
-            .await
             .unwrap();
 
             assert_eq!(quote.estimated_amount, 0);

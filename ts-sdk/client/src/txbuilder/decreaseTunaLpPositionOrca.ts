@@ -24,6 +24,7 @@ import {
 import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
 import {
   fetchAllMaybeMint,
+  fetchMaybeToken,
   findAssociatedTokenPda,
   Mint,
   TOKEN_2022_PROGRAM_ADDRESS,
@@ -35,10 +36,10 @@ import {
   DecreaseTunaLpPositionOrcaInstructionDataArgs,
   DEFAULT_ADDRESS,
   fetchAllVault,
+  fetchMarket,
   fetchMaybeTunaLpPosition,
   getCreateAtaInstructions,
   getDecreaseTunaLpPositionOrcaInstruction,
-  getLendingVaultAddress,
   getMarketAddress,
   getTunaConfigAddress,
   getTunaLpPositionAddress,
@@ -60,6 +61,9 @@ export async function decreaseTunaLpPositionOrcaInstructions(
   createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
 ): Promise<IInstruction[]> {
+  const init: IInstruction[] = [];
+  const cleanup: IInstruction[] = [];
+
   const tunaPosition = await fetchMaybeTunaLpPosition(rpc, (await getTunaLpPositionAddress(positionMint))[0]);
   if (!tunaPosition.exists) throw new Error("Tuna position account not found");
 
@@ -68,10 +72,10 @@ export async function decreaseTunaLpPositionOrcaInstructions(
   const whirlpool = await fetchMaybeWhirlpool(rpc, tunaPosition.data.pool);
   if (!whirlpool.exists) throw new Error("Whirlpool account not found");
 
-  const [vaultA, vaultB] = await fetchAllVault(rpc, [
-    (await getLendingVaultAddress(whirlpool.data.tokenMintA))[0],
-    (await getLendingVaultAddress(whirlpool.data.tokenMintB))[0],
-  ]);
+  const marketAddress = (await getMarketAddress(tunaPosition.data.pool))[0];
+  const market = await fetchMarket(rpc, marketAddress);
+
+  const [vaultA, vaultB] = await fetchAllVault(rpc, [market.data.vaultA, market.data.vaultB]);
 
   const [mintA, mintB, ...rewardMints] = await fetchAllMaybeMint(rpc, [
     whirlpool.data.tokenMintA,
@@ -108,15 +112,6 @@ export async function decreaseTunaLpPositionOrcaInstructions(
     ];
 
   //
-  // Collect the list of instructions.
-  //
-
-  const instructions: IInstruction[] = [];
-  if (!createInstructions) createInstructions = instructions;
-  if (!cleanupInstructions) cleanupInstructions = instructions;
-  const internalCleanupInstructions: IInstruction[] = [];
-
-  //
   // Add token account creation instructions for every mint if needed.
   //
 
@@ -149,10 +144,37 @@ export async function decreaseTunaLpPositionOrcaInstructions(
     const mint = allMints.find(mint => mint.address == mintAddress);
     assert(mint && mint.exists);
 
-    const ixs = await getCreateAtaInstructions(rpc, authority, mint.address, authority.address, mint.programAddress);
+    const ata = (
+      await findAssociatedTokenPda({
+        owner: authority.address,
+        mint: mint.address,
+        tokenProgram: mint.programAddress,
+      })
+    )[0];
 
-    createInstructions.push(...ixs.init);
-    internalCleanupInstructions.push(...ixs.cleanup);
+    const tokenAccount = await fetchMaybeToken(rpc, ata);
+    if (!tokenAccount.exists) {
+      const instructions = await getCreateAtaInstructions(
+        rpc,
+        authority,
+        mint.address,
+        authority.address,
+        mint.programAddress,
+      );
+      init.push(...instructions.init);
+      cleanup.push(...instructions.cleanup);
+    }
+  }
+
+  //
+  // Create the list of instructions
+  //
+  const instructions: IInstruction[] = [];
+
+  if (createInstructions) {
+    createInstructions.push(...init);
+  } else {
+    instructions.push(...init);
   }
 
   //
@@ -177,7 +199,11 @@ export async function decreaseTunaLpPositionOrcaInstructions(
   // Close WSOL accounts if needed.
   //
 
-  cleanupInstructions.push(...internalCleanupInstructions);
+  if (cleanupInstructions) {
+    cleanupInstructions.push(...cleanup);
+  } else {
+    instructions.push(...cleanup);
+  }
 
   return instructions;
 }
@@ -315,8 +341,8 @@ export async function decreaseTunaLpPositionOrcaInstruction(
     market: marketAddress,
     mintA: mintA.address,
     mintB: mintB.address,
-    pythOraclePriceFeedA: vaultA.data.pythOraclePriceUpdate,
-    pythOraclePriceFeedB: vaultB.data.pythOraclePriceUpdate,
+    oraclePriceUpdateA: vaultA.data.oraclePriceUpdate,
+    oraclePriceUpdateB: vaultB.data.oraclePriceUpdate,
     vaultA: vaultA.address,
     vaultAAta,
     vaultB: vaultB.address,

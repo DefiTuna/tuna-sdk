@@ -16,12 +16,12 @@ import {
   fetchTunaConfig,
   fetchTunaSpotPosition,
   fetchVault,
-  getLendingVaultAddress,
   getMarketAddress,
   getTunaConfigAddress,
   getTunaSpotPositionAddress,
   HUNDRED_PERCENT,
   modifyTunaSpotPositionJupiterInstructions,
+  ModifyTunaSpotPositionJupiterInstructionsArgs,
   PoolToken,
 } from "../../src";
 
@@ -80,7 +80,7 @@ export async function modifyTunaSpotPositionJupiter({
     })
   )[0];
 
-  const vaultAAddress = (await getLendingVaultAddress(mintA.address))[0];
+  const vaultAAddress = market.data.vaultA;
   const vaultAAta = (
     await findAssociatedTokenPda({
       owner: vaultAAddress,
@@ -88,7 +88,8 @@ export async function modifyTunaSpotPositionJupiter({
       tokenProgram: mintA.programAddress,
     })
   )[0];
-  const vaultBAddress = (await getLendingVaultAddress(mintB.address))[0];
+
+  const vaultBAddress = market.data.vaultB;
   const vaultBAta = (
     await findAssociatedTokenPda({
       owner: vaultBAddress,
@@ -132,11 +133,11 @@ export async function modifyTunaSpotPositionJupiter({
   const createInstructions: IInstruction[] = [];
   const cleanupInstructions: IInstruction[] = [];
 
-  const modifyArgs = {
+  const modifyArgs: ModifyTunaSpotPositionJupiterInstructionsArgs = {
     decreasePercent,
     borrowAmount,
     collateralAmount,
-    routeData,
+    jupiterRouteData: routeData,
   };
 
   const instructions = await modifyTunaSpotPositionJupiterInstructions(
@@ -144,6 +145,7 @@ export async function modifyTunaSpotPositionJupiter({
     signer,
     poolAddress,
     routeAccounts,
+    [],
     modifyArgs,
     createInstructions,
     cleanupInstructions,

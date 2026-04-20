@@ -8,6 +8,7 @@ import {
   GetMultipleAccountsApi,
   IAccountMeta,
   IInstruction,
+  MaybeAccount,
   Rpc,
   TransactionSigner,
 } from "@solana/kit";
@@ -16,37 +17,43 @@ import { fetchAllMaybeMint, findAssociatedTokenPda, Mint } from "@solana-program
 import assert from "assert";
 
 import {
+  AccountsType,
   fetchAllVault,
   fetchMarket,
   fetchTunaConfig,
-  getCreateAtaInstructions,
-  getLendingVaultAddress,
+  fetchTunaSpotPosition,
   getMarketAddress,
   getModifyTunaSpotPositionJupiterInstruction,
   getTunaConfigAddress,
   getTunaSpotPositionAddress,
-  JUPITER_EVENT_AUTHORITY,
-  JUPITER_PROGRAM_AUTHORITY,
   MarketMaker,
   ModifyTunaSpotPositionJupiterInstructionDataArgs,
   TunaConfig,
+  TunaSpotPosition,
   Vault,
 } from "../index.ts";
+import { getTunaSpotPositionCreateAtaInstructions } from "../utils/tuna.ts";
+
+export type ModifyTunaSpotPositionJupiterInstructionsArgs = Omit<
+  ModifyTunaSpotPositionJupiterInstructionDataArgs,
+  "remainingAccountsInfo"
+>;
 
 export async function modifyTunaSpotPositionJupiterInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
   poolAddress: Address,
-  remainingAccounts: IAccountMeta[],
-  args: ModifyTunaSpotPositionJupiterInstructionDataArgs,
+  jupiterRouteAccounts: IAccountMeta[],
+  intermediateTokenAccountsAndPrograms: IAccountMeta[],
+  args: ModifyTunaSpotPositionJupiterInstructionsArgs,
   createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
 ): Promise<IInstruction[]> {
-  const instructions: IInstruction[] = [];
-  if (!createInstructions) createInstructions = instructions;
-  if (!cleanupInstructions) cleanupInstructions = instructions;
-
   const tunaConfig = await fetchTunaConfig(rpc, (await getTunaConfigAddress())[0]);
+
+  const tunaPositionAddress = (await getTunaSpotPositionAddress(authority.address, poolAddress))[0];
+  const tunaPosition = await fetchTunaSpotPosition(rpc, tunaPositionAddress);
+  const collateralToken = tunaPosition.data.collateralToken;
 
   const marketAddress = (await getMarketAddress(poolAddress))[0];
   const market = await fetchMarket(rpc, marketAddress);
@@ -60,57 +67,32 @@ export async function modifyTunaSpotPositionJupiterInstructions(
   assert(mintA.exists, "Token A account not found");
   assert(mintB.exists, "Token B account not found");
 
-  const [vaultA, vaultB] = await fetchAllVault(rpc, [
-    (await getLendingVaultAddress(mintA.address))[0],
-    (await getLendingVaultAddress(mintB.address))[0],
-  ]);
+  const [vaultA, vaultB] = await fetchAllVault(rpc, [market.data.vaultA, market.data.vaultB]);
 
-  //
-  // Add user's token account creation instructions if needed.
-  //
-
-  const createUserAtaAInstructions = await getCreateAtaInstructions(
+  const { init, cleanup } = await getTunaSpotPositionCreateAtaInstructions(
     rpc,
     authority,
-    mintA.address,
-    authority.address,
-    mintA.programAddress,
+    tunaConfig,
+    tunaPosition as MaybeAccount<TunaSpotPosition>,
+    mintA,
+    mintB,
+    collateralToken,
+    true,
   );
-  createInstructions.push(...createUserAtaAInstructions.init);
-
-  const createUserAtaBInstructions = await getCreateAtaInstructions(
-    rpc,
-    authority,
-    mintB.address,
-    authority.address,
-    mintB.programAddress,
-  );
-  createInstructions.push(...createUserAtaBInstructions.init);
 
   //
-  // Add create fee recipient's token account instructions.
+  // Create the list of instructions
   //
+  const instructions: IInstruction[] = [];
 
-  const createFeeRecipientAtaAInstructions = await getCreateAtaInstructions(
-    rpc,
-    authority,
-    mintA.address,
-    tunaConfig.data.feeRecipient,
-    mintA.programAddress,
-  );
-  createInstructions.push(...createFeeRecipientAtaAInstructions.init);
-
-  const createFeeRecipientAtaBInstructions = await getCreateAtaInstructions(
-    rpc,
-    authority,
-    mintB.address,
-    tunaConfig.data.feeRecipient,
-    mintB.programAddress,
-  );
-  createInstructions.push(...createFeeRecipientAtaBInstructions.init);
+  if (createInstructions) {
+    createInstructions.push(...init);
+  } else {
+    instructions.push(...init);
+  }
 
   //
-  // Finally, add liquidity decrease instruction.
+  // Finally, add the position modify instruction.
   //
 
   const ix = await modifyTunaSpotPositionJupiterInstruction(
@@ -121,7 +103,8 @@ export async function modifyTunaSpotPositionJupiterInstructions(
     vaultA,
     vaultB,
     poolAddress,
-    remainingAccounts,
+    jupiterRouteAccounts,
+    intermediateTokenAccountsAndPrograms,
     { ...args },
   );
   instructions.push(ix);
@@ -130,8 +113,11 @@ export async function modifyTunaSpotPositionJupiterInstructions(
   // Close WSOL accounts if needed.
   //
 
-  if (createUserAtaAInstructions) cleanupInstructions.push(...createUserAtaAInstructions.cleanup);
-  if (createUserAtaBInstructions) cleanupInstructions.push(...createUserAtaBInstructions.cleanup);
+  if (cleanupInstructions) {
+    cleanupInstructions.push(...cleanup);
+  } else {
+    instructions.push(...cleanup);
+  }
 
   return instructions;
 }
@@ -144,8 +130,9 @@ export async function modifyTunaSpotPositionJupiterInstruction(
   vaultA: Account<Vault>,
   vaultB: Account<Vault>,
   poolAddress: Address,
-  remainingAccounts: IAccountMeta[],
-  args: ModifyTunaSpotPositionJupiterInstructionDataArgs,
+  jupiterRouteAccounts: IAccountMeta[],
+  intermediateTokenAccountsAndPrograms: IAccountMeta[],
+  args: ModifyTunaSpotPositionJupiterInstructionsArgs,
 ): Promise<IInstruction> {
   const marketAddress = (await getMarketAddress(poolAddress))[0];
   const tunaPositionAddress = (await getTunaSpotPositionAddress(authority.address, poolAddress))[0];
@@ -214,6 +201,19 @@ export async function modifyTunaSpotPositionJupiterInstruction(
     })
   )[0];
 
+  const remainingAccountsInfo = {
+    slices: [{ accountsType: AccountsType.JupiterRoute, length: jupiterRouteAccounts.length }],
+  };
+
+  if (intermediateTokenAccountsAndPrograms.length > 0) {
+    remainingAccountsInfo.slices.push({
+      accountsType: AccountsType.JupiterIntermediateTokenAccounts,
+      length: intermediateTokenAccountsAndPrograms.length,
+    });
+  }
+
+  const remainingAccounts: IAccountMeta[] = [...jupiterRouteAccounts, ...intermediateTokenAccountsAndPrograms];
+
   const ix = getModifyTunaSpotPositionJupiterInstruction({
     authority,
     tunaConfig: tunaConfig.address,
@@ -222,8 +222,8 @@ export async function modifyTunaSpotPositionJupiterInstruction(
     tokenProgramA: mintA.programAddress,
     tokenProgramB: mintB.programAddress,
     market: marketAddress,
-    pythOraclePriceFeedA: vaultA.data.pythOraclePriceUpdate,
-    pythOraclePriceFeedB: vaultB.data.pythOraclePriceUpdate,
+    oraclePriceUpdateA: vaultA.data.oraclePriceUpdate,
+    oraclePriceUpdateB: vaultB.data.oraclePriceUpdate,
     vaultA: vaultA.address,
     vaultAAta,
     vaultB: vaultB.address,
@@ -237,10 +237,9 @@ export async function modifyTunaSpotPositionJupiterInstruction(
     feeRecipientAtaB,
     pool: poolAddress,
     jupiterProgram: JUPITER_PROGRAM_ADDRESS,
-    jupiterEventAuthority: JUPITER_EVENT_AUTHORITY,
-    jupiterProgramAuthority: JUPITER_PROGRAM_AUTHORITY,
     memoProgram: MEMO_PROGRAM_ADDRESS,
     ...args,
+    remainingAccountsInfo,
   });
 
   // @ts-expect-error don't worry about the error

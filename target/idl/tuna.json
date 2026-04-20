@@ -2,7 +2,7 @@
   "address": "tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD",
   "metadata": {
     "name": "tuna",
-    "version": "3.5.1",
+    "version": "3.6.17",
     "spec": "0.1.0",
     "description": "DefiTuna"
   },
@@ -295,10 +295,10 @@
           "writable": true
         },
         {
-          "name": "pyth_oracle_price_feed_a"
+          "name": "oracle_price_update_a"
         },
         {
-          "name": "pyth_oracle_price_feed_b"
+          "name": "oracle_price_update_b"
         },
         {
           "name": "fusionamm_program",
@@ -419,10 +419,10 @@
           "writable": true
         },
         {
-          "name": "pyth_oracle_price_feed_a"
+          "name": "oracle_price_update_a"
         },
         {
-          "name": "pyth_oracle_price_feed_b"
+          "name": "oracle_price_update_b"
         },
         {
           "name": "whirlpool_program",
@@ -836,16 +836,16 @@
       ]
     },
     {
-      "name": "create_market_v2",
+      "name": "create_market_permissionless",
       "discriminator": [
-        193,
-        18,
-        155,
-        62,
-        161,
-        124,
-        80,
-        25
+        72,
+        192,
+        190,
+        142,
+        105,
+        151,
+        2,
+        80
       ],
       "accounts": [
         {
@@ -877,9 +877,72 @@
         {
           "name": "address_lookup_table",
           "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "create_price_update",
+      "discriminator": [
+        208,
+        133,
+        231,
+        16,
+        140,
+        135,
+        239,
+        239
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
         },
         {
-          "name": "max_leverage",
+          "name": "tuna_config"
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "price_update",
+          "writable": true
+        },
+        {
+          "name": "system_program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "create_referral",
+      "discriminator": [
+        61,
+        17,
+        240,
+        245,
+        172,
+        66,
+        159,
+        232
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "referral",
+          "writable": true
+        },
+        {
+          "name": "system_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "referral_id",
           "type": "u32"
         }
       ]
@@ -924,6 +987,10 @@
         },
         {
           "name": "liquidator_authority",
+          "type": "pubkey"
+        },
+        {
+          "name": "oracle_price_update_authority",
           "type": "pubkey"
         },
         {
@@ -981,7 +1048,7 @@
           "type": "u64"
         },
         {
-          "name": "pyth_oracle_price_update",
+          "name": "oracle_price_update",
           "type": "pubkey"
         },
         {
@@ -995,16 +1062,16 @@
       ]
     },
     {
-      "name": "create_vault_v2",
+      "name": "create_vault_permissionless",
       "discriminator": [
-        149,
-        224,
-        90,
-        50,
-        87,
-        159,
-        31,
-        221
+        85,
+        69,
+        196,
+        28,
+        252,
+        85,
+        47,
+        3
       ],
       "accounts": [
         {
@@ -1035,28 +1102,12 @@
       ],
       "args": [
         {
-          "name": "id",
-          "type": "u32"
+          "name": "market",
+          "type": "pubkey"
         },
         {
           "name": "interest_rate",
           "type": "u64"
-        },
-        {
-          "name": "supply_limit",
-          "type": "u64"
-        },
-        {
-          "name": "pyth_oracle_price_update",
-          "type": "pubkey"
-        },
-        {
-          "name": "pyth_oracle_feed_id",
-          "type": "pubkey"
-        },
-        {
-          "name": "allow_unsafe_token_extensions",
-          "type": "bool"
         }
       ]
     },
@@ -1143,10 +1194,10 @@
           "writable": true
         },
         {
-          "name": "pyth_oracle_price_feed_a"
+          "name": "oracle_price_update_a"
         },
         {
-          "name": "pyth_oracle_price_feed_b"
+          "name": "oracle_price_update_b"
         },
         {
           "name": "fusionamm_program",
@@ -1282,10 +1333,10 @@
           "writable": true
         },
         {
-          "name": "pyth_oracle_price_feed_a"
+          "name": "oracle_price_update_a"
         },
         {
-          "name": "pyth_oracle_price_feed_b"
+          "name": "oracle_price_update_b"
         },
         {
           "name": "whirlpool_program",
@@ -1495,10 +1546,10 @@
           "writable": true
         },
         {
-          "name": "pyth_oracle_price_feed_a"
+          "name": "oracle_price_update_a"
         },
         {
-          "name": "pyth_oracle_price_feed_b"
+          "name": "oracle_price_update_b"
         },
         {
           "name": "fusionamm_program",
@@ -1652,10 +1703,10 @@
           "writable": true
         },
         {
-          "name": "pyth_oracle_price_feed_a"
+          "name": "oracle_price_update_a"
         },
         {
-          "name": "pyth_oracle_price_feed_b"
+          "name": "oracle_price_update_b"
         },
         {
           "name": "whirlpool_program",
@@ -1813,10 +1864,10 @@
           "writable": true
         },
         {
-          "name": "pyth_oracle_price_feed_a"
+          "name": "oracle_price_update_a"
         },
         {
-          "name": "pyth_oracle_price_feed_b"
+          "name": "oracle_price_update_b"
         },
         {
           "name": "fusionamm_program",
@@ -1842,6 +1893,146 @@
         {
           "name": "decrease_percent",
           "type": "u32"
+        },
+        {
+          "name": "remaining_accounts_info",
+          "type": {
+            "defined": {
+              "name": "RemainingAccountsInfo"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "liquidate_tuna_lp_position_fusion_jupiter",
+      "discriminator": [
+        112,
+        245,
+        157,
+        163,
+        189,
+        51,
+        135,
+        235
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "docs": [
+            "",
+            "TUNA accounts",
+            ""
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tuna_config"
+        },
+        {
+          "name": "mint_a"
+        },
+        {
+          "name": "mint_b"
+        },
+        {
+          "name": "token_program_a"
+        },
+        {
+          "name": "token_program_b"
+        },
+        {
+          "name": "market",
+          "writable": true
+        },
+        {
+          "name": "vault_a",
+          "writable": true
+        },
+        {
+          "name": "vault_b",
+          "writable": true
+        },
+        {
+          "name": "vault_a_ata",
+          "writable": true
+        },
+        {
+          "name": "vault_b_ata",
+          "writable": true
+        },
+        {
+          "name": "tuna_position",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_a",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_b",
+          "writable": true
+        },
+        {
+          "name": "fee_recipient_ata_a",
+          "writable": true
+        },
+        {
+          "name": "fee_recipient_ata_b",
+          "writable": true
+        },
+        {
+          "name": "oracle_price_update_a"
+        },
+        {
+          "name": "oracle_price_update_b"
+        },
+        {
+          "name": "fusionamm_program",
+          "docs": [
+            "",
+            "Fusion accounts",
+            ""
+          ]
+        },
+        {
+          "name": "fusion_pool",
+          "writable": true
+        },
+        {
+          "name": "fusion_position",
+          "writable": true
+        },
+        {
+          "name": "jupiter_program",
+          "docs": [
+            "",
+            "Jupiter accounts",
+            ""
+          ]
+        },
+        {
+          "name": "memo_program",
+          "docs": [
+            "",
+            "Other accounts",
+            ""
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "decrease_percent",
+          "type": "u32"
+        },
+        {
+          "name": "jupiter_route_data",
+          "type": "bytes"
         },
         {
           "name": "remaining_accounts_info",
@@ -1930,10 +2121,10 @@
           "writable": true
         },
         {
-          "name": "pyth_oracle_price_feed_a"
+          "name": "oracle_price_update_a"
         },
         {
-          "name": "pyth_oracle_price_feed_b"
+          "name": "oracle_price_update_b"
         },
         {
           "name": "whirlpool_program",
@@ -1965,6 +2156,146 @@
         {
           "name": "decrease_percent",
           "type": "u32"
+        },
+        {
+          "name": "remaining_accounts_info",
+          "type": {
+            "defined": {
+              "name": "RemainingAccountsInfo"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "liquidate_tuna_lp_position_orca_jupiter",
+      "discriminator": [
+        81,
+        70,
+        125,
+        199,
+        247,
+        134,
+        118,
+        112
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "docs": [
+            "",
+            "TUNA accounts",
+            ""
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tuna_config"
+        },
+        {
+          "name": "mint_a"
+        },
+        {
+          "name": "mint_b"
+        },
+        {
+          "name": "token_program_a"
+        },
+        {
+          "name": "token_program_b"
+        },
+        {
+          "name": "market",
+          "writable": true
+        },
+        {
+          "name": "vault_a",
+          "writable": true
+        },
+        {
+          "name": "vault_b",
+          "writable": true
+        },
+        {
+          "name": "vault_a_ata",
+          "writable": true
+        },
+        {
+          "name": "vault_b_ata",
+          "writable": true
+        },
+        {
+          "name": "tuna_position",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_a",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_b",
+          "writable": true
+        },
+        {
+          "name": "fee_recipient_ata_a",
+          "writable": true
+        },
+        {
+          "name": "fee_recipient_ata_b",
+          "writable": true
+        },
+        {
+          "name": "oracle_price_update_a"
+        },
+        {
+          "name": "oracle_price_update_b"
+        },
+        {
+          "name": "whirlpool_program",
+          "docs": [
+            "",
+            "ORCA accounts",
+            ""
+          ]
+        },
+        {
+          "name": "whirlpool",
+          "writable": true
+        },
+        {
+          "name": "orca_position",
+          "writable": true
+        },
+        {
+          "name": "jupiter_program",
+          "docs": [
+            "",
+            "Jupiter accounts",
+            ""
+          ]
+        },
+        {
+          "name": "memo_program",
+          "docs": [
+            "",
+            "Other accounts",
+            ""
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "decrease_percent",
+          "type": "u32"
+        },
+        {
+          "name": "jupiter_route_data",
+          "type": "bytes"
         },
         {
           "name": "remaining_accounts_info",
@@ -2069,10 +2400,10 @@
           "optional": true
         },
         {
-          "name": "pyth_oracle_price_feed_a"
+          "name": "oracle_price_update_a"
         },
         {
-          "name": "pyth_oracle_price_feed_b"
+          "name": "oracle_price_update_b"
         },
         {
           "name": "fusionamm_program",
@@ -2204,10 +2535,10 @@
           "writable": true
         },
         {
-          "name": "pyth_oracle_price_feed_a"
+          "name": "oracle_price_update_a"
         },
         {
-          "name": "pyth_oracle_price_feed_b"
+          "name": "oracle_price_update_b"
         },
         {
           "name": "pool"
@@ -2221,21 +2552,12 @@
           ]
         },
         {
-          "name": "jupiter_event_authority"
-        },
-        {
-          "name": "jupiter_program_authority"
-        },
-        {
-          "name": "token_program",
+          "name": "memo_program",
           "docs": [
             "",
             "Other accounts",
             ""
           ]
-        },
-        {
-          "name": "memo_program"
         },
         {
           "name": "system_program"
@@ -2247,8 +2569,16 @@
           "type": "u32"
         },
         {
-          "name": "route_data",
+          "name": "jupiter_route_data",
           "type": "bytes"
+        },
+        {
+          "name": "remaining_accounts_info",
+          "type": {
+            "defined": {
+              "name": "RemainingAccountsInfo"
+            }
+          }
         }
       ]
     },
@@ -2345,10 +2675,10 @@
           "optional": true
         },
         {
-          "name": "pyth_oracle_price_feed_a"
+          "name": "oracle_price_update_a"
         },
         {
-          "name": "pyth_oracle_price_feed_b"
+          "name": "oracle_price_update_b"
         },
         {
           "name": "whirlpool_program",
@@ -2478,10 +2808,10 @@
           "writable": true
         },
         {
-          "name": "pyth_oracle_price_feed_a"
+          "name": "oracle_price_update_a"
         },
         {
-          "name": "pyth_oracle_price_feed_b"
+          "name": "oracle_price_update_b"
         },
         {
           "name": "fusionamm_program",
@@ -2621,30 +2951,16 @@
           "writable": true
         },
         {
-          "name": "pyth_oracle_price_feed_a"
+          "name": "oracle_price_update_a"
         },
         {
-          "name": "pyth_oracle_price_feed_b"
+          "name": "oracle_price_update_b"
         },
         {
           "name": "pool"
         },
         {
           "name": "jupiter_program",
-          "docs": [
-            "",
-            "Jupiter accounts",
-            ""
-          ]
-        },
-        {
-          "name": "jupiter_event_authority"
-        },
-        {
-          "name": "jupiter_program_authority"
-        },
-        {
-          "name": "token_program",
           "docs": [
             "",
             "Other accounts",
@@ -2672,8 +2988,16 @@
           "type": "u64"
         },
         {
-          "name": "route_data",
+          "name": "jupiter_route_data",
           "type": "bytes"
+        },
+        {
+          "name": "remaining_accounts_info",
+          "type": {
+            "defined": {
+              "name": "RemainingAccountsInfo"
+            }
+          }
         }
       ]
     },
@@ -2766,10 +3090,10 @@
           "writable": true
         },
         {
-          "name": "pyth_oracle_price_feed_a"
+          "name": "oracle_price_update_a"
         },
         {
-          "name": "pyth_oracle_price_feed_b"
+          "name": "oracle_price_update_b"
         },
         {
           "name": "whirlpool_program",
@@ -2918,10 +3242,10 @@
           "writable": true
         },
         {
-          "name": "pyth_oracle_price_feed_a"
+          "name": "oracle_price_update_a"
         },
         {
-          "name": "pyth_oracle_price_feed_b"
+          "name": "oracle_price_update_b"
         },
         {
           "name": "fusionamm_program",
@@ -3109,10 +3433,10 @@
           "writable": true
         },
         {
-          "name": "pyth_oracle_price_feed_a"
+          "name": "oracle_price_update_a"
         },
         {
-          "name": "pyth_oracle_price_feed_b"
+          "name": "oracle_price_update_b"
         },
         {
           "name": "whirlpool_program",
@@ -3205,6 +3529,160 @@
         {
           "name": "max_swap_slippage",
           "type": "u32"
+        },
+        {
+          "name": "remaining_accounts_info",
+          "type": {
+            "defined": {
+              "name": "RemainingAccountsInfo"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "open_and_increase_tuna_spot_position_jupiter",
+      "discriminator": [
+        59,
+        245,
+        190,
+        65,
+        95,
+        31,
+        61,
+        131
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "docs": [
+            "",
+            "TUNA accounts",
+            ""
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tuna_config"
+        },
+        {
+          "name": "mint_a"
+        },
+        {
+          "name": "mint_b"
+        },
+        {
+          "name": "token_program_a"
+        },
+        {
+          "name": "token_program_b"
+        },
+        {
+          "name": "market",
+          "writable": true
+        },
+        {
+          "name": "vault_a",
+          "writable": true
+        },
+        {
+          "name": "vault_b",
+          "writable": true
+        },
+        {
+          "name": "vault_a_ata",
+          "writable": true
+        },
+        {
+          "name": "vault_b_ata",
+          "writable": true
+        },
+        {
+          "name": "tuna_position",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_a",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_ata_b",
+          "writable": true
+        },
+        {
+          "name": "tuna_position_owner_ata_a",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "tuna_position_owner_ata_b",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "fee_recipient_ata_a",
+          "writable": true
+        },
+        {
+          "name": "fee_recipient_ata_b",
+          "writable": true
+        },
+        {
+          "name": "oracle_price_update_a"
+        },
+        {
+          "name": "oracle_price_update_b"
+        },
+        {
+          "name": "pool"
+        },
+        {
+          "name": "jupiter_program",
+          "docs": [
+            "",
+            "Other accounts",
+            ""
+          ]
+        },
+        {
+          "name": "memo_program"
+        },
+        {
+          "name": "system_program"
+        },
+        {
+          "name": "associated_token_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "position_token",
+          "type": {
+            "defined": {
+              "name": "PoolToken"
+            }
+          }
+        },
+        {
+          "name": "collateral_token",
+          "type": {
+            "defined": {
+              "name": "PoolToken"
+            }
+          }
+        },
+        {
+          "name": "collateral_amount",
+          "type": "u64"
+        },
+        {
+          "name": "borrow_amount",
+          "type": "u64"
+        },
+        {
+          "name": "jupiter_route_data",
+          "type": "bytes"
         },
         {
           "name": "remaining_accounts_info",
@@ -3678,10 +4156,10 @@
           "writable": true
         },
         {
-          "name": "pyth_oracle_price_feed_a"
+          "name": "oracle_price_update_a"
         },
         {
-          "name": "pyth_oracle_price_feed_b"
+          "name": "oracle_price_update_b"
         },
         {
           "name": "fusionamm_program",
@@ -3783,10 +4261,10 @@
           "writable": true
         },
         {
-          "name": "pyth_oracle_price_feed_a"
+          "name": "oracle_price_update_a"
         },
         {
-          "name": "pyth_oracle_price_feed_b"
+          "name": "oracle_price_update_b"
         },
         {
           "name": "whirlpool_program",
@@ -3975,6 +4453,42 @@
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "reset_market_bad_debt",
+      "discriminator": [
+        157,
+        174,
+        126,
+        44,
+        249,
+        40,
+        241,
+        118
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tuna_config"
+        },
+        {
+          "name": "market",
+          "writable": true
+        },
+        {
+          "name": "vault_a",
+          "writable": true
+        },
+        {
+          "name": "vault_b",
+          "writable": true
+        }
+      ],
+      "args": []
     },
     {
       "name": "reset_tuna_spot_position",
@@ -4302,6 +4816,36 @@
       ]
     },
     {
+      "name": "set_oracle_price_update_authority",
+      "discriminator": [
+        49,
+        159,
+        223,
+        232,
+        251,
+        238,
+        142,
+        82
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tuna_config",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "oracle_price_update_authority",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
       "name": "set_owner_authority",
       "discriminator": [
         128,
@@ -4587,6 +5131,41 @@
       ]
     },
     {
+      "name": "update_oracle_price",
+      "discriminator": [
+        14,
+        35,
+        163,
+        150,
+        65,
+        116,
+        149,
+        154
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tuna_config"
+        }
+      ],
+      "args": [
+        {
+          "name": "price_updates",
+          "type": {
+            "vec": {
+              "defined": {
+                "name": "OraclePriceUpdate"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "update_vault",
       "discriminator": [
         67,
@@ -4622,7 +5201,7 @@
           "type": "u64"
         },
         {
-          "name": "pyth_oracle_price_update",
+          "name": "oracle_price_update",
           "type": "pubkey"
         },
         {
@@ -4731,6 +5310,19 @@
       ]
     },
     {
+      "name": "Referral",
+      "discriminator": [
+        30,
+        235,
+        136,
+        224,
+        106,
+        107,
+        49,
+        64
+      ]
+    },
+    {
       "name": "TunaConfig",
       "discriminator": [
         124,
@@ -4754,6 +5346,19 @@
         15,
         137,
         220
+      ]
+    },
+    {
+      "name": "TunaPriceUpdate",
+      "discriminator": [
+        193,
+        112,
+        132,
+        25,
+        179,
+        141,
+        85,
+        143
       ]
     },
     {
@@ -4916,6 +5521,11 @@
       "code": 6620,
       "name": "OraclePriceDeviationThresholdOutOfRange",
       "msg": "Oracle price deviation threshold out of range"
+    },
+    {
+      "code": 6621,
+      "name": "InvalidPriceUpdateAccount",
+      "msg": "Invalid oracle price update account"
     },
     {
       "code": 6622,
@@ -5089,28 +5699,48 @@
     },
     {
       "code": 6673,
-      "name": "InvalidJupiterRoute",
-      "msg": "Invalid jupiter route data"
+      "name": "AccountNotInitialized",
+      "msg": "Account is not initialized"
     },
     {
       "code": 6674,
-      "name": "InsufficientSwapOutputAmount",
-      "msg": "Insufficient swap output amount"
+      "name": "PositionLocked",
+      "msg": "Position is locked"
     },
     {
       "code": 6675,
-      "name": "IncorrectSwapInputAmount",
+      "name": "LeveragedLockedPositionNotAllowed",
+      "msg": "Leveraged locked position is not allowed"
+    },
+    {
+      "code": 6700,
+      "name": "InvalidJupiterCreateTokenAccountInstructionData",
+      "msg": "Invalid jupiter create token account instruction data"
+    },
+    {
+      "code": 6701,
+      "name": "InvalidJupiterCreateTokenAccountUserAccount",
+      "msg": "Invalid jupiter create token account instruction user account"
+    },
+    {
+      "code": 6702,
+      "name": "InvalidJupiterRouteInstructionData",
+      "msg": "Invalid jupiter route instruction data"
+    },
+    {
+      "code": 6703,
+      "name": "InvalidJupiterRouteUserAccount",
+      "msg": "Invalid jupiter route instruction user account"
+    },
+    {
+      "code": 6704,
+      "name": "InsufficientJupiterSwapOutputAmount",
+      "msg": "Insufficient swap output amount"
+    },
+    {
+      "code": 6705,
+      "name": "IncorrectJupiterSwapInputAmount",
       "msg": "Incorrect swap input amount"
-    },
-    {
-      "code": 6676,
-      "name": "IncorrectSwapOutputAmount",
-      "msg": "Incorrect swap output amount"
-    },
-    {
-      "code": 6677,
-      "name": "AccountNotInitialized",
-      "msg": "Account is not initialized"
     }
   ],
   "types": [
@@ -5145,6 +5775,12 @@
           },
           {
             "name": "SecondaryTickArrayUpper"
+          },
+          {
+            "name": "JupiterRoute"
+          },
+          {
+            "name": "JupiterIntermediateTokenAccounts"
           }
         ]
       }
@@ -5335,7 +5971,7 @@
           {
             "name": "vault",
             "docs": [
-              "The vault therwise Pubkey::default()."
+              "The vault or Pubkey::default() for v1 positions."
             ],
             "type": "pubkey"
           },
@@ -5530,6 +6166,27 @@
             "type": "pubkey"
           },
           {
+            "name": "bad_debt_a",
+            "docs": [
+              "Bad debt size in token A."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "bad_debt_b",
+            "docs": [
+              "Bad debt size in token B."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "authority",
+            "docs": [
+              "Market creator authority or Pubkey::default() for non-permissionless markets"
+            ],
+            "type": "pubkey"
+          },
+          {
             "name": "reserved",
             "docs": [
               "Reserved"
@@ -5537,7 +6194,7 @@
             "type": {
               "array": [
                 "u8",
-                127
+                79
               ]
             }
           }
@@ -5562,6 +6219,22 @@
       }
     },
     {
+      "name": "OraclePriceUpdate",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "price",
+            "type": "i64"
+          },
+          {
+            "name": "exponent",
+            "type": "i32"
+          }
+        ]
+      }
+    },
+    {
       "name": "PoolToken",
       "repr": {
         "kind": "rust"
@@ -5574,6 +6247,47 @@
           },
           {
             "name": "B"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Referral",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "docs": [
+              "User authority"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "timestamp",
+            "docs": [
+              "Unix timestamp when the account was created"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "referral_id",
+            "docs": [
+              "Referral id"
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "reserved",
+            "docs": [
+              "Reserved"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                48
+              ]
+            }
           }
         ]
       }
@@ -5734,6 +6448,13 @@
             "type": "u32"
           },
           {
+            "name": "oracle_price_update_authority",
+            "docs": [
+              "Oracle price update authority address"
+            ],
+            "type": "pubkey"
+          },
+          {
             "name": "reserved",
             "docs": [
               "Reserved"
@@ -5741,7 +6462,7 @@
             "type": {
               "array": [
                 "u8",
-                166
+                134
               ]
             }
           }
@@ -5926,10 +6647,7 @@
           {
             "name": "flags",
             "docs": [
-              "Position options.",
-              "Bits 0..1: Stop loss swap. 0 - no swap, 1 - swap to token A, 2 - swap to token B",
-              "Bits 2..3: Take profit swap. 0 - no swap, 1 - swap to token A, 2 - swap to token B",
-              "Bits 4..5: Yield auto compounding. 0 - don't compound, 1 - compound yield, 2 - compound yield with leverage"
+              "Position options."
             ],
             "type": "u32"
           },
@@ -6004,6 +6722,41 @@
           },
           {
             "name": "ClosedByLimitOrder"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TunaPriceUpdate",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "price",
+            "type": "i64"
+          },
+          {
+            "name": "exponent",
+            "type": "i32"
+          },
+          {
+            "name": "publish_time",
+            "docs": [
+              "The timestamp of this price update in seconds"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "reserved",
+            "docs": [
+              "Reserved"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
           }
         ]
       }
@@ -6245,7 +6998,7 @@
             "type": "u64"
           },
           {
-            "name": "pyth_oracle_price_update",
+            "name": "oracle_price_update",
             "docs": [
               "Pyth oracle price update account."
             ],
@@ -6259,11 +7012,19 @@
             "type": "pubkey"
           },
           {
-            "name": "id",
+            "name": "authority",
             "docs": [
-              "Unique ID of the vault, used for seeds like a bump. Only applicable to isolated vaults and should be zero for default vaults."
+              "Authority that created this Vault. Should be set for permissionless vaults, otherwise Pubkey::default()."
             ],
-            "type": "u32"
+            "type": "pubkey"
+          },
+          {
+            "name": "market",
+            "docs": [
+              "The market address that the vault is associated with. Used to compute seeds.",
+              "Applicable only to isolated vaults and should be zero for default vaults."
+            ],
+            "type": "pubkey"
           },
           {
             "name": "reserved",
@@ -6273,7 +7034,7 @@
             "type": {
               "array": [
                 "u8",
-                180
+                120
               ]
             }
           }

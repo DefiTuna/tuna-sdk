@@ -1,7 +1,7 @@
-use crate::accounts::{fetch_all_vault, fetch_tuna_lp_position};
+use crate::accounts::{fetch_all_vault, fetch_market, fetch_tuna_lp_position};
 use crate::utils::get_create_ata_instructions;
 use crate::{
-    close_tuna_lp_position_orca_instruction, decrease_tuna_lp_position_orca_instruction, get_tuna_liquidity_position_address, get_vault_address,
+    close_tuna_lp_position_orca_instruction, decrease_tuna_lp_position_orca_instruction, get_market_address, get_tuna_liquidity_position_address,
     CloseActiveTunaLpPositionArgs, DecreaseTunaLpPositionArgs, HUNDRED_PERCENT,
 };
 use anyhow::{anyhow, Result};
@@ -23,7 +23,10 @@ pub fn close_active_tuna_lp_position_orca_instructions(
     let mint_a_address = whirlpool.data.token_mint_a;
     let mint_b_address = whirlpool.data.token_mint_b;
 
-    let vaults = fetch_all_vault(&rpc, &[get_vault_address(&mint_a_address).0, get_vault_address(&mint_b_address).0])?;
+    let market_address = get_market_address(&tuna_position.data.pool).0;
+    let market = fetch_market(&rpc, &market_address)?;
+
+    let vaults = fetch_all_vault(&rpc, &[market.data.vault_a, market.data.vault_b])?;
     let (vault_a, vault_b) = (&vaults[0], &vaults[1]);
 
     let mut all_mint_addresses = vec![mint_a_address, mint_b_address];
@@ -47,7 +50,9 @@ pub fn close_active_tuna_lp_position_orca_instructions(
     instructions.push(decrease_tuna_lp_position_orca_instruction(
         authority,
         &tuna_position.data,
+        &vault_a.address,
         &vault_a.data,
+        &vault_b.address,
         &vault_b.data,
         &whirlpool.data,
         &mint_a_account.owner,

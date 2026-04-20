@@ -31,12 +31,11 @@ import assert from "assert";
 import {
   AccountsType,
   fetchAllVault,
+  fetchMarket,
   fetchMaybeTunaLpPosition,
   fetchTunaConfig,
   FusionUtils,
-  getCreateAtaInstructions,
   getIncreaseTunaLpPositionFusionInstruction,
-  getLendingVaultAddress,
   getMarketAddress,
   getTunaConfigAddress,
   getTunaLpPositionAddress,
@@ -45,6 +44,7 @@ import {
   TunaLpPosition,
   Vault,
 } from "../index.ts";
+import { getTunaLpPositionCreateAtaInstructions } from "../utils/tuna.ts";
 
 export type IncreaseTunaLpPositionFusionInstructionsArgs = Omit<
   IncreaseTunaLpPositionFusionInstructionDataArgs,
@@ -59,10 +59,6 @@ export async function increaseTunaLpPositionFusionInstructions(
   createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
 ): Promise<IInstruction[]> {
-  const instructions: IInstruction[] = [];
-  if (!createInstructions) createInstructions = instructions;
-  if (!cleanupInstructions) cleanupInstructions = instructions;
-
   const tunaConfig = await fetchTunaConfig(rpc, (await getTunaConfigAddress())[0]);
 
   const tunaPosition = await fetchMaybeTunaLpPosition(rpc, (await getTunaLpPositionAddress(positionMint))[0]);
@@ -71,58 +67,34 @@ export async function increaseTunaLpPositionFusionInstructions(
   const fusionPool = await fetchMaybeFusionPool(rpc, tunaPosition.data.pool);
   if (!fusionPool.exists) throw new Error("FusionPool account not found");
 
-  const [vaultA, vaultB] = await fetchAllVault(rpc, [
-    (await getLendingVaultAddress(fusionPool.data.tokenMintA))[0],
-    (await getLendingVaultAddress(fusionPool.data.tokenMintB))[0],
-  ]);
-
   const [mintA, mintB] = await fetchAllMaybeMint(rpc, [fusionPool.data.tokenMintA, fusionPool.data.tokenMintB]);
   assert(mintA.exists, "Token A not found");
   assert(mintB.exists, "Token B not found");
 
-  //
-  // Add create user's token account instructions if needed.
-  //
+  const marketAddress = (await getMarketAddress(tunaPosition.data.pool))[0];
+  const market = await fetchMarket(rpc, marketAddress);
 
-  const createUserAtaAInstructions = await getCreateAtaInstructions(
+  const [vaultA, vaultB] = await fetchAllVault(rpc, [market.data.vaultA, market.data.vaultB]);
+
+  const { init, cleanup } = await getTunaLpPositionCreateAtaInstructions(
     rpc,
     authority,
-    mintA.address,
-    authority.address,
-    mintA.programAddress,
+    tunaConfig,
+    tunaPosition,
+    mintA,
+    mintB,
   );
-  createInstructions.push(...createUserAtaAInstructions.init);
-
-  const createUserAtaBInstructions = await getCreateAtaInstructions(
-    rpc,
-    authority,
-    mintB.address,
-    authority.address,
-    mintB.programAddress,
-  );
-  createInstructions.push(...createUserAtaBInstructions.init);
 
   //
-  // Add create fee recipient's token account instructions if needed.
+  // Create the list of instructions
   //
+  const instructions: IInstruction[] = [];
 
-  const createFeeRecipientAtaAInstructions = await getCreateAtaInstructions(
-    rpc,
-    authority,
-    mintA.address,
-    tunaConfig.data.feeRecipient,
-    mintA.programAddress,
-  );
-  createInstructions.push(...createFeeRecipientAtaAInstructions.init);
-
-  const createFeeRecipientAtaBInstructions = await getCreateAtaInstructions(
-    rpc,
-    authority,
-    mintB.address,
-    tunaConfig.data.feeRecipient,
-    mintB.programAddress,
-  );
-  createInstructions.push(...createFeeRecipientAtaBInstructions.init);
+  if (createInstructions) {
+    createInstructions.push(...init);
+  } else {
+    instructions.push(...init);
+  }
 
   //
   // Add create tick arrays instructions if needed.
@@ -189,8 +161,11 @@ export async function increaseTunaLpPositionFusionInstructions(
   // Close WSOL accounts if needed.
   //
 
-  cleanupInstructions.push(...createUserAtaAInstructions.cleanup);
-  cleanupInstructions.push(...createUserAtaBInstructions.cleanup);
+  if (cleanupInstructions) {
+    cleanupInstructions.push(...cleanup);
+  } else {
+    instructions.push(...cleanup);
+  }
 
   return instructions;
 }
@@ -322,8 +297,8 @@ export async function increaseTunaLpPositionFusionInstruction(
     market: marketAddress,
     mintA: mintA.address,
     mintB: mintB.address,
-    pythOraclePriceFeedA: vaultA.data.pythOraclePriceUpdate,
-    pythOraclePriceFeedB: vaultB.data.pythOraclePriceUpdate,
+    oraclePriceUpdateA: vaultA.data.oraclePriceUpdate,
+    oraclePriceUpdateB: vaultB.data.oraclePriceUpdate,
     vaultA: vaultA.address,
     vaultAAta,
     vaultB: vaultB.address,

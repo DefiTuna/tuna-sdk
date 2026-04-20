@@ -1,11 +1,11 @@
 {
   "name": "@crypticdot/defituna-core",
   "description": "DefiTuna core typescript package.",
-  "version": "3.5.2",
+  "version": "3.6.19",
+  "type": "module",
   "main": "./dist/nodejs/defituna_core_js_bindings.js",
   "types": "./dist/nodejs/defituna_core_js_bindings.d.ts",
   "browser": "./dist/browser/defituna_core_js_bindings.js",
-  "type": "module",
   "publishConfig": {
     "access": "public"
   },
@@ -30,7 +30,7 @@
     "@crypticdot/typescript-config": "^1.0.0",
     "@crypticdot/defituna-rust-core": "workspace:*",
     "typescript": "^5.8.3",
-    "wasm-pack": "^0.13.1"
+    "wasm-pack": "^0.14"
   },
   "license": "SEE LICENSE IN LICENSE",
   "keywords": [

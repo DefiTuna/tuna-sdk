@@ -28,17 +28,17 @@ import {
   AccountsType,
   DecreaseTunaLpPositionFusionInstructionDataArgs,
   fetchAllVault,
+  fetchMarket,
   fetchMaybeTunaLpPosition,
   FusionUtils,
-  getCreateAtaInstructions,
   getDecreaseTunaLpPositionFusionInstruction,
-  getLendingVaultAddress,
   getMarketAddress,
   getTunaConfigAddress,
   getTunaLpPositionAddress,
   TunaLpPosition,
   Vault,
 } from "../index.ts";
+import { getTunaLpPositionCreateAtaInstructions } from "../utils/tuna.ts";
 
 export type DecreaseTunaLpPositionFusionInstructionsArgs = Omit<
   DecreaseTunaLpPositionFusionInstructionDataArgs,
@@ -59,44 +59,34 @@ export async function decreaseTunaLpPositionFusionInstructions(
   const fusionPool = await fetchMaybeFusionPool(rpc, tunaPosition.data.pool);
   if (!fusionPool.exists) throw new Error("FusionPool account not found");
 
-  const [vaultA, vaultB] = await fetchAllVault(rpc, [
-    (await getLendingVaultAddress(fusionPool.data.tokenMintA))[0],
-    (await getLendingVaultAddress(fusionPool.data.tokenMintB))[0],
-  ]);
-
   const [mintA, mintB] = await fetchAllMaybeMint(rpc, [fusionPool.data.tokenMintA, fusionPool.data.tokenMintB]);
   assert(mintA.exists, "Token A account not found");
   assert(mintB.exists, "Token B account not found");
 
-  //
-  // Collect the list of instructions.
-  //
+  const marketAddress = (await getMarketAddress(tunaPosition.data.pool))[0];
+  const market = await fetchMarket(rpc, marketAddress);
 
+  const [vaultA, vaultB] = await fetchAllVault(rpc, [market.data.vaultA, market.data.vaultB]);
+
+  const { init, cleanup } = await getTunaLpPositionCreateAtaInstructions(
+    rpc,
+    authority,
+    undefined,
+    tunaPosition,
+    mintA,
+    mintB,
+  );
+
+  //
+  // Create the list of instructions
+  //
   const instructions: IInstruction[] = [];
-  if (!createInstructions) createInstructions = instructions;
-  if (!cleanupInstructions) cleanupInstructions = instructions;
 
-  //
-  // Add create user's token account instructions if needed.
-  //
-
-  const createUserAtaAInstructions = await getCreateAtaInstructions(
-    rpc,
-    authority,
-    mintA.address,
-    authority.address,
-    mintA.programAddress,
-  );
-  createInstructions.push(...createUserAtaAInstructions.init);
-
-  const createUserAtaBInstructions = await getCreateAtaInstructions(
-    rpc,
-    authority,
-    mintB.address,
-    authority.address,
-    mintB.programAddress,
-  );
-  createInstructions.push(...createUserAtaBInstructions.init);
+  if (createInstructions) {
+    createInstructions.push(...init);
+  } else {
+    instructions.push(...init);
+  }
 
   //
   // Finally, add liquidity decrease instruction.
@@ -118,8 +108,11 @@ export async function decreaseTunaLpPositionFusionInstructions(
   // Close WSOL accounts if needed.
   //
 
-  cleanupInstructions.push(...createUserAtaAInstructions.cleanup);
-  cleanupInstructions.push(...createUserAtaBInstructions.cleanup);
+  if (cleanupInstructions) {
+    cleanupInstructions.push(...cleanup);
+  } else {
+    instructions.push(...cleanup);
+  }
 
   return instructions;
 }
@@ -232,8 +225,8 @@ export async function decreaseTunaLpPositionFusionInstruction(
     market: marketAddress,
     mintA: mintA.address,
     mintB: mintB.address,
-    pythOraclePriceFeedA: vaultA.data.pythOraclePriceUpdate,
-    pythOraclePriceFeedB: vaultB.data.pythOraclePriceUpdate,
+    oraclePriceUpdateA: vaultA.data.oraclePriceUpdate,
+    oraclePriceUpdateB: vaultB.data.oraclePriceUpdate,
     vaultA: vaultA.address,
     vaultAAta,
     vaultB: vaultB.address,

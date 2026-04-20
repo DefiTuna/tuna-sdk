@@ -1,7 +1,7 @@
-import { tickIndexToSqrtPrice } from "@crypticdot/fusionamm-core";
+import { priceToSqrtPrice, tickIndexToSqrtPrice } from "@crypticdot/fusionamm-core";
 import { fetchWhirlpool, getPositionAddress } from "@orca-so/whirlpools-client";
-import { findAssociatedTokenPda, getTransferInstruction } from "@solana-program/token-2022";
 import { generateKeyPairSigner } from "@solana/kit";
+import { findAssociatedTokenPda, getTransferInstruction } from "@solana-program/token-2022";
 import assert from "assert";
 import { Clock } from "solana-bankrun";
 import { beforeEach, describe, expect, it } from "vitest";
@@ -10,8 +10,11 @@ import {
   closeTunaLpPositionOrcaInstruction,
   COMPUTED_AMOUNT,
   DEFAULT_ADDRESS,
+  fetchMarket,
   fetchTunaLpPosition,
+  getResetMarketBadDebtInstruction,
   getSetTunaLpPositionFlagsInstruction,
+  getTunaConfigAddress,
   getTunaLpPositionAddress,
   HUNDRED_PERCENT,
   LEVERAGE_ONE,
@@ -20,17 +23,23 @@ import {
   MIN_SQRT_PRICE,
   openTunaLpPositionOrcaInstruction,
   PoolToken,
+  repayBadDebtInstruction,
+  setTunaLpPositionLimitOrdersInstruction,
+  TUNA_ERROR__BAD_DEBT,
+  TUNA_ERROR__LEVERAGED_LOCKED_POSITION_NOT_ALLOWED,
   TUNA_ERROR__POSITION_IS_HEALTHY,
   TUNA_ERROR__POSITION_IS_UNHEALTHY,
+  TUNA_ERROR__POSITION_LOCKED,
   TUNA_ERROR__POSITION_NOT_EMPTY,
   TUNA_ERROR__REBALANCE_CONDITIONS_NOT_MET,
   TUNA_POSITION_FLAGS_ALLOW_REBALANCING,
+  TUNA_POSITION_FLAGS_LOCKED,
   TUNA_POSITION_FLAGS_LOWER_LIMIT_ORDER_SWAP_TO_TOKEN_B,
   TUNA_POSITION_FLAGS_UPPER_LIMIT_ORDER_SWAP_TO_TOKEN_A,
   TunaPositionState,
 } from "../src";
 
-import { ALICE_KEYPAIR, LIQUIDATOR_KEYPAIR } from "./helpers/addresses.ts";
+import { ALICE_KEYPAIR, LIQUIDATOR_KEYPAIR, TUNA_ADMIN_KEYPAIR } from "./helpers/addresses.ts";
 import { closeActiveTunaLpPosition } from "./helpers/closeActiveTunaLpPosition.ts";
 import { closeTunaLpPosition } from "./helpers/closeTunaLpPosition.ts";
 import { assertCollectAndCompoundFees, collectAndCompoundFees } from "./helpers/collectAndCompoundFees.ts";
@@ -52,8 +61,9 @@ import { swapExactInput } from "./helpers/swap.ts";
 describe("Tuna Liquidity Position", () => {
   let testOrcaMarket: TestMarket;
   let testFusionMarket: TestMarket;
+  let testPermissionlessFusionMarket: TestMarket;
   let markets: TestMarket[];
-  const marketMakers = [MarketMaker.Orca, MarketMaker.Fusion];
+  const marketNames = ["Orca", "Fusion", "Fusion Isolated"];
 
   beforeEach(async () => {
     const marketArgs = {
@@ -74,7 +84,10 @@ describe("Tuna Liquidity Position", () => {
     };
     testOrcaMarket = await setupTestMarket({ ...marketArgs }, MarketMaker.Orca);
     testFusionMarket = await setupTestMarket({ ...marketArgs }, MarketMaker.Fusion);
-    markets = [testOrcaMarket, testFusionMarket];
+    testPermissionlessFusionMarket = await setupTestMarket({ ...marketArgs }, MarketMaker.Fusion, {
+      permissionless: true,
+    });
+    markets = [testOrcaMarket, testFusionMarket, testPermissionlessFusionMarket];
   });
 
   it("Open and close a position ensuring that all token accounts are closed", async () => {
@@ -154,9 +167,9 @@ describe("Tuna Liquidity Position", () => {
     expect(tunaPosition.data.flags).toEqual(flags);
   });
 
-  for (const marketMaker of marketMakers) {
-    it(`One-sided long position without swap (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`One-sided long position without swap (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const positionMintKeypair = await generateKeyPairSigner();
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
@@ -231,7 +244,9 @@ describe("Tuna Liquidity Position", () => {
         spotPositionSizeLimitB: 100000_000_000,
       },
       MarketMaker.Orca,
-      true,
+      {
+        mintAIsNative: true,
+      },
     );
 
     const positionMintKeypair = await generateKeyPairSigner();
@@ -288,9 +303,9 @@ describe("Tuna Liquidity Position", () => {
     );
   });
 
-  for (const marketMaker of marketMakers) {
-    it(`One-sided short position without swap (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`One-sided short position without swap (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const positionMintKeypair = await generateKeyPairSigner();
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
@@ -345,9 +360,9 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`One-sided long position without swap with leverage (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`One-sided long position without swap with leverage (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const positionMintKeypair = await generateKeyPairSigner();
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
@@ -402,9 +417,9 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`One-sided short position without swap with leverage (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`One-sided short position without swap with leverage (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const positionMintKeypair = await generateKeyPairSigner();
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
@@ -459,9 +474,9 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`One-sided long position with B->A swap with leverage (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`One-sided long position with B->A swap with leverage (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const positionMintKeypair = await generateKeyPairSigner();
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
@@ -516,9 +531,9 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`One-sided short position with A->B swap with leverage (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`One-sided short position with A->B swap with leverage (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const positionMintKeypair = await generateKeyPairSigner();
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
@@ -573,9 +588,9 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Adds liquidity with leverage to a two-sided position, providing only token A (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Adds liquidity with leverage to a two-sided position, providing only token A (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const positionMintKeypair = await generateKeyPairSigner();
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
@@ -630,9 +645,9 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Adds liquidity with leverage to a two-sided position, providing only token B (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Adds liquidity with leverage to a two-sided position, providing only token B (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const positionMintKeypair = await generateKeyPairSigner();
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
@@ -687,9 +702,9 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Add liquidity twice to a one-sided long position without swap with leverage (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Add liquidity twice to a one-sided long position without swap with leverage (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const positionMintKeypair = await generateKeyPairSigner();
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
@@ -746,9 +761,9 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Remove liquidity partially form a one-sided long position with leverage (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Remove liquidity partially form a one-sided long position with leverage (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const positionMintKeypair = await generateKeyPairSigner();
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
@@ -822,9 +837,9 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Fails to remove more than 100% of liquidity (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Fails to remove more than 100% of liquidity (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const positionMintKeypair = await generateKeyPairSigner();
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
@@ -860,9 +875,9 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Two-sided position with leverage and disabled swap: A provided, B calculated (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Two-sided position with leverage and disabled swap: A provided, B calculated (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const positionMintKeypair = await generateKeyPairSigner();
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
@@ -907,9 +922,9 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Two-sided position with leverage and disabled swap: B provided, A calculated (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Two-sided position with leverage and disabled swap: B provided, A calculated (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const positionMintKeypair = await generateKeyPairSigner();
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
@@ -954,9 +969,9 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`One-sided long position with leverage and disabled swap (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`One-sided long position with leverage and disabled swap (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const positionMintKeypair = await generateKeyPairSigner();
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
@@ -1014,9 +1029,9 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`One-sided short position with leverage and disabled swap (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`One-sided short position with leverage and disabled swap (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const positionMintKeypair = await generateKeyPairSigner();
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
@@ -1074,9 +1089,9 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Collect position fees (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Collect position fees (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const positionMintKeypair = await generateKeyPairSigner();
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
@@ -1160,9 +1175,9 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Fails to increase, decrease, collect fees and close a position with non-authority wallet (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Fails to increase, decrease, collect fees and close a position with non-authority wallet (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const positionMintKeypair = await generateKeyPairSigner();
       const positionMint = positionMintKeypair.address;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
@@ -1301,9 +1316,9 @@ describe("Tuna Liquidity Position", () => {
     );
   });
 
-  for (const marketMaker of marketMakers) {
-    it(`Fails to borrow more from due to leverage greater than the maximum allowed (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Fails to borrow more from due to leverage greater than the maximum allowed (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const positionMintKeypair = await generateKeyPairSigner();
       const positionMint = positionMintKeypair.address;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
@@ -1344,9 +1359,9 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Fails to liquidate the position due to: a) unauthorized b) position being healthy (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Fails to liquidate the position due to: a) unauthorized b) position being healthy (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const positionMintKeypair = await generateKeyPairSigner();
       const positionMint = positionMintKeypair.address;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
@@ -1373,7 +1388,7 @@ describe("Tuna Liquidity Position", () => {
 
       await assert.rejects(liquidateTunaLpPosition({ rpc, signer, positionMint }), err => {
         // AnchorError caused by account: authority. Error Code: ConstraintRaw. Error Number: 2003. Error Message: A raw constraint was violated.
-        expect((err as Error).toString()).contain("custom program error: 0x7d3");
+        expect((err as Error).toString()).contain("custom program error: 0x7dc");
         return true;
       });
 
@@ -1386,9 +1401,9 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Liquidates a position due to an unhealthy state (no bad debt) (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Liquidates a position due to an unhealthy state (no bad debt) (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
 
@@ -1451,9 +1466,9 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Liquidates a position with directly transferred tokens (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Liquidates a position with directly transferred tokens (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
 
@@ -1560,13 +1575,14 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Liquidates a position due to an unhealthy state (bad debt A) (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Liquidates a position due to an unhealthy state (bad debt A) (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const positionMintKeypair = await generateKeyPairSigner();
       const positionMint = positionMintKeypair.address;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
+      const tunaConfigAddress = (await getTunaConfigAddress())[0];
 
       await openTunaLpPosition({
         signer,
@@ -1624,12 +1640,49 @@ describe("Tuna Liquidity Position", () => {
           poolBalanceDeltaB: 0n,
         },
       );
+
+      // Market bad debt reset fails because the bad debt is not repaid
+      await assert.rejects(
+        sendTransaction([
+          getResetMarketBadDebtInstruction({
+            authority: TUNA_ADMIN_KEYPAIR,
+            market: market.marketAddress,
+            tunaConfig: tunaConfigAddress,
+            vaultA: market.vaultAAddress,
+            vaultB: market.vaultBAddress,
+          }),
+        ]),
+        err => {
+          expect((err as Error).toString()).contain(
+            `custom program error: ${"0x" + TUNA_ERROR__BAD_DEBT.toString(16)}`,
+          );
+          return true;
+        },
+      );
+
+      await sendTransaction([await repayBadDebtInstruction(rpc, signer, market.vaultAAddress, 0n, 838867095n)]);
+
+      await sendTransaction([
+        getResetMarketBadDebtInstruction({
+          authority: TUNA_ADMIN_KEYPAIR,
+          market: market.marketAddress,
+          tunaConfig: tunaConfigAddress,
+          vaultA: market.vaultAAddress,
+          vaultB: market.vaultBAddress,
+        }),
+      ]);
+
+      const marketAccount = await fetchMarket(rpc, market.marketAddress);
+      expect(marketAccount.data.badDebtA).toEqual(0n);
+      expect(marketAccount.data.badDebtB).toEqual(0n);
+      expect(marketAccount.data.borrowedSharesA).toEqual(0n);
+      expect(marketAccount.data.borrowedSharesB).toEqual(0n);
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Liquidates a position due to an unhealthy state (bad debt B) (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Liquidates a position due to an unhealthy state (bad debt B) (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const positionMintKeypair = await generateKeyPairSigner();
       const positionMint = positionMintKeypair.address;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
@@ -1694,9 +1747,9 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Fails to remove liquidity from an unhealthy position (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Fails to remove liquidity from an unhealthy position (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
 
@@ -1750,9 +1803,9 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Can execute openAndIncreaseTunaLpPosition instruction (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Can execute openAndIncreaseTunaLpPosition instruction (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
 
@@ -1769,9 +1822,9 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Adds liquidity to a two-sided position and withdraw the entire amount in token A (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Adds liquidity to a two-sided position and withdraw the entire amount in token A (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
 
@@ -1807,9 +1860,9 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Adds liquidity to a two-sided position and withdraw the entire amount in token B (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Adds liquidity to a two-sided position and withdraw the entire amount in token B (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
 
@@ -1845,9 +1898,9 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`S/L limit order (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`S/L limit order (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
 
@@ -1874,9 +1927,9 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`S/L limit order, swap to token B (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`S/L limit order, swap to token B (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
 
@@ -1904,9 +1957,9 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`T/P limit order (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`T/P limit order (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
 
@@ -1933,9 +1986,9 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`T/P limit order, swap to token A (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`T/P limit order, swap to token A (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
 
@@ -1963,9 +2016,9 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Collect and compound position fees (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Collect and compound position fees (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const positionMintKeypair = await generateKeyPairSigner();
       const positionMint = positionMintKeypair.address;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
@@ -2041,7 +2094,6 @@ describe("Tuna Liquidity Position", () => {
   }
 
   it("Add and remove liquidity to a pool with double rewards", async () => {
-    // Override the test market using WSOL for MintA
     testOrcaMarket = await setupTestMarket(
       {
         addressLookupTable: DEFAULT_ADDRESS,
@@ -2060,8 +2112,9 @@ describe("Tuna Liquidity Position", () => {
         spotPositionSizeLimitB: 100000_000_000,
       },
       MarketMaker.Orca,
-      false,
-      true,
+      {
+        initializeRewards: true,
+      },
     );
 
     const whirlpool = await fetchWhirlpool(rpc, testOrcaMarket.pool);
@@ -2112,9 +2165,9 @@ describe("Tuna Liquidity Position", () => {
     testContext.setClock(currentClock);
   });
 
-  for (const marketMaker of marketMakers) {
-    it(`Can run openAndIncreaseTunaLpPosition and closeActiveTunaLpPosition (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Can run openAndIncreaseTunaLpPosition and closeActiveTunaLpPosition (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
 
@@ -2152,9 +2205,9 @@ describe("Tuna Liquidity Position", () => {
     await repayTunaLpPositionDebt({ rpc, positionMint, collateralA: 10000n, collateralB: 20000n });
   });
 
-  for (const marketMaker of marketMakers) {
-    it(`Re-balance a two-sided position (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Re-balance a two-sided position (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
 
@@ -2204,9 +2257,9 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Entry price change on the position increase (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Entry price change on the position increase (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const positionMintKeypair = await generateKeyPairSigner();
       const positionMint = positionMintKeypair.address;
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
@@ -2258,9 +2311,9 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  for (const marketMaker of marketMakers) {
-    it(`Increase and decrease position accounting for direct token transfers (${MarketMaker[marketMaker]})`, async () => {
-      const market = markets.find(m => m.marketMaker == marketMaker)!;
+  for (const marketName of marketNames) {
+    it(`Increase and decrease position accounting for direct token transfers (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
       const positionMintKeypair = await generateKeyPairSigner();
       const tunaPositionAddress = (await getTunaLpPositionAddress(positionMintKeypair.address))[0];
       const pool = await fetchPool(rpc, market.pool, market.marketMaker);
@@ -2374,4 +2427,125 @@ describe("Tuna Liquidity Position", () => {
       );
     });
   }
+
+  it(`Adds liquidity and lock the position (Fusion)`, async () => {
+    const market = testFusionMarket;
+    const positionMintKeypair = await generateKeyPairSigner();
+    const pool = await fetchPool(rpc, market.pool, market.marketMaker);
+    const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
+    const tunaPositionAddress = (await getTunaLpPositionAddress(positionMintKeypair.address))[0];
+
+    await openTunaLpPosition({
+      signer,
+      positionMint: positionMintKeypair,
+      pool: pool.address,
+      tickLowerIndex: actualTickIndex - pool.data.tickSpacing * 5,
+      tickUpperIndex: actualTickIndex + pool.data.tickSpacing * 5,
+    });
+
+    await increaseTunaLpPosition({
+      rpc,
+      positionMint: positionMintKeypair.address,
+      pool: pool.address,
+      collateralA: 1_000_000_000n,
+      collateralB: 0n,
+      borrowA: 0n,
+      borrowB: 0n,
+    });
+
+    await sendTransaction([
+      getSetTunaLpPositionFlagsInstruction({
+        authority: signer,
+        flags: TUNA_POSITION_FLAGS_LOCKED,
+        tunaPosition: tunaPositionAddress,
+      }),
+    ]);
+
+    // Fails to remove the lock
+    await assert.rejects(
+      sendTransaction([
+        getSetTunaLpPositionFlagsInstruction({
+          authority: signer,
+          flags: 0,
+          tunaPosition: tunaPositionAddress,
+        }),
+      ]),
+      err => {
+        expect((err as Error).toString()).contain(
+          `custom program error: ${"0x" + TUNA_ERROR__POSITION_LOCKED.toString(16)}`,
+        );
+        return true;
+      },
+    );
+
+    // Fails to set limit orders
+    await assert.rejects(
+      sendTransaction([
+        await setTunaLpPositionLimitOrdersInstruction(
+          signer,
+          {
+            lowerLimitOrderSqrtPrice: priceToSqrtPrice(190, 9, 6),
+            upperLimitOrderSqrtPrice: priceToSqrtPrice(220, 9, 6),
+            swapToTokenOnLimitOrder:
+              TUNA_POSITION_FLAGS_LOWER_LIMIT_ORDER_SWAP_TO_TOKEN_B |
+              TUNA_POSITION_FLAGS_UPPER_LIMIT_ORDER_SWAP_TO_TOKEN_A,
+          },
+          undefined,
+          tunaPositionAddress,
+        ),
+      ]),
+      err => {
+        expect((err as Error).toString()).contain(
+          `custom program error: ${"0x" + TUNA_ERROR__POSITION_LOCKED.toString(16)}`,
+        );
+        return true;
+      },
+    );
+
+    // Can increase
+    await increaseTunaLpPosition({
+      rpc,
+      positionMint: positionMintKeypair.address,
+      pool: pool.address,
+      collateralA: 1_000_000_000n,
+      collateralB: 0n,
+      borrowA: 0n,
+      borrowB: 0n,
+    });
+
+    // Can't increase with borrowed funds
+    await assert.rejects(
+      increaseTunaLpPosition({
+        rpc,
+        positionMint: positionMintKeypair.address,
+        pool: pool.address,
+        collateralA: 1_000_000_000n,
+        collateralB: 0n,
+        borrowA: 1_000_000_000n,
+        borrowB: 0n,
+      }),
+      err => {
+        expect((err as Error).toString()).contain(
+          `custom program error: ${"0x" + TUNA_ERROR__LEVERAGED_LOCKED_POSITION_NOT_ALLOWED.toString(16)}`,
+        );
+        return true;
+      },
+    );
+
+    await assert.rejects(
+      decreaseTunaLpPosition({
+        rpc,
+        signer,
+        positionMint: positionMintKeypair.address,
+        pool: pool.address,
+        closeTunaLpPosition: false,
+      }),
+      err => {
+        expect((err as Error).toString()).contain(
+          `custom program error: ${"0x" + TUNA_ERROR__POSITION_LOCKED.toString(16)}`,
+        );
+        return true;
+      },
+    );
+  });
 }, 20000);

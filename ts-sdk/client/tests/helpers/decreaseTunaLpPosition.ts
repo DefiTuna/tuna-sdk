@@ -13,7 +13,6 @@ import {
   decreaseTunaLpPositionOrcaInstructions,
   fetchMarket,
   fetchTunaLpPosition,
-  getLendingVaultAddress,
   getMarketAddress,
   getTunaLpPositionAddress,
   HUNDRED_PERCENT,
@@ -134,7 +133,7 @@ export async function decreaseTunaLpPosition({
     })
   )[0];
 
-  const vaultAAddress = (await getLendingVaultAddress(mintA.address))[0];
+  const vaultAAddress = market.data.vaultA;
   const vaultAAta = (
     await findAssociatedTokenPda({
       owner: vaultAAddress,
@@ -143,7 +142,7 @@ export async function decreaseTunaLpPosition({
     })
   )[0];
 
-  const vaultBAddress = (await getLendingVaultAddress(mintB.address))[0];
+  const vaultBAddress = market.data.vaultB;
   const vaultBAta = (
     await findAssociatedTokenPda({
       owner: vaultBAddress,

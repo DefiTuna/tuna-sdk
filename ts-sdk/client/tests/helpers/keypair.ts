@@ -9,7 +9,7 @@ function orderMints(mint1: Address, mint2: Address): [Address, Address] {
 }
 
 const keypairs = await Promise.all(
-  Array(800)
+  Array(2000)
     .fill(0)
     .map(() => generateKeyPairSigner()),
 );

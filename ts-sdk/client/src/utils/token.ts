@@ -1,6 +1,10 @@
 import { Address, address, GetAccountInfoApi, IInstruction, Rpc, TransactionSigner } from "@solana/kit";
 import { getTransferSolInstruction } from "@solana-program/system";
-import { findAssociatedTokenPda, TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
+import {
+  findAssociatedTokenPda,
+  getCreateAssociatedTokenInstruction,
+  TOKEN_PROGRAM_ADDRESS,
+} from "@solana-program/token";
 import {
   fetchMaybeToken,
   getCloseAccountInstruction,
@@ -15,6 +19,7 @@ export async function getCreateAtaInstruction(
   owner: Address,
   payer: TransactionSigner,
   tokenProgram: Address = TOKEN_PROGRAM_ADDRESS,
+  idempotent: boolean = true,
 ): Promise<IInstruction> {
   const ata = (
     await findAssociatedTokenPda({
@@ -24,13 +29,21 @@ export async function getCreateAtaInstruction(
     })
   )[0];
 
-  return getCreateAssociatedTokenIdempotentInstruction({
-    mint,
-    owner,
-    ata,
-    payer,
-    tokenProgram,
-  });
+  return idempotent
+    ? getCreateAssociatedTokenIdempotentInstruction({
+        mint,
+        owner,
+        ata,
+        payer,
+        tokenProgram,
+      })
+    : getCreateAssociatedTokenInstruction({
+        mint,
+        owner,
+        ata,
+        payer,
+        tokenProgram,
+      });
 }
 
 export async function getCreateAtaInstructions(
@@ -45,7 +58,9 @@ export async function getCreateAtaInstructions(
   const cleanup: IInstruction[] = [];
 
   const ata = (await findAssociatedTokenPda({ mint, owner, tokenProgram }))[0];
-  init.push(getCreateAssociatedTokenIdempotentInstruction({ payer, ata, mint, owner, tokenProgram }));
+
+  const createIx = getCreateAssociatedTokenIdempotentInstruction({ payer, ata, mint, owner, tokenProgram });
+  init.push(createIx);
 
   if (mint == NATIVE_MINT) {
     if (amount && amount > 0) {

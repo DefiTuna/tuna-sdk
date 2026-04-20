@@ -10,11 +10,18 @@ import {
   getSetDefaultOraclePriceDeviationThresholdInstruction,
   getSetFeeRecipientInstruction,
   getSetLiquidatorAuthorityInstruction,
+  getSetOraclePriceUpdateAuthorityInstruction,
   getSetOwnerAuthorityInstruction,
   getTunaConfigAddress,
 } from "../src";
 
-import { ALICE_KEYPAIR, FEE_RECIPIENT_KEYPAIR, LIQUIDATOR_KEYPAIR, TUNA_ADMIN_KEYPAIR } from "./helpers/addresses.ts";
+import {
+  ALICE_KEYPAIR,
+  FEE_RECIPIENT_KEYPAIR,
+  LIQUIDATOR_KEYPAIR,
+  TUNA_ADMIN_KEYPAIR,
+  TUNA_ORACLE_PRICE_UPDATE_KEYPAIR,
+} from "./helpers/addresses.ts";
 import { rpc, sendTransaction, signer } from "./helpers/mockRpc.ts";
 
 describe("Tuna Config", () => {
@@ -37,6 +44,7 @@ describe("Tuna Config", () => {
       signer.address,
       TUNA_ADMIN_KEYPAIR.address,
       LIQUIDATOR_KEYPAIR.address,
+      TUNA_ORACLE_PRICE_UPDATE_KEYPAIR.address,
       FEE_RECIPIENT_KEYPAIR.address,
     );
 
@@ -56,7 +64,7 @@ describe("Tuna Config", () => {
     });
 
     await assert.rejects(sendTransaction([ix]), err => {
-      expect((err as Error).toString()).contain("custom program error: 0x7d3");
+      expect((err as Error).toString()).contain("custom program error: 0x7dc");
       return true;
     });
   });
@@ -71,7 +79,7 @@ describe("Tuna Config", () => {
     });
 
     await assert.rejects(sendTransaction([ix]), err => {
-      expect((err as Error).toString()).contain("custom program error: 0x7d3");
+      expect((err as Error).toString()).contain("custom program error: 0x7dc");
       return true;
     });
   });
@@ -86,7 +94,7 @@ describe("Tuna Config", () => {
     });
 
     await assert.rejects(sendTransaction([ix]), err => {
-      expect((err as Error).toString()).contain("custom program error: 0x7d3");
+      expect((err as Error).toString()).contain("custom program error: 0x7dc");
       return true;
     });
   });
@@ -101,7 +109,7 @@ describe("Tuna Config", () => {
     });
 
     await assert.rejects(sendTransaction([ix]), err => {
-      expect((err as Error).toString()).contain("custom program error: 0x7d3");
+      expect((err as Error).toString()).contain("custom program error: 0x7dc");
       return true;
     });
   });
@@ -166,6 +174,28 @@ describe("Tuna Config", () => {
     ix = getSetLiquidatorAuthorityInstruction({
       authority: TUNA_ADMIN_KEYPAIR,
       liquidatorAuthority: LIQUIDATOR_KEYPAIR.address,
+      tunaConfig: tunaConfigAddress[0],
+    });
+    await sendTransaction([ix]);
+  });
+
+  it("Set oracle price update authority", async () => {
+    const tunaConfigAddress = await getTunaConfigAddress();
+
+    let ix = getSetOraclePriceUpdateAuthorityInstruction({
+      authority: signer,
+      oraclePriceUpdateAuthority: ALICE_KEYPAIR.address,
+      tunaConfig: tunaConfigAddress[0],
+    });
+    await sendTransaction([ix]);
+
+    const tunaConfig = await fetchTunaConfig(rpc, tunaConfigAddress[0]);
+    expect(tunaConfig.data.oraclePriceUpdateAuthority).toEqual(ALICE_KEYPAIR.address);
+
+    // Restore
+    ix = getSetOraclePriceUpdateAuthorityInstruction({
+      authority: signer,
+      oraclePriceUpdateAuthority: TUNA_ORACLE_PRICE_UPDATE_KEYPAIR.address,
       tunaConfig: tunaConfigAddress[0],
     });
     await sendTransaction([ix]);

@@ -19,10 +19,11 @@ import assert from "assert";
 import {
   decreaseTunaLpPositionFusionInstruction,
   fetchAllVault,
+  fetchMarket,
   fetchMaybeTunaLpPosition,
   getCloseTunaLpPositionFusionInstruction,
   getCreateAtaInstructions,
-  getLendingVaultAddress,
+  getMarketAddress,
   getTunaLpPositionAddress,
   HUNDRED_PERCENT,
   PoolToken,
@@ -49,10 +50,10 @@ export async function closeActiveTunaLpPositionFusionInstructions(
   const fusionPool = await fetchMaybeFusionPool(rpc, tunaPosition.data.pool);
   if (!fusionPool.exists) throw new Error("Whirlpool account not found");
 
-  const [vaultA, vaultB] = await fetchAllVault(rpc, [
-    (await getLendingVaultAddress(fusionPool.data.tokenMintA))[0],
-    (await getLendingVaultAddress(fusionPool.data.tokenMintB))[0],
-  ]);
+  const marketAddress = (await getMarketAddress(tunaPosition.data.pool))[0];
+  const market = await fetchMarket(rpc, marketAddress);
+
+  const [vaultA, vaultB] = await fetchAllVault(rpc, [market.data.vaultA, market.data.vaultB]);
 
   const [mintA, mintB] = await fetchAllMaybeMint(rpc, [fusionPool.data.tokenMintA, fusionPool.data.tokenMintB]);
   const allMints = [mintA, mintB];

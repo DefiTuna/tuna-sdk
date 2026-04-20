@@ -5,11 +5,12 @@ import assert from "assert";
 import { beforeAll, describe, expect, it } from "vitest";
 
 import {
+  createMarketPermissionlessInstruction,
   DEFAULT_ADDRESS,
   fetchMarket,
   fetchTunaConfig,
   getCreateMarketInstruction,
-  getCreateMarketV2Instruction,
+  getCreateMarketPermissionlessInstruction,
   getLendingVaultAddress,
   getMarketAddress,
   getTunaConfigAddress,
@@ -18,24 +19,22 @@ import {
   MarketMaker,
   MAX_LIQUIDATION_THRESHOLD,
   MAX_PROTOCOL_FEE,
-  TUNA_ERROR__INVALID_VAULT,
   updateMarketInstruction,
 } from "../src";
-import { createMarketV2Instruction } from "../src/txbuilder/createMarketV2.ts";
 
 import { TUNA_ADMIN_KEYPAIR } from "./helpers/addresses.ts";
 import { setupFusionPool } from "./helpers/fusion.ts";
 import { rpc, sendTransaction, signer } from "./helpers/mockRpc.ts";
-import { setupVault, setupVaultV2 } from "./helpers/setup.ts";
+import { setupVault, setupVaultPermissionless } from "./helpers/setup.ts";
 import { setupMint } from "./helpers/token.ts";
 import { setupMintTE } from "./helpers/token2022.ts";
 
 describe("Markets", () => {
   let poolAddress: Address;
-  let poolV2Address: Address;
+  let poolPermissionlessAddress: Address;
   let tunaConfigAddress: Address;
   let marketAddress: Address;
-  let marketV2Address: Address;
+  let marketPermissionlessAddress: Address;
   let mintA: Account<Mint>;
   let mintB: Account<Mint>;
 
@@ -48,13 +47,13 @@ describe("Markets", () => {
       initialSqrtPrice: priceToSqrtPrice(200.0, 9, 6),
     });
 
-    poolV2Address = await setupFusionPool(mintA.address, mintB.address, 32, {
+    poolPermissionlessAddress = await setupFusionPool(mintA.address, mintB.address, 32, {
       initialSqrtPrice: priceToSqrtPrice(200.0, 9, 6),
     });
 
     tunaConfigAddress = (await getTunaConfigAddress())[0];
     marketAddress = (await getMarketAddress(poolAddress))[0];
-    marketV2Address = (await getMarketAddress(poolV2Address))[0];
+    marketPermissionlessAddress = (await getMarketAddress(poolPermissionlessAddress))[0];
   });
 
   it("Create market", async () => {
@@ -62,7 +61,7 @@ describe("Markets", () => {
 
     const vaultA = await setupVault(mintA, {
       pythOracleFeedId: DEFAULT_ADDRESS,
-      pythOraclePriceUpdate: DEFAULT_ADDRESS,
+      oraclePriceUpdate: DEFAULT_ADDRESS,
       interestRate: 3655890108n,
       supplyLimit: 0n,
       allowUnsafeTokenExtensions: true,
@@ -70,7 +69,7 @@ describe("Markets", () => {
 
     const vaultB = await setupVault(mintB, {
       pythOracleFeedId: DEFAULT_ADDRESS,
-      pythOraclePriceUpdate: DEFAULT_ADDRESS,
+      oraclePriceUpdate: DEFAULT_ADDRESS,
       interestRate: 3655890108n,
       supplyLimit: 0n,
       allowUnsafeTokenExtensions: true,
@@ -118,6 +117,8 @@ describe("Markets", () => {
     expect(market.data.rebalanceProtocolFee).toEqual(10000);
     expect(market.data.spotPositionSizeLimitA).toEqual(34343224218n);
     expect(market.data.spotPositionSizeLimitB).toEqual(17219873092n);
+    expect(market.data.vaultA).toEqual(vaultA.address);
+    expect(market.data.vaultB).toEqual(vaultB.address);
   });
 
   it("Update market", async () => {
@@ -182,75 +183,72 @@ describe("Markets", () => {
     });
 
     await assert.rejects(sendTransaction([ix]), err => {
-      expect((err as Error).toString()).contain("custom program error: 0x7d3");
+      expect((err as Error).toString()).contain("custom program error: 0x7dc");
       return true;
     });
   });
 
-  it("Fails to create V2 market with the default vaults", async () => {
+  it("Fails to create permissionless market with default vaults", async () => {
     const addressLookupTable = (await generateKeyPairSigner()).address;
 
     const vaultAAddress = (await getLendingVaultAddress(mintA.address))[0];
     const vaultBAddress = (await getLendingVaultAddress(mintB.address))[0];
 
-    const ix = getCreateMarketV2Instruction({
+    const ix = getCreateMarketPermissionlessInstruction({
       authority: TUNA_ADMIN_KEYPAIR,
       tunaConfig: tunaConfigAddress,
-      market: marketV2Address,
-      pool: poolV2Address,
+      market: marketPermissionlessAddress,
+      pool: poolPermissionlessAddress,
       vaultA: vaultAAddress,
       vaultB: vaultBAddress,
       addressLookupTable: addressLookupTable,
-      maxLeverage: LEVERAGE_ONE * 3,
     });
 
     await assert.rejects(sendTransaction([ix]), err => {
-      expect((err as Error).toString()).contain(
-        `custom program error: ${"0x" + TUNA_ERROR__INVALID_VAULT.toString(16)}`,
-      );
+      expect((err as Error).toString()).contain(`custom program error: 0x7d1`);
       return true;
     });
   });
 
-  it("Create V2 market", async () => {
+  it("Create permissionless market", async () => {
     const addressLookupTable = (await generateKeyPairSigner()).address;
+    const marketAddress = (await getMarketAddress(poolPermissionlessAddress))[0];
 
-    const vaultA = await setupVaultV2(mintA, {
-      pythOracleFeedId: DEFAULT_ADDRESS,
-      pythOraclePriceUpdate: DEFAULT_ADDRESS,
+    const vaultA = await setupVaultPermissionless(mintA, {
       interestRate: 3655890108n,
-      supplyLimit: 0n,
-      allowUnsafeTokenExtensions: true,
-      id: 1,
+      market: marketAddress,
     });
 
-    const vaultB = await setupVaultV2(mintB, {
-      pythOracleFeedId: DEFAULT_ADDRESS,
-      pythOraclePriceUpdate: DEFAULT_ADDRESS,
+    const vaultB = await setupVaultPermissionless(mintB, {
       interestRate: 3655890108n,
-      supplyLimit: 0n,
-      allowUnsafeTokenExtensions: true,
-      id: 1,
+      market: marketAddress,
     });
 
-    const ix = await createMarketV2Instruction(TUNA_ADMIN_KEYPAIR, poolV2Address, vaultA.address, vaultB.address, {
-      addressLookupTable,
-      maxLeverage: LEVERAGE_ONE * 3,
-    });
+    const ix = await createMarketPermissionlessInstruction(
+      TUNA_ADMIN_KEYPAIR,
+      poolPermissionlessAddress,
+      vaultA.address,
+      vaultB.address,
+      {
+        addressLookupTable,
+      },
+    );
 
     await sendTransaction([ix]);
 
     const tunaConfig = await fetchTunaConfig(rpc, tunaConfigAddress);
 
-    const market = await fetchMarket(rpc, marketV2Address);
+    const market = await fetchMarket(rpc, marketPermissionlessAddress);
     expect(market.data.version).toEqual(1);
     expect(market.data.addressLookupTable).toEqual(addressLookupTable);
-    expect(market.data.pool).toEqual(poolV2Address);
+    expect(market.data.pool).toEqual(poolPermissionlessAddress);
     expect(market.data.marketMaker).toEqual(MarketMaker.Fusion);
     expect(market.data.disabled).toEqual(false);
     expect(market.data.protocolFee).toEqual(tunaConfig.data.defaultProtocolFeeRate);
     expect(market.data.rebalanceProtocolFee).toEqual(tunaConfig.data.defaultRebalanceFeeRate);
     expect(market.data.liquidationFee).toEqual(tunaConfig.data.defaultLiquidationFeeRate);
     expect(market.data.maxSwapSlippage).toEqual(0);
+    expect(market.data.vaultA).toEqual(vaultA.address);
+    expect(market.data.vaultB).toEqual(vaultB.address);
   });
 }, 20000);

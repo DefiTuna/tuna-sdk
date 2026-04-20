@@ -1,37 +1,36 @@
 import {
+  closeTunaSpotPositionInstruction,
   fetchMaybeMarket,
   fetchMaybeTunaSpotPosition,
   fetchVault,
-  getLendingVaultAddress,
   getMarketAddress,
   getTunaSpotPositionAddress,
   HUNDRED_PERCENT,
-  HUNDRED_PERCENTn,
+  jupiterSwapQuote,
+  jupiterSwapQuoteByOutputAmount,
   MarketMaker,
   MAX_SQRT_PRICE,
   MIN_SQRT_PRICE,
-  ModifyTunaSpotPositionJupiterInstructionDataArgs,
   modifyTunaSpotPositionJupiterInstructions,
-  mulDiv,
-  openTunaSpotPositionInstructions,
+  ModifyTunaSpotPositionJupiterInstructionsArgs,
+  openAndIncreaseTunaSpotPositionJupiterInstructions,
+  OpenAndIncreaseTunaSpotPositionJupiterInstructionsArgs,
   PoolToken,
   setTunaSpotPositionLimitOrdersInstruction,
   sharesToFunds,
 } from "@crypticdot/defituna-client";
-import { calculateTunaSpotPositionProtocolFee } from "@crypticdot/defituna-core";
+import { getDecreaseSpotPositionEstimation, getIncreaseSpotPositionEstimation } from "@crypticdot/defituna-core";
 import { fetchFusionPool } from "@crypticdot/fusionamm-client";
 import { DEFAULT_TRANSACTION_CONFIG, sendTransaction } from "@crypticdot/fusionamm-tx-sender";
-import { createJupiterApiClient, SwapInstructionsPostRequest } from "@jup-ag/api";
 import { Flags } from "@oclif/core";
-import { fetchWhirlpool } from "@orca-so/whirlpools-client";
 import { priceToSqrtPrice, sqrtPriceToPrice } from "@orca-so/whirlpools-core";
-import { AccountRole, address, IAccountMeta, IInstruction } from "@solana/kit";
-import { fetchAllMint } from "@solana-program/token-2022";
+import { Account, IInstruction } from "@solana/kit";
+import { fetchAllMint, Mint } from "@solana-program/token-2022";
 
 import BaseCommand, { addressFlag, bigintFlag, percentFlag, priceFlag } from "../base";
 import { rpc, signer } from "../rpc";
 
-export default class IncreaseSpotPositionJupiter extends BaseCommand {
+export default class ModifySpotPositionJupiter extends BaseCommand {
   static override flags = {
     pool: addressFlag({
       description: "Pool address",
@@ -44,20 +43,31 @@ export default class IncreaseSpotPositionJupiter extends BaseCommand {
       max: HUNDRED_PERCENT,
     }),
 
-    collateralA: bigintFlag({
-      description: "Collateral amount in token A",
+    collateralToken: Flags.string({
+      description: "Collateral token ('a' or 'b')",
+      options: ["a", "b"],
     }),
 
-    collateralB: bigintFlag({
-      description: "Collateral amount in token B",
+    positionToken: Flags.string({
+      description: "Position token ('a' or 'b')",
+      options: ["a", "b"],
     }),
 
-    borrowA: bigintFlag({
-      description: "Borrowed amount in token A",
+    amount: bigintFlag({
+      description: "Increase or decrease amount in the collateral token",
+      required: true,
     }),
 
-    borrowB: bigintFlag({
-      description: "Borrowed amount in token B",
+    decrease: Flags.boolean({
+      description: "Decrease the position",
+      default: false,
+    }),
+
+    leverage: Flags.integer({
+      description: "Leverage",
+      min: 1,
+      max: 10,
+      default: 1,
     }),
 
     lowerLimitOrderPrice: priceFlag({
@@ -72,23 +82,18 @@ export default class IncreaseSpotPositionJupiter extends BaseCommand {
       description: "Maximum allowed swap slippage in bps",
       min: 0,
       max: 10000,
-      default: 50,
+      default: 10,
     }),
   };
   static override description = "Increases a tuna spot position via jupiter.";
   static override examples = [
-    "<%= config.bin %> <%= command.id %> --pool address --collateralB 1000000 --borrowB 1000000",
+    "<%= config.bin %> <%= command.id %> --pool address --leverage 3 --collateralToken b --positionToken a --amount 1000000",
   ];
 
   public async run() {
-    const { flags } = await this.parse(IncreaseSpotPositionJupiter);
+    const { flags } = await this.parse(ModifySpotPositionJupiter);
 
-    const instructions: IInstruction[] = [];
-
-    if (flags.collateralA && flags.collateralB)
-      throw new Error("Can't use both tokens as collateral. Please provide collateral in only one token.");
-    if (flags.borrowA && flags.borrowB)
-      throw new Error("Can't borrow in both tokens. Please specify the borrowed amount in only one token.");
+    const slippageBps = flags.slippageBps;
 
     console.log("Fetching market...");
     const marketAddress = (await getMarketAddress(flags.pool))[0];
@@ -97,11 +102,11 @@ export default class IncreaseSpotPositionJupiter extends BaseCommand {
       throw new Error("Market for the provided pool address is not found");
     }
 
-    const pool =
-      market.data.marketMaker == MarketMaker.Fusion
-        ? await fetchFusionPool(rpc, flags.pool)
-        : await fetchWhirlpool(rpc, flags.pool);
+    if (market.data.marketMaker != MarketMaker.Fusion) {
+      throw new Error("Only Fusion markets are supported for spot positions");
+    }
 
+    const pool = await fetchFusionPool(rpc, flags.pool);
     const price = sqrtPriceToPrice(pool.data.sqrtPrice, 1, 1);
 
     const [mintA, mintB] = await fetchAllMint(rpc, [pool.data.tokenMintA, pool.data.tokenMintB]);
@@ -112,132 +117,171 @@ export default class IncreaseSpotPositionJupiter extends BaseCommand {
     console.log("Fetching tuna position...");
     const tunaPosition = await fetchMaybeTunaSpotPosition(rpc, tunaPositionAddress);
 
+    let collateralToken = flags.collateralToken == "b" ? PoolToken.B : PoolToken.A;
+    let positionToken = flags.positionToken == "b" ? PoolToken.B : PoolToken.A;
+
     if (tunaPosition.exists) {
       console.log("Tuna position:", tunaPosition);
 
-      if (tunaPosition.data.collateralToken == PoolToken.A && flags.collateralB)
-        throw new Error("Collateral token must be A");
-      if (tunaPosition.data.collateralToken == PoolToken.B && flags.collateralA)
-        throw new Error("Collateral token mus be B");
-
-      if (tunaPosition.data.positionToken == PoolToken.A && flags.borrowA) throw new Error("Borrowed token must be B");
-      if (tunaPosition.data.positionToken == PoolToken.B && flags.borrowB) throw new Error("Borrowed token must be A");
-    } else {
-      if (!flags.collateralA && !flags.collateralB)
-        throw new Error("Collateral A or B must be provided for a new position");
-    }
-
-    const borrowedToken = flags.borrowA ? PoolToken.A : PoolToken.B;
-    const positionToken = flags.borrowA ? PoolToken.B : PoolToken.A;
-    const collateralToken = flags.collateralA ? PoolToken.A : PoolToken.B;
-    const collateralAmount = flags.collateralA ?? flags.collateralB ?? 0n;
-    const borrowAmount = flags.borrowA ?? flags.borrowB ?? 0n;
-
-    const decreasePercent = flags.decreasePercent ?? HUNDRED_PERCENT;
-
-    let swapAmountIn: bigint;
-
-    if (decreasePercent > 0) {
-      if (!tunaPosition.exists) {
-        throw new Error("Can't decrease non existing position.");
+      if (flags.collateralToken) {
+        if (collateralToken != tunaPosition.data.collateralToken)
+          throw new Error("Collateral token is incorrect. You may skip this field for the existing position.");
+      } else {
+        collateralToken = tunaPosition.data.collateralToken;
       }
 
-      const vaultAddress = (
-        await getLendingVaultAddress(positionToken == PoolToken.A ? tunaPosition.data.mintB : tunaPosition.data.mintA)
-      )[0];
+      if (flags.positionToken) {
+        if (positionToken != tunaPosition.data.positionToken)
+          throw new Error("Position token is incorrect. You may skip this field for the existing position.");
+      } else {
+        positionToken = tunaPosition.data.positionToken;
+      }
+    } else {
+      if (!flags.collateralToken) throw new Error("Collateral token must be set");
+      if (!flags.positionToken) throw new Error("Position token must be set");
+    }
+
+    let decreasePercent = 0;
+    let swapExactIn = true;
+    let swapInAmount = 0;
+    let swapOutAmount = 0;
+    let collateralAmount: bigint = 0n;
+    let borrowAmount: bigint = 0n;
+    let inputMint: Account<Mint>;
+    let outputMint: Account<Mint>;
+
+    if (flags.decrease) {
+      inputMint = positionToken == PoolToken.A ? mintA : mintB;
+      outputMint = positionToken == PoolToken.A ? mintB : mintA;
+
+      if (!tunaPosition.exists) {
+        throw new Error("Can't decrease a non existing position.");
+      }
+
+      const vaultAddress = positionToken == PoolToken.A ? market.data.vaultB : market.data.vaultA;
       const vault = await fetchVault(rpc, vaultAddress);
 
-      const debt = sharesToFunds(
+      const positionDebt = sharesToFunds(
         tunaPosition.data.loanShares,
         vault.data.borrowedFunds,
         vault.data.borrowedShares,
         true,
       );
-      const repayAmount = Number(mulDiv(debt, BigInt(decreasePercent), HUNDRED_PERCENTn, true));
 
-      const newPositionAmount = mulDiv(
+      const decreaseQuote = getDecreaseSpotPositionEstimation(
+        flags.amount,
+        tunaPosition.data.collateralToken,
+        tunaPosition.data.positionToken,
         tunaPosition.data.amount,
-        BigInt(HUNDRED_PERCENT - decreasePercent),
-        HUNDRED_PERCENTn,
-        false,
+        positionDebt,
+        price,
       );
 
-      if (collateralToken != positionToken) {
-        swapAmountIn = tunaPosition.data.amount - newPositionAmount;
+      decreasePercent = decreaseQuote.decreasePercent;
+      swapExactIn = decreaseQuote.swapExactIn;
+      if (decreaseQuote.swapExactIn) {
+        swapInAmount = Number(decreaseQuote.swapAmount);
       } else {
-        swapAmountIn = BigInt(
-          Math.ceil(
-            (positionToken == PoolToken.A ? repayAmount / price : repayAmount * price) *
-              (1.0 + flags.slippageBps / 10000.0),
-          ),
-        );
-        if (swapAmountIn > tunaPosition.data.amount) swapAmountIn = tunaPosition.data.amount;
+        swapOutAmount = Number(decreaseQuote.swapAmount);
+        console.log("Required swap output amount:", swapOutAmount);
+
+        swapOutAmount += Math.floor((swapOutAmount * slippageBps) / 10000);
+        console.log("Required swap output amount with slippage applied:", swapOutAmount);
+
+        const aToB = positionToken == PoolToken.A;
+        const price = sqrtPriceToPrice(pool.data.sqrtPrice, 1, 1);
+        swapInAmount = Math.ceil(aToB ? swapOutAmount / price : swapOutAmount * price);
       }
     } else {
-      const protocolFee = calculateTunaSpotPositionProtocolFee(
+      inputMint = positionToken == PoolToken.A ? mintB : mintA;
+      outputMint = positionToken == PoolToken.A ? mintA : mintB;
+
+      const increaseQuote = getIncreaseSpotPositionEstimation(
+        flags.amount,
         collateralToken,
-        borrowedToken,
-        collateralAmount,
-        borrowAmount,
-        market.data.protocolFeeOnCollateral,
+        positionToken,
+        flags.leverage,
         market.data.protocolFee,
+        market.data.protocolFeeOnCollateral,
+        price,
       );
-      swapAmountIn = borrowAmount;
-      if (collateralToken == borrowedToken) swapAmountIn += collateralAmount;
-      swapAmountIn -= borrowedToken == PoolToken.A ? protocolFee.a : protocolFee.b;
+
+      collateralAmount = increaseQuote.collateral;
+      borrowAmount = increaseQuote.borrow;
+      swapExactIn = true;
+      swapInAmount = Number(increaseQuote.swapInputAmount);
     }
 
-    console.log("Swap input amount:", swapAmountIn);
+    console.log("Quoting...");
 
-    const jupiterQuoteApi = createJupiterApiClient();
+    const quote = swapExactIn
+      ? await jupiterSwapQuote({
+          tunaPositionAddress,
+          inputMint: inputMint,
+          outputMint: outputMint,
+          inputAmount: swapInAmount,
+          slippageBps: flags.slippageBps,
+        })
+      : await jupiterSwapQuoteByOutputAmount({
+          tunaPositionAddress,
+          inputMint: inputMint,
+          outputMint: outputMint,
+          estimatedInputAmount: swapInAmount,
+          minOutputAmount: swapOutAmount,
+          slippageBps: flags.slippageBps,
+        });
+    console.log("Swap input amount:", quote.inAmount);
+    console.log("Swap output amount:", quote.outAmount);
+    console.log(`Slippage: ${slippageBps / 100}%`);
+    console.log(`Price impact: ${(Number(quote.priceImpactPct) * 100).toFixed(2)}%`);
 
-    const quoteResponse = await jupiterQuoteApi.quoteGet({
-      inputMint: borrowedToken == PoolToken.A ? mintA.address : mintB.address,
-      outputMint: borrowedToken == PoolToken.A ? mintB.address : mintA.address,
-      amount: Number(swapAmountIn),
-      instructionVersion: "V1",
-      //dexes: ["DefiTuna"],
-      slippageBps: flags.slippageBps,
-    });
-
-    const swapInstructionsRequest: SwapInstructionsPostRequest = {
-      swapRequest: {
-        userPublicKey: tunaPositionAddress,
-        quoteResponse: quoteResponse,
-      },
-    };
-    const swapInstructionsResponse = await jupiterQuoteApi.swapInstructionsPost(swapInstructionsRequest);
-
-    const swapIx = swapInstructionsResponse.swapInstruction;
-
-    const modifyIxArgs: ModifyTunaSpotPositionJupiterInstructionDataArgs = {
-      decreasePercent: 0,
-      collateralAmount: flags.collateralA ?? flags.collateralB ?? 0n,
-      borrowAmount: flags.borrowA ?? flags.borrowB ?? 0n,
-      routeData: Uint8Array.from(Buffer.from(swapIx.data, "base64")),
-    };
-
-    // The first 9 accounts will be added inside the Tuna program.
-    const accounts: IAccountMeta[] = swapIx.accounts.slice(9).map(account => ({
-      address: address(account.pubkey),
-      role: account.isWritable ? AccountRole.WRITABLE : AccountRole.READONLY,
-    }));
-
-    console.log("Passed accounts:", accounts);
-    console.log("Passed data:", modifyIxArgs.routeData);
+    const instructions: IInstruction[] = [];
 
     if (!tunaPosition.exists) {
       console.log("The position doesn't exist, opening a new one...");
 
-      const ixs = await openTunaSpotPositionInstructions(rpc, signer, flags.pool, {
+      const args: OpenAndIncreaseTunaSpotPositionJupiterInstructionsArgs = {
         positionToken,
         collateralToken,
-      });
-      instructions.push(...ixs);
-    }
+        collateralAmount,
+        borrowAmount,
+        jupiterRouteData: quote.swapInstructionData,
+      };
 
-    const ixs = await modifyTunaSpotPositionJupiterInstructions(rpc, signer, flags.pool, accounts, modifyIxArgs);
-    instructions.push(...ixs);
+      instructions.push(
+        ...(await openAndIncreaseTunaSpotPositionJupiterInstructions(
+          rpc,
+          signer,
+          flags.pool,
+          quote.swapInstructionAccounts,
+          [],
+          args,
+        )),
+      );
+    } else {
+      const args: ModifyTunaSpotPositionJupiterInstructionsArgs = {
+        decreasePercent,
+        collateralAmount,
+        borrowAmount,
+        jupiterRouteData: quote.swapInstructionData,
+      };
+
+      instructions.push(
+        ...(await modifyTunaSpotPositionJupiterInstructions(
+          rpc,
+          signer,
+          flags.pool,
+          quote.swapInstructionAccounts,
+          [],
+          args,
+        )),
+      );
+
+      if (args.decreasePercent == HUNDRED_PERCENT) {
+        const ix = await closeTunaSpotPositionInstruction(signer, flags.pool, mintA, mintB);
+        instructions.push(ix);
+      }
+    }
 
     // Set limit orders if needed
     if (flags.lowerLimitOrderPrice || flags.upperLimitOrderPrice) {
@@ -257,9 +301,9 @@ export default class IncreaseSpotPositionJupiter extends BaseCommand {
     }
 
     console.log("Sending a transaction...");
-    const addressLookupTable = market.data.addressLookupTable;
     const signature = await sendTransaction(rpc, instructions, signer, DEFAULT_TRANSACTION_CONFIG, [
-      addressLookupTable,
+      market.data.addressLookupTable,
+      ...quote.addressLookupTableAddresses,
     ]);
     console.log("Transaction landed:", signature);
   }

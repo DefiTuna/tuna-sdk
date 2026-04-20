@@ -1,8 +1,8 @@
-use crate::accounts::{fetch_all_vault, fetch_tuna_config, fetch_tuna_lp_position, TunaConfig, TunaLpPosition, Vault};
+use crate::accounts::{fetch_all_vault, fetch_market, fetch_tuna_config, fetch_tuna_lp_position, TunaConfig, TunaLpPosition, Vault};
 use crate::instructions::{RebalanceTunaLpPositionFusion, RebalanceTunaLpPositionFusionInstructionArgs};
 use crate::types::{AccountsType, RemainingAccountsInfo, RemainingAccountsSlice};
 use crate::utils::fusion::{get_swap_tick_arrays, get_tick_arrays_for_rebalanced_position};
-use crate::{get_market_address, get_tuna_config_address, get_tuna_liquidity_position_address, get_vault_address};
+use crate::{get_market_address, get_tuna_config_address, get_tuna_liquidity_position_address};
 use anyhow::{anyhow, Result};
 use fusionamm_client::{
     fetch_fusion_pool, get_position_address, get_tick_array_address, FusionPool, InitializeTickArray, InitializeTickArrayInstructionArgs, TickArray,
@@ -26,7 +26,11 @@ pub struct RebalancePositionInstruction {
     pub initialization_cost: u64,
 }
 
-pub fn rebalance_tuna_lp_position_fusion_instructions(rpc: &RpcClient, authority: &Pubkey, position_mint: &Pubkey) -> Result<RebalancePositionInstruction> {
+pub fn rebalance_tuna_lp_position_fusion_instructions(
+    rpc: &RpcClient,
+    authority: &Pubkey,
+    position_mint: &Pubkey,
+) -> Result<RebalancePositionInstruction> {
     let rent = rpc.get_account(&Rent::id())?;
     let rent: Rent = bincode::deserialize(&rent.data)?;
 
@@ -40,7 +44,10 @@ pub fn rebalance_tuna_lp_position_fusion_instructions(rpc: &RpcClient, authority
     let mint_a_address = fusion_pool.data.token_mint_a;
     let mint_b_address = fusion_pool.data.token_mint_b;
 
-    let vaults = fetch_all_vault(&rpc, &[get_vault_address(&mint_a_address).0, get_vault_address(&mint_b_address).0])?;
+    let market_address = get_market_address(&tuna_position.data.pool).0;
+    let market = fetch_market(&rpc, &market_address)?;
+
+    let vaults = fetch_all_vault(&rpc, &[market.data.vault_a, market.data.vault_b])?;
     let (vault_a, vault_b) = (&vaults[0], &vaults[1]);
 
     let all_mint_addresses = vec![mint_a_address, mint_b_address];
@@ -107,7 +114,9 @@ pub fn rebalance_tuna_lp_position_fusion_instructions(rpc: &RpcClient, authority
         authority,
         &tuna_position.data,
         &tuna_config.data,
+        &vault_a.address,
         &vault_a.data,
+        &vault_b.address,
         &vault_b.data,
         &fusion_pool.data,
         &mint_a_account.owner,
@@ -124,7 +133,9 @@ pub fn rebalance_position_fusion_instruction(
     authority: &Pubkey,
     tuna_position: &TunaLpPosition,
     tuna_config: &TunaConfig,
+    vault_a_address: &Pubkey,
     vault_a: &Vault,
+    vault_b_address: &Pubkey,
     vault_b: &Vault,
     fusion_pool: &FusionPool,
     token_program_a: &Pubkey,
@@ -142,8 +153,6 @@ pub fn rebalance_position_fusion_instruction(
     let market_address = get_market_address(&tuna_position.pool).0;
     let tuna_position_address = get_tuna_liquidity_position_address(&tuna_position.position_mint).0;
 
-    let vault_a_address = get_vault_address(&mint_a).0;
-    let vault_b_address = get_vault_address(&mint_b).0;
     let fusion_pool_address = tuna_position.pool;
 
     let tick_array_lower_start_tick_index = get_tick_array_start_tick_index(tuna_position.tick_lower_index, fusion_pool.tick_spacing);
@@ -167,16 +176,16 @@ pub fn rebalance_position_fusion_instruction(
         mint_a: tuna_position.mint_a,
         mint_b: tuna_position.mint_b,
         market: market_address,
-        vault_a: vault_a_address,
-        vault_b: vault_b_address,
+        vault_a: *vault_a_address,
+        vault_b: *vault_b_address,
         tuna_position: tuna_position_address,
         tuna_position_ata: get_associated_token_address_with_program_id(&tuna_position_address, &tuna_position.position_mint, &spl_token_2022::ID),
         tuna_position_ata_a: get_associated_token_address_with_program_id(&tuna_position_address, &tuna_position.mint_a, token_program_a),
         tuna_position_ata_b: get_associated_token_address_with_program_id(&tuna_position_address, &tuna_position.mint_b, token_program_b),
         fee_recipient_ata_a: get_associated_token_address_with_program_id(&tuna_config.fee_recipient, &mint_a, token_program_a),
         fee_recipient_ata_b: get_associated_token_address_with_program_id(&tuna_config.fee_recipient, &mint_b, token_program_b),
-        pyth_oracle_price_feed_a: vault_a.pyth_oracle_price_update,
-        pyth_oracle_price_feed_b: vault_b.pyth_oracle_price_update,
+        oracle_price_update_a: vault_a.oracle_price_update,
+        oracle_price_update_b: vault_b.oracle_price_update,
         fusionamm_program: fusionamm_client::ID,
         fusion_pool: fusion_pool_address,
         fusion_position: get_position_address(&tuna_position.position_mint).unwrap().0,

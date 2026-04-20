@@ -28,7 +28,7 @@ pub async fn withdraw(rpc: RpcClient, authority: &Keypair) -> Result<()> {
 
   // The withdraw instruction interacts with the Tuna program to withdraw the funds into the lending position.
   // Here we have a choice to pass either funds or shares. For simplicity reasons we will use funds.
-  let instructions = withdraw_instructions(&rpc, &authority.pubkey(), &token_mint_address, amount, 0)?;
+  let instructions = withdraw_instructions(&rpc, &authority.pubkey(), &token_mint_address, None, amount, 0)?;
 
   // 'send_smart_transaction' requires a non-blocking rpc client, so we create it here.
   // However, it's not recommended to create the client each time—initialize it once and reuse it.

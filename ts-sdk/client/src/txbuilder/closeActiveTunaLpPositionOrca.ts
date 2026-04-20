@@ -24,10 +24,11 @@ import {
   decreaseTunaLpPositionOrcaInstruction,
   DEFAULT_ADDRESS,
   fetchAllVault,
+  fetchMarket,
   fetchMaybeTunaLpPosition,
   getCloseTunaLpPositionOrcaInstruction,
   getCreateAtaInstructions,
-  getLendingVaultAddress,
+  getMarketAddress,
   getTunaLpPositionAddress,
   HUNDRED_PERCENT,
 } from "../index.ts";
@@ -46,10 +47,10 @@ export async function closeActiveTunaLpPositionOrcaInstructions(
   const whirlpool = await fetchMaybeWhirlpool(rpc, tunaPosition.data.pool);
   if (!whirlpool.exists) throw new Error("Whirlpool account not found");
 
-  const [vaultA, vaultB] = await fetchAllVault(rpc, [
-    (await getLendingVaultAddress(whirlpool.data.tokenMintA))[0],
-    (await getLendingVaultAddress(whirlpool.data.tokenMintB))[0],
-  ]);
+  const marketAddress = (await getMarketAddress(tunaPosition.data.pool))[0];
+  const market = await fetchMarket(rpc, marketAddress);
+
+  const [vaultA, vaultB] = await fetchAllVault(rpc, [market.data.vaultA, market.data.vaultB]);
 
   const [mintA, mintB, ...rewardMints] = await fetchAllMaybeMint(rpc, [
     whirlpool.data.tokenMintA,

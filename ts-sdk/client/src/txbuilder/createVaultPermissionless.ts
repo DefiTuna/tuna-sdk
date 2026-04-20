@@ -2,17 +2,17 @@ import { Account, Address, IInstruction, TransactionSigner } from "@solana/kit";
 import { findAssociatedTokenPda, Mint } from "@solana-program/token-2022";
 
 import {
-  CreateVaultV2InstructionDataArgs,
+  CreateVaultPermissionlessInstructionDataArgs,
   getCreateAtaInstruction,
-  getCreateVaultV2Instruction,
+  getCreateVaultPermissionlessInstruction,
   getTunaConfigAddress,
 } from "../index.ts";
 
-export async function createVaultV2Instructions(
+export async function createVaultPermissionlessInstructions(
   authority: TransactionSigner,
   vault: Address,
   mint: Account<Mint>,
-  args: CreateVaultV2InstructionDataArgs,
+  args: CreateVaultPermissionlessInstructionDataArgs,
 ): Promise<IInstruction[]> {
   const tunaConfig = (await getTunaConfigAddress())[0];
 
@@ -26,7 +26,7 @@ export async function createVaultV2Instructions(
 
   return [
     await getCreateAtaInstruction(mint.address, vault, authority, mint.programAddress),
-    getCreateVaultV2Instruction({
+    getCreateVaultPermissionlessInstruction({
       authority,
       mint: mint.address,
       vault,

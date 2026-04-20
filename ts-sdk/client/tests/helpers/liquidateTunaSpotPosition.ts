@@ -11,7 +11,6 @@ import {
   fetchTunaConfig,
   fetchTunaSpotPosition,
   fetchVault,
-  getLendingVaultAddress,
   getMarketAddress,
   getTunaConfigAddress,
   HUNDRED_PERCENT,
@@ -106,7 +105,7 @@ export async function liquidateTunaSpotPosition({
     })
   )[0];
 
-  const vaultAAddress = (await getLendingVaultAddress(mintA.address))[0];
+  const vaultAAddress = market.data.vaultA;
   const vaultAAta = (
     await findAssociatedTokenPda({
       owner: vaultAAddress,
@@ -116,7 +115,7 @@ export async function liquidateTunaSpotPosition({
   )[0];
   const vaultA = await fetchVault(rpc, vaultAAddress);
 
-  const vaultBAddress = (await getLendingVaultAddress(mintB.address))[0];
+  const vaultBAddress = market.data.vaultB;
   const vaultBAta = (
     await findAssociatedTokenPda({
       owner: vaultBAddress,

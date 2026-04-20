@@ -17,7 +17,7 @@ import { fetchFusionPool } from "@crypticdot/fusionamm-client";
 import { getInitializableTickIndex, priceToTickIndex } from "@crypticdot/fusionamm-core";
 import { DEFAULT_TRANSACTION_CONFIG, sendTransaction } from "@crypticdot/fusionamm-tx-sender";
 import { fetchWhirlpool } from "@orca-so/whirlpools-client";
-import { Address, IInstruction } from "@solana/kit";
+import { Address, generateKeyPairSigner, IInstruction } from "@solana/kit";
 import { fetchAllMint } from "@solana-program/token-2022";
 
 import BaseCommand, { addressFlag, bigintFlag, percentFlag, priceFlag } from "../base";
@@ -186,15 +186,15 @@ export default class IncreaseLpPosition extends BaseCommand {
         minAddedAmountB: 0n,
       };
 
+      const positionMint = await generateKeyPairSigner();
+      const tunaPositionAddress = (await getTunaLpPositionAddress(positionMint.address))[0];
+      console.log("Position address:", tunaPositionAddress);
+
       if (market.data.marketMaker == MarketMaker.Fusion) {
-        const ix = await openAndIncreaseTunaLpPositionFusionInstructions(rpc, signer, flags.pool, args);
-        const tunaPositionAddress = (await getTunaLpPositionAddress(ix.positionMint))[0];
-        console.log("Position address:", tunaPositionAddress);
+        const ix = await openAndIncreaseTunaLpPositionFusionInstructions(rpc, signer, positionMint, flags.pool, args);
         instructions.push(...ix.instructions);
       } else {
-        const ix = await openAndIncreaseTunaLpPositionOrcaInstructions(rpc, signer, flags.pool, args);
-        const tunaPositionAddress = (await getTunaLpPositionAddress(ix.positionMint))[0];
-        console.log("Position address:", tunaPositionAddress);
+        const ix = await openAndIncreaseTunaLpPositionOrcaInstructions(rpc, signer, positionMint, flags.pool, args);
         instructions.push(...ix.instructions);
       }
     }

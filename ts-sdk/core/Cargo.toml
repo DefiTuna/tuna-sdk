@@ -8,7 +8,7 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-fusionamm-core = { version = "1.0", features = ["wasm"]}
+fusionamm-core = { version = "=1.0.83", features = ["wasm"] }
 defituna-core = { path = "../../rust-sdk/core", features = ["wasm"] }
 
 [profile.release]

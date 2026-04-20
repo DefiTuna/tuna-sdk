@@ -20,11 +20,13 @@ pub const TUNA_POSITION_FLAGS_UPPER_LIMIT_ORDER_SWAP_TO_TOKEN_B: u32 = 1 << 3;
 pub const TUNA_POSITION_FLAGS_AUTO_COMPOUND_YIELD: u32 = 1 << 4;
 pub const TUNA_POSITION_FLAGS_AUTO_COMPOUND_YIELD_WITH_LEVERAGE: u32 = 1 << 5;
 pub const TUNA_POSITION_FLAGS_ALLOW_REBALANCING: u32 = 1 << 6;
-pub const TUNA_POSITION_FLAGS_MASK: u32 = (1 << 7) - 1;
+pub const TUNA_POSITION_FLAGS_LOCKED: u32 = 1 << 7;
+pub const TUNA_POSITION_FLAGS_MASK: u32 = (1 << 8) - 1;
 
 pub const WP_NFT_UPDATE_AUTH: Pubkey = pubkey!("3axbTs2z5GBy6usVbNVoqEgZMng3vZvMnAoX29BFfwhr");
 pub const DEFAULT_PUSH_ORACLE_PROGRAM_ID: Pubkey = pubkey!("pythWSnswVUd12oZpeFP8e9CVaEqJg25g1Vtc2biRsT");
 
 pub const JUPITER_PROGRAM_ID: Pubkey = pubkey!("JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4");
 pub const JUPITER_EVENT_AUTHORITY: Pubkey = pubkey!("D8cy77BBepLMngZx6ZukaTff5hCt1HrWyKk3Hnd9oitf");
-pub const JUPITER_PROGRAM_AUTHORITY: Pubkey = pubkey!("9nnLbotNTcUhvbrsA6Mdkx45Sm82G35zo28AqUvjExn8");
+pub const JUPITER_PROGRAM_AUTHORITY_8: Pubkey = pubkey!("9nnLbotNTcUhvbrsA6Mdkx45Sm82G35zo28AqUvjExn8");
+pub const JUPITER_PROGRAM_AUTHORITY_11: Pubkey = pubkey!("69yhtoJR4JYPPABZcSNkzuqbaFbwHsCkja1sP1Q2aVT5");
