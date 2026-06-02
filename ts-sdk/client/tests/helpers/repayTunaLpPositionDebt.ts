@@ -5,7 +5,7 @@ import { expect } from "vitest";
 import {
   fetchMarket,
   fetchTunaLpPosition,
-  getLendingVaultAddress,
+  fetchVault,
   getMarketAddress,
   getTunaLpPositionAddress,
   repayTunaLpPositionDebtInstructions,
@@ -77,6 +77,9 @@ export async function repayTunaLpPositionDebt({
     ...(await repayTunaLpPositionDebtInstructions(rpc, signer, positionMint, collateralA, collateralB)),
   );
 
+  const vaultABefore = await fetchVault(rpc, vaultAAddress);
+  const vaultBBefore = await fetchVault(rpc, vaultBAddress);
+
   const userTokenABefore = await fetchMaybeToken(rpc, tunaPositionOwnerAtaA);
   const userBalanceABefore = userTokenABefore.exists ? userTokenABefore.data.amount : 0n;
   const userTokenBBefore = await fetchMaybeToken(rpc, tunaPositionOwnerAtaB);
@@ -90,6 +93,9 @@ export async function repayTunaLpPositionDebt({
   // Repay debt
   await sendTransaction(instructions);
 
+  const vaultAAfter = await fetchVault(rpc, vaultAAddress);
+  const vaultBAfter = await fetchVault(rpc, vaultBAddress);
+
   const userTokenAAfter = await fetchMaybeToken(rpc, tunaPositionOwnerAtaA);
   const userBalanceAAfter = userTokenAAfter.exists ? userTokenAAfter.data.amount : 0n;
   const userTokenBAfter = await fetchMaybeToken(rpc, tunaPositionOwnerAtaB);
@@ -102,6 +108,8 @@ export async function repayTunaLpPositionDebt({
 
   const tunaPositionAfter = await fetchTunaLpPosition(rpc, tunaPositionAddress);
 
+  expect(vaultABefore.data.borrowedFunds - vaultAAfter.data.borrowedFunds).toEqual(collateralA);
+  expect(vaultBBefore.data.borrowedFunds - vaultBAfter.data.borrowedFunds).toEqual(collateralB);
   expect(userBalanceAAfter + collateralA).toEqual(userBalanceABefore);
   expect(userBalanceBAfter + collateralB).toEqual(userBalanceBBefore);
   expect(vaultBalanceAAfter).toEqual(vaultBalanceABefore + collateralA);

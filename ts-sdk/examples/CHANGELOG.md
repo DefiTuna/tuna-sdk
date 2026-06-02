@@ -1,5 +1,294 @@
 # @defituna/examples-typescript
 
+## 2.0.111
+
+### Patch Changes
+
+- Updated dependencies [38b074d]
+  - @crypticdot/defituna-client@3.7.3
+
+## 2.0.110
+
+### Patch Changes
+
+- Updated dependencies [54692ec]
+  - @crypticdot/defituna-client@3.7.2
+
+## 2.0.109
+
+### Patch Changes
+
+- Updated dependencies [b6850c7]
+  - @crypticdot/defituna-client@3.7.1
+
+## 2.0.108
+
+### Patch Changes
+
+- Updated dependencies [76f40c5]
+  - @crypticdot/defituna-client@3.7.0
+
+## 2.0.107
+
+### Patch Changes
+
+- Updated dependencies [b49a559]
+  - @crypticdot/defituna-client@3.6.26
+
+## 2.0.106
+
+### Patch Changes
+
+- Updated dependencies [7f13a96]
+  - @crypticdot/defituna-client@3.6.25
+
+## 2.0.105
+
+### Patch Changes
+
+- Updated dependencies [ee9fd8a]
+  - @crypticdot/defituna-client@3.6.24
+
+## 2.0.104
+
+### Patch Changes
+
+- Updated dependencies [7fb5b22]
+  - @crypticdot/defituna-client@3.6.23
+
+## 2.0.103
+
+### Patch Changes
+
+- Updated dependencies [bed52f7]
+  - @crypticdot/defituna-client@3.6.22
+
+## 2.0.102
+
+### Patch Changes
+
+- Updated dependencies [d8a798f]
+  - @crypticdot/defituna-client@3.6.21
+
+## 2.0.101
+
+### Patch Changes
+
+- Updated dependencies [31f70dc]
+  - @crypticdot/defituna-client@3.6.20
+
+## 2.0.100
+
+### Patch Changes
+
+- Updated dependencies [96fd8fd]
+  - @crypticdot/defituna-client@3.6.19
+
+## 2.0.99
+
+### Patch Changes
+
+- Updated dependencies [acd6833]
+  - @crypticdot/defituna-client@3.6.18
+
+## 2.0.98
+
+### Patch Changes
+
+- Updated dependencies [439d1ab]
+  - @crypticdot/defituna-client@3.6.17
+
+## 2.0.97
+
+### Patch Changes
+
+- Updated dependencies [870ab89]
+  - @crypticdot/defituna-client@3.6.16
+
+## 2.0.96
+
+### Patch Changes
+
+- @crypticdot/defituna-client@3.6.15
+
+## 2.0.95
+
+### Patch Changes
+
+- Updated dependencies [fca0b63]
+  - @crypticdot/defituna-client@3.6.14
+
+## 2.0.94
+
+### Patch Changes
+
+- Updated dependencies [50dd9c8]
+  - @crypticdot/defituna-client@3.6.13
+
+## 2.0.93
+
+### Patch Changes
+
+- Updated dependencies [9a51033]
+  - @crypticdot/defituna-client@3.6.12
+
+## 2.0.92
+
+### Patch Changes
+
+- Updated dependencies [ba60e8d]
+  - @crypticdot/defituna-client@3.6.11
+
+## 2.0.91
+
+### Patch Changes
+
+- Updated dependencies [8b2c05a]
+  - @crypticdot/defituna-client@3.6.10
+
+## 2.0.90
+
+### Patch Changes
+
+- Updated dependencies [72474d9]
+  - @crypticdot/defituna-client@3.6.9
+
+## 2.0.89
+
+### Patch Changes
+
+- Updated dependencies [71eb5aa]
+  - @crypticdot/defituna-client@3.6.8
+
+## 2.0.88
+
+### Patch Changes
+
+- Updated dependencies [f52373a]
+  - @crypticdot/defituna-client@3.6.7
+
+## 2.0.87
+
+### Patch Changes
+
+- Updated dependencies [3994033]
+  - @crypticdot/defituna-client@3.6.6
+
+## 2.0.86
+
+### Patch Changes
+
+- Updated dependencies [d184fc9]
+  - @crypticdot/defituna-client@3.6.5
+
+## 2.0.85
+
+### Patch Changes
+
+- Updated dependencies [fcd063c]
+  - @crypticdot/defituna-client@3.6.4
+
+## 2.0.84
+
+### Patch Changes
+
+- Updated dependencies [1354c16]
+  - @crypticdot/defituna-client@3.6.3
+
+## 2.0.83
+
+### Patch Changes
+
+- Updated dependencies [6b3b516]
+  - @crypticdot/defituna-client@3.6.2
+
+## 2.0.82
+
+### Patch Changes
+
+- Updated dependencies [5246f23]
+  - @crypticdot/defituna-client@3.6.1
+
+## 2.0.81
+
+### Patch Changes
+
+- Updated dependencies [810637d]
+  - @crypticdot/defituna-client@3.6.0
+
+## 2.0.80
+
+### Patch Changes
+
+- Updated dependencies [43accb6]
+  - @crypticdot/defituna-client@3.5.13
+
+## 2.0.79
+
+### Patch Changes
+
+- Updated dependencies [574caaa]
+  - @crypticdot/defituna-client@3.5.12
+
+## 2.0.78
+
+### Patch Changes
+
+- Updated dependencies [2194ec2]
+  - @crypticdot/defituna-client@3.5.11
+
+## 2.0.77
+
+### Patch Changes
+
+- @crypticdot/defituna-client@3.5.10
+
+## 2.0.76
+
+### Patch Changes
+
+- @crypticdot/defituna-client@3.5.9
+
+## 2.0.75
+
+### Patch Changes
+
+- Updated dependencies [5914ca4]
+  - @crypticdot/defituna-client@3.5.8
+
+## 2.0.74
+
+### Patch Changes
+
+- @crypticdot/defituna-client@3.5.7
+
+## 2.0.73
+
+### Patch Changes
+
+- Updated dependencies [47f2e06]
+  - @crypticdot/defituna-client@3.5.6
+
+## 2.0.72
+
+### Patch Changes
+
+- Updated dependencies [0a3ac17]
+  - @crypticdot/defituna-client@3.5.5
+
+## 2.0.71
+
+### Patch Changes
+
+- Updated dependencies [6183b93]
+  - @crypticdot/defituna-client@3.5.4
+
+## 2.0.70
+
+### Patch Changes
+
+- @crypticdot/defituna-client@3.5.3
+
 ## 2.0.69
 
 ### Patch Changes

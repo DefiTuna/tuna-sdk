@@ -9,6 +9,8 @@ import {
 import { Account, AccountRole, Address, IAccountMeta, ReadonlyUint8Array } from "@solana/kit";
 import { findAssociatedTokenPda, Mint } from "@solana-program/token-2022";
 
+const EXCLUDE_DEXES = ["Pump.fun Amm", "Pump.fun", "Quantum"];
+
 //const JUPITER_CREATE_TOKEN_ACCOUNT_DISCRIMINATOR = new Uint8Array([147, 241, 123, 100, 244, 132, 174, 118]);
 const JUPITER_ROUTE_DISCRIMINATOR = new Uint8Array([229, 23, 203, 151, 122, 227, 173, 42]);
 const JUPITER_ROUTE_V2_DISCRIMINATOR = new Uint8Array([187, 100, 250, 204, 49, 196, 175, 20]);
@@ -215,7 +217,7 @@ async function jupiterSwapQuoteInternal(args: JupiterSwapQuoteRequest): Promise<
     amount: args.inputAmount,
     instructionVersion: "V2",
     //dexes: ["DefiTuna"],
-    excludeDexes: ["Pump.fun Amm", "Pump.fun"],
+    excludeDexes: EXCLUDE_DEXES,
     maxAccounts: 45,
     slippageBps: args.slippageBps,
   });

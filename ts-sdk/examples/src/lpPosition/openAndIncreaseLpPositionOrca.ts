@@ -1,7 +1,6 @@
 import {
   fetchMarket,
   getMarketAddress,
-  HUNDRED_PERCENT,
   openAndIncreaseTunaLpPositionOrcaInstructions,
   OpenAndIncreaseTunaLpPositionOrcaInstructionsArgs,
   TUNA_POSITION_FLAGS_LOWER_LIMIT_ORDER_SWAP_TO_TOKEN_B,
@@ -130,12 +129,6 @@ export async function openAndIncreaseTunaLpPositionOrca(): Promise<void> {
   const upperLimitOrderSqrtPrice = MAX_SQRT_PRICE;
 
   /**
-   * The total amount of slippage allowed on the {@link Whirlpool Whirlpool}'s `price`, in case of inner swaps due to rebalancing of deposit ratio.
-   * 0 is the default slippage value.
-   */
-  const maxSwapSlippage = HUNDRED_PERCENT / 10;
-
-  /**
    * The {@link _TunaPosition Tuna Position} option controlling token swaps on stop-loss, represented in bits 0-1.
    * - `00` (0) - No swap
    * - `01` (1) - Swaps to *Token A* (use {@link _TUNA_POSITION_FLAGS_LOWER_LIMIT_ORDER_SWAP_TO_TOKEN_A TUNA_POSITION_FLAGS_LOWER_LIMIT_ORDER_SWAP_TO_TOKEN_A})
@@ -181,7 +174,6 @@ export async function openAndIncreaseTunaLpPositionOrca(): Promise<void> {
     borrowB: borrow.b,
     minAddedAmountA: 0n,
     minAddedAmountB: 0n,
-    maxSwapSlippage,
   };
 
   const positionMint = await generateKeyPairSigner();

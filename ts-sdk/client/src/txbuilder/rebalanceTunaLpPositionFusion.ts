@@ -5,7 +5,7 @@ import {
   FusionPool,
   getInitializeTickArrayInstruction,
   getPositionAddress,
-  getTickArraySize,
+  getTickArrayMinSize,
 } from "@crypticdot/fusionamm-client";
 import {
   type Account,
@@ -109,7 +109,7 @@ export async function rebalanceTunaLpPositionFusionInstructions(
         startTickIndex: secondaryTickArrays.lowerTickArrayStartIndex,
       }),
     );
-    nonRefundableRent += calculateMinimumBalanceForRentExemption(rent, getTickArraySize());
+    nonRefundableRent += calculateMinimumBalanceForRentExemption(rent, getTickArrayMinSize());
   }
 
   // Create a tick array it doesn't exist.
@@ -125,7 +125,7 @@ export async function rebalanceTunaLpPositionFusionInstructions(
         startTickIndex: secondaryTickArrays.upperTickArrayStartIndex,
       }),
     );
-    nonRefundableRent += calculateMinimumBalanceForRentExemption(rent, getTickArraySize());
+    nonRefundableRent += calculateMinimumBalanceForRentExemption(rent, getTickArrayMinSize());
   }
 
   //

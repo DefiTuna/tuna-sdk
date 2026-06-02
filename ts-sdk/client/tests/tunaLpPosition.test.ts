@@ -74,7 +74,7 @@ describe("Tuna Liquidity Position", () => {
       liquidationFee: 10000, // 1%
       liquidationThreshold: 920000, // 92%
       maxLeverage: (LEVERAGE_ONE * 1020) / 100,
-      maxSwapSlippage: 0,
+      unused: 0,
       oraclePriceDeviationThreshold: HUNDRED_PERCENT, // Allow large deviation for tests
       protocolFee: 1000, // 0.1%
       protocolFeeOnCollateral: 1000, // 0.1%
@@ -235,7 +235,7 @@ describe("Tuna Liquidity Position", () => {
         liquidationFee: 10000, // 1%
         liquidationThreshold: 820000, // 82%
         maxLeverage: (LEVERAGE_ONE * 509) / 100,
-        maxSwapSlippage: 0,
+        unused: 0,
         oraclePriceDeviationThreshold: HUNDRED_PERCENT / 2, // Allow large deviation for tests
         protocolFee: 1000, // 0.1%
         protocolFeeOnCollateral: 1000, // 0.1%
@@ -1266,7 +1266,7 @@ describe("Tuna Liquidity Position", () => {
         liquidationFee: 10000, // 1%
         liquidationThreshold: 820000, // 82%
         maxLeverage: (LEVERAGE_ONE * 509) / 100,
-        maxSwapSlippage: 0,
+        unused: 0,
         oraclePriceDeviationThreshold: HUNDRED_PERCENT / 2, // Allow large deviation for tests
         protocolFee: 1000, // 0.1%
         protocolFeeOnCollateral: 1000, // 0.1%
@@ -2103,7 +2103,7 @@ describe("Tuna Liquidity Position", () => {
         liquidationFee: 10000, // 1%
         liquidationThreshold: 820000, // 82%
         maxLeverage: (LEVERAGE_ONE * 509) / 100,
-        maxSwapSlippage: 0,
+        unused: 0,
         oraclePriceDeviationThreshold: HUNDRED_PERCENT / 2, // Allow large deviation for tests
         protocolFee: 1000, // 0.1%
         protocolFeeOnCollateral: 1000, // 0.1%
@@ -2186,24 +2186,26 @@ describe("Tuna Liquidity Position", () => {
     });
   }
 
-  it("Repay debt", async () => {
-    const whirlpool = await fetchWhirlpool(rpc, testOrcaMarket.pool);
-    const actualTickIndex =
-      whirlpool.data.tickCurrentIndex - (whirlpool.data.tickCurrentIndex % whirlpool.data.tickSpacing);
+  for (const marketName of marketNames) {
+    it(`Repay debt (${marketName})`, async () => {
+      const market = markets.find(m => m.name == marketName)!;
+      const pool = await fetchPool(rpc, market.pool, market.marketMaker);
+      const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
 
-    const positionMint = await openAndIncreaseTunaLpPosition({
-      rpc,
-      tickLowerIndex: actualTickIndex - whirlpool.data.tickSpacing * 3,
-      tickUpperIndex: actualTickIndex + whirlpool.data.tickSpacing * 3,
-      pool: testOrcaMarket.pool,
-      collateralA: 1_000_000_000n,
-      collateralB: 0n,
-      borrowA: 1_000_000_000n,
-      borrowB: 1_000_000_000n,
+      const positionMint = await openAndIncreaseTunaLpPosition({
+        rpc,
+        tickLowerIndex: actualTickIndex - pool.data.tickSpacing * 3,
+        tickUpperIndex: actualTickIndex + pool.data.tickSpacing * 3,
+        pool: pool.address,
+        collateralA: 1_000_000_000n,
+        collateralB: 0n,
+        borrowA: 1_000_000_000n,
+        borrowB: 1_000_000_000n,
+      });
+
+      await repayTunaLpPositionDebt({ rpc, positionMint, collateralA: 10000n, collateralB: 20000n });
     });
-
-    await repayTunaLpPositionDebt({ rpc, positionMint, collateralA: 10000n, collateralB: 20000n });
-  });
+  }
 
   for (const marketName of marketNames) {
     it(`Re-balance a two-sided position (${marketName})`, async () => {
@@ -2262,7 +2264,7 @@ describe("Tuna Liquidity Position", () => {
       const market = markets.find(m => m.name == marketName)!;
       const positionMintKeypair = await generateKeyPairSigner();
       const positionMint = positionMintKeypair.address;
-      const pool = await fetchPool(rpc, market.pool, market.marketMaker);
+      let pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const positionAddress = (await getTunaLpPositionAddress(positionMint))[0];
       const actualTickIndex = pool.data.tickCurrentIndex - (pool.data.tickCurrentIndex % pool.data.tickSpacing);
 
@@ -2285,6 +2287,7 @@ describe("Tuna Liquidity Position", () => {
       });
 
       const position = await fetchTunaLpPosition(rpc, positionAddress);
+      pool = await fetchPool(rpc, market.pool, market.marketMaker);
 
       // Move the price a little
       await swapExactInput(rpc, signer, pool.address, 10000_000_000n, pool.data.tokenMintA);
@@ -2303,8 +2306,8 @@ describe("Tuna Liquidity Position", () => {
       const poolAfter = await fetchPool(rpc, market.pool, market.marketMaker);
 
       expect(position.data.entrySqrtPrice).toEqual(pool.data.sqrtPrice);
-      expect(position.data.entrySqrtPrice).toEqual(8249634742471189504n);
-      expect(positionAfter.data.entrySqrtPrice).toEqual(8231312470768045041n);
+      expect(position.data.entrySqrtPrice).toEqual(8249631144313578788n);
+      expect(positionAfter.data.entrySqrtPrice).toEqual(8231309011612558396n);
       expect(poolAfter.data.sqrtPrice).toEqual(8212909859800077718n);
 
       await closeActiveTunaLpPosition({ rpc, positionMint });

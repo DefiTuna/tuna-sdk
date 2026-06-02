@@ -98,12 +98,6 @@ export default class CreateMarket extends BaseCommand {
       min: 0,
       max: HUNDRED_PERCENT,
     }),
-    maxSwapSlippage: percentFlag({
-      description: "Maximum allowed swap slippage for the market (hundredths of a basis point or %)",
-      default: 0,
-      min: 0,
-      max: HUNDRED_PERCENT,
-    }),
     rebalanceProtocolFee: percentFlag({
       description: "Protocol fee taken from yield on position re-balancing (hundredths of a basis point or %)",
       default: 0,
@@ -171,7 +165,7 @@ export default class CreateMarket extends BaseCommand {
         borrowLimitA: flags.borrowLimitA,
         borrowLimitB: flags.borrowLimitB,
         oraclePriceDeviationThreshold: flags.oraclePriceDeviationThreshold,
-        maxSwapSlippage: flags.maxSwapSlippage,
+        unused: 0,
         rebalanceProtocolFee: flags.rebalanceProtocolFee,
         spotPositionSizeLimitA: flags.spotPositionSizeLimitA,
         spotPositionSizeLimitB: flags.spotPositionSizeLimitB,

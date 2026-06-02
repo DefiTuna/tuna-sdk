@@ -29,7 +29,6 @@ export type LiquidateTunaSpotPositionTestArgs = {
   signer?: TransactionSigner;
   tunaPositionAddress: Address;
   decreasePercent?: number;
-  maxSwapSlippage?: number;
 };
 
 export type LiquidateTunaSpotPositionTestResults = {

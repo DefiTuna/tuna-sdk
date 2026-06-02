@@ -17,6 +17,7 @@ use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
 use fusionamm_client::FUSIONAMM_ID;
 use orca_whirlpools_client::WHIRLPOOL_ID;
+use pump_amm_solana_client::PUMP_AMM_ID;
 use serde_json::{from_value, to_value, Value};
 use solana_account::Account;
 use solana_account_decoder::{encode_ui_account, UiAccountEncoding};
@@ -76,6 +77,7 @@ impl RpcContext {
         test.add_program("../../external_programs/whirlpool", WHIRLPOOL_ID, None);
         test.add_program("../../external_programs/fusionamm", FUSIONAMM_ID, None);
         test.add_program("../../external_programs/jupiter", JUPITER_PROGRAM_ID, None);
+        test.add_program("../../external_programs/pump_amm", PUMP_AMM_ID, None);
 
         let context = Mutex::new(test.start_with_context().await);
         let rpc = RpcClient::new_sender(MockRpcSender { context }, RpcClientConfig::default());
@@ -207,6 +209,15 @@ async fn send(context: &mut ProgramTestContext, method: &str, params: &Vec<Value
             to_value(RpcVersionInfo {
                 solana_core: version.to_string(),
                 feature_set: Some(version.feature_set),
+            })?
+        }
+        "getBalance" => {
+            let address_str = params[0].as_str().unwrap_or_default();
+            let address = Pubkey::from_str(address_str)?;
+            let lamports = context.banks_client.get_balance(address).await?;
+            to_value(Response {
+                context: RpcResponseContext { slot, api_version: None },
+                value: lamports,
             })?
         }
         _ => return Err(format!("Method not implemented: {}", method).into()),

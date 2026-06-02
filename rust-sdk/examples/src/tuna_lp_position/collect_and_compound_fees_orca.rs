@@ -3,7 +3,7 @@ use anyhow::{anyhow, Result};
 use defituna_client::accounts::{fetch_market, fetch_tuna_lp_position};
 use defituna_client::types::MarketMaker;
 use defituna_client::{
-  collect_and_compound_fees_orca_instructions, get_market_address, get_tuna_liquidity_position_address, TUNA_ID,
+  collect_and_compound_fees_orca_instructions, get_market_address, get_tuna_liquidity_position_address,
 };
 use fusionamm_tx_sender::{send_smart_transaction, PriorityFeeLevel, SmartTxConfig, SmartTxPriorityFeeConfig};
 use solana_keypair::Keypair;
@@ -60,17 +60,21 @@ pub async fn collect_and_compound_fees_orca(
   // Configure the transaction to use a priority fee.
   let tx_config = SmartTxConfig {
     priority_fee: Some(SmartTxPriorityFeeConfig {
-      additional_addresses: vec![TUNA_ID],
       fee_level: PriorityFeeLevel::Low,
-      fee_min: 1000,
-      fee_max: 100000000, // 0.001 SOL
+      fee_min: Some(1000),
+      fee_max: Some(100000000), // 0.001 SOL
     }),
     jito: None,
     default_compute_unit_limit: 800_000,
     compute_unit_margin_multiplier: 1.15,
+    disable_simulation: false,
     ingore_simulation_error: false,
     sig_verify_on_simulation: false,
+    wait_for_confirmation: true,
+    polling_interval: None,
     transaction_timeout: Some(Duration::from_secs(60)),
+    blockhash: None,
+    allow_randomness: false,
   };
 
   // Finally send the transaction.

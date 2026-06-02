@@ -5,7 +5,7 @@ use defituna_client::accounts::{fetch_market, fetch_tuna_lp_position};
 use defituna_client::types::{MarketMaker, PoolToken};
 use defituna_client::{
   close_active_tuna_lp_position_orca_instructions, get_market_address, get_tuna_liquidity_position_address,
-  CloseActiveTunaLpPositionArgs, TUNA_ID,
+  CloseActiveTunaLpPositionArgs,
 };
 use fusionamm_tx_sender::{send_smart_transaction, PriorityFeeLevel, SmartTxConfig, SmartTxPriorityFeeConfig};
 use solana_keypair::Keypair;
@@ -33,8 +33,6 @@ pub async fn close_active_position_orca(rpc: RpcClient, authority: &Keypair, tun
 
   // Minimum removed amounts for Tokens A and B to be respected by the RemoveLiquidity instruction, acting as slippage limits.
   let min_removed_amount = Amounts { a: 0, b: 0 };
-  // The total amount of slippage allowed on the Whirlpool's price during potential inner swaps due to deposit ratio rebalancing.
-  let max_swap_slippage = 0;
   // The option for whether to swap and which token to swap to during RemoveLiquidity.
   let swap_to_token = Some(PoolToken::A);
 
@@ -43,7 +41,6 @@ pub async fn close_active_position_orca(rpc: RpcClient, authority: &Keypair, tun
     swap_to_token,
     min_removed_amount_a: min_removed_amount.a,
     min_removed_amount_b: min_removed_amount.b,
-    max_swap_slippage,
   };
 
   let instructions =
@@ -69,17 +66,21 @@ pub async fn close_active_position_orca(rpc: RpcClient, authority: &Keypair, tun
   // Configure the transaction to use a priority fee.
   let tx_config = SmartTxConfig {
     priority_fee: Some(SmartTxPriorityFeeConfig {
-      additional_addresses: vec![TUNA_ID],
       fee_level: PriorityFeeLevel::Low,
-      fee_min: 1000,
-      fee_max: 100000000, // 0.001 SOL
+      fee_min: Some(1000),
+      fee_max: Some(100000000), // 0.001 SOL
     }),
     jito: None,
     default_compute_unit_limit: 800_000,
     compute_unit_margin_multiplier: 1.15,
+    disable_simulation: false,
     ingore_simulation_error: false,
     sig_verify_on_simulation: false,
+    wait_for_confirmation: true,
+    polling_interval: None,
     transaction_timeout: Some(Duration::from_secs(60)),
+    blockhash: None,
+    allow_randomness: false,
   };
 
   // Finally send the transaction.

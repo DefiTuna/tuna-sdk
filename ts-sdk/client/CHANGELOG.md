@@ -1,5 +1,88 @@
 # @defituna/client
 
+## 3.7.3
+
+### Patch Changes
+
+- 38b074d: Updated FusionAmm to 1.1.5
+- Updated dependencies [38b074d]
+  - @crypticdot/defituna-core@3.7.3
+
+## 3.7.2
+
+### Patch Changes
+
+- 54692ec: Updated FusionAmm to 1.1.4
+- Updated dependencies [54692ec]
+  - @crypticdot/defituna-core@3.7.2
+
+## 3.7.1
+
+### Patch Changes
+
+- b6850c7: Repay debt fix for permissionless markets
+  - @crypticdot/defituna-core@3.7.1
+
+## 3.7.0
+
+### Minor Changes
+
+- 76f40c5: Support for FusionAmm 1.1
+
+### Patch Changes
+
+- Updated dependencies [76f40c5]
+  - @crypticdot/defituna-core@3.7.0
+
+## 3.6.26
+
+### Patch Changes
+
+- b49a559: Updated market account filters
+  - @crypticdot/defituna-core@3.6.26
+
+## 3.6.25
+
+### Patch Changes
+
+- 7f13a96: Improved market filters
+  - @crypticdot/defituna-core@3.6.25
+
+## 3.6.24
+
+### Patch Changes
+
+- ee9fd8a: Fixed market closing instruction builder
+  - @crypticdot/defituna-core@3.6.24
+
+## 3.6.23
+
+### Patch Changes
+
+- 7fb5b22: Market closing
+  - @crypticdot/defituna-core@3.6.23
+
+## 3.6.22
+
+### Patch Changes
+
+- bed52f7: Added positions counter for market
+  - @crypticdot/defituna-core@3.6.22
+
+## 3.6.21
+
+### Patch Changes
+
+- d8a798f: Security related fixes
+  - @crypticdot/defituna-core@3.6.21
+
+## 3.6.20
+
+### Patch Changes
+
+- 31f70dc: Pumpfun Amm support for jupiter swap
+  - @crypticdot/defituna-core@3.6.20
+
 ## 3.6.19
 
 ### Patch Changes

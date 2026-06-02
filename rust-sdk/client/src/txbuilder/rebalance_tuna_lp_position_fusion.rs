@@ -78,7 +78,7 @@ pub fn rebalance_tuna_lp_position_fusion_instructions(
                 start_tick_index: secondary_tick_arrays[0].1,
             }),
         );
-        non_refundable_rent += rent.minimum_balance(TickArray::LEN);
+        non_refundable_rent += rent.minimum_balance(TickArray::MIN_LEN);
     }
 
     if tick_array_infos[1].is_none() && secondary_tick_arrays[0].1 != secondary_tick_arrays[1].1 {
@@ -93,7 +93,7 @@ pub fn rebalance_tuna_lp_position_fusion_instructions(
                 start_tick_index: secondary_tick_arrays[1].1,
             }),
         );
-        non_refundable_rent += rent.minimum_balance(TickArray::LEN);
+        non_refundable_rent += rent.minimum_balance(TickArray::MIN_LEN);
     }
 
     instructions.push(create_associated_token_account_idempotent(

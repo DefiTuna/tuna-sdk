@@ -1,9 +1,10 @@
 import { Address, Rpc, SolanaRpcApi, TransactionSigner } from "@solana/kit";
+import { expect } from "vitest";
 
-import { openTunaSpotPositionInstructions, PoolToken } from "../../src";
+import { fetchMarket, getMarketAddress, openTunaSpotPositionInstructions, PoolToken } from "../../src";
 
 import { FUNDER } from "./addresses.ts";
-import { sendTransaction } from "./mockRpc.ts";
+import { rpc, sendTransaction } from "./mockRpc.ts";
 
 export type OpenTunaSpotPositionTestArgs = {
   rpc: Rpc<SolanaRpcApi>;
@@ -15,15 +16,22 @@ export type OpenTunaSpotPositionTestArgs = {
 
 export async function openTunaSpotPosition({
   rpc,
-  pool: poolAddress,
+  pool,
   positionToken,
   collateralToken,
   signer = FUNDER,
 }: OpenTunaSpotPositionTestArgs) {
-  const instructions = await openTunaSpotPositionInstructions(rpc, signer, poolAddress, {
+  const marketAddress = (await getMarketAddress(pool))[0];
+  const market = await fetchMarket(rpc, marketAddress);
+
+  const instructions = await openTunaSpotPositionInstructions(rpc, signer, pool, {
     positionToken,
     collateralToken,
   });
 
   await sendTransaction(instructions);
+
+  const marketAfter = await fetchMarket(rpc, marketAddress);
+
+  expect(marketAfter.data.numPositions).toEqual(market.data.numPositions + 1);
 }

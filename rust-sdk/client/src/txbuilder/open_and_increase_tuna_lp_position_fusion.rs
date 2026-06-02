@@ -49,7 +49,6 @@ pub struct OpenAndIncreaseTunaLpPositionArgs {
     pub borrow_b: u64,
     pub min_added_amount_a: u64,
     pub min_added_amount_b: u64,
-    pub max_swap_slippage: u32,
 }
 
 pub fn open_and_increase_tuna_lp_position_fusion_instructions(
@@ -123,7 +122,7 @@ pub fn open_and_increase_tuna_lp_position_fusion_instructions(
                 start_tick_index: lower_tick_array_start_index,
             }),
         );
-        non_refundable_rent += rent.minimum_balance(TickArray::LEN);
+        non_refundable_rent += rent.minimum_balance(TickArray::MIN_LEN);
     }
 
     if tick_array_infos[1].is_none() && lower_tick_array_start_index != upper_tick_array_start_index {
@@ -138,7 +137,7 @@ pub fn open_and_increase_tuna_lp_position_fusion_instructions(
                 start_tick_index: upper_tick_array_start_index,
             }),
         );
-        non_refundable_rent += rent.minimum_balance(TickArray::LEN);
+        non_refundable_rent += rent.minimum_balance(TickArray::MIN_LEN);
     }
 
     instructions.push(open_and_increase_tuna_lp_position_fusion_instruction(
@@ -248,7 +247,7 @@ pub fn open_and_increase_tuna_lp_position_fusion_instruction(
             borrow_b: args.borrow_b,
             min_added_amount_a: args.min_added_amount_a,
             min_added_amount_b: args.min_added_amount_b,
-            max_swap_slippage: args.max_swap_slippage,
+            unused: 0,
             remaining_accounts_info: RemainingAccountsInfo {
                 slices: vec![
                     RemainingAccountsSlice {

@@ -40,13 +40,13 @@ export type ModifyTunaSpotPositionFusionInstructionsArgs = Omit<
 export async function modifyTunaSpotPositionFusionInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
-  poolAddress: Address,
+  pool: Address,
   collateralToken: PoolToken | undefined,
   args: ModifyTunaSpotPositionFusionInstructionsArgs,
   createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
 ): Promise<IInstruction[]> {
-  const tunaPositionAddress = (await getTunaSpotPositionAddress(authority.address, poolAddress))[0];
+  const tunaPositionAddress = (await getTunaSpotPositionAddress(authority.address, pool))[0];
   const tunaPosition = await fetchMaybeTunaSpotPosition(rpc, tunaPositionAddress);
 
   if (collateralToken == undefined) {
@@ -56,13 +56,13 @@ export async function modifyTunaSpotPositionFusionInstructions(
   }
 
   const tunaConfig = await fetchTunaConfig(rpc, (await getTunaConfigAddress())[0]);
-  const pool = await fetchFusionPool(rpc, poolAddress);
+  const poolAccount = await fetchFusionPool(rpc, pool);
 
-  const [mintA, mintB] = await fetchAllMaybeMint(rpc, [pool.data.tokenMintA, pool.data.tokenMintB]);
+  const [mintA, mintB] = await fetchAllMaybeMint(rpc, [poolAccount.data.tokenMintA, poolAccount.data.tokenMintB]);
   assert(mintA.exists, "Token A account not found");
   assert(mintB.exists, "Token B account not found");
 
-  const marketAddress = (await getMarketAddress(poolAddress))[0];
+  const marketAddress = (await getMarketAddress(pool))[0];
   const market = await fetchMarket(rpc, marketAddress);
 
   const [vaultA, vaultB] = await fetchAllVault(rpc, [market.data.vaultA, market.data.vaultB]);
@@ -101,7 +101,7 @@ export async function modifyTunaSpotPositionFusionInstructions(
     mintB,
     vaultA,
     vaultB,
-    pool,
+    poolAccount,
     requireTunaPositionOwnerAtaA,
     requireTunaPositionOwnerAtaB,
     { ...args },

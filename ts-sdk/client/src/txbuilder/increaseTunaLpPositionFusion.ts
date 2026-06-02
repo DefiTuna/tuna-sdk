@@ -48,7 +48,7 @@ import { getTunaLpPositionCreateAtaInstructions } from "../utils/tuna.ts";
 
 export type IncreaseTunaLpPositionFusionInstructionsArgs = Omit<
   IncreaseTunaLpPositionFusionInstructionDataArgs,
-  "remainingAccountsInfo"
+  "remainingAccountsInfo" | "unused"
 >;
 
 export async function increaseTunaLpPositionFusionInstructions(
@@ -179,7 +179,7 @@ export async function increaseTunaLpPositionFusionInstruction(
   vaultA: Account<Vault>,
   vaultB: Account<Vault>,
   fusionPool: Account<FusionPool>,
-  args: Omit<IncreaseTunaLpPositionFusionInstructionDataArgs, "remainingAccountsInfo">,
+  args: Omit<IncreaseTunaLpPositionFusionInstructionDataArgs, "remainingAccountsInfo" | "unused">,
 ): Promise<IInstruction> {
   const positionMint = tunaPosition.data.positionMint;
   const tunaPositionAddress = (await getTunaLpPositionAddress(positionMint))[0];
@@ -293,6 +293,7 @@ export async function increaseTunaLpPositionFusionInstruction(
 
   const ix = getIncreaseTunaLpPositionFusionInstruction({
     ...args,
+    unused: 0,
     remainingAccountsInfo,
     market: marketAddress,
     mintA: mintA.address,

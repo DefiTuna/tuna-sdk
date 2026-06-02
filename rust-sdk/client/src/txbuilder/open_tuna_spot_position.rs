@@ -1,6 +1,6 @@
-use crate::get_tuna_spot_position_address;
 use crate::instructions::{OpenTunaSpotPosition, OpenTunaSpotPositionInstructionArgs};
 use crate::types::PoolToken;
+use crate::{get_market_address, get_tuna_spot_position_address};
 use anyhow::{anyhow, Result};
 use fusionamm_client::{FusionPool, FUSIONAMM_ID};
 use orca_whirlpools_client::{Whirlpool, WHIRLPOOL_ID};
@@ -22,10 +22,10 @@ impl Default for OpenTunaSpotPositionInstructionArgs {
 pub fn open_tuna_spot_position_instructions(
     rpc: &RpcClient,
     authority: &Pubkey,
-    pool_address: &Pubkey,
+    pool: &Pubkey,
     args: OpenTunaSpotPositionInstructionArgs,
 ) -> Result<Vec<Instruction>> {
-    let pool_account = rpc.get_account(pool_address)?;
+    let pool_account = rpc.get_account(pool)?;
 
     let (mint_a_address, mint_b_address) = if pool_account.owner == FUSIONAMM_ID {
         let pool = FusionPool::from_bytes(&pool_account.data)?;
@@ -45,7 +45,7 @@ pub fn open_tuna_spot_position_instructions(
 
     instructions.push(open_tuna_spot_position_instruction(
         authority,
-        pool_address,
+        pool,
         &mint_a_address,
         &mint_b_address,
         &mint_a_account.owner,
@@ -58,14 +58,15 @@ pub fn open_tuna_spot_position_instructions(
 
 pub fn open_tuna_spot_position_instruction(
     authority: &Pubkey,
-    pool_address: &Pubkey,
+    pool: &Pubkey,
     mint_a: &Pubkey,
     mint_b: &Pubkey,
     token_program_a: &Pubkey,
     token_program_b: &Pubkey,
     args: OpenTunaSpotPositionInstructionArgs,
 ) -> Instruction {
-    let tuna_position_address = get_tuna_spot_position_address(authority, pool_address).0;
+    let tuna_position_address = get_tuna_spot_position_address(authority, pool).0;
+    let market = get_market_address(pool).0;
 
     let ix_builder = OpenTunaSpotPosition {
         authority: *authority,
@@ -73,10 +74,11 @@ pub fn open_tuna_spot_position_instruction(
         mint_b: *mint_b,
         token_program_a: *token_program_a,
         token_program_b: *token_program_b,
+        market,
         tuna_position: tuna_position_address,
         tuna_position_ata_a: get_associated_token_address_with_program_id(&tuna_position_address, mint_a, token_program_a),
         tuna_position_ata_b: get_associated_token_address_with_program_id(&tuna_position_address, mint_b, token_program_b),
-        pool: *pool_address,
+        pool: *pool,
         system_program: system_program::ID,
         associated_token_program: spl_associated_token_account::ID,
     };

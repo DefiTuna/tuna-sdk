@@ -2,11 +2,47 @@
   "address": "tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD",
   "metadata": {
     "name": "tuna",
-    "version": "3.6.17",
+    "version": "3.7.2",
     "spec": "0.1.0",
     "description": "DefiTuna"
   },
   "instructions": [
+    {
+      "name": "close_market",
+      "discriminator": [
+        88,
+        154,
+        248,
+        186,
+        48,
+        14,
+        123,
+        244
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tuna_config"
+        },
+        {
+          "name": "market",
+          "writable": true
+        },
+        {
+          "name": "vault_a",
+          "writable": true
+        },
+        {
+          "name": "vault_b",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
     {
       "name": "close_tuna_lp_position_fusion",
       "discriminator": [
@@ -41,6 +77,10 @@
         },
         {
           "name": "token_program_b"
+        },
+        {
+          "name": "market",
+          "writable": true
         },
         {
           "name": "tuna_position",
@@ -115,6 +155,16 @@
           "name": "mint_b"
         },
         {
+          "name": "token_program_a"
+        },
+        {
+          "name": "token_program_b"
+        },
+        {
+          "name": "market",
+          "writable": true
+        },
+        {
           "name": "tuna_position",
           "writable": true
         },
@@ -147,18 +197,47 @@
           "writable": true
         },
         {
-          "name": "token_program_a"
-        },
-        {
-          "name": "token_program_b"
-        },
-        {
           "name": "token_2022_program",
           "docs": [
             "",
             "Other accounts",
             ""
           ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "close_tuna_lp_position_user_volume_accumulator_account",
+      "discriminator": [
+        221,
+        223,
+        26,
+        63,
+        239,
+        210,
+        172,
+        218
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tuna_position",
+          "writable": true
+        },
+        {
+          "name": "user_volume_accumulator",
+          "writable": true
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "pump_amm_program"
         }
       ],
       "args": []
@@ -199,6 +278,10 @@
           "name": "token_program_b"
         },
         {
+          "name": "market",
+          "writable": true
+        },
+        {
           "name": "tuna_position",
           "writable": true
         },
@@ -209,6 +292,41 @@
         {
           "name": "tuna_position_ata_b",
           "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "close_tuna_spot_position_user_volume_accumulator_account",
+      "discriminator": [
+        110,
+        195,
+        10,
+        65,
+        147,
+        137,
+        49,
+        154
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tuna_position",
+          "writable": true
+        },
+        {
+          "name": "user_volume_accumulator",
+          "writable": true
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "pump_amm_program"
         }
       ],
       "args": []
@@ -818,7 +936,7 @@
           "type": "u64"
         },
         {
-          "name": "max_swap_slippage",
+          "name": "_unused",
           "type": "u32"
         },
         {
@@ -1243,7 +1361,7 @@
           "type": "u64"
         },
         {
-          "name": "max_swap_slippage",
+          "name": "_unused",
           "type": "u32"
         },
         {
@@ -1388,7 +1506,7 @@
           "type": "u64"
         },
         {
-          "name": "max_swap_slippage",
+          "name": "_unused",
           "type": "u32"
         },
         {
@@ -1605,7 +1723,7 @@
           "type": "u64"
         },
         {
-          "name": "max_swap_slippage",
+          "name": "_unused",
           "type": "u32"
         },
         {
@@ -1768,7 +1886,7 @@
           "type": "u64"
         },
         {
-          "name": "max_swap_slippage",
+          "name": "_unused",
           "type": "u32"
         },
         {
@@ -3330,7 +3448,7 @@
           "type": "u64"
         },
         {
-          "name": "max_swap_slippage",
+          "name": "_unused",
           "type": "u32"
         },
         {
@@ -3527,7 +3645,7 @@
           "type": "u64"
         },
         {
-          "name": "max_swap_slippage",
+          "name": "_unused",
           "type": "u32"
         },
         {
@@ -3801,7 +3919,8 @@
           "name": "token_program_b"
         },
         {
-          "name": "market"
+          "name": "market",
+          "writable": true
         },
         {
           "name": "tuna_position",
@@ -3910,7 +4029,8 @@
           "name": "mint_b"
         },
         {
-          "name": "market"
+          "name": "market",
+          "writable": true
         },
         {
           "name": "tuna_position",
@@ -4029,6 +4149,10 @@
         },
         {
           "name": "token_program_b"
+        },
+        {
+          "name": "market",
+          "writable": true
         },
         {
           "name": "tuna_position",
@@ -4636,36 +4760,6 @@
       ]
     },
     {
-      "name": "set_default_max_swap_slippage",
-      "discriminator": [
-        122,
-        22,
-        122,
-        128,
-        248,
-        196,
-        227,
-        181
-      ],
-      "accounts": [
-        {
-          "name": "authority",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "tuna_config",
-          "writable": true
-        }
-      ],
-      "args": [
-        {
-          "name": "max_swap_slippage",
-          "type": "u32"
-        }
-      ]
-    },
-    {
       "name": "set_default_oracle_price_deviation_threshold",
       "discriminator": [
         142,
@@ -5113,7 +5207,7 @@
           "type": "u64"
         },
         {
-          "name": "max_swap_slippage",
+          "name": "_unused",
           "type": "u32"
         },
         {
@@ -5403,6 +5497,11 @@
   ],
   "errors": [
     {
+      "code": 6499,
+      "name": "InvalidEnum",
+      "msg": "Enum value could not be converted"
+    },
+    {
       "code": 6500,
       "name": "TypeCastOverflow",
       "msg": "Type cast overflow"
@@ -5678,9 +5777,9 @@
       "msg": "Collected yield is zero"
     },
     {
-      "code": 6663,
-      "name": "ZeroAmount",
-      "msg": "Position amount is zero"
+      "code": 6664,
+      "name": "ZeroBadDebt",
+      "msg": "Zero bad debt"
     },
     {
       "code": 6670,
@@ -5713,6 +5812,16 @@
       "msg": "Leveraged locked position is not allowed"
     },
     {
+      "code": 6676,
+      "name": "VaultNotEmpty",
+      "msg": "Vault is not empty"
+    },
+    {
+      "code": 6677,
+      "name": "MarketHasOpenedPositions",
+      "msg": "The market has opened positions and can't be closed"
+    },
+    {
       "code": 6700,
       "name": "InvalidJupiterCreateTokenAccountInstructionData",
       "msg": "Invalid jupiter create token account instruction data"
@@ -5729,8 +5838,8 @@
     },
     {
       "code": 6703,
-      "name": "InvalidJupiterRouteUserAccount",
-      "msg": "Invalid jupiter route instruction user account"
+      "name": "InvalidJupiterRouteInstructionAccount",
+      "msg": "Invalid jupiter route instruction"
     },
     {
       "code": 6704,
@@ -5778,9 +5887,6 @@
           },
           {
             "name": "JupiterRoute"
-          },
-          {
-            "name": "JupiterIntermediateTokenAccounts"
           }
         ]
       }
@@ -6124,9 +6230,9 @@
             "type": "u64"
           },
           {
-            "name": "max_swap_slippage",
+            "name": "num_positions",
             "docs": [
-              "Maximum allowed swap slippage represented as hundredths of a basis point. If it's set to zero, the default value from the global config is used."
+              "Total number of opened spot+lp positions of"
             ],
             "type": "u32"
           },
@@ -6371,9 +6477,9 @@
             "type": "pubkey"
           },
           {
-            "name": "max_swap_slippage",
+            "name": "unused1",
             "docs": [
-              "Maximum allowed swap slippage percentage."
+              "Obsolete: Maximum allowed swap slippage percentage."
             ],
             "type": "u32"
           },

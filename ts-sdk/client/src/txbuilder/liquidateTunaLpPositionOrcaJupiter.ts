@@ -31,7 +31,6 @@ export async function liquidateTunaLpPositionOrcaJupiterInstructions(
   vaultB: Account<Vault>,
   whirlpool: Account<Whirlpool>,
   jupiterRouteAccounts: IAccountMeta[],
-  intermediateTokenAccountsAndPrograms: IAccountMeta[],
   args: LiquidateTunaLpPositionOrcaJupiterInstructionsArgs,
 ): Promise<IInstruction[]> {
   const instructions: IInstruction[] = [];
@@ -72,7 +71,6 @@ export async function liquidateTunaLpPositionOrcaJupiterInstructions(
     vaultB,
     whirlpool,
     jupiterRouteAccounts,
-    intermediateTokenAccountsAndPrograms,
     args,
   );
   instructions.push(ix);
@@ -97,7 +95,6 @@ export async function liquidateTunaLpPositionOrcaJupiterInstruction(
   vaultB: Account<Vault>,
   whirlpool: Account<Whirlpool>,
   jupiterRouteAccounts: IAccountMeta[],
-  intermediateTokenAccountsAndPrograms: IAccountMeta[],
   args: LiquidateTunaLpPositionOrcaJupiterInstructionsArgs,
 ): Promise<IInstruction> {
   const positionMint = tunaPosition.data.positionMint;
@@ -180,20 +177,12 @@ export async function liquidateTunaLpPositionOrcaJupiterInstruction(
     ],
   };
 
-  if (intermediateTokenAccountsAndPrograms.length > 0) {
-    remainingAccountsInfo.slices.push({
-      accountsType: AccountsType.JupiterIntermediateTokenAccounts,
-      length: intermediateTokenAccountsAndPrograms.length,
-    });
-  }
-
   const remainingAccounts: IAccountMeta[] = [
     { address: lowerTickArrayAddress, role: AccountRole.WRITABLE },
     { address: upperTickArrayAddress, role: AccountRole.WRITABLE },
     { address: whirlpool.data.tokenVaultA, role: AccountRole.WRITABLE },
     { address: whirlpool.data.tokenVaultB, role: AccountRole.WRITABLE },
     ...jupiterRouteAccounts,
-    ...intermediateTokenAccountsAndPrograms,
   ];
 
   const ix = getLiquidateTunaLpPositionOrcaJupiterInstruction({

@@ -18,6 +18,7 @@ export * from "./openAndIncreaseTunaSpotPositionJupiter";
 export * from "./closeTunaSpotPosition";
 export * from "./createMarket";
 export * from "./createMarketPermissionless";
+export * from "./closeMarket";
 export * from "./createReferral";
 export * from "./createTunaConfig";
 export * from "./createVault";

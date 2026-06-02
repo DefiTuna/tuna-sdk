@@ -25,7 +25,6 @@ pub fn liquidate_tuna_lp_position_orca_jupiter_instructions(
     token_program_a: &Pubkey,
     token_program_b: &Pubkey,
     jupiter_route_accounts: Vec<AccountMeta>,
-    jupiter_intermediate_token_accounts_and_programs: Vec<AccountMeta>,
     args: LiquidateTunaLpPositionJupiterArgs,
 ) -> Vec<Instruction> {
     vec![
@@ -43,7 +42,6 @@ pub fn liquidate_tuna_lp_position_orca_jupiter_instructions(
             token_program_a,
             token_program_b,
             jupiter_route_accounts,
-            jupiter_intermediate_token_accounts_and_programs,
             args,
         ),
     ]
@@ -61,7 +59,6 @@ pub fn liquidate_tuna_lp_position_orca_jupiter_instruction(
     token_program_a: &Pubkey,
     token_program_b: &Pubkey,
     jupiter_route_accounts: Vec<AccountMeta>,
-    jupiter_intermediate_token_accounts_and_programs: Vec<AccountMeta>,
     args: LiquidateTunaLpPositionJupiterArgs,
 ) -> Instruction {
     let mint_a = whirlpool.token_mint_a;
@@ -110,7 +107,7 @@ pub fn liquidate_tuna_lp_position_orca_jupiter_instruction(
         memo_program: spl_memo::ID,
     };
 
-    let mut remaining_accounts_slices = vec![
+    let remaining_accounts_slices = vec![
         RemainingAccountsSlice {
             accounts_type: AccountsType::TickArrayLower,
             length: 1,
@@ -133,13 +130,6 @@ pub fn liquidate_tuna_lp_position_orca_jupiter_instruction(
         },
     ];
 
-    if !jupiter_intermediate_token_accounts_and_programs.is_empty() {
-        remaining_accounts_slices.push(RemainingAccountsSlice {
-            accounts_type: AccountsType::JupiterIntermediateTokenAccounts,
-            length: jupiter_intermediate_token_accounts_and_programs.len() as u8,
-        });
-    }
-
     let mut remaining_accounts = vec![
         AccountMeta::new(tick_array_lower_address, false),
         AccountMeta::new(tick_array_upper_address, false),
@@ -148,10 +138,6 @@ pub fn liquidate_tuna_lp_position_orca_jupiter_instruction(
     ];
 
     for account in jupiter_route_accounts {
-        remaining_accounts.push(account);
-    }
-
-    for account in jupiter_intermediate_token_accounts_and_programs {
         remaining_accounts.push(account);
     }
 

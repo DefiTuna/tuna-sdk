@@ -20,7 +20,7 @@ solana-instruction = { version = "^2.2" }
 
 # Fusion Amm
 fusionamm-macros = { version = "1.0" }
-fusionamm-core = { version = "1.0.83" }
+fusionamm-core = { version = "1.1.5" }
 
 # Other dependencies
 libm = { version = ">=0.1, <0.3" }

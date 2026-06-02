@@ -37,7 +37,6 @@ export type LiquidateTunaLpPositionJupiterTestArgs = {
   positionMint: Address;
   decreasePercent?: number;
   routeAccounts: IAccountMeta[];
-  intermediateTokenAccountsAndPrograms: IAccountMeta[];
   routeData: ReadonlyUint8Array;
 };
 
@@ -47,7 +46,6 @@ export async function liquidateTunaLpPositionJupiter({
   positionMint,
   decreasePercent,
   routeAccounts,
-  intermediateTokenAccountsAndPrograms,
   routeData,
 }: LiquidateTunaLpPositionJupiterTestArgs): Promise<LiquidateTunaLpPositionTestResults> {
   const tunaConfigAddress = (await getTunaConfigAddress())[0];
@@ -127,7 +125,6 @@ export async function liquidateTunaLpPositionJupiter({
       vaultB,
       pool as Account<Whirlpool>,
       routeAccounts,
-      intermediateTokenAccountsAndPrograms,
       {
         decreasePercent: decreasePercent ?? HUNDRED_PERCENT,
         jupiterRouteData: routeData,
@@ -144,7 +141,6 @@ export async function liquidateTunaLpPositionJupiter({
       vaultB,
       pool as Account<FusionPool>,
       routeAccounts,
-      intermediateTokenAccountsAndPrograms,
       {
         decreasePercent: decreasePercent ?? HUNDRED_PERCENT,
         jupiterRouteData: routeData,

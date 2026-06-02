@@ -33,7 +33,6 @@ export type CloseActiveTunaLpPositionInstructionArgs = {
   swapToToken: OptionOrNullable<PoolToken>;
   minRemovedAmountA: bigint;
   minRemovedAmountB: bigint;
-  maxSwapSlippage: number;
 };
 
 export async function closeActiveTunaLpPositionFusionInstructions(
@@ -127,9 +126,12 @@ export async function closeActiveTunaLpPositionFusionInstructions(
   // Add close position instruction.
   instructions.push(
     getCloseTunaLpPositionFusionInstruction({
+      authority,
       mintA: mintA.address,
       mintB: mintB.address,
-      authority,
+      tokenProgramA: mintA.programAddress,
+      tokenProgramB: mintB.programAddress,
+      market: marketAddress,
       tunaPositionMint: positionMint,
       tunaPositionAta,
       tunaPositionAtaA,
@@ -137,8 +139,6 @@ export async function closeActiveTunaLpPositionFusionInstructions(
       fusionPosition: fusionPosition.address,
       tunaPosition: tunaPosition.address,
       fusionammProgram: FUSIONAMM_PROGRAM_ADDRESS,
-      tokenProgramA: mintA.programAddress,
-      tokenProgramB: mintB.programAddress,
       token2022Program: TOKEN_2022_PROGRAM_ADDRESS,
     }),
   );

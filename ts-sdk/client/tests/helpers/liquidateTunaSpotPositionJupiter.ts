@@ -27,7 +27,6 @@ export type LiquidateTunaSpotPositionJupiterTestArgs = {
   tunaPositionAddress: Address;
   decreasePercent?: number;
   routeAccounts: IAccountMeta[];
-  intermediateTokenAccountsAndPrograms: IAccountMeta[];
   routeData: ReadonlyUint8Array;
 };
 
@@ -36,7 +35,6 @@ export async function liquidateTunaSpotPositionJupiter({
   tunaPositionAddress,
   decreasePercent,
   routeAccounts,
-  intermediateTokenAccountsAndPrograms,
   routeData,
   signer = FUNDER,
 }: LiquidateTunaSpotPositionJupiterTestArgs): Promise<LiquidateTunaSpotPositionTestResults> {
@@ -127,7 +125,6 @@ export async function liquidateTunaSpotPositionJupiter({
     vaultB,
     pool.address,
     routeAccounts,
-    intermediateTokenAccountsAndPrograms,
     {
       decreasePercent: decreasePercent ?? HUNDRED_PERCENT,
       jupiterRouteData: routeData,

@@ -147,7 +147,6 @@ export async function openAndIncreaseTunaSpotPositionJupiter({
     signer,
     poolAddress,
     routeAccounts,
-    [],
     modifyArgs,
     createInstructions,
     cleanupInstructions,
@@ -226,6 +225,8 @@ export async function openAndIncreaseTunaSpotPositionJupiter({
       borrowAmountB * BigInt(market.data.protocolFee)) /
     BigInt(HUNDRED_PERCENT);
   expect(feeRecipientBalanceBAfter - feeRecipientBalanceBBefore).toEqual(feeB);
+
+  expect(marketAfter.data.numPositions).toEqual(market.data.numPositions + 1);
 
   // Cleanup instructions close WSOL accounts.
   await sendTransaction(cleanupInstructions);

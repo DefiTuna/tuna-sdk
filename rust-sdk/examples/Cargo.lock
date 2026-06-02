@@ -957,6 +957,7 @@ dependencies = [
  "orca_whirlpools",
  "orca_whirlpools_client",
  "orca_whirlpools_core",
+ "pump-amm-solana-client",
  "solana-account",
  "solana-account-decoder",
  "solana-account-info",
@@ -1379,9 +1380,9 @@ dependencies = [
 
 [[package]]
 name = "fusionamm-client"
-version = "1.0.83"
+version = "1.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "246319ef50cbb952676dfae1f7bf65b4915b7eceb46bca5f0b5bf327b76aa441"
+checksum = "5e33ef0d86658f3d4d529a24a684b21fc3068bdd8005d78f45e7728a1e80c2b8"
 dependencies = [
  "borsh 0.10.4",
  "fusionamm-core",
@@ -1407,14 +1408,15 @@ dependencies = [
 
 [[package]]
 name = "fusionamm-core"
-version = "1.0.83"
+version = "1.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "361234ddb554551862b649bf10635cabba4ac78bbe9b30161146b98ff947b4fd"
+checksum = "a087f7d1a87b91092456450519c6f7da60bb5c3e305d44cec47164fc0ea587e6"
 dependencies = [
  "ethnum",
  "fusionamm-macros",
  "libm",
  "once_cell",
+ "serde",
 ]
 
 [[package]]
@@ -1430,13 +1432,14 @@ dependencies = [
 
 [[package]]
 name = "fusionamm-sdk"
-version = "1.0.83"
+version = "1.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6cb1159666c23c1b20ea4a3c308446a53c14a816e7b4bd68f0ab52ddad1b0eaf"
+checksum = "0451da317aaa58bf184245a642362dd2b90ae1081d8f8fec83ee7426bab2e816"
 dependencies = [
  "bincode",
  "fusionamm-client",
  "fusionamm-core",
+ "log",
  "serde",
  "serde_json",
  "solana-account",
@@ -1457,9 +1460,9 @@ dependencies = [
 
 [[package]]
 name = "fusionamm-tx-sender"
-version = "1.0.10"
+version = "1.0.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "440134faab4247aa15fd212de36ab2fc418f6df443e53aced8e964fca2e53d36"
+checksum = "66bdf7e48b515dc63e4844747e67b5297bbaa8d8b1b807e0627daca0cba9032e"
 dependencies = [
  "anyhow",
  "bincode",
@@ -2921,6 +2924,35 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8fd00f0bb2e90d81d1044c2b32617f68fcb9fa3bb7640c23e9c748e53fb30934"
 dependencies = [
  "unicode-ident",
+]
+
+[[package]]
+name = "pump-amm-solana-client"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2778e42df8b65cf338a0f17d57e9e8007a91ddadfdc2f8c5540b6896af934e15"
+dependencies = [
+ "bincode",
+ "borsh 0.10.4",
+ "num-derive",
+ "num-traits",
+ "solana-account",
+ "solana-account-decoder",
+ "solana-account-info",
+ "solana-client",
+ "solana-cpi",
+ "solana-decode-error",
+ "solana-instruction",
+ "solana-keypair",
+ "solana-msg",
+ "solana-program-entrypoint",
+ "solana-program-error",
+ "solana-pubkey",
+ "solana-sdk-ids",
+ "solana-signer",
+ "solana-system-interface",
+ "solana-sysvar",
+ "thiserror 2.0.18",
 ]
 
 [[package]]

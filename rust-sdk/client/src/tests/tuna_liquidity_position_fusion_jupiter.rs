@@ -14,6 +14,8 @@ mod tests {
     use fusionamm_client::{fetch_fusion_pool, FusionPool};
     use jupiter_solana_client::instructions::{RouteV2, RouteV2InstructionArgs};
     use jupiter_solana_client::types::{DefiTunaAccountsType, DefiTunaRemainingAccountsInfo, DefiTunaRemainingAccountsSlice, RoutePlanStepV2, Swap};
+    use pump_amm_solana_client::instructions::InitUserVolumeAccumulator;
+    use pump_amm_solana_client::{get_event_authority, get_user_volume_accumulator, PUMP_AMM_ID};
     use serial_test::serial;
     use solana_instruction::AccountMeta;
     use solana_keypair::Keypair;
@@ -34,7 +36,7 @@ mod tests {
             disabled: false,
             borrow_limit_a: 0,
             borrow_limit_b: 0,
-            max_swap_slippage: 0,
+            unused: 0,
             rebalance_protocol_fee: 0,
             spot_position_size_limit_a: 1000_000_000_000,
             spot_position_size_limit_b: 100000_000_000,
@@ -115,7 +117,6 @@ mod tests {
                     borrow_b: 0,
                     min_added_amount_a: 0,
                     min_added_amount_b: 0,
-                    max_swap_slippage: 0,
                 },
             )
             .unwrap();
@@ -135,13 +136,33 @@ mod tests {
             let tuna_position_ata_b =
                 get_associated_token_address_with_program_id(&tuna_position.address, &test_market.mint_b_address, &test_market.token_program_b);
 
-            let route_accounts = get_route_accounts(&test_market, &pool.data, &pool.address, &tuna_position.address);
+            let user_volume_accumulator_address = get_user_volume_accumulator(&tuna_position.address).0;
+            let event_authority_address = get_event_authority().0;
+
+            // Required for Pumpfun AMM. We don't test a swap through pumpfun amm here, but we test that we can close this account in the liquidate instruction.
+            let init_user_volume_accumulator_ix = InitUserVolumeAccumulator {
+                payer: signer.pubkey(),
+                user: tuna_position.address,
+                user_volume_accumulator: user_volume_accumulator_address,
+                event_authority: event_authority_address,
+                system_program: solana_sdk_ids::system_program::ID,
+                program: PUMP_AMM_ID,
+            }
+            .instruction();
+            ctx.send_transaction(vec![init_user_volume_accumulator_ix]).unwrap();
+
+            let mut route_accounts = get_route_accounts(&test_market, &pool.data, &pool.address, &tuna_position.address).to_vec();
+
+            // Add pumpfun amm accounts to let Tuna know that the user volume accumulator account should be closed.
+            route_accounts.push(AccountMeta::new(PUMP_AMM_ID, false));
+            route_accounts.push(AccountMeta::new(user_volume_accumulator_address, false));
+            route_accounts.push(AccountMeta::new(event_authority_address, false));
 
             let route_ix_builder = RouteV2 {
                 user_transfer_authority: tuna_position.address,
                 user_source_token_account: tuna_position_ata_b,
                 user_destination_token_account: tuna_position_ata_a,
-                destination_token_account: None,
+                destination_token_account: Some(tuna_position_ata_a),
                 source_mint: tuna_position.data.mint_b,
                 destination_mint: test_market.mint_a_address,
                 source_token_program: spl_token::ID,
@@ -180,6 +201,8 @@ mod tests {
 
             route_ix.accounts[0].is_signer = false;
 
+            let signer_balance_before = ctx.rpc.get_balance(&ctx.signer.pubkey()).unwrap();
+
             ctx.send_transaction(liquidate_tuna_lp_position_fusion_jupiter_instructions(
                 &ctx.signer.pubkey(),
                 &tuna_position.data,
@@ -192,13 +215,16 @@ mod tests {
                 &test_market.token_program_a,
                 &test_market.token_program_b,
                 route_ix.accounts,
-                vec![],
                 LiquidateTunaLpPositionJupiterArgs {
                     decrease_percent: HUNDRED_PERCENT,
                     jupiter_route_data: route_ix.data,
                 },
             ))
             .unwrap();
+
+            // Test that rent from the user_volume_accumulator account is returned.
+            let signer_balance_after = ctx.rpc.get_balance(&ctx.signer.pubkey()).unwrap();
+            assert_eq!(signer_balance_after as i64 - signer_balance_before as i64, 1844400 - 5000);
         });
     }
 }

@@ -1,5 +1,39 @@
 # @crypticdot/defituna-core
 
+## 3.7.3
+
+### Patch Changes
+
+- 38b074d: Updated FusionAmm to 1.1.5
+
+## 3.7.2
+
+### Patch Changes
+
+- 54692ec: Updated FusionAmm to 1.1.4
+
+## 3.7.1
+
+## 3.7.0
+
+### Minor Changes
+
+- 76f40c5: Support for FusionAmm 1.1
+
+## 3.6.26
+
+## 3.6.25
+
+## 3.6.24
+
+## 3.6.23
+
+## 3.6.22
+
+## 3.6.21
+
+## 3.6.20
+
 ## 3.6.19
 
 ## 3.6.18

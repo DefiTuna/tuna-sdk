@@ -9,10 +9,12 @@ import { afterEach, assert, beforeEach, describe, it, vi } from "vitest";
 
 import {
   fetchAllLendingPositionWithFilter,
+  fetchAllMarketWithFilter,
   fetchAllReferralsWithFilter,
   fetchAllTunaLpPositionWithFilter,
   fetchAllTunaSpotPositionWithFilter,
   getLendingPositionEncoder,
+  getMarketEncoder,
   getReferralEncoder,
   getTunaLpPositionEncoder,
   getTunaSpotPositionEncoder,
@@ -20,7 +22,10 @@ import {
   lendingPositionAuthorityFilter,
   lendingPositionMintFilter,
   lendingPositionVaultFilter,
+  MarketArgs,
+  marketAuthorityFilter,
   MarketMaker,
+  marketMarketMakerFilter,
   PoolToken,
   ReferralArgs,
   referralAuthorityFilter,
@@ -68,6 +73,45 @@ describe("Get program account memcmp filters", () => {
       assert.deepStrictEqual(actual, expected);
     }
   }
+
+  it("Market", async () => {
+    const marketStruct: MarketArgs = {
+      addressLookupTable: addresses[0],
+      badDebtA: 343423,
+      badDebtB: 136653,
+      borrowLimitA: 245773,
+      borrowLimitB: 34465763,
+      borrowedSharesA: 2355,
+      borrowedSharesB: 23576,
+      bump: new Uint8Array(),
+      disabled: false,
+      liquidationFee: 0,
+      liquidationThreshold: 0,
+      marketMaker: MarketMaker.Fusion,
+      maxLeverage: 0,
+      numPositions: 0,
+      oraclePriceDeviationThreshold: 0,
+      pool: addresses[1],
+      protocolFee: 0,
+      protocolFeeOnCollateral: 0,
+      rebalanceProtocolFee: 0,
+      reserved: new Uint8Array(),
+      spotPositionSizeLimitA: 653378789,
+      spotPositionSizeLimitB: 4573568,
+      unused1: 0,
+      vaultA: addresses[2],
+      vaultB: addresses[3],
+      version: 1,
+      authority: addresses[4],
+    };
+    await fetchAllMarketWithFilter(
+      mockRpc,
+      marketMarketMakerFilter(marketStruct.marketMaker),
+      marketAuthorityFilter(marketStruct.authority),
+    );
+    const data = getMarketEncoder().encode(marketStruct);
+    assertFilters(data);
+  });
 
   it("LendingPosition", async () => {
     const positionStruct: LendingPositionArgs = {

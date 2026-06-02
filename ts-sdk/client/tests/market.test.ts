@@ -5,6 +5,7 @@ import assert from "assert";
 import { beforeAll, describe, expect, it } from "vitest";
 
 import {
+  closeMarketInstructions,
   createMarketPermissionlessInstruction,
   DEFAULT_ADDRESS,
   fetchMarket,
@@ -92,7 +93,7 @@ describe("Markets", () => {
       oraclePriceDeviationThreshold: 20000,
       borrowLimitA: 3433233243421n,
       borrowLimitB: 87855563453n,
-      maxSwapSlippage: 400,
+      unused: 0,
       rebalanceProtocolFee: 10000,
       spotPositionSizeLimitA: 34343224218n,
       spotPositionSizeLimitB: 17219873092n,
@@ -113,7 +114,6 @@ describe("Markets", () => {
     expect(market.data.oraclePriceDeviationThreshold).toEqual(20000);
     expect(market.data.borrowLimitA).toEqual(3433233243421n);
     expect(market.data.borrowLimitB).toEqual(87855563453n);
-    expect(market.data.maxSwapSlippage).toEqual(400);
     expect(market.data.rebalanceProtocolFee).toEqual(10000);
     expect(market.data.spotPositionSizeLimitA).toEqual(34343224218n);
     expect(market.data.spotPositionSizeLimitB).toEqual(17219873092n);
@@ -138,7 +138,7 @@ describe("Markets", () => {
       oraclePriceDeviationThreshold: 20001,
       borrowLimitA: 6783446n,
       borrowLimitB: 234576732n,
-      maxSwapSlippage: 401,
+      unused: 0,
       rebalanceProtocolFee: 10001,
       spotPositionSizeLimitA: 4343224218n,
       spotPositionSizeLimitB: 7219873092n,
@@ -158,7 +158,6 @@ describe("Markets", () => {
     expect(market.data.oraclePriceDeviationThreshold).toEqual(20001);
     expect(market.data.borrowLimitA).toEqual(6783446n);
     expect(market.data.borrowLimitB).toEqual(234576732n);
-    expect(market.data.maxSwapSlippage).toEqual(401);
     expect(market.data.rebalanceProtocolFee).toEqual(10001);
     expect(market.data.spotPositionSizeLimitA).toEqual(4343224218n);
     expect(market.data.spotPositionSizeLimitB).toEqual(7219873092n);
@@ -176,7 +175,7 @@ describe("Markets", () => {
       oraclePriceDeviationThreshold: 20001,
       borrowLimitA: 6783446n,
       borrowLimitB: 234576732n,
-      maxSwapSlippage: 401,
+      unused: 0,
       rebalanceProtocolFee: 10000,
       spotPositionSizeLimitA: 4343224218n,
       spotPositionSizeLimitB: 7219873092n,
@@ -195,7 +194,7 @@ describe("Markets", () => {
     const vaultBAddress = (await getLendingVaultAddress(mintB.address))[0];
 
     const ix = getCreateMarketPermissionlessInstruction({
-      authority: TUNA_ADMIN_KEYPAIR,
+      authority: signer,
       tunaConfig: tunaConfigAddress,
       market: marketPermissionlessAddress,
       pool: poolPermissionlessAddress,
@@ -214,18 +213,18 @@ describe("Markets", () => {
     const addressLookupTable = (await generateKeyPairSigner()).address;
     const marketAddress = (await getMarketAddress(poolPermissionlessAddress))[0];
 
-    const vaultA = await setupVaultPermissionless(mintA, {
+    const vaultA = await setupVaultPermissionless(signer, mintA, {
       interestRate: 3655890108n,
       market: marketAddress,
     });
 
-    const vaultB = await setupVaultPermissionless(mintB, {
+    const vaultB = await setupVaultPermissionless(signer, mintB, {
       interestRate: 3655890108n,
       market: marketAddress,
     });
 
     const ix = await createMarketPermissionlessInstruction(
-      TUNA_ADMIN_KEYPAIR,
+      signer,
       poolPermissionlessAddress,
       vaultA.address,
       vaultB.address,
@@ -247,8 +246,15 @@ describe("Markets", () => {
     expect(market.data.protocolFee).toEqual(tunaConfig.data.defaultProtocolFeeRate);
     expect(market.data.rebalanceProtocolFee).toEqual(tunaConfig.data.defaultRebalanceFeeRate);
     expect(market.data.liquidationFee).toEqual(tunaConfig.data.defaultLiquidationFeeRate);
-    expect(market.data.maxSwapSlippage).toEqual(0);
     expect(market.data.vaultA).toEqual(vaultA.address);
     expect(market.data.vaultB).toEqual(vaultB.address);
+  });
+
+  it("Close market", async () => {
+    await sendTransaction(await closeMarketInstructions(rpc, TUNA_ADMIN_KEYPAIR, poolAddress, false));
+  });
+
+  it("Close permissionless market", async () => {
+    await sendTransaction(await closeMarketInstructions(rpc, signer, poolPermissionlessAddress, false));
   });
 }, 20000);

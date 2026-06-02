@@ -223,7 +223,7 @@ pub fn open_and_increase_tuna_lp_position_orca_instruction(
             borrow_b: args.borrow_b,
             min_added_amount_a: args.min_added_amount_a,
             min_added_amount_b: args.min_added_amount_b,
-            max_swap_slippage: args.max_swap_slippage,
+            unused: 0,
             remaining_accounts_info: RemainingAccountsInfo {
                 slices: vec![
                     RemainingAccountsSlice {

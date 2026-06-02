@@ -11,14 +11,14 @@ import { fetchAllMaybeMint, findAssociatedTokenPda, Mint } from "@solana-program
 import assert from "assert";
 
 import { fetchMaybeTunaSpotPosition, getCloseTunaSpotPositionInstruction } from "../generated";
-import { getTunaSpotPositionAddress } from "../pda.ts";
+import { getMarketAddress, getTunaSpotPositionAddress } from "../pda.ts";
 
 export async function closeTunaSpotPositionInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
-  poolAddress: Address,
+  pool: Address,
 ): Promise<IInstruction[]> {
-  const tunaPositionAddress = (await getTunaSpotPositionAddress(authority.address, poolAddress))[0];
+  const tunaPositionAddress = (await getTunaSpotPositionAddress(authority.address, pool))[0];
   const tunaPosition = await fetchMaybeTunaSpotPosition(rpc, tunaPositionAddress);
   if (!tunaPosition.exists) throw new Error("Tuna position account not found");
 
@@ -26,17 +26,18 @@ export async function closeTunaSpotPositionInstructions(
   assert(mintA.exists, "Token A account not found");
   assert(mintB.exists, "Token B account not found");
 
-  const ix = await closeTunaSpotPositionInstruction(authority, poolAddress, mintA, mintB);
+  const ix = await closeTunaSpotPositionInstruction(authority, pool, mintA, mintB);
   return [ix];
 }
 
 export async function closeTunaSpotPositionInstruction(
   authority: TransactionSigner,
-  poolAddress: Address,
+  pool: Address,
   mintA: Account<Mint>,
   mintB: Account<Mint>,
 ): Promise<IInstruction> {
-  const tunaPositionAddress = (await getTunaSpotPositionAddress(authority.address, poolAddress))[0];
+  const tunaPositionAddress = (await getTunaSpotPositionAddress(authority.address, pool))[0];
+  const marketAddress = (await getMarketAddress(pool))[0];
 
   const tunaPositionAtaA = (
     await findAssociatedTokenPda({
@@ -59,6 +60,7 @@ export async function closeTunaSpotPositionInstruction(
     mintB: mintB.address,
     tokenProgramA: mintA.programAddress,
     tokenProgramB: mintB.programAddress,
+    market: marketAddress,
     tunaPositionAtaA,
     tunaPositionAtaB,
     authority,

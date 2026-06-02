@@ -82,14 +82,14 @@ importers:
         specifier: workspace:*
         version: link:../core
       '@crypticdot/fusionamm-client':
-        specifier: ^1.0.83
-        version: 1.0.83(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
+        specifier: ^1.1.5
+        version: 1.1.5(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
       '@crypticdot/fusionamm-core':
-        specifier: ^1.0.83
-        version: 1.0.83
+        specifier: ^1.1.5
+        version: 1.1.5
       '@crypticdot/fusionamm-sdk':
-        specifier: ^1.0.83
-        version: 1.0.83(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+        specifier: ^1.1.5
+        version: 1.1.5(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
       '@crypticdot/fusionamm-tx-sender':
         specifier: ^1.0.11
         version: 1.0.11(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
@@ -155,14 +155,17 @@ importers:
         specifier: workspace:*
         version: link:../core
       '@crypticdot/fusionamm-client':
-        specifier: ^1.0.83
-        version: 1.0.83(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
+        specifier: ^1.1.5
+        version: 1.1.5(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
       '@crypticdot/fusionamm-core':
-        specifier: ^1.0.83
-        version: 1.0.83
+        specifier: ^1.1.5
+        version: 1.1.5
       '@crypticdot/fusionamm-sdk':
-        specifier: ^1.0.83
-        version: 1.0.83(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+        specifier: ^1.1.5
+        version: 1.1.5(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+      '@crypticdot/pump-amm-solana-client':
+        specifier: ^1.0.2
+        version: 1.0.2(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
       '@jup-ag/api':
         specifier: ^6.0.48
         version: 6.0.48
@@ -282,8 +285,8 @@ importers:
         specifier: ^5.8.3
         version: 5.8.3
       wasm-pack:
-        specifier: ^0.14
-        version: 0.14.0
+        specifier: ^0.13.1
+        version: 0.13.1
 
   ts-sdk/examples:
     dependencies:
@@ -609,16 +612,16 @@ packages:
   '@crypticdot/eslint-config@1.0.0':
     resolution: {integrity: sha512-L9Po7dSSVAHXTYMfYDTOcf9LZwRP2VeYRFNfL/nzSgyjv+Ahcu7Yzac+Q2Hk89vF73qpQE1VNth7D2qt05qFGQ==}
 
-  '@crypticdot/fusionamm-client@1.0.83':
-    resolution: {integrity: sha512-1Uo1pbE92D2ytCzMNfMPgLf7jQJtOier3X617MQgZjN3IJfWxIM//uVedc9r8iHm1Sh32lwCqfhMwy6lXSvE+w==}
+  '@crypticdot/fusionamm-client@1.1.5':
+    resolution: {integrity: sha512-AuoOLJm0Gg2aKEH7uj0c48+NCX+E3y5fZRHM5eGKheQL0Au1ThewJguG+luMeys7zznKHw+U36/DlbqNk0PmAw==}
     peerDependencies:
       '@solana/kit': ^2.1.0
 
-  '@crypticdot/fusionamm-core@1.0.83':
-    resolution: {integrity: sha512-Zp07w0r8gj5oB55OnaInRpU8+Nwpz1AaNAsiEl5GyNTrdquK/DuSG27vG7O/fRa57NWKo+rABoBW0PJGk5463Q==}
+  '@crypticdot/fusionamm-core@1.1.5':
+    resolution: {integrity: sha512-pBZEZh+YZPQSzk2eP3J1ZpzydIlulWnbZW2Au4lNcCcIKRQnSUNOXznqPjvT0GgGSmnKLiKA4RnZ+0MJuQ9xFg==}
 
-  '@crypticdot/fusionamm-sdk@1.0.83':
-    resolution: {integrity: sha512-BlH7hMdNdk4SHp+USpY4Sq4sMSPi4MydWZD9fAElaCD77Q+VtnO4G8kLvxS5qz6JvYD9NWEY2EQ8PwDMF4WWQg==}
+  '@crypticdot/fusionamm-sdk@1.1.5':
+    resolution: {integrity: sha512-nh4FtxwA/CavOad2DQS2E8FAo4R1SspBmwJUCDbd6VvqPdCgfNcZpHjMDyuLhgDuLeYdPFih5I0bxVCEYD5LLA==}
 
   '@crypticdot/fusionamm-tx-sender@1.0.11':
     resolution: {integrity: sha512-gKdWRmVxliFQLpw6hfOzy2SgzsiDYAtb3AjdWN0mfy/xD8Q2y+cIDwIT4/Z2sLmHhJHBdjqg+ye1DOzjkg1M8A==}
@@ -628,6 +631,9 @@ packages:
 
   '@crypticdot/prettier-config@1.0.0':
     resolution: {integrity: sha512-SEcnTAIFSZYvtVPpuahJTcS2wQVovMafJhKpbGnOYC9u7qvIpSM5Dwf81E4j6Vt2yhjDS+N3UznxnJ9smRxWjg==}
+
+  '@crypticdot/pump-amm-solana-client@1.0.2':
+    resolution: {integrity: sha512-vp26Mg909N26Ch9wg+3XxBv5HbD4c+5PYIpHXHvTOGPApi2R3sae/xNrh0gG0SeRvpFS+ptqkYo7sJC9tg+Pkg==}
 
   '@crypticdot/typescript-config@1.0.0':
     resolution: {integrity: sha512-oV5dMVAz1CaHns5AnuFXSNgt1EI/PmlPU6cuITYwizleOkQNDIkPBpmQel8iLGAHrQYjg1koil6A++M2r1gp8Q==}
@@ -4667,8 +4673,8 @@ packages:
       jsdom:
         optional: true
 
-  wasm-pack@0.14.0:
-    resolution: {integrity: sha512-7uKj+483b6ETTnuWHK3zKNB3Ca3M159tPZ5shyXxI4j7i9Lk82rL2ck/L6E9O5VMWk9JgowdtTBOSfWmGBRFtw==}
+  wasm-pack@0.13.1:
+    resolution: {integrity: sha512-P9exD4YkjpDbw68xUhF3MDm/CC/3eTmmthyG5bHJ56kalxOTewOunxTke4SyF8MTXV6jUtNjXggPgrGmMtczGg==}
     hasBin: true
 
   webidl-conversions@3.0.1:
@@ -5577,16 +5583,16 @@ snapshots:
       - turbo
       - typescript
 
-  '@crypticdot/fusionamm-client@1.0.83(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))':
+  '@crypticdot/fusionamm-client@1.1.5(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))':
     dependencies:
       '@solana/kit': 2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
 
-  '@crypticdot/fusionamm-core@1.0.83': {}
+  '@crypticdot/fusionamm-core@1.1.5': {}
 
-  '@crypticdot/fusionamm-sdk@1.0.83(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))':
+  '@crypticdot/fusionamm-sdk@1.1.5(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))':
     dependencies:
-      '@crypticdot/fusionamm-client': 1.0.83(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
-      '@crypticdot/fusionamm-core': 1.0.83
+      '@crypticdot/fusionamm-client': 1.1.5(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
+      '@crypticdot/fusionamm-core': 1.1.5
       '@solana-program/memo': 0.7.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
       '@solana-program/system': 0.7.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
       '@solana-program/token': 0.5.1(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
@@ -5646,6 +5652,21 @@ snapshots:
       - prettier-plugin-sort-imports
       - prettier-plugin-style-order
       - prettier-plugin-svelte
+
+  '@crypticdot/pump-amm-solana-client@1.0.2(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))':
+    dependencies:
+      '@solana-program/address-lookup-table': 0.7.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
+      '@solana-program/compute-budget': 0.7.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
+      '@solana-program/memo': 0.7.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
+      '@solana-program/system': 0.7.0(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
+      '@solana-program/token': 0.5.1(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))
+      '@solana-program/token-2022': 0.4.2(@solana/kit@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)))(@solana/sysvars@2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3))
+      '@solana/kit': 2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+      '@solana/sysvars': 2.1.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)
+    transitivePeerDependencies:
+      - fastestsmallesttextencoderdecoder
+      - typescript
+      - ws
 
   '@crypticdot/typescript-config@1.0.0': {}
 
@@ -10444,7 +10465,7 @@ snapshots:
       - supports-color
       - terser
 
-  wasm-pack@0.14.0:
+  wasm-pack@0.13.1:
     dependencies:
       binary-install: 1.1.2
     transitivePeerDependencies:

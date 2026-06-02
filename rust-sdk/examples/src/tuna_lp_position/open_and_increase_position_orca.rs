@@ -3,7 +3,7 @@ use crate::types::Amounts;
 use crate::utils::fetch_address_lookup_table;
 use anyhow::Result;
 use defituna_client::accounts::fetch_market;
-use defituna_client::{get_market_address, open_and_increase_tuna_lp_position_orca_instructions, TUNA_ID};
+use defituna_client::{get_market_address, open_and_increase_tuna_lp_position_orca_instructions};
 use defituna_client::{OpenAndIncreaseTunaLpPositionArgs, TUNA_POSITION_FLAGS_LOWER_LIMIT_ORDER_SWAP_TO_TOKEN_B};
 use fusionamm_tx_sender::{send_smart_transaction, PriorityFeeLevel, SmartTxConfig, SmartTxPriorityFeeConfig};
 use orca_whirlpools_client::{self, fetch_whirlpool};
@@ -96,8 +96,6 @@ pub async fn open_position_with_liquidity_orca(rpc: RpcClient, authority: &Keypa
   let tick_upper_index = 21504;
   // Minimum added amounts for Tokens A and B to be respected by the AddLiquidity instruction, acting as slippage limits.
   let min_added_amount = Amounts { a: 0, b: 0 };
-  // The total amount of slippage allowed on the Whirlpool's price, in case of inner swaps due to rebalancing of deposit ratio.
-  let max_swap_slippage = 0;
 
   // The Tuna Position option controlling token swaps on stop-loss, represented in bits 0-1.
   // - `00` (0) - No swap
@@ -137,7 +135,6 @@ pub async fn open_position_with_liquidity_orca(rpc: RpcClient, authority: &Keypa
     borrow_b: borrow.b,
     min_added_amount_a: min_added_amount.a,
     min_added_amount_b: min_added_amount.b,
-    max_swap_slippage,
   };
 
   // Creation of instructions for opening the position and adding liquidity;
@@ -174,17 +171,21 @@ pub async fn open_position_with_liquidity_orca(rpc: RpcClient, authority: &Keypa
   // Configure the transaction to use a priority fee.
   let tx_config = SmartTxConfig {
     priority_fee: Some(SmartTxPriorityFeeConfig {
-      additional_addresses: vec![TUNA_ID],
       fee_level: PriorityFeeLevel::Low,
-      fee_min: 1000,
-      fee_max: 100000000, // 0.001 SOL
+      fee_min: Some(1000),
+      fee_max: Some(100000000), // 0.001 SOL
     }),
     jito: None,
     default_compute_unit_limit: 800_000,
     compute_unit_margin_multiplier: 1.15,
+    disable_simulation: false,
     ingore_simulation_error: false,
     sig_verify_on_simulation: false,
+    wait_for_confirmation: true,
+    polling_interval: None,
     transaction_timeout: Some(Duration::from_secs(60)),
+    blockhash: None,
+    allow_randomness: false,
   };
 
   // Finally send the transaction.

@@ -1,7 +1,7 @@
 import { openPositionInstructions as openFusionPositionInstructions } from "@crypticdot/fusionamm-sdk";
 import { openPositionInstructions as openOrcaPositionInstructions, setWhirlpoolsConfig } from "@orca-so/whirlpools";
 import { priceToSqrtPrice } from "@orca-so/whirlpools-core";
-import { Account, Address, generateKeyPairSigner } from "@solana/kit";
+import { Account, Address, generateKeyPairSigner, TransactionSigner } from "@solana/kit";
 import { fetchMint, findAssociatedTokenPda, Mint } from "@solana-program/token-2022";
 import assert from "assert";
 
@@ -95,6 +95,7 @@ export async function setupVault(mint: Account<Mint>, args: CreateVaultInstructi
 }
 
 export async function setupVaultPermissionless(
+  authority: TransactionSigner,
   mint: Account<Mint>,
   args: CreateVaultPermissionlessInstructionDataArgs,
   skipCreate = false,
@@ -109,7 +110,7 @@ export async function setupVaultPermissionless(
   )[0];
 
   if (!skipCreate) {
-    const instructions = await createVaultPermissionlessInstructions(TUNA_ADMIN_KEYPAIR, address, mint, args);
+    const instructions = await createVaultPermissionlessInstructions(authority, address, mint, args);
     await sendTransaction(instructions);
   }
   return {
@@ -135,7 +136,7 @@ export async function setupMarketPermissionless(
   vaultB: Address,
   args: CreateMarketPermissionlessInstructionDataArgs,
 ) {
-  const ix = await createMarketPermissionlessInstruction(TUNA_ADMIN_KEYPAIR, pool, vaultA, vaultB, args);
+  const ix = await createMarketPermissionlessInstruction(signer, pool, vaultA, vaultB, args);
   await sendTransaction([ix]);
   return (await getMarketAddress(pool))[0];
 }
@@ -255,6 +256,7 @@ export async function setupTestMarket(
 
   const vaultA = options?.permissionless
     ? await setupVaultPermissionless(
+        signer,
         mintA,
         {
           market: marketAddress,
@@ -285,6 +287,7 @@ export async function setupTestMarket(
 
   const vaultB = options?.permissionless
     ? await setupVaultPermissionless(
+        signer,
         mintB,
         {
           market: marketAddress,
@@ -307,12 +310,12 @@ export async function setupTestMarket(
     await depositInstruction(signer, mintB, permissionlessMarket ? vaultBAddress : undefined, lendingPositionBAmount),
   ]);
 
-  if (permissionlessMarket) {
+  if (options?.permissionless) {
     await setupMarketPermissionless(poolAddress, vaultA.address, vaultB.address, args);
 
     // Updated permissionless market with ADMIN authority
     const ix = getUpdateMarketInstruction({
-      authority: TUNA_ADMIN_KEYPAIR,
+      authority: TUNA_ADMIN_KEYPAIR, // only admin can update a permissionless market
       tunaConfig: tunaConfigAddress,
       market: marketAddress,
       addressLookupTable: args.addressLookupTable,
@@ -325,7 +328,7 @@ export async function setupTestMarket(
       oraclePriceDeviationThreshold: args.oraclePriceDeviationThreshold,
       borrowLimitA: args.borrowLimitA,
       borrowLimitB: args.borrowLimitB,
-      maxSwapSlippage: args.maxSwapSlippage,
+      unused: 0,
       rebalanceProtocolFee: args.rebalanceProtocolFee,
       spotPositionSizeLimitA: args.spotPositionSizeLimitA,
       spotPositionSizeLimitB: args.spotPositionSizeLimitB,

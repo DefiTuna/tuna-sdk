@@ -4,7 +4,6 @@ import {
   fetchTunaLpPosition,
   getMarketAddress,
   getTunaLpPositionAddress,
-  HUNDRED_PERCENT,
   increaseTunaLpPositionFusionInstructions,
   increaseTunaLpPositionOrcaInstructions,
   MarketMaker,
@@ -20,7 +19,7 @@ import { fetchWhirlpool } from "@orca-so/whirlpools-client";
 import { Address, generateKeyPairSigner, IInstruction } from "@solana/kit";
 import { fetchAllMint } from "@solana-program/token-2022";
 
-import BaseCommand, { addressFlag, bigintFlag, percentFlag, priceFlag } from "../base";
+import BaseCommand, { addressFlag, bigintFlag, priceFlag } from "../base";
 import { rpc, signer } from "../rpc";
 
 export default class IncreaseLpPosition extends BaseCommand {
@@ -60,12 +59,6 @@ export default class IncreaseLpPosition extends BaseCommand {
     borrowB: bigintFlag({
       description: "Borrowed amount of token B",
     }),
-
-    maxSwapSlippage: percentFlag({
-      description: "Maximum swap slippage",
-      min: 0,
-      max: HUNDRED_PERCENT,
-    }),
   };
   static override description =
     "Add liquidity to the tuna position. Opens a new position if a position mint account is not provided.";
@@ -91,8 +84,6 @@ export default class IncreaseLpPosition extends BaseCommand {
       collateralA = COMPUTED_AMOUNT;
       borrowA = COMPUTED_AMOUNT;
     }
-
-    const maxSwapSlippage = flags.maxSwapSlippage ?? HUNDRED_PERCENT / 10;
 
     if (flags.positionMint || flags.positionAddress) {
       if (flags.pool) throw new Error("Pool address can't be specified for the existing position");
@@ -124,7 +115,6 @@ export default class IncreaseLpPosition extends BaseCommand {
         collateralB,
         borrowA,
         borrowB,
-        maxSwapSlippage,
         minAddedAmountA: 0n,
         minAddedAmountB: 0n,
       };
@@ -181,7 +171,6 @@ export default class IncreaseLpPosition extends BaseCommand {
         collateralB,
         borrowA,
         borrowB,
-        maxSwapSlippage,
         minAddedAmountA: 0n,
         minAddedAmountB: 0n,
       };

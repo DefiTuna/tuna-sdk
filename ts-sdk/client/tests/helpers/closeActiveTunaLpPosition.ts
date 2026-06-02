@@ -1,5 +1,6 @@
 import { Address, Rpc, SolanaRpcApi, TransactionSigner } from "@solana/kit";
 import { getSetComputeUnitLimitInstruction } from "@solana-program/compute-budget";
+import { expect } from "vitest";
 
 import {
   closeActiveTunaLpPositionFusionInstructions,
@@ -19,14 +20,12 @@ export type CloseActiveTunaLpPositionTestArgs = {
   rpc: Rpc<SolanaRpcApi>;
   signer?: TransactionSigner;
   positionMint: Address;
-  maxSwapSlippage?: number;
   swapToToken?: number;
 };
 
 export async function closeActiveTunaLpPosition({
   rpc,
   positionMint,
-  maxSwapSlippage,
   swapToToken,
   signer = FUNDER,
 }: CloseActiveTunaLpPositionTestArgs) {
@@ -37,7 +36,6 @@ export async function closeActiveTunaLpPosition({
   const market = await fetchMarket(rpc, marketAddress);
 
   const args = {
-    maxSwapSlippage: maxSwapSlippage ?? HUNDRED_PERCENT,
     minRemovedAmountA: 0n,
     minRemovedAmountB: 0n,
     swapToToken: swapToToken ?? 0,
@@ -51,4 +49,8 @@ export async function closeActiveTunaLpPosition({
   instructions.unshift(getSetComputeUnitLimitInstruction({ units: 1_400_000 }));
 
   await sendTransaction(instructions);
+
+  const marketAfter = await fetchMarket(rpc, marketAddress);
+
+  expect(marketAfter.data.numPositions).toEqual(market.data.numPositions - 1);
 }

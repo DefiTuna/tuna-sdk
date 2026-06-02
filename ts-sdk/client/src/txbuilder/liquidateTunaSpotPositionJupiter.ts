@@ -27,9 +27,8 @@ export async function liquidateTunaSpotPositionJupiterInstructions(
   mintB: Account<Mint>,
   vaultA: Account<Vault>,
   vaultB: Account<Vault>,
-  poolAddress: Address,
+  pool: Address,
   jupiterRouteAccounts: IAccountMeta[],
-  intermediateTokenAccountsAndPrograms: IAccountMeta[],
   args: LiquidateTunaSpotPositionJupiterInstructionsArgs,
 ): Promise<IInstruction[]> {
   const instructions: IInstruction[] = [];
@@ -105,9 +104,8 @@ export async function liquidateTunaSpotPositionJupiterInstructions(
     mintB,
     vaultA,
     vaultB,
-    poolAddress,
+    pool,
     jupiterRouteAccounts,
-    intermediateTokenAccountsAndPrograms,
     args,
   );
   instructions.push(ix);
@@ -123,12 +121,11 @@ export async function liquidateTunaSpotPositionJupiterInstruction(
   mintB: Account<Mint>,
   vaultA: Account<Vault>,
   vaultB: Account<Vault>,
-  poolAddress: Address,
+  pool: Address,
   jupiterRouteAccounts: IAccountMeta[],
-  intermediateTokenAccountsAndPrograms: IAccountMeta[],
   args: LiquidateTunaSpotPositionJupiterInstructionsArgs,
 ): Promise<IInstruction> {
-  const marketAddress = (await getMarketAddress(poolAddress))[0];
+  const marketAddress = (await getMarketAddress(pool))[0];
 
   const tunaPositionOwnerAtaA = (
     await findAssociatedTokenPda({
@@ -198,14 +195,7 @@ export async function liquidateTunaSpotPositionJupiterInstruction(
     slices: [{ accountsType: AccountsType.JupiterRoute, length: jupiterRouteAccounts.length }],
   };
 
-  if (intermediateTokenAccountsAndPrograms.length > 0) {
-    remainingAccountsInfo.slices.push({
-      accountsType: AccountsType.JupiterIntermediateTokenAccounts,
-      length: intermediateTokenAccountsAndPrograms.length,
-    });
-  }
-
-  const remainingAccounts: IAccountMeta[] = [...jupiterRouteAccounts, ...intermediateTokenAccountsAndPrograms];
+  const remainingAccounts: IAccountMeta[] = [...jupiterRouteAccounts];
 
   const ix = getLiquidateTunaSpotPositionJupiterInstruction({
     authority,
@@ -229,7 +219,7 @@ export async function liquidateTunaSpotPositionJupiterInstruction(
     tunaPositionOwnerAtaB,
     feeRecipientAtaA,
     feeRecipientAtaB,
-    pool: poolAddress,
+    pool: pool,
     jupiterProgram: JUPITER_PROGRAM_ADDRESS,
     memoProgram: MEMO_PROGRAM_ADDRESS,
     ...args,

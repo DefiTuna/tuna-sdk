@@ -2,33 +2,36 @@ import { FUSIONAMM_PROGRAM_ADDRESS, FusionPool } from "@crypticdot/fusionamm-cli
 import { fetchTickArrayOrDefault as fetchFusionTickArrayOrDefault } from "@crypticdot/fusionamm-sdk";
 import {
   AccountsType,
-  CreateTokenAccountInstructionDataArgs,
   DefiTunaAccountsType,
-  getCreateTokenAccountInstruction,
   getRouteV2Instruction,
   JUPITER_PROGRAM_ADDRESS,
   RouteV2InstructionDataArgs,
 } from "@crypticdot/jupiter-solana-client";
+import {
+  findEventAuthorityPda,
+  findUserVolumeAccumulatorPda,
+  getInitUserVolumeAccumulatorInstruction,
+  PUMP_AMM_PROGRAM_ADDRESS,
+} from "@crypticdot/pump-amm-solana-client";
 import { getOracleAddress, Whirlpool, WHIRLPOOL_PROGRAM_ADDRESS } from "@orca-so/whirlpools-client";
 import {
   Account,
   AccountRole,
   Address,
-  address,
   GetAccountInfoApi,
-  getAddressEncoder,
   GetMultipleAccountsApi,
-  getProgramDerivedAddress,
   IAccountMeta,
   Rpc,
 } from "@solana/kit";
 import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
+import { SYSTEM_PROGRAM_ADDRESS } from "@solana-program/system";
 import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
 import { findAssociatedTokenPda, getCreateAssociatedTokenIdempotentInstruction } from "@solana-program/token-2022";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import {
   DEFAULT_ADDRESS,
+  getCloseTunaLpPositionUserVolumeAccumulatorAccountInstruction,
   getTunaLpPositionAddress,
   HUNDRED_PERCENT,
   JUPITER_EVENT_AUTHORITY,
@@ -66,7 +69,7 @@ describe("Tuna Liquidity Position via Jupiter", () => {
       liquidationFee: 10000, // 1%
       liquidationThreshold: 920000, // 92%
       maxLeverage: (LEVERAGE_ONE * 1020) / 100,
-      maxSwapSlippage: 0,
+      unused: 0,
       oraclePriceDeviationThreshold: HUNDRED_PERCENT, // Allow large deviation for tests
       protocolFee: 1000, // 0.1%
       protocolFeeOnCollateral: 1000, // 0.1%
@@ -232,6 +235,20 @@ describe("Tuna Liquidity Position via Jupiter", () => {
       });
       await sendTransaction([createIntermediateAtaInstruction]);
 
+      // Required for Pumpfun AMM. We don't test a swap through pumpfun amm here, but we test that we can close this account in the liquidate instruction.
+      const userVolumeAccumulatorAddress = (await findUserVolumeAccumulatorPda({ user: tunaPositionAddress }))[0];
+      const eventAuthorityAddress = (await findEventAuthorityPda())[0];
+      await sendTransaction([
+        getInitUserVolumeAccumulatorInstruction({
+          payer: signer,
+          program: PUMP_AMM_PROGRAM_ADDRESS,
+          systemProgram: SYSTEM_PROGRAM_ADDRESS,
+          user: tunaPositionAddress,
+          eventAuthority: eventAuthorityAddress,
+          userVolumeAccumulator: userVolumeAccumulatorAddress,
+        }),
+      ]);
+
       const aToB = false;
       const swapInAmount = 987086845n;
 
@@ -287,7 +304,7 @@ describe("Tuna Liquidity Position via Jupiter", () => {
         sourceTokenProgram: market.mintB.programAddress,
         userSourceTokenAccount: tunaPositionAtaB,
         destinationMint: market.mintA.address,
-        userDestinationTokenAccount: JUPITER_PROGRAM_ADDRESS,
+        userDestinationTokenAccount: tunaPositionAtaA,
         program: JUPITER_PROGRAM_ADDRESS,
         ...args,
       });
@@ -316,6 +333,23 @@ describe("Tuna Liquidity Position via Jupiter", () => {
               market.mintA.programAddress,
               market.mintB.programAddress,
             );
+
+      // Add pumpfun amm accounts to let Tuna know that the user volume accumulator account should be closed.
+      //routeAccounts.push({ address: userVolumeAccumulatorAddress, role: AccountRole.WRITABLE });
+      //routeAccounts.push({ address: eventAuthorityAddress, role: AccountRole.READONLY });
+      //routeAccounts.push({ address: PUMP_AMM_PROGRAM_ADDRESS, role: AccountRole.READONLY });
+      // This account is required for self cpi
+      //routeAccounts.push({ address: TUNA_PROGRAM_ADDRESS, role: AccountRole.READONLY });
+
+      // Let Tuna know that there is an intermediate token account that should be closed after the liquidation.
+      routeAccounts.push({ address: NATIVE_MINT, role: AccountRole.READONLY });
+      routeAccounts.push({ address: TOKEN_PROGRAM_ADDRESS, role: AccountRole.READONLY });
+      routeAccounts.push({ address: intermediateTokenAccount, role: AccountRole.WRITABLE });
+      // Add accounts twice to make sure that duplicates are handled properly.
+      routeAccounts.push({ address: NATIVE_MINT, role: AccountRole.READONLY });
+      routeAccounts.push({ address: TOKEN_PROGRAM_ADDRESS, role: AccountRole.READONLY });
+      routeAccounts.push({ address: intermediateTokenAccount, role: AccountRole.WRITABLE });
+
       routeInstruction.accounts.push(...routeAccounts);
 
       assertLiquidateTunaLpPosition(
@@ -325,10 +359,6 @@ describe("Tuna Liquidity Position via Jupiter", () => {
           positionMint,
           routeAccounts: routeInstruction.accounts,
           routeData: routeInstruction.data,
-          intermediateTokenAccountsAndPrograms: [
-            { address: intermediateTokenAccount, role: AccountRole.WRITABLE },
-            { address: TOKEN_PROGRAM_ADDRESS, role: AccountRole.READONLY },
-          ],
         }),
         {
           vaultBalanceDeltaA: 4000000000n,
@@ -339,7 +369,21 @@ describe("Tuna Liquidity Position via Jupiter", () => {
         },
       );
 
+      // Check that the intermediate account is closed.
       expect(await accountExists(rpc, intermediateTokenAccount)).toBeFalsy();
+
+      // Close the Pumpfun Amm user volume accumulator account for the LP position
+      const signerNativeBalanceBefore = (await rpc.getBalance(signer.address).send()).value;
+      await sendTransaction([
+        getCloseTunaLpPositionUserVolumeAccumulatorAccountInstruction({
+          authority: signer,
+          pumpAmmProgram: PUMP_AMM_PROGRAM_ADDRESS,
+          tunaPosition: tunaPositionAddress,
+          eventAuthority: eventAuthorityAddress,
+          userVolumeAccumulator: userVolumeAccumulatorAddress,
+        }),
+      ]);
+      expect((await rpc.getBalance(signer.address).send()).value - signerNativeBalanceBefore).toEqual(1839400n);
 
       assertDecreaseTunaLpPositionLiquidity(
         await decreaseTunaLpPosition({

@@ -31,7 +31,6 @@ export async function liquidateTunaLpPositionFusionJupiterInstructions(
   vaultB: Account<Vault>,
   fusionPool: Account<FusionPool>,
   jupiterRouteAccounts: IAccountMeta[],
-  intermediateTokenAccountsAndPrograms: IAccountMeta[],
   args: LiquidateTunaLpPositionFusionJupiterInstructionsArgs,
 ): Promise<IInstruction[]> {
   const instructions: IInstruction[] = [];
@@ -72,7 +71,6 @@ export async function liquidateTunaLpPositionFusionJupiterInstructions(
     vaultB,
     fusionPool,
     jupiterRouteAccounts,
-    intermediateTokenAccountsAndPrograms,
     args,
   );
   instructions.push(ix);
@@ -97,7 +95,6 @@ export async function liquidateTunaLpPositionFusionJupiterInstruction(
   vaultB: Account<Vault>,
   fusionPool: Account<FusionPool>,
   jupiterRouteAccounts: IAccountMeta[],
-  intermediateTokenAccountsAndPrograms: IAccountMeta[],
   args: LiquidateTunaLpPositionFusionJupiterInstructionsArgs,
 ): Promise<IInstruction> {
   const positionMint = tunaPosition.data.positionMint;
@@ -180,20 +177,12 @@ export async function liquidateTunaLpPositionFusionJupiterInstruction(
     ],
   };
 
-  if (intermediateTokenAccountsAndPrograms.length > 0) {
-    remainingAccountsInfo.slices.push({
-      accountsType: AccountsType.JupiterIntermediateTokenAccounts,
-      length: intermediateTokenAccountsAndPrograms.length,
-    });
-  }
-
   const remainingAccounts: IAccountMeta[] = [
     { address: lowerTickArrayAddress, role: AccountRole.WRITABLE },
     { address: upperTickArrayAddress, role: AccountRole.WRITABLE },
     { address: fusionPool.data.tokenVaultA, role: AccountRole.WRITABLE },
     { address: fusionPool.data.tokenVaultB, role: AccountRole.WRITABLE },
     ...jupiterRouteAccounts,
-    ...intermediateTokenAccountsAndPrograms,
   ];
 
   const ix = getLiquidateTunaLpPositionFusionJupiterInstruction({

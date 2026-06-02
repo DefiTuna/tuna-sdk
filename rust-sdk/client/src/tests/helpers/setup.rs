@@ -197,7 +197,7 @@ pub async fn setup_test_market(
                     disabled: args.disabled,
                     borrow_limit_a: args.borrow_limit_a,
                     borrow_limit_b: args.borrow_limit_b,
-                    max_swap_slippage: args.max_swap_slippage,
+                    unused: 0,
                     rebalance_protocol_fee: args.rebalance_protocol_fee,
                     spot_position_size_limit_a: args.spot_position_size_limit_a,
                     spot_position_size_limit_b: args.spot_position_size_limit_b,

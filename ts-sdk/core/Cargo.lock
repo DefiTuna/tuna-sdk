@@ -164,9 +164,9 @@ dependencies = [
 
 [[package]]
 name = "fusionamm-core"
-version = "1.0.83"
+version = "1.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "361234ddb554551862b649bf10635cabba4ac78bbe9b30161146b98ff947b4fd"
+checksum = "a087f7d1a87b91092456450519c6f7da60bb5c3e305d44cec47164fc0ea587e6"
 dependencies = [
  "ethnum",
  "fusionamm-macros",

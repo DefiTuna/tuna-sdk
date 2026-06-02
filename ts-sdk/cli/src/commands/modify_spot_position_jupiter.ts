@@ -254,7 +254,6 @@ export default class ModifySpotPositionJupiter extends BaseCommand {
           signer,
           flags.pool,
           quote.swapInstructionAccounts,
-          [],
           args,
         )),
       );
@@ -272,7 +271,6 @@ export default class ModifySpotPositionJupiter extends BaseCommand {
           signer,
           flags.pool,
           quote.swapInstructionAccounts,
-          [],
           args,
         )),
       );

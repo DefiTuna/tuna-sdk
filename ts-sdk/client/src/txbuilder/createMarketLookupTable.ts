@@ -29,19 +29,19 @@ import { createAddressLookupTableInstructions, CreateAddressLookupTableResult, N
 
 export async function getAddressesForMarketLookupTable(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
-  poolAddress: Address,
+  pool: Address,
   marketMaker: MarketMaker,
   isolatedVaults: boolean,
 ) {
   const tunaConfigAddress = (await getTunaConfigAddress())[0];
-  const marketAddress = (await getMarketAddress(poolAddress))[0];
-  const orcaOracleAddress = (await getOracleAddress(poolAddress))[0];
+  const marketAddress = (await getMarketAddress(pool))[0];
+  const orcaOracleAddress = (await getOracleAddress(pool))[0];
   const tunaConfig = await fetchTunaConfig(rpc, tunaConfigAddress);
 
-  const pool =
-    marketMaker == MarketMaker.Orca ? await fetchWhirlpool(rpc, poolAddress) : await fetchFusionPool(rpc, poolAddress);
-  const mintA = await fetchMint(rpc, pool.data.tokenMintA);
-  const mintB = await fetchMint(rpc, pool.data.tokenMintB);
+  const poolAccount =
+    marketMaker == MarketMaker.Orca ? await fetchWhirlpool(rpc, pool) : await fetchFusionPool(rpc, pool);
+  const mintA = await fetchMint(rpc, poolAccount.data.tokenMintA);
+  const mintB = await fetchMint(rpc, poolAccount.data.tokenMintB);
 
   const feeRecipientAtaA = (
     await findAssociatedTokenPda({
@@ -96,9 +96,9 @@ export async function getAddressesForMarketLookupTable(
     vaultB.address,
     vaultAAta,
     vaultBAta,
-    poolAddress,
-    pool.data.tokenVaultA,
-    pool.data.tokenVaultB,
+    pool,
+    poolAccount.data.tokenVaultA,
+    poolAccount.data.tokenVaultB,
     tunaConfig.data.feeRecipient,
     feeRecipientAtaA,
     feeRecipientAtaB,
@@ -121,7 +121,7 @@ export async function getAddressesForMarketLookupTable(
     addresses.push(WP_NFT_UPDATE_AUTH);
     addresses.push(orcaOracleAddress);
 
-    const whirlpool = pool as Account<Whirlpool>;
+    const whirlpool = poolAccount as Account<Whirlpool>;
     for (let i = 0; i < whirlpool.data.rewardInfos.length; i++) {
       const rewardInfo = whirlpool.data.rewardInfos[i];
       if (rewardInfo.mint !== DEFAULT_ADDRESS) {
@@ -228,25 +228,25 @@ export async function getAddressesForFusionMarketLookupTable(
 
 export async function createAddressLookupTableForMarketInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
-  poolAddress: Address,
+  pool: Address,
   marketMaker: MarketMaker,
   isolatedVaults: boolean,
   authority: TransactionSigner,
   recentSlot: Slot,
 ): Promise<CreateAddressLookupTableResult> {
-  const addresses = await getAddressesForMarketLookupTable(rpc, poolAddress, marketMaker, isolatedVaults);
+  const addresses = await getAddressesForMarketLookupTable(rpc, pool, marketMaker, isolatedVaults);
   return createAddressLookupTableInstructions(authority, addresses, recentSlot);
 }
 
 export async function extendAddressLookupTableForMarketInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
-  poolAddress: Address,
+  pool: Address,
   marketMaker: MarketMaker,
   isolatedVaults: boolean,
   authority: TransactionSigner,
   lookupTableAddress: Address,
 ): Promise<CreateAddressLookupTableResult> {
-  const marketAddresses = await getAddressesForMarketLookupTable(rpc, poolAddress, marketMaker, isolatedVaults);
+  const marketAddresses = await getAddressesForMarketLookupTable(rpc, pool, marketMaker, isolatedVaults);
 
   const lookupTable = await fetchAddressLookupTable(rpc, lookupTableAddress);
   const existingAddresses = lookupTable.data.addresses;

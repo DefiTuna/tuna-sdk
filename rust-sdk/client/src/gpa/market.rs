@@ -10,14 +10,14 @@ use std::error::Error;
 #[derive(Debug, Clone)]
 pub enum MarketFilter {
     MarketMaker(MarketMaker),
-    Mint(Pubkey),
+    Authority(Pubkey),
 }
 
 impl From<MarketFilter> for RpcFilterType {
     fn from(val: MarketFilter) -> Self {
         match val {
             MarketFilter::MarketMaker(market_maker) => RpcFilterType::Memcmp(Memcmp::new_base58_encoded(11, &[market_maker as u8])),
-            MarketFilter::Mint(address) => RpcFilterType::Memcmp(Memcmp::new_base58_encoded(12, &address.to_bytes())),
+            MarketFilter::Authority(address) => RpcFilterType::Memcmp(Memcmp::new_base58_encoded(237, &address.to_bytes())),
         }
     }
 }

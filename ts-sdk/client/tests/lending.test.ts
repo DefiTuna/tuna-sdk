@@ -76,7 +76,7 @@ describe("Lending", () => {
       allowUnsafeTokenExtensions: true,
     });
 
-    await setupVaultPermissionless(mint, {
+    await setupVaultPermissionless(signer, mint, {
       interestRate: 3655890108n,
       market: marketAddress,
     });

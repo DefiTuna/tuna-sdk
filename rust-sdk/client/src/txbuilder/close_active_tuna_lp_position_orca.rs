@@ -62,7 +62,6 @@ pub fn close_active_tuna_lp_position_orca_instructions(
             swap_to_token: args.swap_to_token,
             min_removed_amount_a: args.min_removed_amount_a,
             min_removed_amount_b: args.min_removed_amount_b,
-            max_swap_slippage: args.max_swap_slippage,
         },
     ));
 

@@ -33,12 +33,6 @@ export default class DecreaseLpPosition extends BaseCommand {
       max: HUNDRED_PERCENT,
     }),
 
-    maxSwapSlippage: percentFlag({
-      description: "Maximum swap slippage",
-      min: 0,
-      max: HUNDRED_PERCENT,
-    }),
-
     swapToToken: Flags.integer({
       description: "Swap liquidity to token (0 - don't swap, 1 - swap to token A, 2 - swap to token B)",
       min: 0,
@@ -73,13 +67,11 @@ export default class DecreaseLpPosition extends BaseCommand {
 
     const addressLookupTable = market.data.addressLookupTable;
 
-    const maxSwapSlippage = flags.maxSwapSlippage ?? HUNDRED_PERCENT / 10;
     const swapToToken = flags.swapToToken ?? 0;
 
     if (!flags.decreasePercent || flags.decreasePercent == HUNDRED_PERCENT) {
       const args = {
         swapToToken,
-        maxSwapSlippage,
         minRemovedAmountA: 0n,
         minRemovedAmountB: 0n,
       };
@@ -94,7 +86,6 @@ export default class DecreaseLpPosition extends BaseCommand {
     } else {
       const args = {
         swapToToken,
-        maxSwapSlippage,
         minRemovedAmountA: 0n,
         minRemovedAmountB: 0n,
         decreasePercent: flags.decreasePercent,

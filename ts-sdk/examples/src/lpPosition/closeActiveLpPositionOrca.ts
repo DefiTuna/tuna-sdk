@@ -3,7 +3,6 @@ import {
   closeActiveTunaLpPositionOrcaInstructions,
   fetchMarket,
   getMarketAddress,
-  HUNDRED_PERCENT,
 } from "@crypticdot/defituna-client";
 import { DEFAULT_TRANSACTION_CONFIG, sendTransaction } from "@crypticdot/fusionamm-tx-sender";
 import { Address, address, IInstruction } from "@solana/kit";
@@ -26,10 +25,6 @@ export async function closeActiveTunaLpPositionOrca(tunaPositionMint: Address): 
    */
   const whirlpoolAddress = SOL_USDC_WHIRLPOOL;
   /**
-   * The total amount of slippage allowed on the {@link Whirlpool Whirlpool}'s `price` during potential inner swaps due to deposit ratio rebalancing.
-   */
-  const maxSwapSlippage = HUNDRED_PERCENT / 10;
-  /**
    * The option for whether to swap and which *token* to swap to during *RemoveLiquidity*.
    * - 0 - No swap
    * - 1 - Swaps to *Token A*
@@ -50,7 +45,6 @@ export async function closeActiveTunaLpPositionOrca(tunaPositionMint: Address): 
     swapToToken,
     minRemovedAmountA: 0n,
     minRemovedAmountB: 0n,
-    maxSwapSlippage,
   };
 
   instructions.push(...(await closeActiveTunaLpPositionOrcaInstructions(rpc, signer, tunaPositionMint, args)));

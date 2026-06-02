@@ -47,7 +47,7 @@ describe("Tuna Spot Position", () => {
       liquidationFee: 10000, // 1%
       liquidationThreshold: 920000, // 92%
       maxLeverage: (LEVERAGE_ONE * 1020) / 100,
-      maxSwapSlippage: 0,
+      unused: 0,
       oraclePriceDeviationThreshold: HUNDRED_PERCENT, // Allow large deviation for tests
       protocolFee: 1000, // 0.1%
       protocolFeeOnCollateral: 1000, // 0.1%
@@ -181,7 +181,7 @@ describe("Tuna Spot Position", () => {
         liquidationFee: 10000, // 1%
         liquidationThreshold: 820000, // 82%
         maxLeverage: (LEVERAGE_ONE * 509) / 100,
-        maxSwapSlippage: 0,
+        unused: 0,
         oraclePriceDeviationThreshold: HUNDRED_PERCENT / 2, // Allow large deviation for tests
         protocolFee: 1000, // 0.1%
         protocolFeeOnCollateral: 1000, // 0.1%
@@ -721,7 +721,7 @@ describe("Tuna Spot Position", () => {
           liquidationFee: 10000, // 1%
           liquidationThreshold: 920000, // 92%
           maxLeverage: (LEVERAGE_ONE * 1020) / 100,
-          maxSwapSlippage: 0,
+          unused: 0,
           oraclePriceDeviationThreshold: HUNDRED_PERCENT, // Allow large deviation for tests
           protocolFee: 1000, // 0.1%
           protocolFeeOnCollateral: 1000, // 0.1%
@@ -1159,7 +1159,7 @@ describe("Tuna Spot Position", () => {
   for (const marketName of marketNames) {
     it(`Entry price change on the position increase (${marketName})`, async () => {
       const market = markets.find(m => m.name == marketName)!;
-      const pool = await fetchPool(rpc, market.pool, market.marketMaker);
+      let pool = await fetchPool(rpc, market.pool, market.marketMaker);
       const tunaPositionAddress = (await getTunaSpotPositionAddress(signer.address, market.pool))[0];
 
       await openTunaSpotPosition({
@@ -1177,6 +1177,7 @@ describe("Tuna Spot Position", () => {
       });
 
       const position = await fetchTunaSpotPosition(rpc, tunaPositionAddress);
+      pool = await fetchPool(rpc, market.pool, market.marketMaker);
 
       // Move the price a little
       await swapExactInput(rpc, signer, pool.address, 10000_000_000n, pool.data.tokenMintA);
@@ -1192,8 +1193,8 @@ describe("Tuna Spot Position", () => {
       const poolAfter = await fetchPool(rpc, market.pool, market.marketMaker);
 
       expect(position.data.entrySqrtPrice).toEqual(pool.data.sqrtPrice);
-      expect(position.data.entrySqrtPrice).toEqual(8249634742471189504n);
-      expect(positionAfter.data.entrySqrtPrice).toEqual(8231248982356507534n);
+      expect(position.data.entrySqrtPrice).toEqual(8249745279069474730n);
+      expect(positionAfter.data.entrySqrtPrice).toEqual(8231359518954792760n);
       expect(poolAfter.data.sqrtPrice).toEqual(8213136573565815533n);
 
       await modifyTunaSpotPosition({
@@ -1359,7 +1360,7 @@ describe("Tuna Spot Position", () => {
           liquidationFee: 10000, // 1%
           liquidationThreshold: 920000, // 92%
           maxLeverage: (LEVERAGE_ONE * 1020) / 100,
-          maxSwapSlippage: 0,
+          unused: 0,
           oraclePriceDeviationThreshold: HUNDRED_PERCENT, // Allow large deviation for tests
           protocolFee: 1000, // 0.1%
           protocolFeeOnCollateral: 1000, // 0.1%

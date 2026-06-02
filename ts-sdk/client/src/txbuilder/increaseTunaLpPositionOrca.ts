@@ -48,7 +48,7 @@ import { getTunaLpPositionCreateAtaInstructions } from "../utils/tuna.ts";
 
 export type IncreaseTunaLpPositionOrcaInstructionsArgs = Omit<
   IncreaseTunaLpPositionOrcaInstructionDataArgs,
-  "remainingAccountsInfo"
+  "remainingAccountsInfo" | "unused"
 >;
 
 export async function increaseTunaLpPositionOrcaInstructions(
@@ -172,7 +172,7 @@ export async function increaseTunaLpPositionOrcaInstruction(
   vaultA: Account<Vault>,
   vaultB: Account<Vault>,
   whirlpool: Account<Whirlpool>,
-  args: Omit<IncreaseTunaLpPositionOrcaInstructionDataArgs, "remainingAccountsInfo">,
+  args: Omit<IncreaseTunaLpPositionOrcaInstructionDataArgs, "remainingAccountsInfo" | "unused">,
 ): Promise<IInstruction> {
   const positionMint = tunaPosition.data.positionMint;
   const tunaPositionAddress = (await getTunaLpPositionAddress(positionMint))[0];
@@ -289,6 +289,7 @@ export async function increaseTunaLpPositionOrcaInstruction(
 
   const ix = getIncreaseTunaLpPositionOrcaInstruction({
     ...args,
+    unused: 0,
     remainingAccountsInfo,
     market: marketAddress,
     mintA: mintA.address,

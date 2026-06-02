@@ -1,5 +1,5 @@
 import { getDecreaseSpotPositionQuote, getIncreaseSpotPositionQuote } from "@crypticdot/defituna-core";
-import { fetchFusionPool } from "@crypticdot/fusionamm-client";
+import { fetchFusionPool, tickArrayToFacade } from "@crypticdot/fusionamm-client";
 import { fetchTickArrayOrDefault } from "@crypticdot/fusionamm-sdk";
 import { describe, expect, it } from "vitest";
 
@@ -29,7 +29,7 @@ describe("Spot Position Math", () => {
     liquidationFee: 10000, // 1%
     liquidationThreshold: 920000, // 92%
     maxLeverage: (LEVERAGE_ONE * 1020) / 100,
-    maxSwapSlippage: 0,
+    unused: 0,
     oraclePriceDeviationThreshold: HUNDRED_PERCENT, // Allow large deviation for tests
     protocolFee: 1000, // 0.1%
     protocolFeeOnCollateral: 1000, // 0.1%
@@ -62,7 +62,7 @@ describe("Spot Position Math", () => {
       market.data.protocolFee,
       market.data.protocolFeeOnCollateral,
       fusionPool.data,
-      tickArrays.map(account => account.data),
+      tickArrays.map(account => tickArrayToFacade(account.data)),
     );
 
     expect(quote.estimatedAmount).toEqual(199988578n);
@@ -109,7 +109,7 @@ describe("Spot Position Math", () => {
       market.data.protocolFee,
       market.data.protocolFeeOnCollateral,
       fusionPool.data,
-      tickArrays.map(account => account.data),
+      tickArrays.map(account => tickArrayToFacade(account.data)),
     );
 
     assertModifyTunaSpotPosition(
@@ -164,7 +164,7 @@ describe("Spot Position Math", () => {
       tunaPosition.data.amount,
       tunaPosition.data.loanShares,
       fusionPool.data,
-      tickArrays.map(account => account.data),
+      tickArrays.map(account => tickArrayToFacade(account.data)),
     );
 
     assertModifyTunaSpotPosition(
@@ -225,7 +225,7 @@ describe("Spot Position Math", () => {
       tunaPosition.data.amount,
       tunaPosition.data.loanShares,
       fusionPool.data,
-      tickArrays.map(account => account.data),
+      tickArrays.map(account => tickArrayToFacade(account.data)),
     );
 
     assertModifyTunaSpotPosition(

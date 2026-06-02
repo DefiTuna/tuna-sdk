@@ -1,5 +1,63 @@
 # @defituna/rust-client
 
+## 3.7.3
+
+### Patch Changes
+
+- 38b074d: Updated FusionAmm to 1.1.5
+
+## 3.7.2
+
+### Patch Changes
+
+- 54692ec: Updated FusionAmm to 1.1.4
+
+## 3.7.1
+
+## 3.7.0
+
+### Minor Changes
+
+- 76f40c5: Support for FusionAmm 1.1
+
+## 3.6.26
+
+## 3.6.25
+
+### Patch Changes
+
+- 7f13a96: Improved market filters
+
+## 3.6.24
+
+### Patch Changes
+
+- ee9fd8a: Fixed market closing instruction builder
+
+## 3.6.23
+
+### Patch Changes
+
+- 7fb5b22: Market closing
+
+## 3.6.22
+
+### Patch Changes
+
+- bed52f7: Added positions counter for market
+
+## 3.6.21
+
+### Patch Changes
+
+- d8a798f: Security related fixes
+
+## 3.6.20
+
+### Patch Changes
+
+- 31f70dc: Pumpfun Amm support for jupiter swap
+
 ## 3.6.19
 
 ## 3.6.18

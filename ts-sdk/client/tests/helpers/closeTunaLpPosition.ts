@@ -1,4 +1,5 @@
 import { Address, Rpc, SolanaRpcApi, TransactionSigner } from "@solana/kit";
+import { expect } from "vitest";
 
 import {
   closeTunaLpPositionFusionInstruction,
@@ -32,4 +33,8 @@ export async function closeTunaLpPosition({ rpc, positionMint, signer = FUNDER }
       : await closeTunaLpPositionFusionInstruction(rpc, signer, positionMint);
 
   await sendTransaction([instruction]);
+
+  const marketAfter = await fetchMarket(rpc, marketAddress);
+
+  expect(marketAfter.data.numPositions).toEqual(market.data.numPositions - 1);
 }

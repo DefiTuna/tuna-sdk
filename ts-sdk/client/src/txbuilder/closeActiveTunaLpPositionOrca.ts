@@ -181,9 +181,12 @@ export async function closeActiveTunaLpPositionOrcaInstructions(
   // Add close position instruction.
   instructions.push(
     getCloseTunaLpPositionOrcaInstruction({
+      authority,
       mintA: mintA.address,
       mintB: mintB.address,
-      authority,
+      tokenProgramA: mintA.programAddress,
+      tokenProgramB: mintB.programAddress,
+      market: marketAddress,
       tunaPositionMint: positionMint,
       tunaPositionAta,
       tunaPositionAtaA,
@@ -191,8 +194,6 @@ export async function closeActiveTunaLpPositionOrcaInstructions(
       orcaPosition: orcaPosition.address,
       tunaPosition: tunaPosition.address,
       whirlpoolProgram: WHIRLPOOL_PROGRAM_ADDRESS,
-      tokenProgramA: mintA.programAddress,
-      tokenProgramB: mintB.programAddress,
       token2022Program: TOKEN_2022_PROGRAM_ADDRESS,
     }),
   );

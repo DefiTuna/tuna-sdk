@@ -24,7 +24,6 @@ pub fn liquidate_tuna_spot_position_jupiter_instructions(
     token_program_a: &Pubkey,
     token_program_b: &Pubkey,
     jupiter_route_accounts: Vec<AccountMeta>,
-    jupiter_intermediate_token_accounts_and_programs: Vec<AccountMeta>,
     args: LiquidateTunaSpotPositionJupiterArgs,
 ) -> Vec<Instruction> {
     let mut instructions = vec![];
@@ -56,7 +55,6 @@ pub fn liquidate_tuna_spot_position_jupiter_instructions(
         token_program_a,
         token_program_b,
         jupiter_route_accounts,
-        jupiter_intermediate_token_accounts_and_programs,
         args,
     ));
 
@@ -74,7 +72,6 @@ pub fn liquidate_tuna_spot_position_jupiter_instruction(
     token_program_a: &Pubkey,
     token_program_b: &Pubkey,
     jupiter_route_accounts: Vec<AccountMeta>,
-    jupiter_intermediate_token_accounts_and_programs: Vec<AccountMeta>,
     args: LiquidateTunaSpotPositionJupiterArgs,
 ) -> Instruction {
     let mint_a = vault_a.mint;
@@ -122,18 +119,7 @@ pub fn liquidate_tuna_spot_position_jupiter_instruction(
         length: jupiter_route_accounts.len() as u8,
     });
 
-    if !jupiter_intermediate_token_accounts_and_programs.is_empty() {
-        remaining_accounts_slices.push(RemainingAccountsSlice {
-            accounts_type: AccountsType::JupiterIntermediateTokenAccounts,
-            length: jupiter_intermediate_token_accounts_and_programs.len() as u8,
-        });
-    }
-
     for account in jupiter_route_accounts {
-        remaining_accounts.push(account);
-    }
-
-    for account in jupiter_intermediate_token_accounts_and_programs {
         remaining_accounts.push(account);
     }
 

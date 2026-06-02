@@ -92,11 +92,6 @@ export default class UpdateMarket extends BaseCommand {
       min: 0,
       max: HUNDRED_PERCENT,
     }),
-    maxSwapSlippage: percentFlag({
-      description: "Maximum allowed swap slippage for the market (hundredths of a basis point or %)",
-      min: 0,
-      max: HUNDRED_PERCENT,
-    }),
     rebalanceProtocolFee: percentFlag({
       description: "Protocol fee taken from yield on position re-balancing (hundredths of a basis point or %)",
       min: 0,
@@ -178,10 +173,6 @@ export default class UpdateMarket extends BaseCommand {
       newData.oraclePriceDeviationThreshold = flags.oraclePriceDeviationThreshold;
     }
 
-    if (flags.maxSwapSlippage !== undefined) {
-      newData.maxSwapSlippage = flags.maxSwapSlippage;
-    }
-
     if (flags.updateAddressLookupTable) {
       const lookupTable = await extendAddressLookupTableForMarketInstructions(
         rpc,
@@ -239,7 +230,7 @@ export default class UpdateMarket extends BaseCommand {
       borrowLimitA: newData.borrowLimitA,
       borrowLimitB: newData.borrowLimitB,
       oraclePriceDeviationThreshold: newData.oraclePriceDeviationThreshold,
-      maxSwapSlippage: newData.maxSwapSlippage,
+      unused: 0,
       rebalanceProtocolFee: newData.rebalanceProtocolFee,
       spotPositionSizeLimitA: newData.spotPositionSizeLimitA,
       spotPositionSizeLimitB: newData.spotPositionSizeLimitB,

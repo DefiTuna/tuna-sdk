@@ -12,10 +12,10 @@ import {
 export async function resetTunaSpotPositionInstruction(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
-  poolAddress: Address,
+  pool: Address,
   args: ResetTunaSpotPositionInstructionDataArgs,
 ): Promise<IInstruction> {
-  const tunaPositionAddress = (await getTunaSpotPositionAddress(authority.address, poolAddress))[0];
+  const tunaPositionAddress = (await getTunaSpotPositionAddress(authority.address, pool))[0];
   const tunaPosition = await fetchTunaSpotPosition(rpc, tunaPositionAddress);
 
   const [mintA, mintB] = await fetchAllMaybeMint(rpc, [tunaPosition.data.mintA, tunaPosition.data.mintB]);

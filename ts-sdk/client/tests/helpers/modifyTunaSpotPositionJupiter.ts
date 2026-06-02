@@ -145,7 +145,6 @@ export async function modifyTunaSpotPositionJupiter({
     signer,
     poolAddress,
     routeAccounts,
-    [],
     modifyArgs,
     createInstructions,
     cleanupInstructions,

@@ -17,7 +17,6 @@ pub struct DecreaseTunaLpPositionArgs {
     pub swap_to_token: Option<PoolToken>,
     pub min_removed_amount_a: u64,
     pub min_removed_amount_b: u64,
-    pub max_swap_slippage: u32,
 }
 
 impl Default for DecreaseTunaLpPositionArgs {
@@ -27,7 +26,6 @@ impl Default for DecreaseTunaLpPositionArgs {
             swap_to_token: None,
             min_removed_amount_a: 0,
             min_removed_amount_b: 0,
-            max_swap_slippage: 0,
         }
     }
 }
@@ -150,7 +148,7 @@ pub fn decrease_tuna_lp_position_fusion_instruction(
             swap_to_token: args.swap_to_token,
             min_removed_amount_a: args.min_removed_amount_a,
             min_removed_amount_b: args.min_removed_amount_b,
-            max_swap_slippage: args.max_swap_slippage,
+            unused: 0,
             remaining_accounts_info: RemainingAccountsInfo {
                 slices: vec![
                     RemainingAccountsSlice {

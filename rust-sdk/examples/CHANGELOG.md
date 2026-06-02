@@ -1,5 +1,11 @@
 # @crypticdot/defituna-rust-examples
 
+## 2.0.7
+
+### Patch Changes
+
+- 7fb5b22: Market closing
+
 ## 2.0.6
 
 ### Patch Changes

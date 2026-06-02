@@ -33,7 +33,7 @@ describe("Tuna Oracle", () => {
       liquidationFee: 10000, // 1%
       liquidationThreshold: 920000, // 92%
       maxLeverage: (LEVERAGE_ONE * 1020) / 100,
-      maxSwapSlippage: 0,
+      unused: 0,
       oraclePriceDeviationThreshold: HUNDRED_PERCENT, // Allow large deviation for tests
       protocolFee: 1000, // 0.1%
       protocolFeeOnCollateral: 1000, // 0.1%

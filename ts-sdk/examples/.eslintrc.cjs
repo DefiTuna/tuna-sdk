@@ -1,7 +1,7 @@
 /** @type {import("eslint").Linter.Config} */
 module.exports = {
   root: true,
-  ignorePatterns: [".eslintrc.js"],
+  ignorePatterns: [".eslintrc.cjs"],
   extends: ["@crypticdot/eslint-config/index.js"],
   parser: "@typescript-eslint/parser",
   parserOptions: {

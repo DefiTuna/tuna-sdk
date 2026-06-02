@@ -42,28 +42,25 @@ export type ModifyTunaSpotPositionJupiterInstructionsArgs = Omit<
 export async function modifyTunaSpotPositionJupiterInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
-  poolAddress: Address,
+  pool: Address,
   jupiterRouteAccounts: IAccountMeta[],
-  intermediateTokenAccountsAndPrograms: IAccountMeta[],
   args: ModifyTunaSpotPositionJupiterInstructionsArgs,
   createInstructions?: IInstruction[],
   cleanupInstructions?: IInstruction[],
 ): Promise<IInstruction[]> {
   const tunaConfig = await fetchTunaConfig(rpc, (await getTunaConfigAddress())[0]);
 
-  const tunaPositionAddress = (await getTunaSpotPositionAddress(authority.address, poolAddress))[0];
+  const tunaPositionAddress = (await getTunaSpotPositionAddress(authority.address, pool))[0];
   const tunaPosition = await fetchTunaSpotPosition(rpc, tunaPositionAddress);
   const collateralToken = tunaPosition.data.collateralToken;
 
-  const marketAddress = (await getMarketAddress(poolAddress))[0];
+  const marketAddress = (await getMarketAddress(pool))[0];
   const market = await fetchMarket(rpc, marketAddress);
 
-  const pool =
-    market.data.marketMaker == MarketMaker.Fusion
-      ? await fetchFusionPool(rpc, poolAddress)
-      : await fetchWhirlpool(rpc, poolAddress);
+  const poolAccount =
+    market.data.marketMaker == MarketMaker.Fusion ? await fetchFusionPool(rpc, pool) : await fetchWhirlpool(rpc, pool);
 
-  const [mintA, mintB] = await fetchAllMaybeMint(rpc, [pool.data.tokenMintA, pool.data.tokenMintB]);
+  const [mintA, mintB] = await fetchAllMaybeMint(rpc, [poolAccount.data.tokenMintA, poolAccount.data.tokenMintB]);
   assert(mintA.exists, "Token A account not found");
   assert(mintB.exists, "Token B account not found");
 
@@ -102,9 +99,8 @@ export async function modifyTunaSpotPositionJupiterInstructions(
     mintB,
     vaultA,
     vaultB,
-    poolAddress,
+    pool,
     jupiterRouteAccounts,
-    intermediateTokenAccountsAndPrograms,
     { ...args },
   );
   instructions.push(ix);
@@ -129,13 +125,12 @@ export async function modifyTunaSpotPositionJupiterInstruction(
   mintB: Account<Mint>,
   vaultA: Account<Vault>,
   vaultB: Account<Vault>,
-  poolAddress: Address,
+  pool: Address,
   jupiterRouteAccounts: IAccountMeta[],
-  intermediateTokenAccountsAndPrograms: IAccountMeta[],
   args: ModifyTunaSpotPositionJupiterInstructionsArgs,
 ): Promise<IInstruction> {
-  const marketAddress = (await getMarketAddress(poolAddress))[0];
-  const tunaPositionAddress = (await getTunaSpotPositionAddress(authority.address, poolAddress))[0];
+  const marketAddress = (await getMarketAddress(pool))[0];
+  const tunaPositionAddress = (await getTunaSpotPositionAddress(authority.address, pool))[0];
 
   const tunaPositionOwnerAtaA = (
     await findAssociatedTokenPda({
@@ -205,14 +200,7 @@ export async function modifyTunaSpotPositionJupiterInstruction(
     slices: [{ accountsType: AccountsType.JupiterRoute, length: jupiterRouteAccounts.length }],
   };
 
-  if (intermediateTokenAccountsAndPrograms.length > 0) {
-    remainingAccountsInfo.slices.push({
-      accountsType: AccountsType.JupiterIntermediateTokenAccounts,
-      length: intermediateTokenAccountsAndPrograms.length,
-    });
-  }
-
-  const remainingAccounts: IAccountMeta[] = [...jupiterRouteAccounts, ...intermediateTokenAccountsAndPrograms];
+  const remainingAccounts: IAccountMeta[] = [...jupiterRouteAccounts];
 
   const ix = getModifyTunaSpotPositionJupiterInstruction({
     authority,
@@ -235,7 +223,7 @@ export async function modifyTunaSpotPositionJupiterInstruction(
     tunaPositionOwnerAtaB,
     feeRecipientAtaA,
     feeRecipientAtaB,
-    pool: poolAddress,
+    pool,
     jupiterProgram: JUPITER_PROGRAM_ADDRESS,
     memoProgram: MEMO_PROGRAM_ADDRESS,
     ...args,

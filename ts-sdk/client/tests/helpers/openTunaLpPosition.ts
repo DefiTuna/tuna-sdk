@@ -55,6 +55,9 @@ export async function openTunaLpPosition({
       : await openTunaLpPositionFusionInstruction(rpc, signer, positionMint, pool, openTunaLpPositionArgs),
   ]);
 
+  const marketAfter = await fetchMarket(rpc, marketAddress);
+  expect(marketAfter.data.numPositions).toEqual(market.data.numPositions + 1);
+
   const tunaPosition = await fetchTunaLpPosition(rpc, tunaPositionAddress);
   expect(tunaPosition.data.marketMaker).toEqual(market.data.marketMaker);
 }

@@ -58,7 +58,7 @@ describe("Tuna Spot Position Jupiter", () => {
       liquidationFee: 100000, // 10%
       liquidationThreshold: 850000, // 85%
       maxLeverage: (LEVERAGE_ONE * 520) / 100,
-      maxSwapSlippage: 0,
+      unused: 0,
       oraclePriceDeviationThreshold: HUNDRED_PERCENT, // Allow large deviation for tests
       protocolFee: 1000, // 0.1%
       protocolFeeOnCollateral: 1000, // 0.1%
@@ -304,7 +304,6 @@ describe("Tuna Spot Position Jupiter", () => {
     );
   });
 
-  /*
   it(`Open and increase a LONG position providing token B as collateral, decrease and close it`, async () => {
     const tunaPositionAddress = (await getTunaSpotPositionAddress(signer.address, market.pool))[0];
 
@@ -598,7 +597,6 @@ describe("Tuna Spot Position Jupiter", () => {
         tunaPositionAddress,
         routeAccounts: routeInstruction.accounts,
         routeData: routeInstruction.data,
-        intermediateTokenAccountsAndPrograms: [],
       }),
       {
         vaultBalanceDeltaA: 0n,
@@ -717,7 +715,6 @@ describe("Tuna Spot Position Jupiter", () => {
         decreasePercent: HUNDRED_PERCENT / 2,
         routeAccounts: routeInstruction.accounts,
         routeData: routeInstruction.data,
-        intermediateTokenAccountsAndPrograms: [],
       }),
       {
         vaultBalanceDeltaA: 0n,
@@ -835,7 +832,6 @@ describe("Tuna Spot Position Jupiter", () => {
         tunaPositionAddress,
         routeAccounts: routeInstruction.accounts,
         routeData: routeInstruction.data,
-        intermediateTokenAccountsAndPrograms: [],
       }),
       {
         vaultBalanceDeltaA: 0n,
@@ -847,5 +843,5 @@ describe("Tuna Spot Position Jupiter", () => {
         feeRecipientBalanceDelta: 450000000n,
       },
     );
-  });*/
+  });
 }, 20000);

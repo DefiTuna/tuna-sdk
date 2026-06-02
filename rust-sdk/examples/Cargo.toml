@@ -14,7 +14,7 @@ solana-v1 = []
 
 [dependencies]
 defituna-client = { path = '../client', features = ["fetch"] }
-fusionamm-tx-sender = { version = "^1.0" }
+fusionamm-tx-sender = { version = "^1.0.22" }
 
 # Solana
 solana-rpc-client = { version = "^2.2" }
@@ -26,8 +26,8 @@ solana-program-pack = { version = "^2.2" }
 solana-address-lookup-table-interface = { version = "^2.2" }
 
 # Spl token
-spl-token = { version = "^6.0.0" }
-spl-token-2022 = { version = "^6.0.0" }
+spl-token = { version = "^6.0.0", features = ["no-entrypoint"] }
+spl-token-2022 = { version = "^6.0.0", features = ["no-entrypoint"] }
 
 serde_json = { version = "^1.0" }
 bytemuck = "1.22.0"

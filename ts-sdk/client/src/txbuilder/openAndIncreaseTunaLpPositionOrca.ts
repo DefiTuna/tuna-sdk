@@ -66,7 +66,7 @@ export type OpenAndIncreaseTunaLpPositionOrca = {
 
 export type OpenAndIncreaseTunaLpPositionOrcaInstructionsArgs = Omit<
   OpenAndIncreaseTunaLpPositionOrcaInstructionDataArgs,
-  "remainingAccountsInfo"
+  "remainingAccountsInfo" | "unused"
 >;
 
 export async function openAndIncreaseTunaLpPositionOrcaInstructions(
@@ -202,7 +202,7 @@ export async function openAndIncreaseTunaLpPositionOrcaInstruction(
   vaultA: Account<Vault>,
   vaultB: Account<Vault>,
   whirlpool: Account<Whirlpool>,
-  args: Omit<OpenAndIncreaseTunaLpPositionOrcaInstructionDataArgs, "remainingAccountsInfo">,
+  args: Omit<OpenAndIncreaseTunaLpPositionOrcaInstructionDataArgs, "remainingAccountsInfo" | "unused">,
 ): Promise<IInstruction> {
   const positionMintAddress = typeof positionMint === "string" ? positionMint : positionMint.address;
   const tunaPositionAddress = (await getTunaLpPositionAddress(positionMintAddress))[0];
@@ -344,6 +344,7 @@ export async function openAndIncreaseTunaLpPositionOrcaInstruction(
           associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
           token2022Program: TOKEN_2022_PROGRAM_ADDRESS,
           ...args,
+          unused: 0,
           remainingAccountsInfo,
         })
       : getOpenAndIncreaseTunaLpPositionOrcaInstruction({
@@ -377,6 +378,7 @@ export async function openAndIncreaseTunaLpPositionOrcaInstruction(
           associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
           token2022Program: TOKEN_2022_PROGRAM_ADDRESS,
           ...args,
+          unused: 0,
           remainingAccountsInfo,
         });
 

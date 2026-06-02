@@ -1,5 +1,6 @@
 pub mod close_active_tuna_lp_position_fusion;
 pub mod close_active_tuna_lp_position_orca;
+pub mod close_market;
 pub mod close_tuna_lp_position_fusion;
 pub mod close_tuna_lp_position_orca;
 pub mod close_tuna_spot_position;
@@ -43,6 +44,7 @@ pub mod withdraw;
 
 pub use close_active_tuna_lp_position_fusion::*;
 pub use close_active_tuna_lp_position_orca::*;
+pub use close_market::*;
 pub use close_tuna_lp_position_fusion::*;
 pub use close_tuna_lp_position_orca::*;
 pub use close_tuna_spot_position::*;

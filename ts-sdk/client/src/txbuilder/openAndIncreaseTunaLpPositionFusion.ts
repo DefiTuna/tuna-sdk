@@ -7,7 +7,7 @@ import {
   getInitializeTickArrayInstruction,
   getPositionAddress,
   getTickArrayAddress,
-  getTickArraySize,
+  getTickArrayMinSize,
 } from "@crypticdot/fusionamm-client";
 import { getTickArrayStartTickIndex } from "@crypticdot/fusionamm-core";
 import {
@@ -65,7 +65,7 @@ export type OpenAndIncreaseTunaLpPositionFusion = {
 
 export type OpenAndIncreaseTunaLpPositionFusionInstructionsArgs = Omit<
   OpenAndIncreaseTunaLpPositionFusionInstructionDataArgs,
-  "remainingAccountsInfo"
+  "remainingAccountsInfo" | "unused"
 >;
 
 export async function openAndIncreaseTunaLpPositionFusionInstructions(
@@ -141,7 +141,7 @@ export async function openAndIncreaseTunaLpPositionFusionInstructions(
         startTickIndex: lowerTickArrayIndex,
       }),
     );
-    nonRefundableRent += calculateMinimumBalanceForRentExemption(rent, getTickArraySize());
+    nonRefundableRent += calculateMinimumBalanceForRentExemption(rent, getTickArrayMinSize());
   }
 
   // Create a tick array it doesn't exist.
@@ -154,7 +154,7 @@ export async function openAndIncreaseTunaLpPositionFusionInstructions(
         startTickIndex: upperTickArrayIndex,
       }),
     );
-    nonRefundableRent += calculateMinimumBalanceForRentExemption(rent, getTickArraySize());
+    nonRefundableRent += calculateMinimumBalanceForRentExemption(rent, getTickArrayMinSize());
   }
 
   //
@@ -199,7 +199,7 @@ export async function openAndIncreaseTunaLpPositionFusionInstruction(
   vaultA: Account<Vault>,
   vaultB: Account<Vault>,
   fusionPool: Account<FusionPool>,
-  args: Omit<OpenAndIncreaseTunaLpPositionFusionInstructionDataArgs, "remainingAccountsInfo">,
+  args: Omit<OpenAndIncreaseTunaLpPositionFusionInstructionDataArgs, "remainingAccountsInfo" | "unused">,
 ): Promise<IInstruction> {
   const positionMintAddress = typeof positionMint === "string" ? positionMint : positionMint.address;
   const tunaPositionAddress = (await getTunaLpPositionAddress(positionMintAddress))[0];
@@ -338,6 +338,7 @@ export async function openAndIncreaseTunaLpPositionFusionInstruction(
           associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
           token2022Program: TOKEN_2022_PROGRAM_ADDRESS,
           ...args,
+          unused: 0,
           remainingAccountsInfo,
         })
       : getOpenAndIncreaseTunaLpPositionFusionInstruction({
@@ -371,6 +372,7 @@ export async function openAndIncreaseTunaLpPositionFusionInstruction(
           associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
           token2022Program: TOKEN_2022_PROGRAM_ADDRESS,
           ...args,
+          unused: 0,
           remainingAccountsInfo,
         });
 

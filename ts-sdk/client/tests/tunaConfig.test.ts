@@ -6,7 +6,6 @@ import {
   fetchTunaConfig,
   getSetAdminAuthorityInstruction,
   getSetDefaultMaxPercentageOfLeftoversInstruction,
-  getSetDefaultMaxSwapSlippageInstruction,
   getSetDefaultOraclePriceDeviationThresholdInstruction,
   getSetFeeRecipientInstruction,
   getSetLiquidatorAuthorityInstruction,
@@ -242,29 +241,6 @@ describe("Tuna Config", () => {
       authority: TUNA_ADMIN_KEYPAIR,
       tunaConfig: tunaConfigAddress[0],
       maxPercentageOfLeftovers: tunaConfigBefore.data.maxPercentageOfLeftovers,
-    });
-    await sendTransaction([ix]);
-  });
-
-  it("Set max swap slippage", async () => {
-    const tunaConfigAddress = await getTunaConfigAddress();
-    const tunaConfigBefore = await fetchTunaConfig(rpc, tunaConfigAddress[0]);
-
-    let ix = getSetDefaultMaxSwapSlippageInstruction({
-      authority: TUNA_ADMIN_KEYPAIR,
-      tunaConfig: tunaConfigAddress[0],
-      maxSwapSlippage: 1111,
-    });
-    await sendTransaction([ix]);
-
-    const tunaConfig = await fetchTunaConfig(rpc, tunaConfigAddress[0]);
-    expect(tunaConfig.data.maxSwapSlippage).toEqual(1111);
-
-    // Restore
-    ix = getSetDefaultMaxSwapSlippageInstruction({
-      authority: TUNA_ADMIN_KEYPAIR,
-      tunaConfig: tunaConfigAddress[0],
-      maxSwapSlippage: tunaConfigBefore.data.maxSwapSlippage,
     });
     await sendTransaction([ix]);
   });

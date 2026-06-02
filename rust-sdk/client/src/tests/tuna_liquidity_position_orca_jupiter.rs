@@ -34,7 +34,7 @@ mod tests {
             disabled: false,
             borrow_limit_a: 0,
             borrow_limit_b: 0,
-            max_swap_slippage: 0,
+            unused: 0,
             rebalance_protocol_fee: 0,
             spot_position_size_limit_a: 1000_000_000_000,
             spot_position_size_limit_b: 100000_000_000,
@@ -117,7 +117,6 @@ mod tests {
                     borrow_b: 0,
                     min_added_amount_a: 0,
                     min_added_amount_b: 0,
-                    max_swap_slippage: 0,
                 },
             )
             .unwrap();
@@ -143,7 +142,7 @@ mod tests {
                 user_transfer_authority: tuna_position.address,
                 user_source_token_account: tuna_position_ata_b,
                 user_destination_token_account: tuna_position_ata_a,
-                destination_token_account: None,
+                destination_token_account: Some(tuna_position_ata_a),
                 source_mint: tuna_position.data.mint_b,
                 destination_mint: test_market.mint_a_address,
                 source_token_program: spl_token::ID,
@@ -194,7 +193,6 @@ mod tests {
                 &test_market.token_program_a,
                 &test_market.token_program_b,
                 route_ix.accounts,
-                vec![],
                 LiquidateTunaLpPositionJupiterArgs {
                     decrease_percent: HUNDRED_PERCENT,
                     jupiter_route_data: route_ix.data,

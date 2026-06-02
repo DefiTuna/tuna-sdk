@@ -11,8 +11,8 @@ import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
 import { fetchAllMaybeMint, findAssociatedTokenPda, Mint } from "@solana-program/token-2022";
 import assert from "assert";
 
-import { fetchTunaLpPosition, getRepayTunaLpPositionDebtInstruction } from "../generated";
-import { getLendingVaultAddress, getMarketAddress, getTunaLpPositionAddress } from "../pda.ts";
+import { fetchMarket, fetchTunaLpPosition, getRepayTunaLpPositionDebtInstruction } from "../generated";
+import { getMarketAddress, getTunaLpPositionAddress } from "../pda.ts";
 import { getCreateAtaInstructions } from "../utils";
 
 export async function repayTunaLpPositionDebtInstructions(
@@ -35,6 +35,7 @@ export async function repayTunaLpPositionDebtInstructions(
   assert(mintB.exists, "Token B not found");
 
   const marketAddress = (await getMarketAddress(tunaPosition.data.pool))[0];
+  const market = await fetchMarket(rpc, marketAddress);
 
   //
   // Add create user's token account instructions if needed.
@@ -64,6 +65,8 @@ export async function repayTunaLpPositionDebtInstructions(
     mintA,
     mintB,
     marketAddress,
+    market.data.vaultA,
+    market.data.vaultB,
     collateralA,
     collateralB,
   );
@@ -85,6 +88,8 @@ export async function repayTunaLpPositionDebtInstruction(
   mintA: Account<Mint>,
   mintB: Account<Mint>,
   marketAddress: Address,
+  vaultAAddress: Address,
+  vaultBAddress: Address,
   collateralA: bigint,
   collateralB: bigint,
 ): Promise<IInstruction> {
@@ -122,7 +127,6 @@ export async function repayTunaLpPositionDebtInstruction(
     })
   )[0];
 
-  const vaultAAddress = (await getLendingVaultAddress(mintA.address))[0];
   const vaultAAta = (
     await findAssociatedTokenPda({
       owner: vaultAAddress,
@@ -131,7 +135,6 @@ export async function repayTunaLpPositionDebtInstruction(
     })
   )[0];
 
-  const vaultBAddress = (await getLendingVaultAddress(mintB.address))[0];
   const vaultBAta = (
     await findAssociatedTokenPda({
       owner: vaultBAddress,

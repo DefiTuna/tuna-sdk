@@ -34,7 +34,6 @@ export type OpenAndIncreaseLpPositionTestArgs = {
   collateralB: bigint;
   borrowA: bigint;
   borrowB: bigint;
-  maxSwapSlippage?: number;
 };
 
 export async function openAndIncreaseTunaLpPosition({
@@ -44,7 +43,6 @@ export async function openAndIncreaseTunaLpPosition({
   collateralB,
   borrowA,
   borrowB,
-  maxSwapSlippage,
   tickLowerIndex,
   tickUpperIndex,
   lowerLimitOrderSqrtPrice,
@@ -92,7 +90,6 @@ export async function openAndIncreaseTunaLpPosition({
     borrowB,
     collateralA,
     collateralB,
-    maxSwapSlippage: maxSwapSlippage ?? HUNDRED_PERCENT / 10,
     minAddedAmountA: 0n,
     minAddedAmountB: 0n,
   };
@@ -146,6 +143,7 @@ export async function openAndIncreaseTunaLpPosition({
     BigInt(HUNDRED_PERCENT);
   expect(feeRecipientBalanceAAfter - feeRecipientBalanceABefore).toEqual(feeA);
   expect(feeRecipientBalanceBAfter - feeRecipientBalanceBBefore).toEqual(feeB);
+  expect(marketAfter.data.numPositions).toEqual(market.data.numPositions + 1);
 
   return positionMint.address;
 }

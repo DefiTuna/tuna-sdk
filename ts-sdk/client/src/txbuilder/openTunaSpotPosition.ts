@@ -20,6 +20,7 @@ import {
 import assert from "assert";
 
 import {
+  getMarketAddress,
   getOpenTunaSpotPositionInstruction,
   getTunaSpotPositionAddress,
   OpenTunaSpotPositionInstructionDataArgs,
@@ -28,26 +29,26 @@ import {
 export async function openTunaSpotPositionInstructions(
   rpc: Rpc<GetAccountInfoApi & GetMultipleAccountsApi>,
   authority: TransactionSigner,
-  poolAddress: Address,
+  pool: Address,
   args: OpenTunaSpotPositionInstructionDataArgs,
 ): Promise<IInstruction[]> {
-  const poolAccount = await fetchEncodedAccount(rpc, poolAddress);
-  assert(poolAccount.exists, "Pool account not found");
+  const encodedPool = await fetchEncodedAccount(rpc, pool);
+  assert(encodedPool.exists, "Pool account not found");
 
-  let pool: Account<FusionPool> | Account<Whirlpool>;
-  if (poolAccount.programAddress == FUSIONAMM_PROGRAM_ADDRESS) {
-    pool = decodeAccount(poolAccount, getFusionPoolDecoder());
-  } else if (poolAccount.programAddress == WHIRLPOOL_PROGRAM_ADDRESS) {
-    pool = decodeAccount(poolAccount, getWhirlpoolDecoder());
+  let poolAccount: Account<FusionPool> | Account<Whirlpool>;
+  if (encodedPool.programAddress == FUSIONAMM_PROGRAM_ADDRESS) {
+    poolAccount = decodeAccount(encodedPool, getFusionPoolDecoder());
+  } else if (encodedPool.programAddress == WHIRLPOOL_PROGRAM_ADDRESS) {
+    poolAccount = decodeAccount(encodedPool, getWhirlpoolDecoder());
   } else {
     throw new Error("Incorrect Fusion or Orca pool account");
   }
 
-  const [mintA, mintB] = await fetchAllMaybeMint(rpc, [pool.data.tokenMintA, pool.data.tokenMintB]);
+  const [mintA, mintB] = await fetchAllMaybeMint(rpc, [poolAccount.data.tokenMintA, poolAccount.data.tokenMintB]);
   assert(mintA.exists, "Token A account not found");
   assert(mintB.exists, "Token B account not found");
 
-  const ix = await openTunaSpotPositionInstruction(authority, mintA, mintB, poolAddress, args);
+  const ix = await openTunaSpotPositionInstruction(authority, mintA, mintB, pool, args);
   return [ix];
 }
 
@@ -55,10 +56,11 @@ export async function openTunaSpotPositionInstruction(
   authority: TransactionSigner,
   mintA: Account<Mint>,
   mintB: Account<Mint>,
-  poolAddress: Address,
+  pool: Address,
   args: OpenTunaSpotPositionInstructionDataArgs,
 ): Promise<IInstruction> {
-  const tunaPositionAddress = (await getTunaSpotPositionAddress(authority.address, poolAddress))[0];
+  const tunaPositionAddress = (await getTunaSpotPositionAddress(authority.address, pool))[0];
+  const marketAddress = (await getMarketAddress(pool))[0];
 
   const tunaPositionAtaA = (
     await findAssociatedTokenPda({
@@ -85,7 +87,8 @@ export async function openTunaSpotPositionInstruction(
     tunaPosition: tunaPositionAddress,
     tunaPositionAtaA,
     tunaPositionAtaB,
-    pool: poolAddress,
+    pool: pool,
+    market: marketAddress,
     associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
     ...args,
   });

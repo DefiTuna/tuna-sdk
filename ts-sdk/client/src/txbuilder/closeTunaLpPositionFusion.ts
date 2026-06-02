@@ -6,6 +6,7 @@ import assert from "assert";
 import {
   fetchMaybeTunaLpPosition,
   getCloseTunaLpPositionFusionInstruction,
+  getMarketAddress,
   getTunaLpPositionAddress,
 } from "../index.ts";
 
@@ -21,6 +22,8 @@ export async function closeTunaLpPositionFusionInstruction(
 
   const fusionPool = await fetchMaybeFusionPool(rpc, tunaPosition.data.pool);
   if (!fusionPool.exists) throw new Error("FusionPool account not found");
+
+  const marketAddress = (await getMarketAddress(tunaPosition.data.pool))[0];
 
   const [mintA, mintB] = await fetchAllMaybeMint(rpc, [fusionPool.data.tokenMintA, fusionPool.data.tokenMintB]);
   assert(mintA.exists, "Token A account not found");
@@ -52,9 +55,12 @@ export async function closeTunaLpPositionFusionInstruction(
   )[0];
 
   return getCloseTunaLpPositionFusionInstruction({
+    authority,
     mintA: mintA.address,
     mintB: mintB.address,
-    authority,
+    tokenProgramA: mintA.programAddress,
+    tokenProgramB: mintB.programAddress,
+    market: marketAddress,
     tunaPositionMint: positionMint,
     tunaPositionAta,
     tunaPositionAtaA,
@@ -62,8 +68,6 @@ export async function closeTunaLpPositionFusionInstruction(
     fusionPosition: fusionPositionAddress,
     tunaPosition: tunaPositionAddress,
     fusionammProgram: FUSIONAMM_PROGRAM_ADDRESS,
-    tokenProgramA: mintA.programAddress,
-    tokenProgramB: mintB.programAddress,
     token2022Program: TOKEN_2022_PROGRAM_ADDRESS,
   });
 }
