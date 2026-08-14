@@ -543,7 +543,7 @@ pub fn compute_leverage(total_a: u64, total_b: u64, debt_a: u64, debt_b: u64, sq
         .ok_or(ARITHMETIC_OVERFLOW)?;
 
     // We assume that the leverage of an empty position is always 1.0x.
-    if total == 0 {
+    if total == 0 && debt == 0 {
         return Ok(1.0);
     }
 
@@ -571,6 +571,11 @@ mod tests {
     pub static SQRT_PRICE: Lazy<u128> = Lazy::new(|| price_to_sqrt_price(213.41, 6, 6));
     pub static LIQUIDITY: Lazy<u128> =
         Lazy::new(|| get_liquidity_from_amount_b(10000_000_000, tick_index_to_sqrt_price(*TICK_LOWER_INDEX), *SQRT_PRICE).unwrap());
+
+    #[test]
+    fn test_compute_leverage_empty_position_is_one() {
+        assert_eq!(super::compute_leverage(0, 0, 0, 0, *SQRT_PRICE), Ok(1.0));
+    }
 
     #[test]
     fn test_liquidation_price_outside_range_lower() {

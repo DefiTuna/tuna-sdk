@@ -79,8 +79,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "defituna-core"
-version = "3.5.0"
+name = "defituna-sdk-core"
+version = "3.7.4"
 dependencies = [
  "fixed",
  "fusionamm-core",

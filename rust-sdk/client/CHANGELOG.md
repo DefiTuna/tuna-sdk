@@ -1,4 +1,11 @@
-# @defituna/rust-client
+# defituna-sdk-client
+
+## 3.7.4
+
+### Patch Changes
+
+- Aligned the new `defituna-sdk-client` crate with the 3.7 release line, superseding the incorrectly versioned 3.5.1 package, and updated its core dependency to `defituna-sdk-core`.
+- Synchronized the client, generated interface, and transaction builders with DefiTuna program 3.7.8.
 
 ## 3.7.3
 

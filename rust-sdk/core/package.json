@@ -1,15 +1,15 @@
 {
   "name": "@crypticdot/defituna-rust-core",
   "description": "DefiTuna core rust library.",
-  "version": "3.7.3",
+  "version": "3.7.4",
   "private": true,
   "files": [],
   "scripts": {
-    "build": "cargo build -p defituna-core",
-    "test": "cargo test -p defituna-core --lib",
+    "build": "cargo build -p defituna-sdk-core",
+    "test": "cargo test -p defituna-sdk-core --lib",
     "deploy": "../../scripts/deploy-cargo",
     "format": "cargo clippy --fix --allow-dirty --allow-staged && cargo fmt",
     "lint": "cargo clippy && cargo fmt --check",
-    "clean": "cargo clean -p defituna-core"
+    "clean": "cargo clean -p defituna-sdk-core"
   }
 }

@@ -1,5 +1,5 @@
 use anyhow::Result;
-use defituna_client::{self, fetch_all_tuna_lp_position_with_filter, TunaLpPositionFilter};
+use defituna_sdk_client::{self, fetch_all_tuna_lp_position_with_filter, TunaLpPositionFilter};
 use solana_pubkey::Pubkey;
 use solana_rpc_client::rpc_client::RpcClient;
 

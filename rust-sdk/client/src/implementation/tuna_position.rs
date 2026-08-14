@@ -74,7 +74,7 @@ macro_rules! impl_tuna_position {
                 let (total, debt) = self.compute_total_and_debt(sqrt_price, vault_a, vault_b)?;
 
                 // We assume that the leverage of an empty position is always 1.0x.
-                if total == 0 {
+                if total == 0 && debt == 0 {
                     return Ok(1.0);
                 }
 
@@ -100,13 +100,15 @@ macro_rules! impl_tuna_position {
 
                 let (total, debt) = self.compute_total_and_debt(sqrt_price, vault_a, vault_b)?;
 
-                // Compute if the position is healthy. Can't overflow because liquidation_threshold <= 1e6 and total is a little bigger than u64::MAX.
-                let healthy = total == 0 || debt <= (total as u128 * market.liquidation_threshold as u128 / HUNDRED_PERCENT as u128) as u64;
-                let ratio = if total == 0 {
-                    0
-                } else {
-                    (debt as u128 * HUNDRED_PERCENT as u128 / total as u128) as u32
-                };
+                // A zero-valued position with debt is maximally unhealthy. Return before
+                // computing the debt ratio to avoid dividing by zero.
+                if total == 0 {
+                    return Ok((debt == 0, if debt == 0 { 0 } else { u32::MAX }));
+                }
+
+                // Can't overflow because liquidation_threshold <= 1e6 and total is a little bigger than u64::MAX.
+                let healthy = debt <= (total as u128 * market.liquidation_threshold as u128 / HUNDRED_PERCENT as u128) as u64;
+                let ratio = (debt as u128 * HUNDRED_PERCENT as u128 / total as u128).min(u32::MAX as u128) as u32;
 
                 Ok((healthy, ratio))
             }

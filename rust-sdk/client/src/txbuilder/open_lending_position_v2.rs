@@ -1,5 +1,5 @@
-use crate::instructions::OpenLendingPositionV2;
 use crate::get_lending_position_address;
+use crate::instructions::OpenLendingPositionV2;
 use solana_instruction::Instruction;
 use solana_pubkey::Pubkey;
 use solana_sdk_ids::system_program;

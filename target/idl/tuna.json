@@ -2,7 +2,7 @@
   "address": "tuna4uSQZncNeeiAMKbstuxA9CUkHH6HmC64wgmnogD",
   "metadata": {
     "name": "tuna",
-    "version": "3.7.2",
+    "version": "3.7.8",
     "spec": "0.1.0",
     "description": "DefiTuna"
   },
@@ -5138,6 +5138,34 @@
           "type": "u128"
         }
       ]
+    },
+    {
+      "name": "socialize_bad_debt",
+      "discriminator": [
+        25,
+        82,
+        191,
+        176,
+        114,
+        122,
+        211,
+        248
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tuna_config"
+        },
+        {
+          "name": "vault",
+          "writable": true
+        }
+      ],
+      "args": []
     },
     {
       "name": "update_market",

@@ -10,7 +10,9 @@ import {
   Slot,
   TransactionSigner,
 } from "@solana/kit";
+import { SYSVAR_RENT_ADDRESS } from "@solana/sysvars";
 import { fetchAddressLookupTable, getExtendLookupTableInstruction } from "@solana-program/address-lookup-table";
+import { COMPUTE_BUDGET_PROGRAM_ADDRESS } from "@solana-program/compute-budget";
 import { MEMO_PROGRAM_ADDRESS } from "@solana-program/memo";
 import { SYSTEM_PROGRAM_ADDRESS } from "@solana-program/system";
 import { TOKEN_PROGRAM_ADDRESS } from "@solana-program/token";
@@ -188,7 +190,8 @@ export async function getAddressesForFusionMarketLookupTable(
 
   const addresses: Address[] = [
     SYSTEM_PROGRAM_ADDRESS,
-    address("SysvarRent111111111111111111111111111111111"),
+    COMPUTE_BUDGET_PROGRAM_ADDRESS,
+    SYSVAR_RENT_ADDRESS,
     ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
     TOKEN_PROGRAM_ADDRESS,
     TOKEN_2022_PROGRAM_ADDRESS,

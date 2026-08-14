@@ -1,9 +1,9 @@
 use crate::types::Amounts;
 use crate::utils::fetch_address_lookup_table;
 use anyhow::{anyhow, Result};
-use defituna_client::accounts::{fetch_market, fetch_tuna_lp_position};
-use defituna_client::types::{MarketMaker, PoolToken};
-use defituna_client::{
+use defituna_sdk_client::accounts::{fetch_market, fetch_tuna_lp_position};
+use defituna_sdk_client::types::{MarketMaker, PoolToken};
+use defituna_sdk_client::{
   close_active_tuna_lp_position_orca_instructions, get_market_address, get_tuna_liquidity_position_address,
   CloseActiveTunaLpPositionArgs,
 };

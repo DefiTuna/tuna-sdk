@@ -4,14 +4,14 @@ mod tests {
     use crate::instructions::{CreateMarketInstructionArgs, OpenTunaLpPositionFusionInstructionArgs};
     use crate::tests::fusion::swap_exact_in;
     use crate::tests::*;
-    use crate::types::MarketMaker;
+    use crate::types::{MarketMaker, TunaPositionState};
     use crate::{
-        close_active_tuna_lp_position_fusion_instructions, close_tuna_lp_position_fusion_instruction, decrease_tuna_lp_position_fusion_instructions,
-        get_tuna_config_address, get_tuna_liquidity_position_address, increase_tuna_lp_position_fusion_instructions,
-        liquidate_tuna_lp_position_fusion_instructions, open_and_increase_tuna_lp_position_fusion_instructions,
-        open_tuna_lp_position_fusion_instruction, rebalance_tuna_lp_position_fusion_instructions, CloseActiveTunaLpPositionArgs,
-        DecreaseTunaLpPositionArgs, IncreaseTunaLpPositionArgs, OpenAndIncreaseTunaLpPositionArgs, HUNDRED_PERCENT, LEVERAGE_ONE,
-        TUNA_POSITION_FLAGS_ALLOW_REBALANCING,
+        close_active_tuna_lp_position_fusion_instructions, close_tuna_lp_position_fusion_instruction, collect_and_compound_fees_fusion_instructions,
+        decrease_tuna_lp_position_fusion_instructions, get_tuna_config_address, get_tuna_liquidity_position_address,
+        increase_tuna_lp_position_fusion_instructions, liquidate_tuna_lp_position_fusion_instructions,
+        open_and_increase_tuna_lp_position_fusion_instructions, open_tuna_lp_position_fusion_instruction,
+        rebalance_tuna_lp_position_fusion_instructions, CloseActiveTunaLpPositionArgs, DecreaseTunaLpPositionArgs, IncreaseTunaLpPositionArgs,
+        OpenAndIncreaseTunaLpPositionArgs, HUNDRED_PERCENT, LEVERAGE_ONE, TUNA_POSITION_FLAGS_ALLOW_REBALANCING,
     };
     use fusionamm_client::fetch_fusion_pool;
     use rstest::rstest;
@@ -30,8 +30,8 @@ mod tests {
             liquidation_threshold: 920000,                         // 92%
             oracle_price_deviation_threshold: HUNDRED_PERCENT / 2, // Allow large deviation for tests
             disabled: false,
-            borrow_limit_a: 0,
-            borrow_limit_b: 0,
+            borrow_limit_a: u64::MAX,
+            borrow_limit_b: u64::MAX,
             unused: 0,
             rebalance_protocol_fee: 0,
             spot_position_size_limit_a: 1000_000_000_000,
@@ -192,6 +192,58 @@ mod tests {
                 .unwrap(),
             )
             .unwrap();
+        });
+    }
+
+    #[rstest]
+    #[case(false)]
+    #[case(true)]
+    #[serial]
+    fn test_collect_and_compound_uses_market_vaults(#[case] permissionless: bool) {
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        rt.block_on(async {
+            let signer = Keypair::new();
+            let ctx = RpcContext::new(&signer, fusion::get_fusion_pool_config_accounts(&signer.pubkey())).await;
+            let test_market = setup_test_market(
+                &ctx,
+                test_market_args(),
+                MarketMaker::Fusion,
+                TestMarketArgs {
+                    permissionless,
+                    ..TestMarketArgs::default()
+                },
+            )
+            .await
+            .unwrap();
+
+            let pool = fetch_fusion_pool(&ctx.rpc, &test_market.pool).unwrap();
+            let position_mint = Keypair::new();
+            let actual_tick_index = pool.data.tick_current_index - (pool.data.tick_current_index % pool.data.tick_spacing as i32);
+
+            ctx.send_transaction_with_signers(
+                vec![open_tuna_lp_position_fusion_instruction(
+                    &ctx.rpc,
+                    &ctx.signer.pubkey(),
+                    &position_mint.pubkey(),
+                    &test_market.pool,
+                    OpenTunaLpPositionFusionInstructionArgs {
+                        tick_lower_index: actual_tick_index - pool.data.tick_spacing as i32 * 5,
+                        tick_upper_index: actual_tick_index + pool.data.tick_spacing as i32 * 5,
+                        lower_limit_order_sqrt_price: 0,
+                        upper_limit_order_sqrt_price: 0,
+                        flags: 0,
+                    },
+                )
+                .unwrap()],
+                vec![&position_mint],
+            )
+            .unwrap();
+
+            let instructions = collect_and_compound_fees_fusion_instructions(&ctx.rpc, &ctx.signer.pubkey(), &position_mint.pubkey(), false).unwrap();
+            let instruction = instructions.iter().find(|instruction| instruction.program_id == crate::TUNA_ID).unwrap();
+
+            assert_eq!(instruction.accounts[7].pubkey, test_market.vault_a);
+            assert_eq!(instruction.accounts[8].pubkey, test_market.vault_b);
         });
     }
 

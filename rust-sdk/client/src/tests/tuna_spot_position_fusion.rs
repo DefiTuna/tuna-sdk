@@ -27,8 +27,8 @@ mod tests {
             liquidation_threshold: 920000,                         // 92%
             oracle_price_deviation_threshold: HUNDRED_PERCENT / 2, // Allow large deviation for tests
             disabled: false,
-            borrow_limit_a: 0,
-            borrow_limit_b: 0,
+            borrow_limit_a: u64::MAX,
+            borrow_limit_b: u64::MAX,
             unused: 0,
             rebalance_protocol_fee: 0,
             spot_position_size_limit_a: 1000_000_000_000,

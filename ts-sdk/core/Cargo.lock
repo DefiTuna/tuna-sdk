@@ -79,8 +79,16 @@ dependencies = [
 ]
 
 [[package]]
-name = "defituna-core"
-version = "3.5.0"
+name = "defituna-core_js_bindings"
+version = "1.0.0"
+dependencies = [
+ "defituna-sdk-core",
+ "fusionamm-core",
+]
+
+[[package]]
+name = "defituna-sdk-core"
+version = "3.7.4"
 dependencies = [
  "fixed",
  "fusionamm-core",
@@ -100,14 +108,6 @@ dependencies = [
  "uint",
  "wasm-bindgen",
  "wasm-bindgen-futures",
-]
-
-[[package]]
-name = "defituna-core_js_bindings"
-version = "1.0.0"
-dependencies = [
- "defituna-core",
- "fusionamm-core",
 ]
 
 [[package]]

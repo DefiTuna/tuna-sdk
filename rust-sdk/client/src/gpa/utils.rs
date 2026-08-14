@@ -39,7 +39,10 @@ pub(crate) fn rpc_program_accounts_config(filters: Vec<RpcFilterType>) -> RpcPro
     }
 }
 
-pub(crate) fn fetch_decoded_program_accounts<T: BorshDeserialize>(rpc: &RpcClient, filters: Vec<RpcFilterType>) -> Result<Vec<DecodedAccount<T>>, Box<dyn Error>> {
+pub(crate) fn fetch_decoded_program_accounts<T: BorshDeserialize>(
+    rpc: &RpcClient,
+    filters: Vec<RpcFilterType>,
+) -> Result<Vec<DecodedAccount<T>>, Box<dyn Error>> {
     let accounts = rpc.get_program_accounts_with_config(&TUNA_ID, rpc_program_accounts_config(filters))?;
     let mut decoded_accounts: Vec<DecodedAccount<T>> = Vec::new();
     for (address, account) in accounts {

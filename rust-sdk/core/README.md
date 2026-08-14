@@ -3,5 +3,5 @@
 ## Installation
 
 ```bash
-cargo add defituna-core
+cargo add defituna-sdk-core
 ```

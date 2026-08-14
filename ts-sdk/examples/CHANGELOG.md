@@ -1,4 +1,11 @@
-# @defituna/examples-typescript
+# @crypticdot/defituna-examples-typescript
+
+## 2.0.112
+
+### Patch Changes
+
+- Updated dependencies
+  - @crypticdot/defituna-client@3.7.4
 
 ## 2.0.111
 

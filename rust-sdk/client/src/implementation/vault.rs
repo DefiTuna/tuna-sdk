@@ -1,8 +1,8 @@
 use crate::accounts::Vault;
 use crate::TunaError as ErrorCode;
-use defituna_core::borrow_curve::sample;
-use defituna_core::fixed::{mul_div_64, Rounding};
-use defituna_core::Fixed128;
+use defituna_sdk_core::borrow_curve::sample;
+use defituna_sdk_core::fixed::{mul_div_64, Rounding};
+use defituna_sdk_core::Fixed128;
 use std::fmt;
 
 pub const INTEREST_ACCRUE_MIN_INTERVAL: u64 = 60;

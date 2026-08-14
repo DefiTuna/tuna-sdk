@@ -9,17 +9,19 @@
 //
 
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::Arc;
 use std::{error::Error, str::FromStr};
 
 use crate::JUPITER_PROGRAM_ID;
 use async_trait::async_trait;
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
+use borsh::BorshSerialize;
 use fusionamm_client::FUSIONAMM_ID;
 use orca_whirlpools_client::WHIRLPOOL_ID;
 use pump_amm_solana_client::PUMP_AMM_ID;
 use serde_json::{from_value, to_value, Value};
-use solana_account::Account;
+use solana_account::{Account, AccountSharedData};
 use solana_account_decoder::{encode_ui_account, UiAccountEncoding};
 use solana_client::client_error::Result as ClientResult;
 use solana_client::{
@@ -46,9 +48,16 @@ use solana_transaction::versioned::VersionedTransaction;
 use solana_version::Version;
 use spl_memo::build_memo;
 
+pub fn with_serialized_data<T: BorshSerialize>(mut account: Account, data: &T) -> Account {
+    account.data.clear();
+    data.serialize(&mut account.data).unwrap();
+    account
+}
+
 pub struct RpcContext {
     pub rpc: RpcClient,
     pub signer: Keypair,
+    context: Arc<Mutex<ProgramTestContext>>,
     keypairs: Vec<Keypair>,
     keypair_index: AtomicUsize,
 }
@@ -79,8 +88,13 @@ impl RpcContext {
         test.add_program("../../external_programs/jupiter", JUPITER_PROGRAM_ID, None);
         test.add_program("../../external_programs/pump_amm", PUMP_AMM_ID, None);
 
-        let context = Mutex::new(test.start_with_context().await);
-        let rpc = RpcClient::new_sender(MockRpcSender { context }, RpcClientConfig::default());
+        let context = Arc::new(Mutex::new(test.start_with_context().await));
+        let rpc = RpcClient::new_sender(
+            MockRpcSender {
+                context: Arc::clone(&context),
+            },
+            RpcClientConfig::default(),
+        );
 
         let mut keypairs = (0..400).map(|_| Keypair::new()).collect::<Vec<_>>();
         keypairs.sort_by_key(|x| x.pubkey());
@@ -88,9 +102,15 @@ impl RpcContext {
         Self {
             rpc,
             signer: signer.insecure_clone(),
+            context,
             keypairs,
             keypair_index: AtomicUsize::new(0),
         }
+    }
+
+    pub async fn set_account(&self, address: &Pubkey, account: &Account) {
+        let account = AccountSharedData::from(account.clone());
+        self.context.lock().await.set_account(address, &account);
     }
 
     pub fn get_next_keypair(&self) -> &Keypair {
@@ -227,7 +247,7 @@ async fn send(context: &mut ProgramTestContext, method: &str, params: &Vec<Value
 }
 
 struct MockRpcSender {
-    context: Mutex<ProgramTestContext>,
+    context: Arc<Mutex<ProgramTestContext>>,
 }
 
 #[async_trait]
