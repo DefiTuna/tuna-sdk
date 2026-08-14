@@ -1,5 +1,5 @@
 use anyhow::Result;
-use defituna_client::{fetch_all_lending_position_with_filter, LendingPositionFilter};
+use defituna_sdk_client::{fetch_all_lending_position_with_filter, LendingPositionFilter};
 use solana_pubkey::Pubkey;
 use solana_rpc_client::rpc_client::RpcClient;
 

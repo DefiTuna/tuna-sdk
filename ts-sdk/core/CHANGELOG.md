@@ -1,5 +1,11 @@
 # @crypticdot/defituna-core
 
+## 3.7.4
+
+### Patch Changes
+
+- Synchronized quote logic with DefiTuna program 3.7.8.
+
 ## 3.7.3
 
 ### Patch Changes

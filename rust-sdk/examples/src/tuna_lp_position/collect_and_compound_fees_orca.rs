@@ -1,8 +1,8 @@
 use crate::utils::fetch_address_lookup_table;
 use anyhow::{anyhow, Result};
-use defituna_client::accounts::{fetch_market, fetch_tuna_lp_position};
-use defituna_client::types::MarketMaker;
-use defituna_client::{
+use defituna_sdk_client::accounts::{fetch_market, fetch_tuna_lp_position};
+use defituna_sdk_client::types::MarketMaker;
+use defituna_sdk_client::{
   collect_and_compound_fees_orca_instructions, get_market_address, get_tuna_liquidity_position_address,
 };
 use fusionamm_tx_sender::{send_smart_transaction, PriorityFeeLevel, SmartTxConfig, SmartTxPriorityFeeConfig};

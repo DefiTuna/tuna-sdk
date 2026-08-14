@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+repo_root=$(git rev-parse --show-toplevel)
+remote_url=$(git -C "$repo_root" config --get remote.origin.url || true)
+
+if [[ "$remote_url" != *"DefiTuna/tuna-sdk"* ]]; then
+  echo "Refusing to publish outside the public DefiTuna/tuna-sdk repository." >&2
+  exit 1
+fi
+
+if [[ -n "$(git -C "$repo_root" status --porcelain --untracked-files=all)" ]]; then
+  echo "Refusing to publish from a dirty worktree. Commit all public source first." >&2
+  exit 1
+fi
+
+if [[ -f codama.mjs ]]; then
+  rm -rf src/generated
+  node codama.mjs
+fi
+
+if [[ -n "$(git -C "$repo_root" status --porcelain --untracked-files=all)" ]]; then
+  echo "Generated source does not match the committed public SDK source." >&2
+  exit 1
+fi
+
+if [[ -f generated.sha256 ]]; then
+  recorded_files=$(awk '{ print $2 }' generated.sha256 | LC_ALL=C sort)
+  generated_files=$(find src/generated -type f | LC_ALL=C sort)
+
+  if [[ "$generated_files" != "$recorded_files" ]]; then
+    echo "Generated source file list does not match generated.sha256." >&2
+    exit 1
+  fi
+
+  shasum -a 256 --check generated.sha256
+fi
+
+package_name=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].name')
+cargo_version=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].version')
+package_version=$(jq -r '.version' package.json)
+
+if [[ "$cargo_version" != "$package_version" ]]; then
+  echo "Version mismatch for $package_name: Cargo.toml=$cargo_version package.json=$package_version" >&2
+  exit 1
+fi
+
+package_list=$(mktemp)
+trap 'rm -f "$package_list"' EXIT
+# Cargo treats the checksum-verified, intentionally ignored generated sources as dirty.
+cargo package --list --locked --allow-dirty > "$package_list"
+
+if grep -q '^src/tests/' "$package_list"; then
+  echo "Refusing to publish $package_name with test sources." >&2
+  exit 1
+fi
+
+unexpected=$(grep -Ev '^(\.cargo_vcs_info\.json|Cargo\.lock|Cargo\.toml|Cargo\.toml\.orig|LICENSE|README\.md|src/.*\.rs)$' "$package_list" || true)
+if [[ -n "$unexpected" ]]; then
+  echo "Refusing to publish $package_name with unexpected files:" >&2
+  echo "$unexpected" >&2
+  exit 1
+fi
+
+echo "Publishing $package_name $cargo_version from the public SDK repository"
+cargo publish --locked --allow-dirty "$@"

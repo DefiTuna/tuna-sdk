@@ -72,7 +72,7 @@ export default class CreateMarket extends BaseCommand {
     }),
     liquidationThreshold: percentFlag({
       description: "Liquidation threshold (hundredths of a basis point or %)",
-      default: 0,
+      default: (HUNDRED_PERCENT * 65) / 100,
       min: 0,
       max: MAX_LIQUIDATION_THRESHOLD,
     }),

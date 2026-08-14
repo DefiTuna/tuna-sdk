@@ -1,6 +1,5 @@
 use crate::accounts::TunaSpotPosition;
-use defituna_core::TunaSpotPositionFacade;
-
+use defituna_sdk_core::TunaSpotPositionFacade;
 
 impl From<TunaSpotPosition> for TunaSpotPositionFacade {
     fn from(val: TunaSpotPosition) -> Self {

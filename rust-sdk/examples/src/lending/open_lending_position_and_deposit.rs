@@ -1,5 +1,5 @@
 use anyhow::Result;
-use defituna_client::open_lending_position_and_deposit_instructions;
+use defituna_sdk_client::open_lending_position_and_deposit_instructions;
 use fusionamm_tx_sender::{send_smart_transaction, PriorityFeeLevel, SmartTxConfig, SmartTxPriorityFeeConfig};
 use solana_keypair::Keypair;
 use solana_program_pack::Pack;

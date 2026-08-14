@@ -1,4 +1,15 @@
-# @defituna/client
+# @crypticdot/defituna-client
+
+## 3.7.4
+
+### Patch Changes
+
+- Synchronized the generated interface and client utilities with DefiTuna program 3.7.8.
+- Updated the market lookup table addresses.
+
+### Dependencies
+
+- @crypticdot/defituna-core@3.7.4
 
 ## 3.7.3
 

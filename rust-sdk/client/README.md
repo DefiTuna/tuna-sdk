@@ -10,5 +10,5 @@ This package provides developers with low-level functionalities for interacting 
 ## Installation
 ```bash
 # Cargo
-cargo add defituna-client
+cargo add defituna-sdk-client
 ```

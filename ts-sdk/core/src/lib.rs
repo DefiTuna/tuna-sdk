@@ -1,1 +1,1 @@
-pub use defituna_core::*;
+pub use defituna_sdk_core::*;

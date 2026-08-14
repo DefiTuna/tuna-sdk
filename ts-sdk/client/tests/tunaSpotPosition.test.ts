@@ -41,8 +41,8 @@ describe("Tuna Spot Position", () => {
   beforeEach(async () => {
     const marketArgs = {
       addressLookupTable: DEFAULT_ADDRESS,
-      borrowLimitA: 0n,
-      borrowLimitB: 0n,
+      borrowLimitA: 100_000_000_000_000n,
+      borrowLimitB: 100_000_000_000_000n,
       disabled: false,
       liquidationFee: 10000, // 1%
       liquidationThreshold: 920000, // 92%
@@ -175,8 +175,8 @@ describe("Tuna Spot Position", () => {
     const market = await setupTestMarket(
       {
         addressLookupTable: DEFAULT_ADDRESS,
-        borrowLimitA: 0n,
-        borrowLimitB: 0n,
+        borrowLimitA: 100_000_000_000_000n,
+        borrowLimitB: 100_000_000_000_000n,
         disabled: false,
         liquidationFee: 10000, // 1%
         liquidationThreshold: 820000, // 82%
@@ -715,8 +715,8 @@ describe("Tuna Spot Position", () => {
       const market = await setupTestMarket(
         {
           addressLookupTable: DEFAULT_ADDRESS,
-          borrowLimitA: 0n,
-          borrowLimitB: 0n,
+          borrowLimitA: 100_000_000_000_000n,
+          borrowLimitB: 100_000_000_000_000n,
           disabled: false,
           liquidationFee: 10000, // 1%
           liquidationThreshold: 920000, // 92%
@@ -1354,8 +1354,8 @@ describe("Tuna Spot Position", () => {
       const market = await setupTestMarket(
         {
           addressLookupTable: DEFAULT_ADDRESS,
-          borrowLimitA: 0n,
-          borrowLimitB: 0n,
+          borrowLimitA: 100_000_000_000_000n,
+          borrowLimitB: 100_000_000_000_000n,
           disabled: false,
           liquidationFee: 10000, // 1%
           liquidationThreshold: 920000, // 92%

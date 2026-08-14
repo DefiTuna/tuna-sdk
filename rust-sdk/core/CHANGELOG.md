@@ -1,4 +1,11 @@
-# @crypticdot/defituna-rust-core
+# defituna-sdk-core
+
+## 3.7.4
+
+### Patch Changes
+
+- Aligned the new `defituna-sdk-core` crate with the 3.7 release line, superseding the incorrectly versioned 3.5.1 package.
+- Synchronized quote logic with DefiTuna program 3.7.8.
 
 ## 3.7.3
 

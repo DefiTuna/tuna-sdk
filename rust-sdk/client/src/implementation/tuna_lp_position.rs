@@ -2,8 +2,8 @@ use crate::accounts::*;
 use crate::consts::HUNDRED_PERCENT;
 use crate::types::*;
 use crate::{impl_tuna_position, TunaError as ErrorCode, TunaLimitOrderType, TunaPosition, TunaPositionKind};
-use defituna_core::fixed::Rounding;
-use defituna_core::price::sqrt_price_x64_to_price_x64;
+use defituna_sdk_core::fixed::Rounding;
+use defituna_sdk_core::price::sqrt_price_x64_to_price_x64;
 use fixed::types::U64F64;
 use fusionamm_core::{
     get_amounts_from_liquidity, sqrt_price_to_tick_index, tick_index_to_sqrt_price, MAX_SQRT_PRICE, MAX_TICK_INDEX, MIN_SQRT_PRICE, MIN_TICK_INDEX,

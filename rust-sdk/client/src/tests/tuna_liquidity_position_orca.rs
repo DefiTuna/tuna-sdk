@@ -1,16 +1,17 @@
 #[cfg(test)]
 mod tests {
-    use crate::accounts::{fetch_all_vault, fetch_tuna_config, fetch_tuna_lp_position};
+    use crate::accounts::{fetch_all_vault, fetch_market, fetch_tuna_config, fetch_tuna_lp_position};
     use crate::instructions::{CreateMarketInstructionArgs, OpenTunaLpPositionOrcaInstructionArgs};
     use crate::tests::orca::swap_exact_in;
     use crate::tests::*;
     use crate::types::MarketMaker;
     use crate::{
-        close_active_tuna_lp_position_orca_instructions, close_tuna_lp_position_orca_instruction, decrease_tuna_lp_position_orca_instructions,
-        get_tuna_config_address, get_tuna_liquidity_position_address, get_vault_address, increase_tuna_lp_position_orca_instructions,
-        liquidate_tuna_lp_position_orca_instructions, open_and_increase_tuna_lp_position_orca_instructions, open_tuna_lp_position_orca_instruction,
-        rebalance_tuna_lp_position_orca_instructions, CloseActiveTunaLpPositionArgs, DecreaseTunaLpPositionArgs, IncreaseTunaLpPositionArgs,
-        OpenAndIncreaseTunaLpPositionArgs, HUNDRED_PERCENT, LEVERAGE_ONE, TUNA_POSITION_FLAGS_ALLOW_REBALANCING,
+        close_active_tuna_lp_position_orca_instructions, close_tuna_lp_position_orca_instruction, collect_and_compound_fees_orca_instructions,
+        decrease_tuna_lp_position_orca_instructions, get_tuna_config_address, get_tuna_liquidity_position_address, get_vault_address,
+        increase_tuna_lp_position_orca_instructions, liquidate_tuna_lp_position_orca_instructions,
+        open_and_increase_tuna_lp_position_orca_instructions, open_tuna_lp_position_orca_instruction, rebalance_tuna_lp_position_orca_instructions,
+        CloseActiveTunaLpPositionArgs, DecreaseTunaLpPositionArgs, IncreaseTunaLpPositionArgs, OpenAndIncreaseTunaLpPositionArgs, HUNDRED_PERCENT,
+        LEVERAGE_ONE, TUNA_POSITION_FLAGS_ALLOW_REBALANCING,
     };
     use orca_whirlpools_client::fetch_whirlpool;
     use serial_test::serial;
@@ -28,8 +29,8 @@ mod tests {
             liquidation_threshold: 920000,                         // 92%
             oracle_price_deviation_threshold: HUNDRED_PERCENT / 2, // Allow large deviation for tests
             disabled: false,
-            borrow_limit_a: 0,
-            borrow_limit_b: 0,
+            borrow_limit_a: u64::MAX,
+            borrow_limit_b: u64::MAX,
             unused: 0,
             rebalance_protocol_fee: 0,
             spot_position_size_limit_a: 1000_000_000_000,
@@ -162,6 +163,94 @@ mod tests {
                 .unwrap(),
             )
             .unwrap();
+        });
+    }
+
+    #[test]
+    #[serial]
+    fn test_collect_and_compound_uses_market_vaults_for_shared_and_isolated_layouts() {
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        rt.block_on(async {
+            let signer = Keypair::new();
+            let ctx = RpcContext::new(&signer, orca::get_whirlpool_config_accounts(&signer.pubkey())).await;
+            let test_market = setup_test_market(&ctx, test_market_args(), MarketMaker::Orca, TestMarketArgs::default())
+                .await
+                .unwrap();
+
+            let pool = fetch_whirlpool(&ctx.rpc, &test_market.pool).unwrap();
+            let position_mint = Keypair::new();
+            let actual_tick_index = pool.data.tick_current_index - (pool.data.tick_current_index % pool.data.tick_spacing as i32);
+
+            ctx.send_transaction_with_signers(
+                vec![open_tuna_lp_position_orca_instruction(
+                    &ctx.rpc,
+                    &ctx.signer.pubkey(),
+                    &position_mint.pubkey(),
+                    &test_market.pool,
+                    OpenTunaLpPositionOrcaInstructionArgs {
+                        tick_lower_index: actual_tick_index - pool.data.tick_spacing as i32 * 5,
+                        tick_upper_index: actual_tick_index + pool.data.tick_spacing as i32 * 5,
+                        lower_limit_order_sqrt_price: 0,
+                        upper_limit_order_sqrt_price: 0,
+                        flags: 0,
+                    },
+                )
+                .unwrap()],
+                vec![&position_mint],
+            )
+            .unwrap();
+
+            let instructions = collect_and_compound_fees_orca_instructions(&ctx.rpc, &ctx.signer.pubkey(), &position_mint.pubkey(), false).unwrap();
+            let instruction = instructions.iter().find(|instruction| instruction.program_id == crate::TUNA_ID).unwrap();
+            assert_eq!(instruction.accounts[5].pubkey, test_market.vault_a);
+            assert_eq!(instruction.accounts[6].pubkey, test_market.vault_b);
+
+            // Permissionless market creation currently supports Fusion only. Reuse valid Orca
+            // accounts and model the equivalent isolated-vault layout directly through RPC.
+            let tuna_position = fetch_tuna_lp_position(&ctx.rpc, &get_tuna_liquidity_position_address(&position_mint.pubkey()).0).unwrap();
+            let tuna_config = fetch_tuna_config(&ctx.rpc, &get_tuna_config_address().0).unwrap();
+            let market = fetch_market(&ctx.rpc, &test_market.market).unwrap();
+            let vaults = fetch_all_vault(&ctx.rpc, &[test_market.vault_a, test_market.vault_b]).unwrap();
+            let mint_accounts = ctx
+                .rpc
+                .get_multiple_accounts(&[test_market.mint_a_address, test_market.mint_b_address])
+                .unwrap();
+
+            let (isolated_vault_a_address, isolated_vault_a_bump) = get_vault_address(&test_market.mint_a_address, Some(&test_market.market));
+            let (isolated_vault_b_address, isolated_vault_b_bump) = get_vault_address(&test_market.mint_b_address, Some(&test_market.market));
+            let mut isolated_market = market.data.clone();
+            isolated_market.vault_a = isolated_vault_a_address;
+            isolated_market.vault_b = isolated_vault_b_address;
+            isolated_market.authority = signer.pubkey();
+            let mut isolated_vault_a = vaults[0].data.clone();
+            isolated_vault_a.bump = [isolated_vault_a_bump];
+            isolated_vault_a.authority = signer.pubkey();
+            isolated_vault_a.market = test_market.market;
+            let mut isolated_vault_b = vaults[1].data.clone();
+            isolated_vault_b.bump = [isolated_vault_b_bump];
+            isolated_vault_b.authority = signer.pubkey();
+            isolated_vault_b.market = test_market.market;
+
+            let isolated_ctx = RpcContext::new(
+                &signer,
+                vec![
+                    (tuna_position.address, tuna_position.account),
+                    (pool.address, pool.account),
+                    (tuna_config.address, tuna_config.account),
+                    (market.address, with_serialized_data(market.account, &isolated_market)),
+                    (isolated_vault_a_address, with_serialized_data(vaults[0].account.clone(), &isolated_vault_a)),
+                    (isolated_vault_b_address, with_serialized_data(vaults[1].account.clone(), &isolated_vault_b)),
+                    (test_market.mint_a_address, mint_accounts[0].clone().unwrap()),
+                    (test_market.mint_b_address, mint_accounts[1].clone().unwrap()),
+                ],
+            )
+            .await;
+            let instructions =
+                collect_and_compound_fees_orca_instructions(&isolated_ctx.rpc, &isolated_ctx.signer.pubkey(), &position_mint.pubkey(), false)
+                    .unwrap();
+            let instruction = instructions.iter().find(|instruction| instruction.program_id == crate::TUNA_ID).unwrap();
+            assert_eq!(instruction.accounts[5].pubkey, isolated_vault_a_address);
+            assert_eq!(instruction.accounts[6].pubkey, isolated_vault_b_address);
         });
     }
 

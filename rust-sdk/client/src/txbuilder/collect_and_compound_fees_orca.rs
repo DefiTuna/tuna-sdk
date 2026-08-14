@@ -1,8 +1,8 @@
-use crate::accounts::{fetch_all_vault, fetch_tuna_config, fetch_tuna_lp_position, TunaConfig, TunaLpPosition, Vault};
+use crate::accounts::{fetch_all_vault, fetch_market, fetch_tuna_config, fetch_tuna_lp_position, TunaConfig, TunaLpPosition, Vault};
 use crate::instructions::{CollectAndCompoundFeesOrca, CollectAndCompoundFeesOrcaInstructionArgs};
 use crate::types::{AccountsType, RemainingAccountsInfo, RemainingAccountsSlice};
 use crate::utils::orca::get_swap_tick_arrays;
-use crate::{get_market_address, get_tuna_config_address, get_tuna_liquidity_position_address, get_vault_address};
+use crate::{get_market_address, get_tuna_config_address, get_tuna_liquidity_position_address};
 use anyhow::{anyhow, Result};
 use orca_whirlpools_client::{fetch_whirlpool, get_oracle_address, get_position_address, get_tick_array_address, Whirlpool};
 use orca_whirlpools_core::get_tick_array_start_tick_index;
@@ -27,7 +27,10 @@ pub fn collect_and_compound_fees_orca_instructions(
 
     let tuna_config = fetch_tuna_config(rpc, &get_tuna_config_address().0)?;
 
-    let vaults = fetch_all_vault(&rpc, &[get_vault_address(&mint_a_address, None).0, get_vault_address(&mint_b_address, None).0])?;
+    let market_address = get_market_address(&tuna_position.data.pool).0;
+    let market = fetch_market(&rpc, &market_address)?;
+
+    let vaults = fetch_all_vault(&rpc, &[market.data.vault_a, market.data.vault_b])?;
     let (vault_a, vault_b) = (&vaults[0], &vaults[1]);
 
     let mint_accounts = rpc.get_multiple_accounts(&[mint_a_address.into(), mint_b_address.into()])?;

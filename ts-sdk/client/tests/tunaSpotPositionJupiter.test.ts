@@ -52,8 +52,8 @@ describe("Tuna Spot Position Jupiter", () => {
   beforeEach(async () => {
     const marketArgs = {
       addressLookupTable: DEFAULT_ADDRESS,
-      borrowLimitA: 0n,
-      borrowLimitB: 0n,
+      borrowLimitA: 100_000_000_000_000n,
+      borrowLimitB: 100_000_000_000_000n,
       disabled: false,
       liquidationFee: 100000, // 10%
       liquidationThreshold: 850000, // 85%

@@ -13,6 +13,7 @@ use solana_pubkey::Pubkey;
 use solana_signer::Signer;
 use solana_system_interface::instruction::create_account;
 use spl_associated_token_account::{get_associated_token_address_with_program_id, instruction::create_associated_token_account_idempotent};
+use spl_token_2022::solana_program::program_pack::Pack;
 use spl_token_2022::{
     extension::{
         transfer_fee::instruction::{initialize_transfer_fee_config, set_transfer_fee},
@@ -23,7 +24,6 @@ use spl_token_2022::{
     ID as TOKEN_2022_PROGRAM_ID,
 };
 use std::error::Error;
-use spl_token_2022::solana_program::program_pack::Pack;
 
 #[derive(Default)]
 pub struct SetupAtaConfig {

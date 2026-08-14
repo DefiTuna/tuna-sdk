@@ -197,18 +197,17 @@ pub async fn swap_exact_in(
     mint_address: &Pubkey,
     slippage_tolerance_bps: Option<u16>,
 ) -> Result<Signature, Box<dyn Error>> {
-    ctx.send_transaction(
-        swap_instructions(
-            ctx.rpc.get_inner_client(),
-            *whirlpool_address,
-            input_amount,
-            *mint_address,
-            SwapType::ExactIn,
-            slippage_tolerance_bps,
-            Some(ctx.signer.pubkey()),
-        )
-        .await
-        .unwrap()
-        .instructions,
-    )
+    let swap = Box::pin(swap_instructions(
+        ctx.rpc.get_inner_client(),
+        *whirlpool_address,
+        input_amount,
+        *mint_address,
+        SwapType::ExactIn,
+        slippage_tolerance_bps,
+        Some(ctx.signer.pubkey()),
+    ))
+    .await
+    .unwrap();
+
+    ctx.send_transaction(swap.instructions)
 }
