@@ -1,5 +1,11 @@
 # defituna-sdk-client
 
+## 3.7.5
+
+### Patch Changes
+
+- Excluded an internal protocol maintenance instruction from the generated public SDK API.
+
 ## 3.7.4
 
 ### Patch Changes
