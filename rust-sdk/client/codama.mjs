@@ -2,6 +2,7 @@ import {
   createFromRoot,
   updateAccountsVisitor,
   updateDefinedTypesVisitor,
+  updateInstructionsVisitor,
 } from "codama";
 import { renderVisitor } from "@codama/renderers-rust";
 import { rootNodeFromAnchor } from "@codama/nodes-from-anchor";
@@ -21,6 +22,15 @@ codama.update(
       delete: true,
     },
     fusion_pool: {
+      delete: true,
+    },
+  }),
+);
+
+// Keep internal protocol operations out of the public SDK.
+codama.update(
+  updateInstructionsVisitor({
+    socialize_bad_debt: {
       delete: true,
     },
   }),
