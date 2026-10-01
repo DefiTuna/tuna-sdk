@@ -1,5 +1,12 @@
 # @crypticdot/defituna-core
 
+## 4.0.0
+
+### Major Changes
+
+- Coordinated the TypeScript/Wasm core package with the 4.0.0 SDK release. Compared with the published npm 3.7.3 package, `computeLeverage` now rejects a debt-bearing position whose rounded total value is zero; Rust core production source is unchanged from SDK main.
+- Use wasm-pack's supported `bundler` target for the browser output directory, preserving the existing bundler-style browser interface.
+
 ## 3.7.4
 
 ### Patch Changes

@@ -203,23 +203,26 @@ mod tests {
 
             let signer_balance_before = ctx.rpc.get_balance(&ctx.signer.pubkey()).unwrap();
 
-            ctx.send_transaction(liquidate_tuna_lp_position_fusion_jupiter_instructions(
-                &ctx.signer.pubkey(),
-                &tuna_position.data,
-                &tuna_config.data,
-                &vaults[0].address,
-                &vaults[0].data,
-                &vaults[1].address,
-                &vaults[1].data,
-                &pool.data,
-                &test_market.token_program_a,
-                &test_market.token_program_b,
-                route_ix.accounts,
-                LiquidateTunaLpPositionJupiterArgs {
-                    decrease_percent: HUNDRED_PERCENT,
-                    jupiter_route_data: route_ix.data,
-                },
-            ))
+            ctx.send_transaction(
+                liquidate_tuna_lp_position_fusion_jupiter_instructions(
+                    &ctx.signer.pubkey(),
+                    &tuna_position.data,
+                    &tuna_config.data,
+                    &vaults[0].address,
+                    &vaults[0].data,
+                    &vaults[1].address,
+                    &vaults[1].data,
+                    &pool.data,
+                    &test_market.mint_a_account,
+                    &test_market.mint_b_account,
+                    route_ix.accounts,
+                    LiquidateTunaLpPositionJupiterArgs {
+                        decrease_percent: HUNDRED_PERCENT,
+                        jupiter_route_data: route_ix.data,
+                    },
+                )
+                .unwrap(),
+            )
             .unwrap();
 
             // Test that rent from the user_volume_accumulator account is returned.

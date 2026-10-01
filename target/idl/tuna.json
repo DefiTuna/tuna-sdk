@@ -4671,6 +4671,9 @@
     },
     {
       "name": "set_admin_authority",
+      "docs": [
+        "Immediately set the admin with the current owner's authorization."
+      ],
       "discriminator": [
         72,
         49,
@@ -4881,6 +4884,9 @@
     },
     {
       "name": "set_liquidator_authority",
+      "docs": [
+        "Immediately set the liquidator with the current owner's authorization."
+      ],
       "discriminator": [
         246,
         146,
@@ -4911,6 +4917,9 @@
     },
     {
       "name": "set_oracle_price_update_authority",
+      "docs": [
+        "Immediately set the oracle updater with the current owner's authorization."
+      ],
       "discriminator": [
         49,
         159,
@@ -4941,6 +4950,9 @@
     },
     {
       "name": "set_owner_authority",
+      "docs": [
+        "Immediately set the owner. Multisig approvals are enforced outside Tuna."
+      ],
       "discriminator": [
         128,
         171,
@@ -5690,6 +5702,11 @@
       "msg": "Position size exceeds the maximum allowed value"
     },
     {
+      "code": 6629,
+      "name": "PositionValuationDegenerate",
+      "msg": "Position valuation is degenerate"
+    },
+    {
       "code": 6640,
       "name": "ProtocolFeeIsOutOfRange",
       "msg": "Protocol fee is out of range"
@@ -5848,6 +5865,21 @@
       "code": 6677,
       "name": "MarketHasOpenedPositions",
       "msg": "The market has opened positions and can't be closed"
+    },
+    {
+      "code": 6678,
+      "name": "VaultBalanceMismatch",
+      "msg": "Vault token-account balance delta does not match the ledger delta"
+    },
+    {
+      "code": 6679,
+      "name": "ZeroRealizedTransferAmount",
+      "msg": "Transfer produced no spendable tokens"
+    },
+    {
+      "code": 6680,
+      "name": "WithheldFeesPresent",
+      "msg": "Token account has withheld transfer fees; harvest them to the mint before closing"
     },
     {
       "code": 6700,
@@ -6500,7 +6532,7 @@
           {
             "name": "owner_authority",
             "docs": [
-              "Owner of the program. Can change ownership and set the admin of the program."
+              "Governance authority for all role changes. Multisig approvals are enforced externally."
             ],
             "type": "pubkey"
           },

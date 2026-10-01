@@ -1,6 +1,6 @@
 [package]
 name = "defituna-sdk-client"
-version = "3.7.5"
+version = "4.0.0"
 homepage = "https://defituna.com"
 description = "Rust client to interact with DefiTuna's on-chain program."
 license-file = "LICENSE"
@@ -49,7 +49,7 @@ spl-memo = { version = "6.0.0" }
 anchor-lang = { version = ">=0.29, <0.33", optional = true }
 
 # DefiTuna
-defituna-sdk-core = { version = "3.7.4", path = "../core" }
+defituna-sdk-core = { version = "4.0.0", path = "../core" }
 
 # Orca
 orca_whirlpools_client = { version = "=5.0.1", features = ["fetch"] }
@@ -76,6 +76,7 @@ num-traits = { version = "0.2" }
 serde = { version = "1.0", features = ["derive"], optional = true }
 serde_with = { version = "3.12", optional = true }
 thiserror = { version = "2.0" }
+uint = { version = "=0.9.5", default-features = false }
 anyhow = "1.0.98"
 
 [dev-dependencies]

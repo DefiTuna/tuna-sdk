@@ -1,7 +1,7 @@
 {
   "name": "@crypticdot/defituna-core",
   "description": "DefiTuna core typescript package.",
-  "version": "3.7.4",
+  "version": "4.0.0",
   "type": "module",
   "main": "./dist/nodejs/defituna_core_js_bindings.js",
   "types": "./dist/nodejs/defituna_core_js_bindings.d.ts",
@@ -18,7 +18,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "wasm-pack build --release --out-dir ./dist/nodejs --target nodejs && wasm-pack build --release --out-dir ./dist/browser --target browser",
+    "build": "wasm-pack build --release --out-dir ./dist/nodejs --target nodejs && wasm-pack build --release --out-dir ./dist/browser --target bundler",
     "test": "vitest run tests --no-cache",
     "prepublishOnly": "rimraf dist/nodejs/.gitignore dist/browser/.gitignore",
     "deploy": "../../scripts/deploy-npm",

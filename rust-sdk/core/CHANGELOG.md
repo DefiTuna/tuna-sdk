@@ -1,5 +1,11 @@
 # defituna-sdk-core
 
+## 4.0.0
+
+### Major Changes
+
+- Coordinated the Rust core crate with the 4.0.0 SDK release. Production code is unchanged from SDK main; this release retains the corrected `compute_leverage` behavior and adds regression coverage that rejects a debt-bearing position whose rounded total value is zero.
+
 ## 3.7.4
 
 ### Patch Changes

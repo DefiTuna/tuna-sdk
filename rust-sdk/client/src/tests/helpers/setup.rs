@@ -14,6 +14,7 @@ use crate::{
 };
 use fusionamm_sdk::PriceOrTickIndex;
 use orca_whirlpools_core::price_to_sqrt_price;
+use solana_account::Account;
 use solana_pubkey::Pubkey;
 use solana_signer::Signer;
 use spl_token_2022::state::Mint;
@@ -23,6 +24,8 @@ pub struct TestMarket {
     pub market_maker: MarketMaker,
     pub mint_a: Mint,
     pub mint_b: Mint,
+    pub mint_a_account: Account,
+    pub mint_b_account: Account,
     pub mint_a_address: Pubkey,
     pub mint_b_address: Pubkey,
     pub token_program_a: Pubkey,
@@ -44,6 +47,7 @@ pub struct TestMarket {
 #[derive(Default)]
 pub struct TestMarketArgs {
     pub mint_a_is_native: bool,
+    pub mint_b_has_transfer_fee: bool,
     pub initialize_rewards: bool,
     pub adaptive_fee: bool,
     pub permissionless: bool,
@@ -63,13 +67,19 @@ pub async fn setup_test_market(
     } else {
         setup_mint(ctx, 9).await?
     };
-    let mint_b_address = setup_mint_te(ctx, 6, &[]).await?;
+    let mint_b_address = if setup_args.mint_b_has_transfer_fee {
+        setup_mint_te_fee(ctx, 6).await?
+    } else {
+        setup_mint_te(ctx, 6, &[]).await?
+    };
 
     let all_mints = [mint_a_address, mint_b_address];
     let all_token_programs = [spl_token::ID, spl_token_2022::ID];
 
     let mint_a = fetch_mint(ctx, &mint_a_address).await?;
     let mint_b = fetch_mint(ctx, &mint_b_address).await?;
+    let mint_a_account = ctx.rpc.get_account(&mint_a_address)?;
+    let mint_b_account = ctx.rpc.get_account(&mint_b_address)?;
 
     let ata_a = setup_ata(ctx, &mint_a_address, 10000_000_000_000).await?;
     let ata_b = setup_ata_te(
@@ -98,17 +108,22 @@ pub async fn setup_test_market(
 
         pool = setup_whirlpool(ctx, &mint_a_address, &mint_b_address, 64, initial_sqrt_price, setup_args.adaptive_fee).await?;
 
-        let open_position_result = orca_whirlpools::open_position_instructions(
-            &ctx.rpc.get_inner_client(),
-            pool,
-            20.0,
-            2000.0,
-            orca_whirlpools::IncreaseLiquidityParam::Liquidity(1_000_000_000_000),
-            None,
-            Some(ctx.signer.pubkey()),
-        )
-        .await?;
-        ctx.send_transaction_with_signers(open_position_result.instructions, open_position_result.additional_signers.iter().collect())?;
+        // The upstream convenience SDK still decodes mints with the fixed-size
+        // Pack API. Skip its unrelated seed-liquidity position for extension
+        // mints; the transfer-fee regression opens the first pool position.
+        if !setup_args.mint_b_has_transfer_fee {
+            let open_position_result = orca_whirlpools::open_position_instructions(
+                &ctx.rpc.get_inner_client(),
+                pool,
+                20.0,
+                2000.0,
+                orca_whirlpools::IncreaseLiquidityParam::Liquidity(1_000_000_000_000),
+                None,
+                Some(ctx.signer.pubkey()),
+            )
+            .await?;
+            ctx.send_transaction_with_signers(open_position_result.instructions, open_position_result.additional_signers.iter().collect())?;
+        }
     } else {
         assert!(!setup_args.initialize_rewards, "Rewards are not supported by Fusion pools");
         assert!(!setup_args.adaptive_fee, "Adaptive fee is not supported by Fusion pools");
@@ -223,6 +238,8 @@ pub async fn setup_test_market(
         market_maker,
         mint_a,
         mint_b,
+        mint_a_account,
+        mint_b_account,
         mint_a_address,
         mint_b_address,
         token_program_a: all_token_programs[0],

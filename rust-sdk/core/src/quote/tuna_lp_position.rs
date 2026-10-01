@@ -578,6 +578,11 @@ mod tests {
     }
 
     #[test]
+    fn test_compute_leverage_rejects_zero_total_with_debt() {
+        assert!(super::compute_leverage(0, 0, 0, 1, *SQRT_PRICE).is_err());
+    }
+
+    #[test]
     fn test_liquidation_price_outside_range_lower() {
         assert_eq!(
             get_lp_position_liquidation_prices(

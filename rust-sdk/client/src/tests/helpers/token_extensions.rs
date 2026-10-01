@@ -17,7 +17,7 @@ use spl_token_2022::solana_program::program_pack::Pack;
 use spl_token_2022::{
     extension::{
         transfer_fee::instruction::{initialize_transfer_fee_config, set_transfer_fee},
-        ExtensionType,
+        ExtensionType, StateWithExtensions,
     },
     instruction::{initialize_mint2, mint_to},
     state::Mint,
@@ -48,8 +48,8 @@ pub async fn setup_mint_te(ctx: &RpcContext, decimals: u8, extensions: &[Extensi
                 &mint.pubkey(),
                 Some(&ctx.signer.pubkey()),
                 Some(&ctx.signer.pubkey()),
-                100,           // 1% (matching program)
-                1_000_000_000, // 1 token (matching program)
+                1_000,             // 10%
+                1_000_000_000_000, // high enough not to cap test transfers
             )?);
         }
     }
@@ -71,8 +71,8 @@ pub async fn setup_mint_te(ctx: &RpcContext, decimals: u8, extensions: &[Extensi
                 &mint.pubkey(),
                 &ctx.signer.pubkey(),
                 &[],
-                150,           // 1.5% (matching program)
-                1_000_000_000, // 1 token
+                1_000,             // Keep the scheduled fee at 10% too.
+                1_000_000_000_000, // high enough not to cap test transfers
             )?);
         }
     }
@@ -106,6 +106,8 @@ pub async fn setup_ata_te(ctx: &RpcContext, mint: &Pubkey, config: Option<SetupA
 
 pub async fn fetch_mint(ctx: &RpcContext, mint: &Pubkey) -> Result<Mint, Box<dyn Error>> {
     let token_mint_account = ctx.rpc.get_account(&mint)?;
-    let token_mint = Mint::unpack(&token_mint_account.data)?;
-    Ok(token_mint)
+    if token_mint_account.owner == TOKEN_2022_PROGRAM_ID {
+        return Ok(StateWithExtensions::<Mint>::unpack(&token_mint_account.data)?.base);
+    }
+    Ok(Mint::unpack(&token_mint_account.data)?)
 }

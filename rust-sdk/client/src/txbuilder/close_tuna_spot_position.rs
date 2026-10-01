@@ -1,5 +1,6 @@
 use crate::accounts::{fetch_tuna_spot_position, TunaSpotPosition};
 use crate::instructions::CloseTunaSpotPosition;
+use crate::utils::harvest_withheld_fees_to_mint_instruction;
 use crate::{get_market_address, get_tuna_spot_position_address};
 use anyhow::{anyhow, Result};
 use solana_client::rpc_client::RpcClient;
@@ -18,15 +19,29 @@ pub fn close_tuna_spot_position_instructions(rpc: &RpcClient, authority: &Pubkey
     let mint_a_account = mint_accounts[0].as_ref().ok_or(anyhow!("Token A mint account not found"))?;
     let mint_b_account = mint_accounts[1].as_ref().ok_or(anyhow!("Token B mint account not found"))?;
 
-    Ok(vec![close_tuna_spot_position_instruction(
+    let tuna_position_ata_a = get_associated_token_address_with_program_id(&tuna_position.address, &mint_a_address, &mint_a_account.owner);
+    let tuna_position_ata_b = get_associated_token_address_with_program_id(&tuna_position.address, &mint_b_address, &mint_b_account.owner);
+
+    let mut instructions = Vec::with_capacity(3);
+    if let Some(instruction) = harvest_withheld_fees_to_mint_instruction(&mint_a_address, mint_a_account, &tuna_position_ata_a)? {
+        instructions.push(instruction);
+    }
+    if let Some(instruction) = harvest_withheld_fees_to_mint_instruction(&mint_b_address, mint_b_account, &tuna_position_ata_b)? {
+        instructions.push(instruction);
+    }
+    instructions.push(close_tuna_spot_position_instruction(
         authority,
         &tuna_position.data,
         &tuna_position.address,
         &mint_a_account.owner,
         &mint_b_account.owner,
-    )])
+    ));
+
+    Ok(instructions)
 }
 
+/// Builds only the Tuna close instruction. Callers using this low-level API
+/// must harvest withheld fees from fee-bearing position ATAs first.
 pub fn close_tuna_spot_position_instruction(
     authority: &Pubkey,
     tuna_position: &TunaSpotPosition,

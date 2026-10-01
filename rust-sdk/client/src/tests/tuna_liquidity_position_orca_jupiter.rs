@@ -181,23 +181,26 @@ mod tests {
 
             route_ix.accounts[0].is_signer = false;
 
-            ctx.send_transaction(liquidate_tuna_lp_position_orca_jupiter_instructions(
-                &ctx.signer.pubkey(),
-                &tuna_position.data,
-                &tuna_config.data,
-                &vaults[0].address,
-                &vaults[0].data,
-                &vaults[1].address,
-                &vaults[1].data,
-                &pool.data,
-                &test_market.token_program_a,
-                &test_market.token_program_b,
-                route_ix.accounts,
-                LiquidateTunaLpPositionJupiterArgs {
-                    decrease_percent: HUNDRED_PERCENT,
-                    jupiter_route_data: route_ix.data,
-                },
-            ))
+            ctx.send_transaction(
+                liquidate_tuna_lp_position_orca_jupiter_instructions(
+                    &ctx.signer.pubkey(),
+                    &tuna_position.data,
+                    &tuna_config.data,
+                    &vaults[0].address,
+                    &vaults[0].data,
+                    &vaults[1].address,
+                    &vaults[1].data,
+                    &pool.data,
+                    &test_market.mint_a_account,
+                    &test_market.mint_b_account,
+                    route_ix.accounts,
+                    LiquidateTunaLpPositionJupiterArgs {
+                        decrease_percent: HUNDRED_PERCENT,
+                        jupiter_route_data: route_ix.data,
+                    },
+                )
+                .unwrap(),
+            )
             .unwrap();
         });
     }

@@ -1,7 +1,10 @@
 use crate::accounts::{TunaConfig, TunaSpotPosition, Vault};
 use crate::instructions::{LiquidateTunaSpotPositionJupiter, LiquidateTunaSpotPositionJupiterInstructionArgs};
 use crate::types::{AccountsType, RemainingAccountsInfo, RemainingAccountsSlice};
+use crate::utils::harvest_withheld_fees_to_mint_instruction;
 use crate::{get_market_address, get_tuna_config_address, get_tuna_spot_position_address, JUPITER_PROGRAM_ID};
+use anyhow::Result;
+use solana_account::Account;
 use solana_instruction::{AccountMeta, Instruction};
 use solana_pubkey::Pubkey;
 use solana_sdk_ids::system_program;
@@ -21,11 +24,13 @@ pub fn liquidate_tuna_spot_position_jupiter_instructions(
     vault_a: &Vault,
     vault_b_address: &Pubkey,
     vault_b: &Vault,
-    token_program_a: &Pubkey,
-    token_program_b: &Pubkey,
+    mint_a_account: &Account,
+    mint_b_account: &Account,
     jupiter_route_accounts: Vec<AccountMeta>,
     args: LiquidateTunaSpotPositionJupiterArgs,
-) -> Vec<Instruction> {
+) -> Result<Vec<Instruction>> {
+    let token_program_a = &mint_a_account.owner;
+    let token_program_b = &mint_b_account.owner;
     let mut instructions = vec![];
 
     instructions.push(create_associated_token_account_idempotent(authority, &tuna_config.fee_recipient, &vault_a.mint, token_program_a));
@@ -44,6 +49,16 @@ pub fn liquidate_tuna_spot_position_jupiter_instructions(
     }
     */
 
+    let tuna_position_address = get_tuna_spot_position_address(&tuna_position.authority, &tuna_position.pool).0;
+    let tuna_position_ata_a = get_associated_token_address_with_program_id(&tuna_position_address, &tuna_position.mint_a, token_program_a);
+    let tuna_position_ata_b = get_associated_token_address_with_program_id(&tuna_position_address, &tuna_position.mint_b, token_program_b);
+    if let Some(instruction) = harvest_withheld_fees_to_mint_instruction(&tuna_position.mint_a, mint_a_account, &tuna_position_ata_a)? {
+        instructions.push(instruction);
+    }
+    if let Some(instruction) = harvest_withheld_fees_to_mint_instruction(&tuna_position.mint_b, mint_b_account, &tuna_position_ata_b)? {
+        instructions.push(instruction);
+    }
+
     instructions.push(liquidate_tuna_spot_position_jupiter_instruction(
         authority,
         tuna_position,
@@ -58,7 +73,7 @@ pub fn liquidate_tuna_spot_position_jupiter_instructions(
         args,
     ));
 
-    instructions
+    Ok(instructions)
 }
 
 pub fn liquidate_tuna_spot_position_jupiter_instruction(
