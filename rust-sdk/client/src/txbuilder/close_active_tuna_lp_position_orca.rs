@@ -1,5 +1,5 @@
 use crate::accounts::{fetch_all_vault, fetch_market, fetch_tuna_lp_position};
-use crate::utils::get_create_ata_instructions;
+use crate::utils::{get_create_ata_instructions, harvest_withheld_fees_to_mint_instruction};
 use crate::{
     close_tuna_lp_position_orca_instruction, decrease_tuna_lp_position_orca_instruction, get_market_address, get_tuna_liquidity_position_address,
     CloseActiveTunaLpPositionArgs, DecreaseTunaLpPositionArgs, HUNDRED_PERCENT,
@@ -67,6 +67,18 @@ pub fn close_active_tuna_lp_position_orca_instructions(
 
     instructions.extend(authority_ata_a_instructions.cleanup);
     instructions.extend(authority_ata_b_instructions.cleanup);
+
+    let tuna_position_address = get_tuna_liquidity_position_address(position_mint).0;
+    let tuna_position_ata_a =
+        spl_associated_token_account::get_associated_token_address_with_program_id(&tuna_position_address, &mint_a_address, &mint_a_account.owner);
+    let tuna_position_ata_b =
+        spl_associated_token_account::get_associated_token_address_with_program_id(&tuna_position_address, &mint_b_address, &mint_b_account.owner);
+    if let Some(instruction) = harvest_withheld_fees_to_mint_instruction(&mint_a_address, mint_a_account, &tuna_position_ata_a)? {
+        instructions.push(instruction);
+    }
+    if let Some(instruction) = harvest_withheld_fees_to_mint_instruction(&mint_b_address, mint_b_account, &tuna_position_ata_b)? {
+        instructions.push(instruction);
+    }
 
     instructions.push(close_tuna_lp_position_orca_instruction(&authority, &tuna_position.data, &mint_a_account.owner, &mint_b_account.owner));
 

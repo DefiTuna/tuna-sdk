@@ -169,19 +169,22 @@ mod tests {
             let tuna_position = fetch_tuna_spot_position(&ctx.rpc, &tuna_position_address).unwrap();
             let vaults = fetch_all_vault(&ctx.rpc, &[test_market.vault_a, test_market.vault_b]).unwrap();
 
-            ctx.send_transaction(liquidate_tuna_spot_position_fusion_instructions(
-                &ctx.signer.pubkey(),
-                &tuna_position.data,
-                &tuna_config.data,
-                &vaults[0].address,
-                &vaults[0].data,
-                &vaults[1].address,
-                &vaults[1].data,
-                &pool.data,
-                &test_market.token_program_a,
-                &test_market.token_program_b,
-                None,
-            ))
+            ctx.send_transaction(
+                liquidate_tuna_spot_position_fusion_instructions(
+                    &ctx.signer.pubkey(),
+                    &tuna_position.data,
+                    &tuna_config.data,
+                    &vaults[0].address,
+                    &vaults[0].data,
+                    &vaults[1].address,
+                    &vaults[1].data,
+                    &pool.data,
+                    &test_market.mint_a_account,
+                    &test_market.mint_b_account,
+                    None,
+                )
+                .unwrap(),
+            )
             .unwrap();
         });
     }

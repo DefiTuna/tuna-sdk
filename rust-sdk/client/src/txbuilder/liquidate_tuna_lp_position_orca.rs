@@ -1,10 +1,13 @@
 use crate::accounts::{TunaConfig, TunaLpPosition, Vault};
 use crate::instructions::{LiquidateTunaLpPositionOrca, LiquidateTunaLpPositionOrcaInstructionArgs};
 use crate::types::{AccountsType, RemainingAccountsInfo, RemainingAccountsSlice};
+use crate::utils::harvest_withheld_fees_to_mint_instruction;
 use crate::utils::orca::get_swap_tick_arrays;
 use crate::{get_market_address, get_tuna_config_address, get_tuna_liquidity_position_address, HUNDRED_PERCENT};
+use anyhow::Result;
 use orca_whirlpools_client::{get_oracle_address, get_position_address, get_tick_array_address, Whirlpool};
 use orca_whirlpools_core::get_tick_array_start_tick_index;
+use solana_account::Account;
 use solana_instruction::{AccountMeta, Instruction};
 use solana_pubkey::Pubkey;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
@@ -21,27 +24,41 @@ pub fn liquidate_tuna_lp_position_orca_instructions(
     vault_b_address: &Pubkey,
     vault_b: &Vault,
     whirlpool: &Whirlpool,
-    token_program_a: &Pubkey,
-    token_program_b: &Pubkey,
+    mint_a_account: &Account,
+    mint_b_account: &Account,
     decrease_percent: Option<u32>,
-) -> Vec<Instruction> {
-    vec![
+) -> Result<Vec<Instruction>> {
+    let token_program_a = &mint_a_account.owner;
+    let token_program_b = &mint_b_account.owner;
+    let tuna_position_address = get_tuna_liquidity_position_address(&tuna_position.position_mint).0;
+    let tuna_position_ata_a = get_associated_token_address_with_program_id(&tuna_position_address, &tuna_position.mint_a, token_program_a);
+    let tuna_position_ata_b = get_associated_token_address_with_program_id(&tuna_position_address, &tuna_position.mint_b, token_program_b);
+
+    let mut instructions = vec![
         create_associated_token_account_idempotent(authority, &tuna_config.fee_recipient, &vault_a.mint, token_program_a),
         create_associated_token_account_idempotent(authority, &tuna_config.fee_recipient, &vault_b.mint, token_program_b),
-        liquidate_tuna_lp_position_orca_instruction(
-            authority,
-            tuna_position,
-            tuna_config,
-            vault_a_address,
-            vault_a,
-            vault_b_address,
-            vault_b,
-            whirlpool,
-            token_program_a,
-            token_program_b,
-            decrease_percent,
-        ),
-    ]
+    ];
+    if let Some(instruction) = harvest_withheld_fees_to_mint_instruction(&tuna_position.mint_a, mint_a_account, &tuna_position_ata_a)? {
+        instructions.push(instruction);
+    }
+    if let Some(instruction) = harvest_withheld_fees_to_mint_instruction(&tuna_position.mint_b, mint_b_account, &tuna_position_ata_b)? {
+        instructions.push(instruction);
+    }
+    instructions.push(liquidate_tuna_lp_position_orca_instruction(
+        authority,
+        tuna_position,
+        tuna_config,
+        vault_a_address,
+        vault_a,
+        vault_b_address,
+        vault_b,
+        whirlpool,
+        token_program_a,
+        token_program_b,
+        decrease_percent,
+    ));
+
+    Ok(instructions)
 }
 
 pub fn liquidate_tuna_lp_position_orca_instruction(

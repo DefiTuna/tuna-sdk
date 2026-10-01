@@ -1,5 +1,17 @@
 # @crypticdot/defituna-client
 
+## 4.0.0
+
+### Major Changes
+
+- Synchronized the generated client with the updated Tuna program (IDL metadata version 3.7.8), including `PositionValuationDegenerate`, `VaultBalanceMismatch`, `ZeroRealizedTransferAmount`, and `WithheldFeesPresent`.
+- Corrected the `module` entry to reference the emitted `dist/index.js` file.
+- JavaScript transaction-builder signatures are unchanged. Fee-bearing Token-2022 close/liquidation flows still require caller-managed harvesting.
+
+### Dependencies
+
+- @crypticdot/defituna-core@4.0.0
+
 ## 3.7.4
 
 ### Patch Changes

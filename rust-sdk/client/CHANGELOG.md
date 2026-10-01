@@ -1,5 +1,18 @@
 # defituna-sdk-client
 
+## 4.0.0
+
+### Major Changes
+
+- **Breaking:** The seven high-level liquidation helpers—`liquidate_tuna_lp_position_{fusion,fusion_jupiter,orca,orca_jupiter}_instructions` and `liquidate_tuna_spot_position_{fusion,jupiter,orca}_instructions`—now accept mint `Account` values instead of token-program public keys and return `Result<Vec<Instruction>>`.
+- Added Token-2022 withheld-fee harvesting before close and liquidation flows, including RPC-backed Fusion and Orca LP close helpers.
+- Hardened debt-bearing zero-value position classification with checked U256 valuation; ambiguous or failed valuations now return `PositionValuationDegenerate`.
+- Added generated program errors for `PositionValuationDegenerate`, `VaultBalanceMismatch`, `ZeroRealizedTransferAmount`, and `WithheldFeesPresent`.
+
+### Dependencies
+
+- defituna-sdk-core@4.0.0
+
 ## 3.7.5
 
 ### Patch Changes
